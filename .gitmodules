@@ -4,3 +4,6 @@
 [submodule "lib/danmaku-text"]
 	path = lib/danmaku-text
 	url = git@git.coding.net:luojia/danmaku-text.git
+[submodule "lib/Object2HTML"]
+	path = lib/Object2HTML
+	url = https://git.coding.net/luojia/Object2HTML.git

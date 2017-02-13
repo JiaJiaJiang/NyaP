@@ -2067,8 +2067,15 @@ var _danmakuText = require('../lib/danmaku-text/src/danmaku-text.js');
 
 var _Object2HTML = require('../lib/Object2HTML/Object2HTML.js');
 
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 (0, _danmakuText.init)(_danmakuFrame.DanmakuFrame, _danmakuFrame.DanmakuFrameModule); //init text2d mod
+
+
+var NyaP = function NyaP(opt) {
+	_classCallCheck(this, NyaP);
+};
 
 },{"../lib/Object2HTML/Object2HTML.js":1,"../lib/danmaku-frame/src/danmaku-frame.js":3,"../lib/danmaku-text/src/danmaku-text.js":4}]},{},[5])
 
-//# sourceMappingURL=player.js.map
+//# sourceMappingURL=NyaP.js.map

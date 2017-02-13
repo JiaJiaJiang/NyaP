@@ -12,4 +12,25 @@ import {Object2HTML} from '../lib/Object2HTML/Object2HTML.js'
 initText2d(DanmakuFrame,DanmakuFrameModule);//init text2d mod
 
 
-class 
+
+class NyaP{
+	constructor(opt){
+		this._player=Object2HTML({
+			_:'div',attr:{'class':'NyaP'}
+		});
+	}
+	play(){
+
+	}
+	pause(){
+
+	}
+	seek(){
+
+	}
+	get player(){
+		return this._player;
+	}
+}
+
+window.NyaP=NyaP;

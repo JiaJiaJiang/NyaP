@@ -1,17 +1,18 @@
 {
-  "name": "html5danmakuplayer",
+  "name": "NyaP",
   "version": "1.0.0",
-  "description": "HTML5 Danmaku Player",
+  "description": "nyap",
   "main": " ",
   "scripts": {
     "test": " "
   },
   "repository": {
     "type": "git",
-    "url": "git@git.coding.net:luojia/HTML5DanmakuPlayerCore.git"
+    "url": "https://git.coding.net/luojia/NyaP.git"
   },
   "keywords": [
-    "player"
+    "player",
+    "NyaP"
   ],
   "author": "luojia@luojia.me",
   "license": "LGPL-3.0",
@@ -19,6 +20,7 @@
     "babelify": "^7.3.0",
     "glup": "^1.0.14",
     "gulp-rename": "^1.2.2",
+    "gulp-sass": "^3.1.0",
     "gulp-sourcemaps": "^2.4.1",
     "gulp-uglify": "^2.0.1",
     "vinyl-buffer": "^1.0.0",

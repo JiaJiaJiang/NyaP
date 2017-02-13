@@ -6,9 +6,10 @@ var uglify = require('gulp-uglify');
 var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var sourcemaps = require('gulp-sourcemaps');
+var sass = require("gulp-sass");
 
-gulp.task('default', function () {
-	var b = browserify(['player.js'],{
+gulp.task('js', function () {
+	var b = browserify(['NyaP.js'],{
 		basedir:'./src',
 		debug: true,
 		transform: [babelify.configure({
@@ -17,7 +18,7 @@ gulp.task('default', function () {
 	});
 
 	return b.bundle()
-		.pipe(source('./player.js'))
+		.pipe(source('./NyaP.js'))
 		.pipe(buffer())
 		.pipe(sourcemaps.init({ loadMaps: true }))
 		.pipe(sourcemaps.write('./'))
@@ -25,7 +26,7 @@ gulp.task('default', function () {
 });
 
 
-gulp.task('minify', function(){
+gulp.task('minjs',function(){
 		let options = {
 				mangle: true,
 				compress: {
@@ -39,8 +40,28 @@ gulp.task('minify', function(){
 						evaluate:true,
 				}
 		};
-		return gulp.src('./dist/player.js')
+		return gulp.src('./dist/NyaP.js')
 		.pipe(rename({extname:'.min.js'}))
 		.pipe(uglify(options))
 		.pipe(gulp.dest('./dist'));
 });
+
+gulp.task('mincss', function(){
+		 gulp.src('./src/NyaP.scss')
+        .pipe(sass({
+            outputStyle: 'conpressed'
+        }).on('error', console.log))
+        .pipe(gulp.dest('./dist'));
+});
+
+gulp.task('css', function (){
+    gulp.src('./src/NyaP.scss')
+		.pipe(sourcemaps.init({ loadMaps: true }))
+        .pipe(sass({
+            outputStyle: 'compact'
+        }).on('error', sass.logError))
+		.pipe(sourcemaps.write('./'))
+        .pipe(gulp.dest('./dist'));
+});
+
+gulp.task('release',['js','minjs','mincss']);

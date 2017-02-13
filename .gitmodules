@@ -1,3 +1,6 @@
 [submodule "lib/danmaku-frame"]
 	path = lib/danmaku-frame
 	url = git@git.coding.net:luojia/danmaku-frame.git
+[submodule "lib/danmaku-text"]
+	path = lib/danmaku-text
+	url = git@git.coding.net:luojia/danmaku-text.git

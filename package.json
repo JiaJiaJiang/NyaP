@@ -1,0 +1,28 @@
+{
+  "name": "html5danmakuplayer",
+  "version": "1.0.0",
+  "description": "HTML5 Danmaku Player",
+  "main": " ",
+  "scripts": {
+    "test": " "
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@git.coding.net:luojia/HTML5DanmakuPlayerCore.git"
+  },
+  "keywords": [
+    "player"
+  ],
+  "author": "luojia@luojia.me",
+  "license": "LGPL-3.0",
+  "devDependencies": {
+    "babelify": "^7.3.0",
+    "glup": "^1.0.14",
+    "gulp-rename": "^1.2.2",
+    "gulp-sourcemaps": "^2.4.1",
+    "gulp-uglify": "^2.0.1",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0",
+    "watchify": "^3.9.0"
+  }
+}

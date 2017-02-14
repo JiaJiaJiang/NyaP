@@ -12,12 +12,15 @@ import {Object2HTML} from '../lib/Object2HTML/Object2HTML.js'
 initText2d(DanmakuFrame,DanmakuFrameModule);//init text2d mod
 
 
+//default options
+const NyaPOptions={
+	//touchMode:false,
+}
 
-class NyaP{
+class NyaPlayerCore{
 	constructor(opt){
-		this._player=Object2HTML({
-			_:'div',attr:{'class':'NyaP'}
-		});
+		this.opt=Object.assign({},NyaPOptions,opt);
+
 	}
 	play(){
 
@@ -31,6 +34,30 @@ class NyaP{
 	get player(){
 		return this._player;
 	}
+}
+
+//normal player
+class NyaP extends NyaPlayerCore{
+	constructor(opt){
+		super(opt);
+		this._player=Object2HTML({
+			_:'div',attr:{'class':'NyaP'}
+		});
+	}
+	
+
+}
+
+//touch player
+class TouchNyaP extends NyaPlayerCore{
+	constructor(opt){
+		super(opt);
+		this._player=Object2HTML({
+			_:'div',attr:{'class':'NyaP'}
+		});
+	}
+	
+
 }
 
 window.NyaP=NyaP;

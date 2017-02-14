@@ -49,8 +49,9 @@ gulp.task('minjs',function(){
 gulp.task('mincss', function(){
 		 gulp.src('./src/NyaP.scss')
         .pipe(sass({
-            outputStyle: 'conpressed'
-        }).on('error', console.log))
+            outputStyle: 'compressed'
+        }).on('error', sass.logError))
+		.pipe(rename({extname:'.min.css'}))
         .pipe(gulp.dest('./dist'));
 });
 

@@ -2,12 +2,51 @@
 Copyright luojia@luojia.me
 LGPL license
 */
-.NyaP{
+
+.NyaP_fullfill{
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;	
+}
+.NyaP_full_width{
 	position: absolute;
 	left: 0;
-	top: 0;
 	width: 100%;
-	height: 100%;
+}
+
+.NyaP{
+	@extend .NyaP_fullfill;
+
+	a{text-decoration: none;}
+	&>div#video_frame{
+		@extend .NyaP_fullfill;
+
+		&>video#main_video{
+			@extend .NyaP_fullfill;
+
+		}
+		&>div#danmaku_container{
+			@extend .NyaP_fullfill;
+		}
+	}
+	&>div#control{
+		@extend .NyaP_full_width;
+		bottom: 0;
+		height: auto;
+
+		&>canvas#process{
+			@extend .NyaP_full_width;
+			cursor: pointer;
+			height: 4px;
+			top: -3px;
+		}
+	}
+}
+
+.NyaP_Mini{
+	@extend .NyaP_fullfill;
 
 	a{text-decoration: none;}
 }

@@ -32,7 +32,7 @@ gulp.task('minjs',function(){
 				compress: {
 						sequences: true,
 						conditionals: true,
-						//dead_code: true,
+						dead_code: true,
 						booleans: true,
 						if_return: true,
 						join_vars: true,

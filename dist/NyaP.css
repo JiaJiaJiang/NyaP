@@ -2,8 +2,16 @@
 Copyright luojia@luojia.me
 LGPL license
 */
-.NyaP { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+.NyaP_fullfill, .NyaP, .NyaP > div#video_frame, .NyaP > div#video_frame > video#main_video, .NyaP > div#video_frame > div#danmaku_container, .NyaP_Mini { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+
+.NyaP_full_width, .NyaP > div#control, .NyaP > div#control > canvas#process { position: absolute; left: 0; width: 100%; }
 
 .NyaP a { text-decoration: none; }
+
+.NyaP > div#control { bottom: 0; height: auto; }
+
+.NyaP > div#control > canvas#process { cursor: pointer; height: 4px; top: -3px; }
+
+.NyaP_Mini a { text-decoration: none; }
 
 /*# sourceMappingURL=NyaP.css.map */

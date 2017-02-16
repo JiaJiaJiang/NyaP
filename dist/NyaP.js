@@ -47,7 +47,7 @@ function Object2HTML(obj) {
 			for (var _iterator = obj.child[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 				o = _step.value;
 
-				e = Object2HTML(o);
+				e = o instanceof HTMLElement ? o : Object2HTML(o);
 				e instanceof HTMLElement && ele.appendChild(e);
 			}
 		} catch (err) {
@@ -1763,7 +1763,8 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				    d = void 0;
 				for (; this.list[this.indexMark].time <= cTime; this.indexMark++) {
 					//add new danmaku
-					if (this.layer.childNodes.length >= this.options.screenLimit) break; //break if the number of danmaku on screen has up to limit
+					if (this.options.screenLimit > 0 && this.layer.childNodes.length >= this.options.screenLimit) break; //break if the number of danmaku on screen has up to limit
+					if (document.hidden) continue;
 					d = this.list[this.indexMark];
 					t = this.COL_GraphCache.length ? this.COL_GraphCache.shift() : new this.frame.COL.class.TextGraph();
 					t.onoverCheck = false;
@@ -2061,20 +2062,132 @@ LGPL license
 */
 'use strict';
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 var _danmakuFrame = require('../lib/danmaku-frame/src/danmaku-frame.js');
 
 var _danmakuText = require('../lib/danmaku-text/src/danmaku-text.js');
 
+var _danmakuText2 = _interopRequireDefault(_danmakuText);
+
 var _Object2HTML = require('../lib/Object2HTML/Object2HTML.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-(0, _danmakuText.init)(_danmakuFrame.DanmakuFrame, _danmakuFrame.DanmakuFrameModule); //init text2d mod
+(0, _danmakuText2.default)(_danmakuFrame.DanmakuFrame, _danmakuFrame.DanmakuFrameModule); //init text2d mod
 
 
-var NyaP = function NyaP(opt) {
-	_classCallCheck(this, NyaP);
-};
+//default options
+var NyaPOptions = {}
+//touchMode:false,
+
+//UIEvent
+;
+var NyaPlayerCore = function () {
+	function NyaPlayerCore(opt) {
+		_classCallCheck(this, NyaPlayerCore);
+
+		this.opt = Object.assign({}, NyaPOptions, opt);
+		this.danmakuFrame = new _danmakuFrame.DanmakuFrame();
+		this.danmakuFrame.enable('text2d');
+		//this.danmakuFrame.container
+	}
+
+	_createClass(NyaPlayerCore, [{
+		key: 'play',
+		value: function play() {
+			this.video.play();
+		}
+	}, {
+		key: 'pause',
+		value: function pause() {
+			this.video.pause();
+		}
+	}, {
+		key: 'seek',
+		value: function seek(time) {}
+	}, {
+		key: 'listenVideoEvent',
+		value: function listenVideoEvent() {
+			addEvents(this.video, {});
+		}
+	}, {
+		key: 'containerResize',
+		value: function containerResize() {
+			var e = new UIEvent('resize');
+			e.stopPropagation();
+			this.danmakuFrame.container.dispatchEvent(e);
+		}
+	}, {
+		key: 'player',
+		get: function get() {
+			return this._player;
+		}
+	}, {
+		key: 'video',
+		get: function get() {
+			return this._video || (this._video = this._player.querySelector('video#main_video'));
+		}
+	}]);
+
+	return NyaPlayerCore;
+}();
+
+//normal player
+
+
+var NyaP = function (_NyaPlayerCore) {
+	_inherits(NyaP, _NyaPlayerCore);
+
+	function NyaP(opt) {
+		_classCallCheck(this, NyaP);
+
+		var _this = _possibleConstructorReturn(this, (NyaP.__proto__ || Object.getPrototypeOf(NyaP)).call(this, opt));
+
+		_this._player = (0, _Object2HTML.Object2HTML)({
+			_: 'div', attr: { 'class': 'NyaP' }
+		});
+		return _this;
+	}
+
+	return NyaP;
+}(NyaPlayerCore);
+
+//touch player
+
+
+var TouchNyaP = function (_NyaPlayerCore2) {
+	_inherits(TouchNyaP, _NyaPlayerCore2);
+
+	function TouchNyaP(opt) {
+		_classCallCheck(this, TouchNyaP);
+
+		var _this2 = _possibleConstructorReturn(this, (TouchNyaP.__proto__ || Object.getPrototypeOf(TouchNyaP)).call(this, opt));
+
+		_this2._player = (0, _Object2HTML.Object2HTML)({
+			_: 'div', attr: { 'class': 'NyaP_Mini' }
+		});
+		return _this2;
+	}
+
+	return TouchNyaP;
+}(NyaPlayerCore);
+
+function addEvents(target) {
+	var events = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+	for (var e in events) {
+		target.addEventListener(e, events[e]);
+	}
+}
+
+window.NyaP = NyaP;
 
 },{"../lib/Object2HTML/Object2HTML.js":1,"../lib/danmaku-frame/src/danmaku-frame.js":3,"../lib/danmaku-text/src/danmaku-text.js":4}]},{},[5])
 

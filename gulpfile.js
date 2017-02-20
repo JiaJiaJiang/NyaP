@@ -65,4 +65,6 @@ gulp.task('css', function (){
         .pipe(gulp.dest('./dist'));
 });
 
+gulp.task('jscss',['js','css']);
+
 gulp.task('release',['js','minjs','mincss']);

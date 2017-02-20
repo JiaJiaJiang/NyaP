@@ -4,16 +4,22 @@
 	<title>NyaP demo</title>
 	<script src="../dist/NyaP.js"></script>
 	<link rel="stylesheet" type="text/css" href="../dist/NyaP.css">
+	<style type="text/css">
+		body{margin: 0;}
+	</style>
 </head>
 <body>
 
 <div id="player_container" style="position:absolute;width:100%;height:100%;top:0;left:0;"></div>
 
 <script>
-var NP=new Nyap();
+var NP=new NyaP();
 document.querySelector('#player_container').appendChild(NP.player);
 
-NP.player.src='file:///Users/luojia/Downloads/miku.mp4';
+NP.video.src='miku.mp4';
+NP.video.muted=true;
+//NP.video.play()
+NP.video.loop=true;
 </script>
 
 </body>

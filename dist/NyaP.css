@@ -4,13 +4,37 @@ LGPL license
 */
 .NyaP_fullfill, .NyaP, .NyaP > div#video_frame, .NyaP > div#video_frame > video#main_video, .NyaP > div#video_frame > div#danmaku_container, .NyaP_Mini { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
-.NyaP_full_width, .NyaP > div#control, .NyaP > div#control > canvas#process { position: absolute; left: 0; width: 100%; }
-
 .NyaP a { text-decoration: none; }
 
-.NyaP > div#control { bottom: 0; height: auto; }
+.NyaP .active_icon path { fill: #5f3c2c; }
 
-.NyaP > div#control > canvas#process { cursor: pointer; height: 4px; top: -3px; }
+.NyaP svg[id^='NyaP_icon'] > path { transition: fill 0.2s; }
+
+.NyaP > div#video_frame > video#main_video { background-color: #000; }
+
+.NyaP > div#control { position: absolute; left: 0; width: 100%; bottom: 0; height: auto; background-color: #edeeef; font-size: 0; }
+
+.NyaP > div#control path { stroke: #5f3c2c; fill: transparent; }
+
+.NyaP > div#control span[id^="control_"] { display: block; height: 100%; }
+
+.NyaP > div#control span[id^="control_"] > div { cursor: pointer; }
+
+.NyaP > div#control > span > span { display: inline-block; }
+
+.NyaP > div#control #control_left { float: left; }
+
+.NyaP > div#control #control_left *:last-child { margin-right: 2px; }
+
+.NyaP > div#control #control_right { float: right; }
+
+.NyaP > div#control #control_right *:first-child { margin: 0 2px 0 2px; }
+
+.NyaP > div#control #control_center { position: absolute; }
+
+.NyaP > div#control #control_center canvas#progress { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer; background-color: #6cf; }
+
+.NyaP > div#control #control_center #danmaku_input_frame { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #cc4; }
 
 .NyaP_Mini a { text-decoration: none; }
 

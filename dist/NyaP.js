@@ -12,11 +12,12 @@ Copyright luojia@luojia.me
 LGPL license
 */
 
-function Object2HTML(obj) {
+function Object2HTML(obj, func) {
 	var ele = void 0,
 	    o = void 0,
 	    e = void 0;
-	if ('_' in obj === false) return;
+	if (typeof obj === 'string') return document.createTextNode(obj); //text node
+	if ('_' in obj === false) return; //if it dont have a _ prop to specify a tag
 	if (typeof obj._ !== 'string' || obj._ == '') return;
 	ele = document.createElement(obj._);
 	//attributes
@@ -47,7 +48,7 @@ function Object2HTML(obj) {
 			for (var _iterator = obj.child[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 				o = _step.value;
 
-				e = o instanceof HTMLElement ? o : Object2HTML(o);
+				e = o instanceof HTMLElement ? o : Object2HTML(o, func);
 				e instanceof HTMLElement && ele.appendChild(e);
 			}
 		} catch (err) {
@@ -65,23 +66,460 @@ function Object2HTML(obj) {
 			}
 		}
 	}
+	func && func(ele);
 	return ele;
 }
 
 exports.Object2HTML = Object2HTML;
 
 },{}],2:[function(require,module,exports){
-/*
-MIT LICENSE
-Copyright (c) 2016 iTisso
-https://github.com/iTisso/CanvasObjLibrary
-varsion:2.0
-*/
+"use strict";
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+/**
+ * Copyright Marc J. Schmidt. See the LICENSE file at the top-level
+ * directory of this distribution and at
+ * https://github.com/marcj/css-element-queries/blob/master/LICENSE.
+ */
+;
+(function (root, factory) {
+    if (typeof define === "function" && define.amd) {
+        define(factory);
+    } else if ((typeof exports === "undefined" ? "undefined" : _typeof(exports)) === "object") {
+        module.exports = factory();
+    } else {
+        root.ResizeSensor = factory();
+    }
+})(undefined, function () {
+
+    // Make sure it does not throw in a SSR (Server Side Rendering) situation
+    if (typeof window === "undefined") {
+        return null;
+    }
+    // Only used for the dirty checking, so the event callback count is limited to max 1 call per fps per sensor.
+    // In combination with the event based resize sensor this saves cpu time, because the sensor is too fast and
+    // would generate too many unnecessary events.
+    var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || function (fn) {
+        return window.setTimeout(fn, 20);
+    };
+
+    /**
+     * Iterate over each of the provided element(s).
+     *
+     * @param {HTMLElement|HTMLElement[]} elements
+     * @param {Function}                  callback
+     */
+    function forEachElement(elements, callback) {
+        var elementsType = Object.prototype.toString.call(elements);
+        var isCollectionTyped = '[object Array]' === elementsType || '[object NodeList]' === elementsType || '[object HTMLCollection]' === elementsType || '[object Object]' === elementsType || 'undefined' !== typeof jQuery && elements instanceof jQuery //jquery
+        || 'undefined' !== typeof Elements && elements instanceof Elements //mootools
+        ;
+        var i = 0,
+            j = elements.length;
+        if (isCollectionTyped) {
+            for (; i < j; i++) {
+                callback(elements[i]);
+            }
+        } else {
+            callback(elements);
+        }
+    }
+
+    /**
+     * Class for dimension change detection.
+     *
+     * @param {Element|Element[]|Elements|jQuery} element
+     * @param {Function} callback
+     *
+     * @constructor
+     */
+    var ResizeSensor = function ResizeSensor(element, callback) {
+        /**
+         *
+         * @constructor
+         */
+        function EventQueue() {
+            var q = [];
+            this.add = function (ev) {
+                q.push(ev);
+            };
+
+            var i, j;
+            this.call = function () {
+                for (i = 0, j = q.length; i < j; i++) {
+                    q[i].call();
+                }
+            };
+
+            this.remove = function (ev) {
+                var newQueue = [];
+                for (i = 0, j = q.length; i < j; i++) {
+                    if (q[i] !== ev) newQueue.push(q[i]);
+                }
+                q = newQueue;
+            };
+
+            this.length = function () {
+                return q.length;
+            };
+        }
+
+        /**
+         * @param {HTMLElement} element
+         * @param {String}      prop
+         * @returns {String|Number}
+         */
+        function getComputedStyle(element, prop) {
+            if (element.currentStyle) {
+                return element.currentStyle[prop];
+            }
+            if (window.getComputedStyle) {
+                return window.getComputedStyle(element, null).getPropertyValue(prop);
+            }
+
+            return element.style[prop];
+        }
+
+        /**
+         *
+         * @param {HTMLElement} element
+         * @param {Function}    resized
+         */
+        function attachResizeEvent(element, resized) {
+            if (element.resizedAttached) {
+                element.resizedAttached.add(resized);
+                return;
+            }
+
+            element.resizedAttached = new EventQueue();
+            element.resizedAttached.add(resized);
+
+            element.resizeSensor = document.createElement('div');
+            element.resizeSensor.className = 'resize-sensor';
+            var style = 'position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: hidden; z-index: -1; visibility: hidden;';
+            var styleChild = 'position: absolute; left: 0; top: 0; transition: 0s;';
+
+            element.resizeSensor.style.cssText = style;
+            element.resizeSensor.innerHTML = '<div class="resize-sensor-expand" style="' + style + '">' + '<div style="' + styleChild + '"></div>' + '</div>' + '<div class="resize-sensor-shrink" style="' + style + '">' + '<div style="' + styleChild + ' width: 200%; height: 200%"></div>' + '</div>';
+            element.appendChild(element.resizeSensor);
+
+            if (getComputedStyle(element, 'position') == 'static') {
+                element.style.position = 'relative';
+            }
+
+            var expand = element.resizeSensor.childNodes[0];
+            var expandChild = expand.childNodes[0];
+            var shrink = element.resizeSensor.childNodes[1];
+            var dirty, rafId, newWidth, newHeight;
+            var lastWidth = element.offsetWidth;
+            var lastHeight = element.offsetHeight;
+
+            var reset = function reset() {
+                expandChild.style.width = '100000px';
+                expandChild.style.height = '100000px';
+
+                expand.scrollLeft = 100000;
+                expand.scrollTop = 100000;
+
+                shrink.scrollLeft = 100000;
+                shrink.scrollTop = 100000;
+            };
+
+            reset();
+
+            var onResized = function onResized() {
+                rafId = 0;
+
+                if (!dirty) return;
+
+                lastWidth = newWidth;
+                lastHeight = newHeight;
+
+                if (element.resizedAttached) {
+                    element.resizedAttached.call();
+                }
+            };
+
+            var onScroll = function onScroll() {
+                newWidth = element.offsetWidth;
+                newHeight = element.offsetHeight;
+                dirty = newWidth != lastWidth || newHeight != lastHeight;
+
+                if (dirty && !rafId) {
+                    rafId = requestAnimationFrame(onResized);
+                }
+
+                reset();
+            };
+
+            var addEvent = function addEvent(el, name, cb) {
+                if (el.attachEvent) {
+                    el.attachEvent('on' + name, cb);
+                } else {
+                    el.addEventListener(name, cb);
+                }
+            };
+
+            addEvent(expand, 'scroll', onScroll);
+            addEvent(shrink, 'scroll', onScroll);
+        }
+
+        forEachElement(element, function (elem) {
+            attachResizeEvent(elem, callback);
+        });
+
+        this.detach = function (ev) {
+            ResizeSensor.detach(element, ev);
+        };
+    };
+
+    ResizeSensor.detach = function (element, ev) {
+        forEachElement(element, function (elem) {
+            if (elem.resizedAttached && typeof ev == "function") {
+                elem.resizedAttached.remove(ev);
+                if (elem.resizedAttached.length()) return;
+            }
+            if (elem.resizeSensor) {
+                if (elem.contains(elem.resizeSensor)) {
+                    elem.removeChild(elem.resizeSensor);
+                }
+                delete elem.resizeSensor;
+                delete elem.resizedAttached;
+            }
+        });
+    };
+
+    return ResizeSensor;
+});
+
+},{}],3:[function(require,module,exports){
 'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.DanmakuFrameModule = exports.DanmakuFrame = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /*
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     Copyright luojia@luojia.me
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     LGPL license
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     */
+
+
+var _ResizeSensor = require('../lib/ResizeSensor.js');
+
+var _ResizeSensor2 = _interopRequireDefault(_ResizeSensor);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+'use strict';
+
+var DanmakuFrame = function () {
+	function DanmakuFrame(container) {
+		var _this = this;
+
+		_classCallCheck(this, DanmakuFrame);
+
+		this.container = container || document.createElement('div');
+		this.container.id = 'danmaku_container';
+		this.rate = 1;
+		this.timeBase = 0;
+		this.media = null;
+		this.fps = 30;
+		this.working = false;
+		this.modules = {}; //constructed module list
+		var _iteratorNormalCompletion = true;
+		var _didIteratorError = false;
+		var _iteratorError = undefined;
+
+		try {
+			for (var _iterator = DanmakuFrame.moduleList[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+				var m = _step.value;
+				//init all modules
+				this.initModule(m[0]);
+			}
+		} catch (err) {
+			_didIteratorError = true;
+			_iteratorError = err;
+		} finally {
+			try {
+				if (!_iteratorNormalCompletion && _iterator.return) {
+					_iterator.return();
+				}
+			} finally {
+				if (_didIteratorError) {
+					throw _iteratorError;
+				}
+			}
+		}
+
+		setTimeout(function () {
+			//container size sensor
+			_this.container.ResizeSensor = new _ResizeSensor2.default(_this.container, function () {
+				_this.resize();
+			});
+		}, 0);
+	}
+
+	_createClass(DanmakuFrame, [{
+		key: 'enable',
+		value: function enable(name) {
+			var module = this.modules[name];
+			if (!module) return this.initModule(name);
+			module.enabled = true;
+			module.enable && module.enable();
+			return true;
+		}
+	}, {
+		key: 'disable',
+		value: function disable(name) {
+			var module = this.modules[name];
+			if (!module) return false;
+			module.enabled = false;
+			module.disable && module.disable();
+			return true;
+		}
+	}, {
+		key: 'initModule',
+		value: function initModule(name) {
+			var mod = DanmakuFrame.moduleList.get(name);
+			if (!mod) throw 'Module [' + name + '] does not exist.';
+			var module = new mod(this);
+			if (module instanceof DanmakuFrameModule === false) throw 'Constructor of ' + name + ' is not extended from DanmakuFrameModule';
+			module.enabled = true;
+			this.modules[name] = module;
+			return true;
+		}
+	}, {
+		key: 'load',
+		value: function load(danmakuObj) {
+			this.moduleFunction('load');
+		}
+	}, {
+		key: 'loadList',
+		value: function loadList(danmakuArray) {
+			this.moduleFunction('loadList', danmakuArray);
+		}
+	}, {
+		key: 'unload',
+		value: function unload(danmakuObj) {
+			this.moduleFunction('unload', danmakuObj);
+		}
+	}, {
+		key: 'start',
+		value: function start() {
+			this.working = true;
+			this.moduleFunction('start');
+			this.draw();
+		}
+	}, {
+		key: 'pause',
+		value: function pause() {
+			this.working = false;
+			this.moduleFunction('pause');
+		}
+	}, {
+		key: 'stop',
+		value: function stop() {
+			this.working = false;
+			this.moduleFunction('stop');
+		}
+	}, {
+		key: 'resize',
+		value: function resize() {
+			this.moduleFunction('resize');
+		}
+	}, {
+		key: 'moduleFunction',
+		value: function moduleFunction(name) {
+			for (var _len = arguments.length, arg = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+				arg[_key - 1] = arguments[_key];
+			}
+
+			for (var m in this.modules) {
+				var _modules$m;
+
+				this.modules[m][name] && (_modules$m = this.modules[m])[name].apply(_modules$m, arg);
+			}
+		}
+	}, {
+		key: 'draw',
+		value: function draw() {
+			var _this2 = this;
+
+			if (this.working === false) return;
+			if (this.fps === 0) {
+				requestAnimationFrame(function () {
+					_this2.draw();
+				});
+			} else {
+				setTimeout(function () {
+					_this2.draw();
+				}, 1000 / this.fps);
+			}
+			this.moduleFunction('draw');
+		}
+	}, {
+		key: 'setMedia',
+		value: function setMedia(media) {
+			this.media = media;
+		}
+	}, {
+		key: 'time',
+		set: function set(t) {
+			//current media time (ms)
+			this.media || (this.timeBase = Date.now() - t);
+			this.moduleFunction('time', t); //let all mods know when the time be set
+		},
+		get: function get() {
+			return this.media ? this.media.currentTime * 1000000 : Date.now() - this.timeBase;
+		}
+	}], [{
+		key: 'addModule',
+		value: function addModule(name, module) {
+			if (this.moduleList.has(name)) {
+				console.warn('The module "' + name + '" has already been added.');
+				return;
+			}
+			this.moduleList.set(name, module);
+		}
+	}]);
+
+	return DanmakuFrame;
+}();
+
+DanmakuFrame.moduleList = new Map();
+
+var DanmakuFrameModule = function DanmakuFrameModule(frame) {
+	_classCallCheck(this, DanmakuFrameModule);
+
+	this.frame = frame;
+	this.enabled = false;
+}
+/*enable(){}
+disable(){}
+load(){}
+frame(){}
+time(){}
+start(){}
+pause(){}
+stop(){}*/
+;
+
+exports.DanmakuFrame = DanmakuFrame;
+exports.DanmakuFrameModule = DanmakuFrameModule;
+
+},{"../lib/ResizeSensor.js":2}],4:[function(require,module,exports){
+"use strict";
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
@@ -89,8 +527,26 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-(function () {
+/*
+MIT LICENSE
+Copyright (c) 2016 iTisso
+https://github.com/iTisso/CanvasObjLibrary
+varsion:2.0
+*/
+
+(function (root, factory) {
+	if (typeof define === "function" && define.amd) {
+		define(factory);
+	} else if ((typeof exports === "undefined" ? "undefined" : _typeof(exports)) === "object") {
+		module.exports = factory();
+	} else {
+		root.CanvasObjLibrary = factory();
+	}
+})(undefined, function () {
+	'use strict';
+
 	//class:CanvasObjLibrary
+
 	var CanvasObjLibrary = function () {
 		function CanvasObjLibrary(canvas) {
 			var _this = this;
@@ -111,7 +567,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 						fontWeight: null,
 						fontVariant: null,
 						color: "#000",
-						lineHeight: 18,
+						lineHeight: null,
 						fontSize: 14,
 						fontFamily: "Arial",
 						strokeWidth: 0,
@@ -277,12 +733,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 		}
 
 		_createClass(CanvasObjLibrary, [{
-			key: 'generateGraphID',
+			key: "generateGraphID",
 			value: function generateGraphID() {
 				return ++this.tmp.graphID;
 			}
 		}, {
-			key: 'adjustCanvas',
+			key: "adjustCanvas",
 			value: function adjustCanvas() {
 				var width = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.canvas.offsetWidth;
 				var height = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : this.canvas.offsetHeight;
@@ -293,7 +749,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 				this.root.emit(ce);
 			}
 		}, {
-			key: '_commonEventHandle',
+			key: "_commonEventHandle",
 			value: function _commonEventHandle(e) {
 				if (e instanceof MouseEvent) {
 					this.stat.previousX = this.stat.mouse.x;
@@ -316,12 +772,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 				}
 			}
 		}, {
-			key: 'clear',
+			key: "clear",
 			value: function clear() {
 				this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 			}
 		}, {
-			key: 'draw',
+			key: "draw",
 			value: function draw() {
 				this.debug.count = 0;
 				this.autoClear && this.clear();
@@ -335,7 +791,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
    */
 
 		}, {
-			key: 'traverseGraphTree',
+			key: "traverseGraphTree",
 			value: function traverseGraphTree() {
 				var mode = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
 
@@ -359,7 +815,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 				this.tmp.onOverGraph = null;
 			}
 		}, {
-			key: 'drawDebug',
+			key: "drawDebug",
 			value: function drawDebug() {
 				var ct = this.context,
 				    d = this.debug,
@@ -390,7 +846,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 				ct.restore();
 			}
 		}, {
-			key: 'drawGraph',
+			key: "drawGraph",
 			value: function drawGraph(g) {
 				var mode = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
 
@@ -550,32 +1006,32 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 				}
 
 				_createClass(GraphEvent, [{
-					key: 'stopPropagation',
+					key: "stopPropagation",
 					value: function stopPropagation() {
 						this.propagation = false;
 					}
 				}, {
-					key: 'stopImmediatePropagation',
+					key: "stopImmediatePropagation",
 					value: function stopImmediatePropagation() {
 						this.stoped = true;
 					}
 				}, {
-					key: 'altKey',
+					key: "altKey",
 					get: function get() {
 						return this.originEvent.altKey;
 					}
 				}, {
-					key: 'ctrlKey',
+					key: "ctrlKey",
 					get: function get() {
 						return this.originEvent.ctrlKey;
 					}
 				}, {
-					key: 'metaKey',
+					key: "metaKey",
 					get: function get() {
 						return this.originEvent.metaKey;
 					}
 				}, {
-					key: 'shiftKey',
+					key: "shiftKey",
 					get: function get() {
 						return this.originEvent.shiftKey;
 					}
@@ -595,22 +1051,22 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 				}
 
 				_createClass(MouseEvent, [{
-					key: 'button',
+					key: "button",
 					get: function get() {
 						return this.originEvent.button;
 					}
 				}, {
-					key: 'buttons',
+					key: "buttons",
 					get: function get() {
 						return this.originEvent.buttons;
 					}
 				}, {
-					key: 'movementX',
+					key: "movementX",
 					get: function get() {
 						return host.stat.mouse.x - host.stat.previousX;
 					}
 				}, {
-					key: 'movementY',
+					key: "movementY",
 					get: function get() {
 						return host.stat.mouse.y - host.stat.previousY;
 					}
@@ -630,22 +1086,22 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 				}
 
 				_createClass(WheelEvent, [{
-					key: 'deltaX',
+					key: "deltaX",
 					get: function get() {
 						return this.originEvent.deltaX;
 					}
 				}, {
-					key: 'deltaY',
+					key: "deltaY",
 					get: function get() {
 						return this.originEvent.deltaY;
 					}
 				}, {
-					key: 'deltaZ',
+					key: "deltaZ",
 					get: function get() {
 						return this.originEvent.deltaZ;
 					}
 				}, {
-					key: 'deltaMode',
+					key: "deltaMode",
 					get: function get() {
 						return this.originEvent.deltaMode;
 					}
@@ -665,32 +1121,32 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 				}
 
 				_createClass(KeyboardEvent, [{
-					key: 'key',
+					key: "key",
 					get: function get() {
 						return this.originEvent.key;
 					}
 				}, {
-					key: 'code',
+					key: "code",
 					get: function get() {
 						return this.originEvent.code;
 					}
 				}, {
-					key: 'repeat',
+					key: "repeat",
 					get: function get() {
 						return this.originEvent.repeat;
 					}
 				}, {
-					key: 'keyCode',
+					key: "keyCode",
 					get: function get() {
 						return this.originEvent.keyCode;
 					}
 				}, {
-					key: 'charCode',
+					key: "charCode",
 					get: function get() {
 						return this.originEvent.charCode;
 					}
 				}, {
-					key: 'location',
+					key: "location",
 					get: function get() {
 						return this.originEvent.location;
 					}
@@ -709,14 +1165,14 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 				}
 
 				_createClass(GraphEventEmitter, [{
-					key: 'emit',
+					key: "emit",
 					value: function emit(e) {
 						if (e instanceof host.class.Event === false) return;
 						e.target = this;
 						this._resolve(e);
 					}
 				}, {
-					key: '_resolve',
+					key: "_resolve",
 					value: function _resolve(e) {
 						if (e.type in this._events) {
 							var hs = this._events[e.type];
@@ -753,14 +1209,14 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 						if (e.propagation === true && this.parentNode) this.parentNode._resolve(e);
 					}
 				}, {
-					key: 'on',
+					key: "on",
 					value: function on(name, handle) {
 						if (!(handle instanceof Function)) return;
 						if (!(name in this._events)) this._events[name] = [];
 						this._events[name].push(handle);
 					}
 				}, {
-					key: 'removeEvent',
+					key: "removeEvent",
 					value: function removeEvent(name, handle) {
 						if (!(name in this._events)) return;
 						if (arguments.length === 1) {
@@ -786,7 +1242,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 				}
 
 				_createClass(GraphStyle, [{
-					key: 'inhertGraph',
+					key: "inhertGraph",
 					value: function inhertGraph(graph) {
 						//inhert a graph's style
 						if (!(graph instanceof host.class.Graph)) throw new TypeError('graph is not a Graph instance');
@@ -794,14 +1250,14 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 						return true;
 					}
 				}, {
-					key: 'inhertStyle',
+					key: "inhertStyle",
 					value: function inhertStyle(style) {
 						if (!(style instanceof host.class.GraphStyle)) throw new TypeError('graph is not a Graph instance');
 						this.__proto__ = style;
 						return true;
 					}
 				}, {
-					key: 'inhert',
+					key: "inhert",
 					value: function inhert(from) {
 						if (from instanceof host.class.Graph) {
 							this.inhertGraph(from);
@@ -813,12 +1269,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 						return false;
 					}
 				}, {
-					key: 'cancelInhert',
+					key: "cancelInhert",
 					value: function cancelInhert() {
 						this.__proto__ = Object.prototype;
 					}
 				}, {
-					key: 'getPoint',
+					key: "getPoint",
 					value: function getPoint(name) {
 						switch (name) {
 							case 'center':
@@ -829,13 +1285,13 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 						return [0, 0];
 					}
 				}, {
-					key: 'position',
+					key: "position",
 					value: function position(x, y) {
 						this.x = x;
 						this.y = y;
 					}
 				}, {
-					key: 'zoom',
+					key: "zoom",
 					value: function zoom(x, y) {
 						if (arguments.length == 1) {
 							this.zoomX = this.zoomY = x;
@@ -845,13 +1301,13 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 						}
 					}
 				}, {
-					key: 'size',
+					key: "size",
 					value: function size(w, h) {
 						this.width = w;
 						this.height = h;
 					}
 				}, {
-					key: 'setRotatePoint',
+					key: "setRotatePoint",
 					value: function setRotatePoint(x, y) {
 						if (arguments.length == 2) {
 							this.rotatePointX = x;
@@ -866,7 +1322,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 						}
 					}
 				}, {
-					key: 'setPositionPoint',
+					key: "setPositionPoint",
 					value: function setPositionPoint(x, y) {
 						if (arguments.length == 2) {
 							this.positionPointX = x;
@@ -881,7 +1337,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 						}
 					}
 				}, {
-					key: 'setZoomPoint',
+					key: "setZoomPoint",
 					value: function setZoomPoint(x, y) {
 						if (arguments.length == 2) {
 							this.zoomPointX = x;
@@ -896,7 +1352,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 						}
 					}
 				}, {
-					key: 'setSkewPoint',
+					key: "setSkewPoint",
 					value: function setSkewPoint(x, y) {
 						if (arguments.length == 2) {
 							this.skewPointX = x;
@@ -937,7 +1393,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 				}
 
 				_createClass(Graph, [{
-					key: 'createShadow',
+					key: "createShadow",
 					value: function createShadow() {
 						var shadow = Object.create(this);
 						shadow.GID = this.host.generateGraphID();
@@ -951,7 +1407,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 					//add a graph to childNodes' end
 
 				}, {
-					key: 'appendChild',
+					key: "appendChild",
 					value: function appendChild(graph) {
 						if (!(graph instanceof host.class.Graph)) throw new TypeError('graph is not a Graph instance');
 						if (graph === this) throw new Error('can not add myself as a child');
@@ -968,7 +1424,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 					//insert this graph after the graph
 
 				}, {
-					key: 'insertAfter',
+					key: "insertAfter",
 					value: function insertAfter(graph) {
 						if (!(graph instanceof host.class.Graph)) throw new TypeError('graph is not a Graph instance');
 						if (graph === this) throw new Error('can not add myself as a child');
@@ -991,7 +1447,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 					//insert this graph before the graph
 
 				}, {
-					key: 'insertBefore',
+					key: "insertBefore",
 					value: function insertBefore(graph) {
 						if (!(graph instanceof host.class.Graph)) throw new TypeError('graph is not a Graph instance');
 						if (graph === this) throw new Error('can not add myself as a child');
@@ -1012,14 +1468,14 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 						p.childNodes.splice(io < it ? it - 1 : it, 0, this);
 					}
 				}, {
-					key: 'findChild',
+					key: "findChild",
 					value: function findChild(graph) {
 						for (var i = this.childNodes.length; i--;) {
 							if (this.childNodes[i] === graph) return i;
 						}return -1;
 					}
 				}, {
-					key: 'removeChild',
+					key: "removeChild",
 					value: function removeChild(graph) {
 						var i = this.findChild(graph);
 						if (i < 0) return;
@@ -1029,7 +1485,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 						});
 					}
 				}, {
-					key: 'checkIfOnOver',
+					key: "checkIfOnOver",
 					value: function checkIfOnOver() {
 						var runHitRange = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
 						var mode = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
@@ -1052,7 +1508,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 						return false;
 					}
 				}, {
-					key: 'delete',
+					key: "delete",
 					value: function _delete() {
 						//remove it from the related objects
 						if (this.parentNode) this.parentNode.removeChild(this);
@@ -1081,13 +1537,13 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 				}
 
 				_createClass(FunctionGraph, [{
-					key: 'drawer',
+					key: "drawer",
 					value: function drawer(ct) {
 						//onover point check
 						this.checkIfOnOver(true);
 					}
 				}, {
-					key: 'hitRange',
+					key: "hitRange",
 					value: function hitRange(ct) {
 						ct.beginPath();
 						ct.rect(0, 0, this.style.width, this.style.height);
@@ -1112,7 +1568,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 				}
 
 				_createClass(ImageGraph, [{
-					key: 'use',
+					key: "use",
 					value: function use(image) {
 						var _this9 = this;
 
@@ -1134,13 +1590,13 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 						throw new TypeError('Wrong image type');
 					}
 				}, {
-					key: 'resetStyleSize',
+					key: "resetStyleSize",
 					value: function resetStyleSize() {
 						this.style.width = this.width;
 						this.style.height = this.height;
 					}
 				}, {
-					key: 'drawer',
+					key: "drawer",
 					value: function drawer(ct) {
 						//onover point check
 						//ct.beginPath();
@@ -1148,20 +1604,20 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 						this.checkIfOnOver(true);
 					}
 				}, {
-					key: 'hitRange',
+					key: "hitRange",
 					value: function hitRange(ct) {
 						ct.beginPath();
 						ct.rect(0, 0, this.style.width, this.style.height);
 					}
 				}, {
-					key: 'width',
+					key: "width",
 					get: function get() {
 						if (this.image instanceof Image) return this.image.naturalWidth;
 						if (this.image instanceof HTMLCanvasElement) return this.image.width;
 						return 0;
 					}
 				}, {
-					key: 'height',
+					key: "height",
 					get: function get() {
 						if (this.image instanceof Image) return this.image.naturalHeight;
 						if (this.image instanceof HTMLCanvasElement) return this.image.height;
@@ -1188,18 +1644,18 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 				}
 
 				_createClass(CanvasGraph, [{
-					key: 'draw',
+					key: "draw",
 					value: function draw(func) {
 						if (this.autoClear) this.context.clearRect(0, 0, this.width, this.height);
 						func(this.context);
 					}
 				}, {
-					key: 'width',
+					key: "width",
 					set: function set(w) {
 						this.image.width = w;
 					}
 				}, {
-					key: 'height',
+					key: "height",
 					set: function set(h) {
 						this.image.height = h;
 					}
@@ -1232,7 +1688,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 				}
 
 				_createClass(TextGraph, [{
-					key: 'prepare',
+					key: "prepare",
 					value: function prepare() {
 						//prepare text details
 						if (!this._cache && !this.realtimeRender) {
@@ -1240,10 +1696,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 						}
 						var font = "";
 						this.font.fontStyle && (font = this.font.fontStyle);
-						this.font.fontVariant && (font = font + ' ' + this.font.fontVariant);
-						this.font.fontWeight && (font = font + ' ' + this.font.fontWeight);
-						font = font + ' ' + this.font.fontSize + 'px';
-						this.font.fontFamily && (font = font + ' ' + this.font.fontFamily);
+						this.font.fontVariant && (font = font + " " + this.font.fontVariant);
+						this.font.fontWeight && (font = font + " " + this.font.fontWeight);
+						font = font + " " + this.font.fontSize + "px";
+						this.font.fontFamily && (font = font + " " + this.font.fontFamily);
 						this._fontString = font;
 
 						if (this.realtimeRender) return;
@@ -1271,7 +1727,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 						this.render(ct);
 					}
 				}, {
-					key: 'render',
+					key: "render",
 					value: function render(ct) {
 						//render text
 						if (!this._renderList) return;
@@ -1289,7 +1745,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 						}
 					}
 				}, {
-					key: 'drawer',
+					key: "drawer",
 					value: function drawer(ct) {
 						//ct.beginPath();
 						if (this.realtimeRender) {
@@ -1307,7 +1763,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 						}
 					}
 				}, {
-					key: 'hitRange',
+					key: "hitRange",
 					value: function hitRange(ct) {
 						ct.beginPath();
 						ct.rect(0, 0, this.style.width, this.style.height);
@@ -1335,8 +1791,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 		r[4] = m1[3] * m2[1] + m1[4] * m2[4];
 		r[5] = m1[3] * m2[2] + m1[4] * m2[5] + m1[5];
 	}
-
-	window.CanvasObjLibrary = CanvasObjLibrary;
 
 	//code from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
 	if (typeof Object.assign != 'function') Object.assign = function (target) {
@@ -1409,211 +1863,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 			clearTimeout(id);
 		};
 	})();
-})();
 
-},{}],3:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
+	return CanvasObjLibrary;
 });
-exports.DanmakuFrameModule = exports.DanmakuFrame = undefined;
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /*
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     Copyright luojia@luojia.me
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     LGPL license
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     */
-
-
-require('../lib/COL/CanvasObjLibrary.js');
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-'use strict';
-
-var DanmakuFrame = function () {
-	function DanmakuFrame(canvas) {
-		_classCallCheck(this, DanmakuFrame);
-
-		if (canvas && canvas instanceof HTMLCanvasElement === false) throw 'The first arg should be a canvas or empty';
-		this.canvas = canvas || document.createElement('canvas'); //the canvas
-		this.context2d = this.canvas.getContext('2d'); //the canvas context
-		this.COL = new CanvasObjLibrary(this.canvas); //the library
-
-		this.rate = 1;
-		this.timeBase = 0;
-		this.media = null;
-		this.fps = 30;
-		this.working = false;
-		this.modules = {}; //constructed module list
-		var _iteratorNormalCompletion = true;
-		var _didIteratorError = false;
-		var _iteratorError = undefined;
-
-		try {
-			for (var _iterator = DanmakuFrame.moduleList[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-				var m = _step.value;
-				//init all modules
-				this.initModule(m[0]);
-			}
-		} catch (err) {
-			_didIteratorError = true;
-			_iteratorError = err;
-		} finally {
-			try {
-				if (!_iteratorNormalCompletion && _iterator.return) {
-					_iterator.return();
-				}
-			} finally {
-				if (_didIteratorError) {
-					throw _iteratorError;
-				}
-			}
-		}
-	}
-
-	_createClass(DanmakuFrame, [{
-		key: 'enable',
-		value: function enable(name) {
-			var module = this.modules[name];
-			if (!module) return this.initModule(name);
-			module.enabled = true;
-			module.enable && module.enable();
-			return true;
-		}
-	}, {
-		key: 'disable',
-		value: function disable(name) {
-			var module = this.modules[name];
-			if (!module) return false;
-			module.enabled = false;
-			module.disable && module.disable();
-			return true;
-		}
-	}, {
-		key: 'initModule',
-		value: function initModule(name) {
-			var mod = DanmakuFrame.moduleList.get(name);
-			if (!mod) throw 'Module [' + name + '] does not exist.';
-			var module = new mod(this);
-			if (module instanceof DanmakuFrameModule === false) throw 'Constructor of ' + name + ' is not extended from DanmakuFrameModule';
-			module.enabled = true;
-			this.modules[name] = module;
-			return true;
-		}
-	}, {
-		key: 'load',
-		value: function load(danmakuObj) {
-			for (var m in this.modules) {
-				this.modules[m].load && this.modules[m].load(danmakuObj);
-			}
-		}
-	}, {
-		key: 'loadList',
-		value: function loadList(danmakuArray) {
-			for (var m in this.modules) {
-				this.modules[m].loadList && this.modules[m].loadList(danmakuObj);
-			}
-		}
-	}, {
-		key: 'unload',
-		value: function unload(danmakuObj) {
-			for (var m in this.modules) {
-				this.modules[m].unload && this.modules[m].unload(danmakuObj);
-			}
-		}
-	}, {
-		key: 'start',
-		value: function start() {
-			this.working = true;
-			for (var m in this.modules) {
-				this.modules[m].start && this.modules[m].start();
-			}this.draw();
-		}
-	}, {
-		key: 'pause',
-		value: function pause() {
-			this.working = false;
-			for (var m in this.modules) {
-				this.modules[m].pause && this.modules[m].pause();
-			}
-		}
-	}, {
-		key: 'stop',
-		value: function stop() {
-			this.working = false;
-			for (var m in this.modules) {
-				this.modules[m].stop && this.modules[m].stop();
-			}this.COL.clear(); //clear the canvas
-		}
-	}, {
-		key: 'draw',
-		value: function draw() {
-			var _this = this;
-
-			if (this.working === false) return;
-			if (this.fps === 0) {
-				requestAnimationFrame(function () {
-					_this.draw();
-				});
-			} else {
-				setTimeout(function () {
-					_this.draw();
-				}, 1000 / this.fps);
-			}
-			for (var m in this.modules) {
-				this.modules[m].draw && this.modules[m].draw();
-			}this.COL.draw();
-		}
-	}, {
-		key: 'time',
-		set: function set(t) {
-			//current media time (ms)
-			this.media || (this.timeBase = Date.now() - t);
-			for (var m in this.modules) {
-				//let all mods know when the time be set
-				this.modules[m].time && this.modules[m].time(t);
-			}
-		},
-		get: function get() {
-			return this.media ? this.media.currentTime * 1000000 : Date.now() - this.timeBase;
-		}
-	}], [{
-		key: 'addModule',
-		value: function addModule(name, module) {
-			if (this.moduleList.has(name)) {
-				console.warn('The module "' + name + '" has already been added.');
-				return;
-			}
-			this.moduleList.set(name, module);
-		}
-	}]);
-
-	return DanmakuFrame;
-}();
-
-DanmakuFrame.moduleList = new Map();
-
-var DanmakuFrameModule = function DanmakuFrameModule(frame) {
-	_classCallCheck(this, DanmakuFrameModule);
-
-	this.frame = frame;
-	this.enabled = false;
-}
-/*enable(){}
-disable(){}
-load(){}
-frame(){}
-time(){}
-start(){}
-pause(){}
-stop(){}*/
-;
-
-exports.DanmakuFrame = DanmakuFrame;
-exports.DanmakuFrameModule = DanmakuFrameModule;
-
-},{"../lib/COL/CanvasObjLibrary.js":2}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 /*
 Copyright luojia@luojia.me
 LGPL license
@@ -1621,15 +1875,18 @@ LGPL license
 danmaku-frame text2d mod
 */
 'use strict';
-/*
-danmaku position is based on time
-*/
 
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _CanvasObjLibrary = require('../lib/COL/CanvasObjLibrary.js');
+
+var _CanvasObjLibrary2 = _interopRequireDefault(_CanvasObjLibrary);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -1669,11 +1926,19 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				speed: 5,
 				opacity: 1
 			};
+
+			_this.canvas = document.createElement('canvas'); //the canvas
+			_this.canvas.style = 'position:absolute;width:100%;height:100%;top:0;left:0;';
+			_this.context2d = _this.canvas.getContext('2d'); //the canvas context
+			_this.COL = new _CanvasObjLibrary2.default(_this.canvas); //the library
+			_this.COL.autoClear = false;
+			frame.container.appendChild(_this.canvas);
 			_this.COL_GraphCache = []; //COL text graph cache
-			_this.layer = new _this.frame.COL.class.FunctionGraph(); //text layer
-			_this.frame.COL.root.appendChild(_this.layer);
+			_this.layer = new _this.COL.class.FunctionGraph(); //text layer
+			_this.COL.root.appendChild(_this.layer);
 			_this.cacheCleanTime = 0;
 			_this.danmakuMoveTime = 0;
+			//this._clearRange=[0,0];
 			_this.options = {
 				allowLines: false, //allow multi-line danmaku
 				screenLimit: 0, //the most number of danmaku on the screen
@@ -1682,18 +1947,23 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		}
 
 		_createClass(Text2D, [{
-			key: "start",
+			key: 'start',
 			value: function start() {
 				this.paused = false;
 				this.resetTimeOfDanmakuOnScreen();
 			}
 		}, {
-			key: "pause",
+			key: 'pause',
 			value: function pause() {
 				this.paused = true;
 			}
 		}, {
-			key: "load",
+			key: 'stop',
+			value: function stop() {
+				this.COL.clear(); //clear the canvas
+			}
+		}, {
+			key: 'load',
 			value: function load(d) {
 				if (!d || d._ !== 'text') {
 					return false;
@@ -1704,7 +1974,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				return true;
 			}
 		}, {
-			key: "loadList",
+			key: 'loadList',
 			value: function loadList(danmakuArray) {
 				var _iteratorNormalCompletion = true;
 				var _didIteratorError = false;
@@ -1732,7 +2002,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				}
 			}
 		}, {
-			key: "unload",
+			key: 'unload',
 			value: function unload(d) {
 				if (!d || d._ !== 'text') return false;
 				var i = this.list.indexOf(d);
@@ -1742,7 +2012,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				return true;
 			}
 		}, {
-			key: "resetTunnel",
+			key: 'resetTunnel',
 			value: function resetTunnel() {
 				this.tunnels = {
 					right: [],
@@ -1752,23 +2022,25 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				};
 			}
 		}, {
-			key: "draw",
+			key: 'draw',
 			value: function draw() {
-				if (!this.enabled || this.paused) return;
+				if (!this.enabled) return;
 				//find danmaku from indexMark to current time
 				var cTime = this.frame.time,
-				    cHeight = this.frame.COL.canvas.height,
-				    cWidth = this.frame.COL.canvas.width;
+				    cHeight = this.COL.canvas.height,
+				    cWidth = this.COL.canvas.width,
+				    ctx = this.COL.context;
 				var t = void 0,
 				    d = void 0;
-				for (; this.list[this.indexMark].time <= cTime; this.indexMark++) {
+				if (this.list.length) for (; this.list[this.indexMark].time <= cTime; this.indexMark++) {
 					//add new danmaku
 					if (this.options.screenLimit > 0 && this.layer.childNodes.length >= this.options.screenLimit) break; //break if the number of danmaku on screen has up to limit
 					if (document.hidden) continue;
 					d = this.list[this.indexMark];
-					t = this.COL_GraphCache.length ? this.COL_GraphCache.shift() : new this.frame.COL.class.TextGraph();
+					t = this.COL_GraphCache.length ? this.COL_GraphCache.shift() : new this.COL.class.TextGraph();
 					t.onoverCheck = false;
 					t.danmaku = d;
+					t.drawn = false;
 					t.text = this.allowLines ? d.text : d.text.replace(/\n/g, ' ');
 					t.time = cTime;
 					t.font = Object.create(this.defaultStyle);
@@ -1797,6 +2069,8 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 					tunnel[tnum] = t.style.top + size > cHeight ? cHeight - t.style.top - 1 : size;
 					this.layer.appendChild(t);
 				}
+
+				//const cRange=this._clearRange;
 				//calc all danmaku's position
 				var _iteratorNormalCompletion2 = true;
 				var _didIteratorError2 = false;
@@ -1807,6 +2081,12 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 						t = _step2.value;
 
 						this.danmakuMoveTime = cTime;
+						if (t.drawn) {
+							ctx.clearRect(t.style.x - t.estimatePadding, t.style.y - t.estimatePadding, t._cache.width, t._cache.height);
+						} else {
+							t.drawn = true;
+						}
+
 						switch (t.danmaku.tunnel) {
 							case 0:case 1:
 								{
@@ -1830,7 +2110,6 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 								}
 						}
 					}
-					//clean cache
 				} catch (err) {
 					_didIteratorError2 = true;
 					_iteratorError2 = err;
@@ -1846,6 +2125,8 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 					}
 				}
 
+				this.COL.draw();
+				//clean cache
 				if (Date.now() - this.cacheCleanTime > 5000) {
 					this.cacheCleanTime = Date.now();
 					if (this.COL_GraphCache.length > 20) {
@@ -1862,13 +2143,13 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				}
 			}
 		}, {
-			key: "getTunnel",
+			key: 'getTunnel',
 			value: function getTunnel(tid, size) {
 				//get the tunnel index that can contain the danmaku of the sizes
 				var tunnel = this.tunnels[tunnels[tid]],
 				    tnum = -1,
 				    ti = 0,
-				    cHeight = this.frame.COL.canvas.height;
+				    cHeight = this.COL.canvas.height;
 				if (size > cHeight) return -1;
 
 				while (tnum < 0) {
@@ -1891,7 +2172,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				return tnum;
 			}
 		}, {
-			key: "removeText",
+			key: 'removeText',
 			value: function removeText(t) {
 				//remove the danmaku from screen
 				this.layer.removeChild(t);
@@ -1901,7 +2182,12 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				this.COL_GraphCache.push(t);
 			}
 		}, {
-			key: "clear",
+			key: 'resize',
+			value: function resize() {
+				this.draw();
+			}
+		}, {
+			key: 'clear',
 			value: function clear() {
 				//clear danmaku on the screen
 				var _iteratorNormalCompletion3 = true;
@@ -1932,7 +2218,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				this.resetTunnel();
 			}
 		}, {
-			key: "time",
+			key: 'time',
 			value: function time(t) {
 				//reset time,you should invoke it when the media has seeked to another time
 				this.indexMark = dichotomy(this.list, t, 0, this.list.length - 1, true);
@@ -1943,7 +2229,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				}
 			}
 		}, {
-			key: "resetTimeOfDanmakuOnScreen",
+			key: 'resetTimeOfDanmakuOnScreen',
 			value: function resetTimeOfDanmakuOnScreen() {
 				//cause the position of the danmaku is based on time
 				//and if you don't want these danmaku on the screen to disappear,their time should be reset
@@ -1975,7 +2261,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				}
 			}
 		}, {
-			key: "danmakuAt",
+			key: 'danmakuAt',
 			value: function danmakuAt(x, y) {
 				//return a list of danmaku which is over this position
 				var list = [];
@@ -2009,16 +2295,18 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				return list;
 			}
 		}, {
-			key: "enable",
+			key: 'enable',
 			value: function enable() {
 				//enable the plugin
 				this.layer.style.hidden = false;
+				this.canvas.hidden = false;
 			}
 		}, {
-			key: "disable",
+			key: 'disable',
 			value: function disable() {
 				//disable the plugin
 				this.layer.style.hidden = true;
+				this.canvas.hidden = false;
 				this.clear();
 			}
 		}]);
@@ -2053,9 +2341,9 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 	DanmakuFrame.addModule('text2d', Text2D);
 };
 
-exports.init = init;
+exports.default = init;
 
-},{}],5:[function(require,module,exports){
+},{"../lib/COL/CanvasObjLibrary.js":4}],6:[function(require,module,exports){
 /*
 Copyright luojia@luojia.me
 LGPL license
@@ -2066,11 +2354,17 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _danmakuFrame = require('../lib/danmaku-frame/src/danmaku-frame.js');
 
+var _ResizeSensor = require('../lib/danmaku-frame/lib/ResizeSensor.js');
+
+var _ResizeSensor2 = _interopRequireDefault(_ResizeSensor);
+
 var _danmakuText = require('../lib/danmaku-text/src/danmaku-text.js');
 
 var _danmakuText2 = _interopRequireDefault(_danmakuText);
 
 var _Object2HTML = require('../lib/Object2HTML/Object2HTML.js');
+
+var _i18n = require('./i18n.js');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2080,20 +2374,22 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+var _ = _i18n.i18n._;
+
 (0, _danmakuText2.default)(_danmakuFrame.DanmakuFrame, _danmakuFrame.DanmakuFrameModule); //init text2d mod
 
 
 //default options
-var NyaPOptions = {}
-//touchMode:false,
+var NyaPOptions = {
+	//touchMode:false,
+};
 
-//UIEvent
-;
 var NyaPlayerCore = function () {
 	function NyaPlayerCore(opt) {
 		_classCallCheck(this, NyaPlayerCore);
 
 		this.opt = Object.assign({}, NyaPOptions, opt);
+		this._video = (0, _Object2HTML.Object2HTML)({ _: 'video', attr: { id: 'main_video' } });
 		this.danmakuFrame = new _danmakuFrame.DanmakuFrame();
 		this.danmakuFrame.enable('text2d');
 		//this.danmakuFrame.container
@@ -2102,27 +2398,47 @@ var NyaPlayerCore = function () {
 	_createClass(NyaPlayerCore, [{
 		key: 'play',
 		value: function play() {
-			this.video.play();
+			this.paused && this.video.play();
 		}
 	}, {
 		key: 'pause',
 		value: function pause() {
-			this.video.pause();
+			this.paused || this.video.pause();
+		}
+	}, {
+		key: 'playOrPause',
+		value: function playOrPause() {
+			if (this.video.paused) {
+				this.video.play();
+			} else {
+				this.video.pause();
+			}
 		}
 	}, {
 		key: 'seek',
-		value: function seek(time) {}
+		value: function seek(time) {
+			//msec
+			this.video.currentTime = time / 1000;
+		}
 	}, {
 		key: 'listenVideoEvent',
 		value: function listenVideoEvent() {
-			addEvents(this.video, {});
-		}
-	}, {
-		key: 'containerResize',
-		value: function containerResize() {
-			var e = new UIEvent('resize');
-			e.stopPropagation();
-			this.danmakuFrame.container.dispatchEvent(e);
+			var _this = this;
+
+			addEvents(this.video, {
+				playing: function playing() {
+					_this.danmakuFrame.start();
+				},
+				pause: function pause() {
+					_this.danmakuFrame.pause();
+				},
+				stalled: function stalled() {
+					_this.danmakuFrame.pause();
+				},
+				ratechange: function ratechange() {
+					_this.danmakuFrame.rate = _this.video.playbackRate;
+				}
+			});
 		}
 	}, {
 		key: 'player',
@@ -2132,7 +2448,15 @@ var NyaPlayerCore = function () {
 	}, {
 		key: 'video',
 		get: function get() {
-			return this._video || (this._video = this._player.querySelector('video#main_video'));
+			return this._video;
+		}
+	}, {
+		key: 'src',
+		get: function get() {
+			return this.video.src;
+		},
+		set: function set(s) {
+			this.video.src = s;
 		}
 	}]);
 
@@ -2148,13 +2472,67 @@ var NyaP = function (_NyaPlayerCore) {
 	function NyaP(opt) {
 		_classCallCheck(this, NyaP);
 
-		var _this = _possibleConstructorReturn(this, (NyaP.__proto__ || Object.getPrototypeOf(NyaP)).call(this, opt));
+		var _this2 = _possibleConstructorReturn(this, (NyaP.__proto__ || Object.getPrototypeOf(NyaP)).call(this, opt));
 
-		_this._player = (0, _Object2HTML.Object2HTML)({
-			_: 'div', attr: { 'class': 'NyaP' }
+		_this2.eles = {};
+		var icons = {
+			play: [30, 30, '<path d="m5.662,4.874l18.674,10.125l-18.674,10.125l0,-20.251l0,0.000z" stroke-width="3" stroke-linejoin="round"/>'],
+			addDanmaku: [30, 30, '<path stroke-width="2" d="m20.514868,20.120359l0.551501,-1.365456l2.206013,-0.341365l-2.757514,1.706821l-13.787251,0l0,-10.240718l16.544766,0l0,8.533897"/>' + '<path fill="#000" stroke-width="0" d="m12.081653,13.981746l1.928969,0l0,-1.985268l1.978756,0l0,1.985268l1.92897,0l0,2.036509l-1.92897,0l0,1.985268l-1.978756,0l0,-1.985268l-1.928969,0l0,-2.036509z"/>']
+		};
+		function icon(name, event) {
+			var ico = icons[name];
+			return (0, _Object2HTML.Object2HTML)({ _: 'span', event: event, prop: { id: 'NyaP_icon_div_' + name, style: 'height:' + ico[0] + 'px;width:' + ico[1] + 'px',
+					innerHTML: '<svg height=' + ico[0] + ' width=' + ico[1] + ' id="NyaP_icon_' + name + '"">' + ico[2] + '</svg>' } }, elementSaver);
+		}
+		var elementSaver = function elementSaver(ele) {
+			if (ele.id) _this2.eles[ele.id] = ele;
+		};
+		_this2._player = (0, _Object2HTML.Object2HTML)({
+			_: 'div', attr: { 'class': 'NyaP' }, child: [{ _: 'div', attr: { id: 'video_frame' }, child: [_this2.video, _this2.danmakuFrame.container] }, { _: 'div', attr: { id: 'control' }, child: [{ _: 'span', attr: { id: 'control_left' }, child: [icon('play', { click: function click(e) {
+							return _this2.playOrPause();
+						} })] }, { _: 'span', attr: { id: 'control_center' }, child: [{ _: 'canvas', attr: { id: 'progress' } }, { _: 'div', prop: { hidden: true, id: 'danmaku_input_frame' } }] }, { _: 'span', attr: { id: 'control_right' }, child: [icon('addDanmaku')] }] }]
+		}, elementSaver);
+		setTimeout(function () {
+			_this2.eles.control.ResizeSensor = new _ResizeSensor2.default(_this2.eles.control, function () {
+				return _this2.calcProgressStyle();
+			});
+			_this2.calcProgressStyle();
+		}, 0);
+
+		//events
+		addEvents(_this2.video, {
+			playing: function playing() {
+				_this2.eles.NyaP_icon_div_play.classList.add('active_icon');
+			},
+			pause: function pause() {
+				_this2.eles.NyaP_icon_div_play.classList.remove('active_icon');
+			},
+			stalled: function stalled() {
+				_this2.eles.NyaP_icon_div_play.classList.remove('active_icon');
+			}
 		});
-		return _this;
+
+		console.log(_this2.eles);
+		return _this2;
 	}
+
+	_createClass(NyaP, [{
+		key: 'calcProgressStyle',
+		value: function calcProgressStyle() {
+			Object.assign(this.eles.control_center.style, {
+				left: this.eles.control_left.offsetWidth + 'px',
+				width: this.eles.control.offsetWidth - this.eles.control_left.offsetWidth - this.eles.control_right.offsetWidth + 'px'
+			});
+		}
+	}, {
+		key: 'danmakuInput',
+		value: function danmakuInput(bool) {
+			this.eles.danmaku_input_frame.hidden = !bool;
+		}
+	}, {
+		key: 'refreshProgress',
+		value: function refreshProgress() {}
+	}]);
 
 	return NyaP;
 }(NyaPlayerCore);
@@ -2168,12 +2546,12 @@ var TouchNyaP = function (_NyaPlayerCore2) {
 	function TouchNyaP(opt) {
 		_classCallCheck(this, TouchNyaP);
 
-		var _this2 = _possibleConstructorReturn(this, (TouchNyaP.__proto__ || Object.getPrototypeOf(TouchNyaP)).call(this, opt));
+		var _this3 = _possibleConstructorReturn(this, (TouchNyaP.__proto__ || Object.getPrototypeOf(TouchNyaP)).call(this, opt));
 
-		_this2._player = (0, _Object2HTML.Object2HTML)({
+		_this3._player = (0, _Object2HTML.Object2HTML)({
 			_: 'div', attr: { 'class': 'NyaP_Mini' }
 		});
-		return _this2;
+		return _this3;
 	}
 
 	return TouchNyaP;
@@ -2188,7 +2566,28 @@ function addEvents(target) {
 }
 
 window.NyaP = NyaP;
+window.TouchNyaP = TouchNyaP;
 
-},{"../lib/Object2HTML/Object2HTML.js":1,"../lib/danmaku-frame/src/danmaku-frame.js":3,"../lib/danmaku-text/src/danmaku-text.js":4}]},{},[5])
+},{"../lib/Object2HTML/Object2HTML.js":1,"../lib/danmaku-frame/lib/ResizeSensor.js":2,"../lib/danmaku-frame/src/danmaku-frame.js":3,"../lib/danmaku-text/src/danmaku-text.js":5,"./i18n.js":7}],7:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+var i18n = {
+	lang: null,
+	langs: {},
+	_: function _(str) {
+		return i18n.langs[i18n.lang][str] || str;
+	}
+};
+
+i18n.langs['zh-CN'] = {
+	'play': '播放'
+};
+
+exports.i18n = i18n;
+
+},{}]},{},[6])
 
 //# sourceMappingURL=NyaP.js.map

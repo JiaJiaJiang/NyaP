@@ -10,37 +10,73 @@ LGPL license
 	width: 100%;
 	height: 100%;	
 }
-.NyaP_full_width{
+@mixin NyaP_fullfill{
 	position: absolute;
+	top: 0;
 	left: 0;
 	width: 100%;
+	height: 100%;	
 }
 
 .NyaP{
 	@extend .NyaP_fullfill;
 
 	a{text-decoration: none;}
+	.active_icon path{fill:#5f3c2c;}
+
+	svg[id^='NyaP_icon']>path{
+		stroke: #5f3c2c;
+		fill:transparent;
+		transition:fill 0.2s;
+	}
+
 	&>div#video_frame{
 		@extend .NyaP_fullfill;
 
 		&>video#main_video{
 			@extend .NyaP_fullfill;
-
+			background-color: #000;
 		}
 		&>div#danmaku_container{
 			@extend .NyaP_fullfill;
 		}
 	}
 	&>div#control{
-		@extend .NyaP_full_width;
+		position: absolute;
+		left: 0;
+		width: 100%;
 		bottom: 0;
 		height: auto;
+		background-color: #edeeef;
+		font-size: 0;//for space between spans
 
-		&>canvas#process{
-			@extend .NyaP_full_width;
-			cursor: pointer;
-			height: 4px;
-			top: -3px;
+		span[id^="control_"]{
+			display: block;
+			height: 100%;
+			&>div{cursor: pointer;}
+		}
+		&>span>span{display: inline-block;}
+		#control_left{
+			float: left;
+			*:last-child{margin-right:2px;};
+		}
+
+		#control_right{
+			float: right;
+			*:first-child{margin:0 2px 0 2px;};
+		}
+
+		#control_center{
+			position: absolute;
+			canvas#progress{
+				@include NyaP_fullfill;
+				cursor: pointer;
+				background-color: #6cf;
+			}
+			#danmaku_input_frame{
+				@include NyaP_fullfill;
+				background-color: #cc4;
+			}
 		}
 	}
 }

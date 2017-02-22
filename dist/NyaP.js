@@ -48,8 +48,8 @@ function Object2HTML(obj, func) {
 			for (var _iterator = obj.child[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 				o = _step.value;
 
-				e = o instanceof HTMLElement ? o : Object2HTML(o, func);
-				e instanceof HTMLElement && ele.appendChild(e);
+				e = o instanceof Node ? o : Object2HTML(o, func);
+				e instanceof Node && ele.appendChild(e);
 			}
 		} catch (err) {
 			_didIteratorError = true;
@@ -391,6 +391,7 @@ var DanmakuFrame = function () {
 			if (module instanceof DanmakuFrameModule === false) throw 'Constructor of ' + name + ' is not extended from DanmakuFrameModule';
 			module.enabled = true;
 			this.modules[name] = module;
+			console.debug('Mod Inited: ' + name);
 			return true;
 		}
 	}, {
@@ -1928,7 +1929,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			};
 
 			_this.canvas = document.createElement('canvas'); //the canvas
-			_this.canvas.style = 'position:absolute;width:100%;height:100%;top:0;left:0;';
+			Object.assign(_this.canvas.style, { position: 'absolute', width: '100%', height: '100%', top: 0, left: 0 });
 			_this.context2d = _this.canvas.getContext('2d'); //the canvas context
 			_this.COL = new _CanvasObjLibrary2.default(_this.canvas); //the library
 			_this.COL.autoClear = false;
@@ -2368,6 +2369,8 @@ var _i18n = require('./i18n.js');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
@@ -2474,60 +2477,112 @@ var NyaP = function (_NyaPlayerCore) {
 
 		var _this2 = _possibleConstructorReturn(this, (NyaP.__proto__ || Object.getPrototypeOf(NyaP)).call(this, opt));
 
+		var NP = _this2;
 		_this2.eles = {};
+		_this2._playerMode = 'normal';
 		var icons = {
 			play: [30, 30, '<path d="m5.662,4.874l18.674,10.125l-18.674,10.125l0,-20.251l0,0.000z" stroke-width="3" stroke-linejoin="round"/>'],
-			addDanmaku: [30, 30, '<path stroke-width="2" d="m20.514868,20.120359l0.551501,-1.365456l2.206013,-0.341365l-2.757514,1.706821l-13.787251,0l0,-10.240718l16.544766,0l0,8.533897"/>' + '<path fill="#000" stroke-width="0" d="m12.081653,13.981746l1.928969,0l0,-1.985268l1.978756,0l0,1.985268l1.92897,0l0,2.036509l-1.92897,0l0,1.985268l-1.978756,0l0,-1.985268l-1.928969,0l0,-2.036509z"/>']
+			addDanmaku: [30, 30, '<path stroke-width="2" d="m20.514868,20.120359l0.551501,-1.365456l2.206013,-0.341365l-2.757514,1.706821l-13.787251,0l0,-10.240718l16.544766,0l0,8.533897"/>' + '<path style="fill-opacity:1;stroke-width:0" d="m12.081653,13.981746l1.928969,0l0,-1.985268l1.978756,0l0,1.985268l1.92897,0l0,2.036509l-1.92897,0l0,1.985268l-1.978756,0l0,-1.985268l-1.928969,0l0,-2.036509z"/>'],
+			danmakuStyle: [40, 30, '<path d="m29.15377,16.14291l0.02111,-2.1431c0.00509,-0.54056 -0.42875,-0.98198 -0.96992,-0.98787l-1.34434,-0.013l-0.03905,4.09902l1.34419,0.01376c0.54106,0.00467 0.98357,-0.42842 0.98801,-0.96881l0,0zm-13.90662,-3.25468l-0.03893,4.09917l10.63621,0.10205l0.03855,-4.10088l-10.63583,-0.10035l0,0zm-2.63743,0.99919l-1.78463,1.00731l1.7653,1.04142l1.63913,0.9686l0.03869,-3.9553l-1.65849,0.93797l0,0l0,0z" stroke-width="1.5"/>'],
+			fullPage: [30, 30, '<path d="m11.16677,9.76127l-5.23735,5.23922l5.23783,5.23825l1.90512,-1.90509l-3.33364,-3.33316l3.33295,-3.33316l-1.90491,-1.90606l0,0zm7.66526,0l-1.90374,1.90557l3.33296,3.33316l-3.33296,3.33275l1.90374,1.90508l5.23853,-5.23873l-5.23853,-5.23784z" stroke-width="1.3" />'],
+			fullScreen: [30, 30, '<rect height="11.1696" width="17.65517" y="9.4152" x="6.17241" stroke-width="1.5"/>' + '<path d="m12.36171,11.39435l-3.6047,3.60599l3.60503,3.60532l1.31123,-1.31121l-2.29444,-2.29411l2.29396,-2.29411l-1.31109,-1.31188l0,0zm5.27576,0l-1.31028,1.31155l2.29397,2.29411l-2.29397,2.29383l1.31028,1.3112l3.60552,-3.60565l-3.60552,-3.60504z"/>']
 		};
 		function icon(name, event) {
 			var ico = icons[name];
-			return (0, _Object2HTML.Object2HTML)({ _: 'span', event: event, prop: { id: 'NyaP_icon_div_' + name, style: 'height:' + ico[0] + 'px;width:' + ico[1] + 'px',
-					innerHTML: '<svg height=' + ico[0] + ' width=' + ico[1] + ' id="NyaP_icon_' + name + '"">' + ico[2] + '</svg>' } }, elementSaver);
+			return (0, _Object2HTML.Object2HTML)({ _: 'span', event: event, prop: { id: 'NyaP_icon_span_' + name,
+					innerHTML: '<svg height=' + ico[1] + ' width=' + ico[0] + ' id="NyaP_icon_' + name + '"">' + ico[2] + '</svg>' } });
 		}
-		var elementSaver = function elementSaver(ele) {
-			if (ele.id) _this2.eles[ele.id] = ele;
-		};
+		/*const elementSaver=ele=>{
+  	if(ele.id)this.eles[ele.id]=ele;
+  }*/
 		_this2._player = (0, _Object2HTML.Object2HTML)({
 			_: 'div', attr: { 'class': 'NyaP' }, child: [{ _: 'div', attr: { id: 'video_frame' }, child: [_this2.video, _this2.danmakuFrame.container] }, { _: 'div', attr: { id: 'control' }, child: [{ _: 'span', attr: { id: 'control_left' }, child: [icon('play', { click: function click(e) {
 							return _this2.playOrPause();
-						} })] }, { _: 'span', attr: { id: 'control_center' }, child: [{ _: 'canvas', attr: { id: 'progress' } }, { _: 'div', prop: { hidden: true, id: 'danmaku_input_frame' } }] }, { _: 'span', attr: { id: 'control_right' }, child: [icon('addDanmaku')] }] }]
-		}, elementSaver);
+						} })] }, { _: 'span', attr: { id: 'control_center' }, child: [{ _: 'canvas', attr: { id: 'progress' } }, { _: 'div', prop: { id: 'danmaku_input_frame' }, child: [{ _: 'div', attr: { id: 'danmaku_style_pannel' } }, icon('danmakuStyle', { click: function click(e) {
+								return _this2.danmakuStylePannel();
+							} }), { _: 'input', attr: { id: 'danmaku_input', placeholder: _('Input danmaku here') } }, { _: 'span', prop: { id: 'danmaku_submit', innerHTML: _('Send') } }] }] }, { _: 'span', attr: { id: 'control_right' }, child: [icon('addDanmaku', { click: function click(e) {
+							return _this2.danmakuInput();
+						} }), { _: 'span', prop: { id: 'player_mode' }, child: [icon('fullPage', { click: function click(e) {
+								return _this2.playerMode('fullPage');
+							} }), icon('fullScreen', { click: function click(e) {
+								return _this2.playerMode('fullScreen');
+							} })] }] }] }]
+		});
+
+		//add elements with id to eles prop
+		[].concat(_toConsumableArray(_this2._player.querySelectorAll('*'))).forEach(function (e) {
+			if (e.id && !_this2.eles[e.id]) _this2.eles[e.id] = e;
+		});
+
 		setTimeout(function () {
 			_this2.eles.control.ResizeSensor = new _ResizeSensor2.default(_this2.eles.control, function () {
-				return _this2.calcProgressStyle();
+				return _this2.refreshProgress();
 			});
-			_this2.calcProgressStyle();
+			_this2.refreshProgress();
 		}, 0);
 
 		//events
 		addEvents(_this2.video, {
 			playing: function playing() {
-				_this2.eles.NyaP_icon_div_play.classList.add('active_icon');
+				_this2.eles.NyaP_icon_span_play.classList.add('active_icon');
 			},
 			pause: function pause() {
-				_this2.eles.NyaP_icon_div_play.classList.remove('active_icon');
+				_this2.eles.NyaP_icon_span_play.classList.remove('active_icon');
 			},
 			stalled: function stalled() {
-				_this2.eles.NyaP_icon_div_play.classList.remove('active_icon');
+				_this2.eles.NyaP_icon_span_play.classList.remove('active_icon');
 			}
 		});
+		//addEvents(this.eles.NyaP_icon_span_addDanmaku,{click:()=>this.danmakuInput()});
 
 		console.log(_this2.eles);
 		return _this2;
 	}
+	/*calcProgressStyle(){
+ 	Object.assign(this.eles.control_center.style,{
+ 		left:this.eles.control_left.offsetWidth+'px',
+ 		width:(this.eles.control.offsetWidth-this.eles.control_left.offsetWidth-this.eles.control_right.offsetWidth)+'px',
+ 	});
+ }*/
+
 
 	_createClass(NyaP, [{
-		key: 'calcProgressStyle',
-		value: function calcProgressStyle() {
-			Object.assign(this.eles.control_center.style, {
-				left: this.eles.control_left.offsetWidth + 'px',
-				width: this.eles.control.offsetWidth - this.eles.control_left.offsetWidth - this.eles.control_right.offsetWidth + 'px'
-			});
+		key: 'danmakuInput',
+		value: function danmakuInput() {
+			var bool = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : !this.eles.danmaku_input_frame.offsetHeight;
+
+			this.eles.danmaku_input_frame.style.display = bool ? 'flex' : '';
+			this.eles.NyaP_icon_span_addDanmaku.classList[bool ? 'add' : 'remove']('active_icon');
 		}
 	}, {
-		key: 'danmakuInput',
-		value: function danmakuInput(bool) {
-			this.eles.danmaku_input_frame.hidden = !bool;
+		key: 'playerMode',
+		value: function playerMode() {
+			var mode = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'normal';
+
+			if (mode === 'normal' && this._playerMode === mode) return;
+			if (this._playerMode === 'fullPage') {
+				this.player.style.position = '';
+				this.eles.NyaP_icon_span_fullPage.classList.remove('active_icon');
+			} else if (this._playerMode === 'fullScreen') {
+				this.eles.NyaP_icon_span_fullScreen.classList.remove('active_icon');
+				exitFullscreen();
+			}
+			if (mode !== 'normal' && this._playerMode === mode) mode = 'normal'; //back to normal mode
+			switch (mode) {
+				case 'fullPage':
+					{
+						this.player.style.position = 'fixed';
+						this.eles.NyaP_icon_span_fullPage.classList.add('active_icon');
+						break;
+					}
+				case 'fullScreen':
+					{
+						this.eles.NyaP_icon_span_fullScreen.classList.add('active_icon');
+						requestFullscreen(this.player);
+						break;
+					}
+			}
+			this._playerMode = mode;
 		}
 	}, {
 		key: 'refreshProgress',
@@ -2564,6 +2619,33 @@ function addEvents(target) {
 		target.addEventListener(e, events[e]);
 	}
 }
+function requestFullscreen(dom) {
+	if (dom.requestFullscreen) {
+		dom.requestFullscreen();
+	} else if (dom.msRequestFullscreen) {
+		dom.msRequestFullscreen();
+	} else if (dom.mozRequestFullScreen) {
+		dom.mozRequestFullScreen();
+	} else if (dom.webkitRequestFullscreen) {
+		dom.webkitRequestFullscreen(dom['ALLOW_KEYBOARD_INPUT']);
+	} else {
+		alert(_('Failed to change to fullscreen mode'));
+	}
+}
+function exitFullscreen() {
+	if (document.exitFullscreen) {
+		document.exitFullscreen();
+	} else if (document.msExitFullscreen) {
+		document.msExitFullscreen();
+	} else if (document.mozCancelFullScreen) {
+		document.mozCancelFullScreen();
+	} else if (document.webkitCancelFullScreen) {
+		document.webkitCancelFullScreen();
+	}
+}
+function isFullscreen() {
+	return document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement;
+}
 
 window.NyaP = NyaP;
 window.TouchNyaP = TouchNyaP;
@@ -2578,13 +2660,61 @@ var i18n = {
 	lang: null,
 	langs: {},
 	_: function _(str) {
-		return i18n.langs[i18n.lang][str] || str;
+		return i18n.lang && i18n.langs[i18n.lang][str] || str;
 	}
 };
 
-i18n.langs['zh-CN'] = {
-	'play': '播放'
+//Polyfill from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/startsWith
+if (!String.prototype.startsWith) String.prototype.startsWith = function (searchString, position) {
+	position = position || 0;
+	return this.substr(position, searchString.length) === searchString;
 };
+
+i18n.langs['zh-CN'] = {
+	'play': '播放',
+	'Send': '发送',
+	'pause': '暂停',
+	'Input danmaku here': '在这里输入弹幕',
+	'Failed to change to fullscreen mode': '无法切换到全屏模式'
+};
+
+var _iteratorNormalCompletion = true;
+var _didIteratorError = false;
+var _iteratorError = undefined;
+
+try {
+	for (var _iterator = navigator.languages[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+		var lang = _step.value;
+
+		if (i18n.langs[lang]) {
+			i18n.lang = lang;
+			break;
+		}
+		var code = lang.match(/^\w+/)[0];
+		for (var cod in i18n.langs) {
+			if (cod.startsWith(code)) {
+				i18n.lang = cod;
+				break;
+			}
+		}
+		if (i18n.lang) break;
+	}
+} catch (err) {
+	_didIteratorError = true;
+	_iteratorError = err;
+} finally {
+	try {
+		if (!_iteratorNormalCompletion && _iterator.return) {
+			_iterator.return();
+		}
+	} finally {
+		if (_didIteratorError) {
+			throw _iteratorError;
+		}
+	}
+}
+
+console.debug('Language:' + i18n.lang);
 
 exports.i18n = i18n;
 

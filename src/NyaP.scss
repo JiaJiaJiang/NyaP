@@ -22,13 +22,26 @@ LGPL license
 	@extend .NyaP_fullfill;
 
 	a{text-decoration: none;}
-	.active_icon path{fill:#5f3c2c;}
+	.active_icon path{fill-opacity:1 !important;}
 
-	svg[id^='NyaP_icon']>path{
+	svg[id^='NyaP_icon']>*{
 		stroke: #5f3c2c;
-		fill:transparent;
-		transition:fill 0.2s;
+		fill:#5f3c2c;
+		fill-opacity:0;
+		transition:fill-opacity 0.2s;
 	}
+	span[id^="NyaP_icon_span_"]{
+		background-color: #edeeef;
+		&:hover{
+			background-color: #dfdfdf;
+			cursor: pointer;
+			svg>*{
+				stroke: #24b182;
+				fill:#24b182;
+			}
+		}
+	}
+
 
 	&>div#video_frame{
 		@extend .NyaP_fullfill;
@@ -44,38 +57,81 @@ LGPL license
 	&>div#control{
 		position: absolute;
 		left: 0;
-		width: 100%;
 		bottom: 0;
-		height: auto;
+		width: 100%;
 		background-color: #edeeef;
-		font-size: 0;//for space between spans
+	    user-select: none;
+		display: flex;
+		flex-wrap: nowrap;
+		align-items:stretch;
 
 		span[id^="control_"]{
-			display: block;
-			height: 100%;
-			&>div{cursor: pointer;}
+			display: flex;
+			flex-wrap: nowrap;
+			//height: 100%;
+			&>span{cursor: pointer;position: relative;}
 		}
-		&>span>span{display: inline-block;}
+		&>span>span{display: flex;}
 		#control_left{
-			float: left;
 			*:last-child{margin-right:2px;};
 		}
 
 		#control_right{
-			float: right;
-			*:first-child{margin:0 2px 0 2px;};
+			padding: 0 2px;
+			// *:first-child{margin:0 1px;};
 		}
 
 		#control_center{
-			position: absolute;
+			flex-grow: 1;
+			position: relative;
 			canvas#progress{
 				@include NyaP_fullfill;
 				cursor: pointer;
 				background-color: #6cf;
 			}
-			#danmaku_input_frame{
-				@include NyaP_fullfill;
-				background-color: #cc4;
+		}
+		#danmaku_input_frame{
+			@include NyaP_fullfill;
+			background-color: #fff;
+			display:none;
+		    font-size: 13px;
+			input#danmaku_input{
+			    flex-grow: 1;
+			    border: 0;
+			    padding: 0 7px;
+			    user-select: initial;
+			}
+		}
+		#danmaku_style_pannel{
+			position: absolute;
+			bottom: 100%;
+			background-color: #444;
+			width: 60px;
+			height: 60px;
+			left: 0;
+		}
+		#danmaku_submit{
+			background-color: #578;
+		    text-align: center;
+		    cursor: pointer;
+		    color: #fff;
+		    padding: 0 14px;
+	        display: flex;//set layout of text to center
+		    align-items: center;
+		}
+		#NyaP_icon_span_fullScreen{
+			position: absolute;
+			left: 0;
+		    bottom: 100%;
+			display: none;
+		    border: 1px solid #ccc;
+		    border-radius: 8px 0 0;
+		    border-bottom: 0;
+		}
+		#player_mode{
+		    font-size: 0;
+			&:hover>#NyaP_icon_span_fullScreen{
+				display: block;
 			}
 		}
 	}

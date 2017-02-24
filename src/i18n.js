@@ -16,8 +16,13 @@ String.prototype.startsWith = function(searchString, position){
 
 i18n.langs['zh-CN']={
 	'play':'播放',
+	'loop':'循环',
 	'Send':'发送',
 	'pause':'暂停',
+	'volume':'音量',
+	'full page':'全页模式',
+	'full screen':'全屏模式',
+	'danmaku input':'弹幕输入框',
 	'Input danmaku here':'在这里输入弹幕',
 	'Failed to change to fullscreen mode':'无法切换到全屏模式',
 }

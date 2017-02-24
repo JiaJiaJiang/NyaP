@@ -4,18 +4,18 @@ LGPL license
 */
 
 .NyaP_fullfill{
-	position: absolute;
 	top: 0;
 	left: 0;
 	width: 100%;
 	height: 100%;	
+	position: absolute;
 }
 @mixin NyaP_fullfill{
-	position: absolute;
 	top: 0;
 	left: 0;
 	width: 100%;
 	height: 100%;	
+	position: absolute;
 }
 
 .NyaP{
@@ -24,20 +24,20 @@ LGPL license
 	a{text-decoration: none;}
 	.active_icon path{fill-opacity:1 !important;}
 
-	svg[id^='NyaP_icon']>*{
-		stroke: #5f3c2c;
+	svg[id^='icon']>*{
 		fill:#5f3c2c;
 		fill-opacity:0;
-		transition:fill-opacity 0.2s;
+		stroke: #5f3c2c;
+		transition:fill-opacity .2s;
 	}
-	span[id^="NyaP_icon_span_"]{
+	span[id^="icon_span_"]{
 		background-color: #edeeef;
 		&:hover{
-			background-color: #dfdfdf;
 			cursor: pointer;
+			background-color: #dfdfdf;
 			svg>*{
-				stroke: #24b182;
 				fill:#24b182;
+				stroke: #24b182;
 			}
 		}
 	}
@@ -52,18 +52,24 @@ LGPL license
 		}
 		&>div#danmaku_container{
 			@extend .NyaP_fullfill;
+			cursor: pointer;
 		}
 	}
 	&>div#control{
-		position: absolute;
 		left: 0;
 		bottom: 0;
 		width: 100%;
-		background-color: #edeeef;
-	    user-select: none;
+		opacity: .2;
 		display: flex;
 		flex-wrap: nowrap;
+	    user-select: none;
+		position: absolute;
 		align-items:stretch;
+		transition: opacity .2s;
+		background-color: #edeeef;
+	    border-top: 0.5px solid #a7a7a7;
+
+		&:hover{opacity:1;}
 
 		span[id^="control_"]{
 			display: flex;
@@ -72,67 +78,88 @@ LGPL license
 			&>span{cursor: pointer;position: relative;}
 		}
 		&>span>span{display: flex;}
-		#control_left{
-			*:last-child{margin-right:2px;};
-		}
+	}
+	#control_left{
+		*:last-child{margin-right:2px;};
+	}
 
-		#control_right{
-			padding: 0 2px;
-			// *:first-child{margin:0 1px;};
-		}
+	#control_right{
+		padding: 0 2px;
+	}
 
-		#control_center{
+	#control_center{
+		flex-grow: 1;
+		position: relative;
+		
+	}
+	canvas#progress{
+		@include NyaP_fullfill;
+		cursor: pointer;
+	}
+	#progress_info{
+		@include NyaP_fullfill;
+		display: flex;
+		align-items:stretch;
+
+		&>*:first-child{
 			flex-grow: 1;
-			position: relative;
-			canvas#progress{
-				@include NyaP_fullfill;
-				cursor: pointer;
-				background-color: #6cf;
-			}
+		    position: relative;
 		}
-		#danmaku_input_frame{
-			@include NyaP_fullfill;
-			background-color: #fff;
-			display:none;
-		    font-size: 13px;
-			input#danmaku_input{
-			    flex-grow: 1;
-			    border: 0;
-			    padding: 0 7px;
-			    user-select: initial;
-			}
+	}
+	#danmaku_input_frame{
+		@include NyaP_fullfill;
+		display:none;
+	    font-size: 13px;
+		background-color: #fff;
+		input#danmaku_input{
+		    border: 0;
+	        outline: 0;
+		    flex-grow: 1;
+		    padding: 0 7px;
+		    user-select: initial;
 		}
-		#danmaku_style_pannel{
-			position: absolute;
-			bottom: 100%;
-			background-color: #444;
-			width: 60px;
-			height: 60px;
-			left: 0;
-		}
-		#danmaku_submit{
-			background-color: #578;
-		    text-align: center;
-		    cursor: pointer;
-		    color: #fff;
-		    padding: 0 14px;
-	        display: flex;//set layout of text to center
-		    align-items: center;
-		}
-		#NyaP_icon_span_fullScreen{
-			position: absolute;
-			left: 0;
-		    bottom: 100%;
-			display: none;
-		    border: 1px solid #ccc;
-		    border-radius: 8px 0 0;
-		    border-bottom: 0;
-		}
-		#player_mode{
-		    font-size: 0;
-			&:hover>#NyaP_icon_span_fullScreen{
-				display: block;
-			}
+	}
+	#danmaku_style_pannel{
+		left: 0;
+		width: 60px;
+		height: 60px;
+		bottom: 100%;
+		position: absolute;
+		background-color: #444;
+	}
+	#danmaku_submit{
+	    color: #fff;
+        display: flex;					//set layout of text to center
+	    cursor: pointer;
+	    padding: 0 14px;
+	    text-align: center;
+	    align-items: center;
+		background-color: #578;
+	}
+	#time{
+	    display: flex;
+	    padding: 0 5px;
+		font-size: 14px;
+	    text-align: center;
+	    align-items: center;
+	    font-family: monospace;
+	    
+	    &>span{flex-grow: 1;}
+	}
+	#icon_span_fullScreen{
+		left: 0;
+	    bottom: 100%;
+		display: none;
+	    border-bottom: 0;
+		position: absolute;
+	    border: 1px solid #ccc;
+	    border-radius: 8px 0 0;
+	}
+	#player_mode{
+	    font-size: 0;
+
+		&:hover>#icon_span_fullScreen{
+			display: block;
 		}
 	}
 }

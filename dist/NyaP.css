@@ -2,23 +2,27 @@
 Copyright luojia@luojia.me
 LGPL license
 */
-.NyaP_fullfill, .NyaP, .NyaP > div#video_frame, .NyaP > div#video_frame > video#main_video, .NyaP > div#video_frame > div#danmaku_container, .NyaP_Mini { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+.NyaP_fullfill, .NyaP, .NyaP > div#video_frame, .NyaP > div#video_frame > video#main_video, .NyaP > div#video_frame > div#danmaku_container, .NyaP_Mini { top: 0; left: 0; width: 100%; height: 100%; position: absolute; }
 
 .NyaP a { text-decoration: none; }
 
 .NyaP .active_icon path { fill-opacity: 1 !important; }
 
-.NyaP svg[id^='NyaP_icon'] > * { stroke: #5f3c2c; fill: #5f3c2c; fill-opacity: 0; transition: fill-opacity 0.2s; }
+.NyaP svg[id^='icon'] > * { fill: #5f3c2c; fill-opacity: 0; stroke: #5f3c2c; transition: fill-opacity .2s; }
 
-.NyaP span[id^="NyaP_icon_span_"] { background-color: #edeeef; }
+.NyaP span[id^="icon_span_"] { background-color: #edeeef; }
 
-.NyaP span[id^="NyaP_icon_span_"]:hover { background-color: #dfdfdf; cursor: pointer; }
+.NyaP span[id^="icon_span_"]:hover { cursor: pointer; background-color: #dfdfdf; }
 
-.NyaP span[id^="NyaP_icon_span_"]:hover svg > * { stroke: #24b182; fill: #24b182; }
+.NyaP span[id^="icon_span_"]:hover svg > * { fill: #24b182; stroke: #24b182; }
 
 .NyaP > div#video_frame > video#main_video { background-color: #000; }
 
-.NyaP > div#control { position: absolute; left: 0; bottom: 0; width: 100%; background-color: #edeeef; user-select: none; display: flex; flex-wrap: nowrap; align-items: stretch; }
+.NyaP > div#video_frame > div#danmaku_container { cursor: pointer; }
+
+.NyaP > div#control { left: 0; bottom: 0; width: 100%; opacity: .2; display: flex; flex-wrap: nowrap; user-select: none; position: absolute; align-items: stretch; transition: opacity .2s; background-color: #edeeef; border-top: 0.5px solid #a7a7a7; }
+
+.NyaP > div#control:hover { opacity: 1; }
 
 .NyaP > div#control span[id^="control_"] { display: flex; flex-wrap: nowrap; }
 
@@ -26,27 +30,35 @@ LGPL license
 
 .NyaP > div#control > span > span { display: flex; }
 
-.NyaP > div#control #control_left *:last-child { margin-right: 2px; }
+.NyaP #control_left *:last-child { margin-right: 2px; }
 
-.NyaP > div#control #control_right { padding: 0 2px; }
+.NyaP #control_right { padding: 0 2px; }
 
-.NyaP > div#control #control_center { flex-grow: 1; position: relative; }
+.NyaP #control_center { flex-grow: 1; position: relative; }
 
-.NyaP > div#control #control_center canvas#progress { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer; background-color: #6cf; }
+.NyaP canvas#progress { top: 0; left: 0; width: 100%; height: 100%; position: absolute; cursor: pointer; }
 
-.NyaP > div#control #danmaku_input_frame { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #fff; display: none; font-size: 13px; }
+.NyaP #progress_info { top: 0; left: 0; width: 100%; height: 100%; position: absolute; display: flex; align-items: stretch; }
 
-.NyaP > div#control #danmaku_input_frame input#danmaku_input { flex-grow: 1; border: 0; padding: 0 7px; user-select: initial; }
+.NyaP #progress_info > *:first-child { flex-grow: 1; position: relative; }
 
-.NyaP > div#control #danmaku_style_pannel { position: absolute; bottom: 100%; background-color: #444; width: 60px; height: 60px; left: 0; }
+.NyaP #danmaku_input_frame { top: 0; left: 0; width: 100%; height: 100%; position: absolute; display: none; font-size: 13px; background-color: #fff; }
 
-.NyaP > div#control #danmaku_submit { background-color: #578; text-align: center; cursor: pointer; color: #fff; padding: 0 14px; display: flex; align-items: center; }
+.NyaP #danmaku_input_frame input#danmaku_input { border: 0; outline: 0; flex-grow: 1; padding: 0 7px; user-select: initial; }
 
-.NyaP > div#control #NyaP_icon_span_fullScreen { position: absolute; left: 0; bottom: 100%; display: none; border: 1px solid #ccc; border-radius: 8px 0 0; border-bottom: 0; }
+.NyaP #danmaku_style_pannel { left: 0; width: 60px; height: 60px; bottom: 100%; position: absolute; background-color: #444; }
 
-.NyaP > div#control #player_mode { font-size: 0; }
+.NyaP #danmaku_submit { color: #fff; display: flex; cursor: pointer; padding: 0 14px; text-align: center; align-items: center; background-color: #578; }
 
-.NyaP > div#control #player_mode:hover > #NyaP_icon_span_fullScreen { display: block; }
+.NyaP #time { display: flex; padding: 0 5px; font-size: 14px; text-align: center; align-items: center; font-family: monospace; }
+
+.NyaP #time > span { flex-grow: 1; }
+
+.NyaP #icon_span_fullScreen { left: 0; bottom: 100%; display: none; border-bottom: 0; position: absolute; border: 1px solid #ccc; border-radius: 8px 0 0; }
+
+.NyaP #player_mode { font-size: 0; }
+
+.NyaP #player_mode:hover > #icon_span_fullScreen { display: block; }
 
 .NyaP_Mini a { text-decoration: none; }
 

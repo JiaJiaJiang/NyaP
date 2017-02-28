@@ -1,8 +1,10 @@
 const i18n={
 	lang:null,
 	langs:{},
-	_:(str)=>{
-		return (i18n.lang&&i18n.langs[i18n.lang][str])||str;
+	_:(str,...args)=>{
+		let s=(i18n.lang&&i18n.langs[i18n.lang][str])||str;
+		args.length&&args.forEach((arg,ind)=>{s=s.replace(`$${ind}`,arg)});
+		return s;
 	}
 };
 
@@ -19,9 +21,10 @@ i18n.langs['zh-CN']={
 	'loop':'循环',
 	'Send':'发送',
 	'pause':'暂停',
-	'volume':'音量',
+	'muted':'静音',
 	'full page':'全页模式',
 	'full screen':'全屏模式',
+	'volume($0)':'音量（$0）',
 	'danmaku input':'弹幕输入框',
 	'Input danmaku here':'在这里输入弹幕',
 	'Failed to change to fullscreen mode':'无法切换到全屏模式',

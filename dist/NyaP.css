@@ -2,7 +2,7 @@
 Copyright luojia@luojia.me
 LGPL license
 */
-.NyaP_fullfill, .NyaP, .NyaP > div#video_frame, .NyaP > div#video_frame > video#main_video, .NyaP > div#video_frame > div#danmaku_container, .NyaP_Mini { top: 0; left: 0; width: 100%; height: 100%; position: absolute; }
+.NyaP_fullfill, .NyaP, .NyaP > div#video_frame, .NyaP > div#video_frame > video#main_video, .NyaP > div#video_frame > div#danmaku_container { top: 0; left: 0; width: 100%; height: 100%; position: absolute; }
 
 .NyaP a { text-decoration: none; }
 
@@ -16,11 +16,13 @@ LGPL license
 
 .NyaP span[id^="icon_span_"]:hover svg > * { fill: #24b182; stroke: #24b182; }
 
+.NyaP > div#video_frame { height: auto; bottom: 30px; }
+
 .NyaP > div#video_frame > video#main_video { background-color: #000; }
 
 .NyaP > div#video_frame > div#danmaku_container { cursor: pointer; }
 
-.NyaP > div#control { left: 0; bottom: 0; width: 100%; opacity: .2; display: flex; flex-wrap: nowrap; user-select: none; position: absolute; align-items: stretch; transition: opacity .2s; background-color: #edeeef; border-top: 0.5px solid #a7a7a7; }
+.NyaP > div#control { left: 0; bottom: 0; width: 100%; height: 30px; opacity: 1; display: flex; flex-wrap: nowrap; user-select: none; position: absolute; align-items: stretch; transition: opacity .2s; background-color: #edeeef; border-top: 0.5px solid #a7a7a7; }
 
 .NyaP > div#control:hover { opacity: 1; }
 
@@ -59,7 +61,5 @@ LGPL license
 .NyaP #player_mode { font-size: 0; }
 
 .NyaP #player_mode:hover > #icon_span_fullScreen { display: block; }
-
-.NyaP_Mini a { text-decoration: none; }
 
 /*# sourceMappingURL=NyaP.css.map */

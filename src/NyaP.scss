@@ -21,6 +21,8 @@ LGPL license
 .NyaP{
 	@extend .NyaP_fullfill;
 
+	$control_bar_height:30px;
+
 	a{text-decoration: none;}
 	.active_icon path{fill-opacity:1 !important;}
 
@@ -45,6 +47,8 @@ LGPL license
 
 	&>div#video_frame{
 		@extend .NyaP_fullfill;
+		height: auto;
+		bottom: $control_bar_height;
 
 		&>video#main_video{
 			@extend .NyaP_fullfill;
@@ -59,7 +63,8 @@ LGPL license
 		left: 0;
 		bottom: 0;
 		width: 100%;
-		opacity: .2;
+		height: $control_bar_height;
+		opacity: 1;
 		display: flex;
 		flex-wrap: nowrap;
 	    user-select: none;
@@ -164,8 +169,3 @@ LGPL license
 	}
 }
 
-.NyaP_Mini{
-	@extend .NyaP_fullfill;
-
-	a{text-decoration: none;}
-}

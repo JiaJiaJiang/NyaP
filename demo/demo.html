@@ -14,11 +14,12 @@
 <div id="player_container" style="position:absolute;width:60%;height:50%;top:0;left:0;"></div>
 
 <script>
-var NP=new NyaP();
+var NP=new NyaP({
+	src:(location.protocol==='file:')?'嘘の火花.mp4':'//io.luojia.me/video/%E5%98%98%E3%81%AE%E7%81%AB%E8%8A%B1.mp4',
+	muted:true,
+});
 document.querySelector('#player_container').appendChild(NP.player);
 
-NP.video.src='miku.mp4';
-NP.video.muted=true;
 //NP.video.play()
 //NP.loop(true);
 </script>

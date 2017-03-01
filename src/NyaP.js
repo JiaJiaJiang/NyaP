@@ -26,18 +26,18 @@ class NyaP extends NyaPlayerCore{
 		super(opt);
 		const NP=this;
 		const $=this.eles={};
-		this._playerMode='normal';
+		this._.playerMode='normal';
 		const video=this.video;
 		const icons={
-			play:[30,30,'<path d="m10.18814,7.48238l12.08183,7.51799l-12.08183,7.51799l0,-15.03673l0,0l0,0.00074z" stroke-width="3" stroke-linejoin="round"/>'],
-			addDanmaku:[30,30,'<path stroke-width="1.5" d="m20.514868,20.120359l0.551501,-1.365456l2.206013,-0.341365l-2.757514,1.706821l-13.787251,0l0,-10.240718l16.544766,0l0,8.533897" stroke-linejoin="round"/>'
-								+'<path style="fill-opacity:1;stroke-width:0" d="m12.081653,13.981746l1.928969,0l0,-1.985268l1.978756,0l0,1.985268l1.92897,0l0,2.036509l-1.92897,0l0,1.985268l-1.978756,0l0,-1.985268l-1.928969,0l0,-2.036509z"/>'],
-			danmakuStyle:[40,30,'<path d="m29.15377,16.14291l0.02111,-2.1431c0.00509,-0.54056 -0.42875,-0.98198 -0.96992,-0.98787l-1.34434,-0.013l-0.03905,4.09902l1.34419,0.01376c0.54106,0.00467 0.98357,-0.42842 0.98801,-0.96881l0,0zm-13.90662,-3.25468l-0.03893,4.09917l10.63621,0.10205l0.03855,-4.10088l-10.63583,-0.10035l0,0zm-2.63743,0.99919l-1.78463,1.00731l1.7653,1.04142l1.63913,0.9686l0.03869,-3.9553l-1.65849,0.93797l0,0l0,0z" stroke-width="1.5"/>'],
-			fullPage:[30,30,'<path stroke-linejoin="round" d="m11.16677,9.76127l-5.23735,5.23922l5.23783,5.23825l1.90512,-1.90509l-3.33364,-3.33316l3.33295,-3.33316l-1.90491,-1.90606l0,0zm7.66526,0l-1.90374,1.90557l3.33296,3.33316l-3.33296,3.33275l1.90374,1.90508l5.23853,-5.23873l-5.23853,-5.23784z" stroke-width="1.3" />'],
-			fullScreen:[30,30,'<rect stroke-linejoin="round" height="11.1696" width="17.65517" y="9.4152" x="6.17241" stroke-width="1.5"/>'
-							  +'<path stroke-linejoin="round" d="m12.36171,11.39435l-3.6047,3.60599l3.60503,3.60532l1.31123,-1.31121l-2.29444,-2.29411l2.29396,-2.29411l-1.31109,-1.31188l0,0zm5.27576,0l-1.31028,1.31155l2.29397,2.29411l-2.29397,2.29383l1.31028,1.3112l3.60552,-3.60565l-3.60552,-3.60504z"/>'],
-			loop:[30,30,'<path stroke-linejoin="round" stroke-width="1" d="m14.63235,10.09759l5.52492,0l0,0c2.37326,0 4.29716,2.14736 4.29716,4.79625l0,0l0,0c0,1.27204 -0.45273,2.49198 -1.2586,3.39146c-0.80587,0.89946 -1.89888,1.40478 -3.03855,1.40478l-0.61387,0l0,1.37036l-2.45552,-2.74071l2.45552,-2.74071l0,1.37036l0.61387,0c1.01711,0 1.84164,-0.9203 1.84164,-2.05553l0,0l0,0c0,-1.13524 -0.82452,-2.05554 -1.84164,-2.05554l-5.52492,0l0,-2.74071z"/>'
-					   +'<path stroke-linejoin="round" stroke-width="1" d="m15.36766,19.90241l-5.52493,0l0,0c-2.37325,0 -4.29716,-2.14734 -4.29716,-4.79624l0,0l0,0c0,-1.27204 0.45273,-2.49199 1.25862,-3.39146c0.80587,-0.89948 1.89886,-1.40479 3.03854,-1.40479l0.61389,0l0,-1.37036l2.45552,2.74071l-2.45552,2.74071l0,-1.37036l-0.61389,0c-1.0171,0 -1.84164,0.9203 -1.84164,2.05554l0,0l0,0c0,1.13524 0.82454,2.05553 1.84164,2.05553l5.52493,0l0,2.74071z"/>'],
+			play:[30,30,'<path d="m10.063,8.856l9.873,6.143l-9.873,6.143v-12.287z" stroke-width="3" stroke-linejoin="round"/>'],
+			addDanmaku:[30,30,'<path stroke-width="1.5" d="m20.514,20.120l0.551,-1.365l2.206,-0.341l-2.757,1.706h-13.787v-10.240h16.544v8.533" stroke-linejoin="round"/>'
+								+'<path style="fill-opacity:1;stroke-width:0" d="m12.081,13.981h1.928v-1.985h1.978v1.985h1.928v2.036h-1.928v1.985h-1.978v-1.985h-1.928v-2.036z"/>'],
+			danmakuStyle:[30,30,'<path style="fill-opacity:1!important;" d="m21.781,9.872l-1.500,-1.530c-0.378,-0.385 -0.997,-0.391 -1.384,-0.012l-0.959,0.941l2.870,2.926l0.960,-0.940c0.385,-0.379 0.392,-0.998 0.013,-1.383zm-12.134,7.532l2.871,2.926l7.593,-7.448l-2.872,-2.927l-7.591,7.449l0.000,0.000zm-1.158,2.571l-0.549,1.974l1.984,-0.511l1.843,-0.474l-2.769,-2.824l-0.509,1.835z" stroke-width="0"/>'],
+			fullPage:[30,30,'<path stroke-linejoin="round" d="m11.166,9.761l-5.237,5.239l5.237,5.238l1.905,-1.905l-3.333,-3.333l3.332,-3.333l-1.904,-1.906zm7.665,0l-1.903,1.905l3.332,3.333l-3.332,3.332l1.903,1.905l5.238,-5.238l-5.238,-5.237z" stroke-width="1.3" />'],
+			fullScreen:[30,30,'<rect stroke-linejoin="round" height="11.169" width="17.655" y="9.415" x="6.172" stroke-width="1.5"/>'
+							  +'<path stroke-linejoin="round" d="m12.361,11.394l-3.604,3.605l3.605,3.605l1.311,-1.311l-2.294,-2.294l2.293,-2.294l-1.311,-1.311zm5.275,0l-1.310,1.311l2.293,2.294l-2.293,2.293l1.310,1.311l3.605,-3.605l-3.605,-3.605z"/>'],
+			loop:[30,30,'<path stroke-linejoin="round" stroke-width="1" d="m14.632,10.097h5.524c2.373,0 4.297,2.147 4.297,4.796c0,1.272 -0.452,2.491 -1.258,3.391c-0.805,0.899 -1.898,1.404 -3.038,1.404h-0.613v1.370l-2.455,-2.740l2.455,-2.740v1.370h0.613c1.017,0 1.841,-0.920 1.841,-2.055c0,-1.135 -0.824,-2.055 -1.841,-2.055h-5.524v-2.740z"/>'
+					   +'<path stroke-linejoin="round" stroke-width="1" d="m15.367,19.902h-5.524c-2.373,0 -4.297,-2.147 -4.297,-4.796c0,-1.272 0.452,-2.491 1.258,-3.391c0.805,-0.899 1.898,-1.404 3.038,-1.404h0.613v-1.370l2.455,2.740l-2.455,2.740v-1.370h-0.613c-1.017,0 -1.841,0.920 -1.841,2.055c0,1.135 0.824,2.055 1.841,2.055h5.524v2.740z"/>'],
 			volume:[30,30,'<ellipse id="volume_circle" style="fill-opacity:.6!important;" ry="5" rx="5" cy="15" cx="15" stroke-dasharray="32 90" stroke-width="1.8"/>'],
 		}
 		function icon(name,event,attr={}){
@@ -46,7 +46,7 @@ class NyaP extends NyaPlayerCore{
 				innerHTML:`<svg height=${ico[1]} width=${ico[0]} id="icon_${name}"">${ico[2]}</svg>`}});
 		}
 
-		this._player=Object2HTML({
+		this._.player=Object2HTML({
 			_:'div',attr:{'class':'NyaP'},child:[
 				{_:'div',attr:{id:'video_frame'},child:[
 					video,
@@ -68,8 +68,12 @@ class NyaP extends NyaPlayerCore{
 							]},
 						]},
 						{_:'div',prop:{id:'danmaku_input_frame'},child:[
-							{_:'div',attr:{id:'danmaku_style_pannel'}},
-							icon('danmakuStyle',{click:e=>this.danmakuStylePannel()}),
+							{_:'span',prop:{id:'danmaku_style'},child:[
+								{_:'div',attr:{id:'danmaku_style_pannel'},child:[
+									{_:'input',attr:{id:'danmaku_color'}},
+								]},
+								icon('danmakuStyle'),
+							]},
 							{_:'input',attr:{id:'danmaku_input',placeholder:_('Input danmaku here')}},
 							{_:'span',prop:{id:'danmaku_submit',innerHTML:_('Send')}},
 						]}
@@ -88,7 +92,7 @@ class NyaP extends NyaPlayerCore{
 		});
 
 		//add elements with id to eles prop
-		[].slice.call(this._player.querySelectorAll('*')).forEach(e=>{
+		[].slice.call(this._.player.querySelectorAll('*')).forEach(e=>{
 			if(e.id&&!$[e.id])$[e.id]=e;
 		});
 
@@ -104,7 +108,7 @@ class NyaP extends NyaPlayerCore{
 			keydown:e=>{
 				switch(e.code){
 					case 'Escape':{//exit full page mode
-						if(this._playerMode==='fullPage'){
+						if(this._.playerMode==='fullPage'){
 							this.playerMode('normal');
 						}
 						break;
@@ -189,16 +193,16 @@ class NyaP extends NyaPlayerCore{
 		bool&&$.danmaku_input.focus();
 	}
 	playerMode(mode='normal'){
-		if(mode==='normal' && this._playerMode===mode)return;
+		if(mode==='normal' && this._.playerMode===mode)return;
 		let $=this.eles;
-		if(this._playerMode==='fullPage'){
+		if(this._.playerMode==='fullPage'){
 			this.player.style.position='';
 			$.icon_span_fullPage.classList.remove('active_icon');
-		}else if(this._playerMode==='fullScreen'){
+		}else if(this._.playerMode==='fullScreen'){
 			$.icon_span_fullScreen.classList.remove('active_icon');
 			exitFullscreen();
 		}
-		if(mode!=='normal' && this._playerMode===mode)mode='normal';//back to normal mode
+		if(mode!=='normal' && this._.playerMode===mode)mode='normal';//back to normal mode
 		switch(mode){
 			case 'fullPage':{
 				this.player.style.position='fixed';
@@ -211,7 +215,7 @@ class NyaP extends NyaPlayerCore{
 				break;
 			}
 		}
-		this._playerMode=mode;
+		this._.playerMode=mode;
 		this.emit('playerModeChange',mode);
 	}
 	loop(bool){

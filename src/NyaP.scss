@@ -45,7 +45,7 @@ LGPL license
 	}
 
 
-	&>div#video_frame{
+	&>#video_frame{
 		@extend .NyaP_fullfill;
 		height: auto;
 		bottom: $control_bar_height;
@@ -59,7 +59,7 @@ LGPL license
 			cursor: pointer;
 		}
 	}
-	&>div#control{
+	&>#control{
 		left: 0;
 		bottom: 0;
 		width: 100%;
@@ -99,11 +99,11 @@ LGPL license
 		
 	}
 	canvas#progress{
-		@include NyaP_fullfill;
+		@extend .NyaP_fullfill;
 		cursor: pointer;
 	}
 	#progress_info{
-		@include NyaP_fullfill;
+		@extend .NyaP_fullfill;
 		display: flex;
 		align-items:stretch;
 
@@ -113,7 +113,7 @@ LGPL license
 		}
 	}
 	#danmaku_input_frame{
-		@include NyaP_fullfill;
+		@extend .NyaP_fullfill;
 		display:none;
 	    font-size: 13px;
 		background-color:inherit;
@@ -126,11 +126,21 @@ LGPL license
 	        background-color: inherit;
 		}
 	}
+	#danmaku_style{
+		display: flex;
+		background-color: inherit;
+		&:hover{
+			#danmaku_style_pannel{
+				display: block;
+			}
+		}
+	}
 	#danmaku_style_pannel{
 		left: 0;
-		width: 60px;
-		height: 60px;
+		width: 130px;
+		height: 80px;
 		bottom: 100%;
+		display: none;
 		position: absolute;
 		background-color: #444;
 	}
@@ -141,7 +151,7 @@ LGPL license
 	    padding: 0 14px;
 	    text-align: center;
 	    align-items: center;
-		background-color: #578;
+		background-color: #707679;
 	}
 	#time{
 	    display: flex;

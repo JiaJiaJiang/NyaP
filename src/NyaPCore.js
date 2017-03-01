@@ -119,7 +119,7 @@ class NyaPlayerCore extends NyaPEventEmitter{
 	addDanmaku(obj){}
 	removeDanmaku(obj){}
 	Danmaku(bool){}
-	get player(){return this._player;}
+	get player(){return this._.player;}
 	get video(){return this._.video;}
 	get src(){return this.video.src;}
 	set src(s){this.video.src=s;}

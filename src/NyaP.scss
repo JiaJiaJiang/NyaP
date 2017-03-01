@@ -24,7 +24,7 @@ LGPL license
 	$control_bar_height:30px;
 
 	a{text-decoration: none;}
-	.active_icon path{fill-opacity:1 !important;}
+	.active_icon path{fill-opacity:1!important;}
 
 	svg[id^='icon']>*{
 		fill:#5f3c2c;
@@ -33,10 +33,10 @@ LGPL license
 		transition:fill-opacity .2s;
 	}
 	span[id^="icon_span_"]{
-		background-color: #edeeef;
+		background-color: inherit;
+		cursor: pointer;
 		&:hover{
-			cursor: pointer;
-			background-color: #dfdfdf;
+			background-color:#ececec!important;
 			svg>*{
 				fill:#24b182;
 				stroke: #24b182;
@@ -71,7 +71,7 @@ LGPL license
 		position: absolute;
 		align-items:stretch;
 		transition: opacity .2s;
-		background-color: #edeeef;
+		background-color: #f7f8f9;
 	    border-top: 0.5px solid #a7a7a7;
 
 		&:hover{opacity:1;}
@@ -79,8 +79,9 @@ LGPL license
 		span[id^="control_"]{
 			display: flex;
 			flex-wrap: nowrap;
+			background-color: inherit;
 			//height: 100%;
-			&>span{cursor: pointer;position: relative;}
+			&>span{cursor: pointer;position: relative;background-color: inherit;}
 		}
 		&>span>span{display: flex;}
 	}

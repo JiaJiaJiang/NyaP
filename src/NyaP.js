@@ -70,7 +70,7 @@ class NyaP extends NyaPlayerCore{
 						{_:'div',prop:{id:'danmaku_input_frame'},child:[
 							{_:'span',prop:{id:'danmaku_style'},child:[
 								{_:'div',attr:{id:'danmaku_style_pannel'},child:[
-									{_:'input',attr:{id:'danmaku_color'}},
+									{_:'input',attr:{id:'danmaku_color',placeholder:_('hex color')}},
 								]},
 								icon('danmakuStyle'),
 							]},

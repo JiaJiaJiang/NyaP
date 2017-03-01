@@ -48,11 +48,13 @@ LGPL license
 
 .NyaP #danmaku_input_frame input#danmaku_input { border: 0; outline: 0; flex-grow: 1; padding: 0 7px; user-select: initial; background-color: inherit; }
 
-.NyaP #danmaku_style { display: flex; }
+.NyaP #danmaku_style { display: flex; background-color: inherit; }
 
 .NyaP #danmaku_style:hover #danmaku_style_pannel { display: block; }
 
-.NyaP #danmaku_style_pannel { left: 0; width: 60px; height: 60px; bottom: 100%; display: none; position: absolute; background-color: #444; }
+.NyaP #danmaku_style_pannel { left: 0; width: 130px; height: 80px; bottom: 100%; display: none; position: absolute; background-color: #444; }
+
+.NyaP input#danmaku_color { border: 1px solid #ccc; }
 
 .NyaP #danmaku_submit { color: #fff; display: flex; cursor: pointer; padding: 0 14px; text-align: center; align-items: center; background-color: #707679; }
 

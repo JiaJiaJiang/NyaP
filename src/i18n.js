@@ -25,6 +25,7 @@ i18n.langs['zh-CN']={
 	'full page':'全页模式',
 	'full screen':'全屏模式',
 	'volume($0)':'音量（$0）',
+	'hex color':'十六进制颜色',
 	'danmaku input':'弹幕输入框',
 	'Input danmaku here':'在这里输入弹幕',
 	'Failed to change to fullscreen mode':'无法切换到全屏模式',

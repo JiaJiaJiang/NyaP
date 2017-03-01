@@ -144,6 +144,9 @@ LGPL license
 		position: absolute;
 		background-color: #444;
 	}
+	input#danmaku_color{
+		border: 1px solid #ccc;
+	}
 	#danmaku_submit{
 	    color: #fff;
         display: flex;					//set layout of text to center

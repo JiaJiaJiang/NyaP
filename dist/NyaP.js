@@ -2365,6 +2365,8 @@ var _NyaPCore = require('./NyaPCore.js');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -2372,6 +2374,20 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var _ = _i18n.i18n._;
+
+//NyaP options
+var NyaPOptions = {
+	autoHideDanmakuInput: true, //hide danmakuinput after danmaku sent
+	danmakuColors: ['fff', '6cf', 'ff0', 'f00', '0f0', '00f', 'f0f'], //colors in the danmaku style pannel
+	defaultDanmakuColor: null, //when the color inputed is invalid,this color will be applied
+	defaultDanmakuMode: 0, //right
+	danmakuSend: function danmakuSend(d, callback) {
+		callback(false);
+	}, //the func for sending danmaku
+	danmakuSizes: [25, 30, 45],
+	defaultDanmakuSize: 30
+
+};
 
 //normal player
 
@@ -2381,8 +2397,9 @@ var NyaP = function (_NyaPlayerCore) {
 	function NyaP(opt) {
 		_classCallCheck(this, NyaP);
 
-		var _this = _possibleConstructorReturn(this, (NyaP.__proto__ || Object.getPrototypeOf(NyaP)).call(this, opt));
+		var _this = _possibleConstructorReturn(this, (NyaP.__proto__ || Object.getPrototypeOf(NyaP)).call(this, Object.assign({}, NyaPOptions, opt)));
 
+		opt = _this.opt;
 		var NP = _this;
 		var $ = _this.eles = {};
 		_this._.playerMode = 'normal';
@@ -2390,11 +2407,15 @@ var NyaP = function (_NyaPlayerCore) {
 		var icons = {
 			play: [30, 30, '<path d="m10.063,8.856l9.873,6.143l-9.873,6.143v-12.287z" stroke-width="3" stroke-linejoin="round"/>'],
 			addDanmaku: [30, 30, '<path stroke-width="1.5" d="m20.514,20.120l0.551,-1.365l2.206,-0.341l-2.757,1.706h-13.787v-10.240h16.544v8.533" stroke-linejoin="round"/>' + '<path style="fill-opacity:1;stroke-width:0" d="m12.081,13.981h1.928v-1.985h1.978v1.985h1.928v2.036h-1.928v1.985h-1.978v-1.985h-1.928v-2.036z"/>'],
-			danmakuStyle: [30, 30, '<path style="fill-opacity:1!important;" d="m21.781,9.872l-1.500,-1.530c-0.378,-0.385 -0.997,-0.391 -1.384,-0.012l-0.959,0.941l2.870,2.926l0.960,-0.940c0.385,-0.379 0.392,-0.998 0.013,-1.383zm-12.134,7.532l2.871,2.926l7.593,-7.448l-2.872,-2.927l-7.591,7.449l0.000,0.000zm-1.158,2.571l-0.549,1.974l1.984,-0.511l1.843,-0.474l-2.769,-2.824l-0.509,1.835z" stroke-width="0"/>'],
+			danmakuStyle: [30, 30, '<path style="fill-opacity:1!important" d="m21.781,9.872l-1.500,-1.530c-0.378,-0.385 -0.997,-0.391 -1.384,-0.012l-0.959,0.941l2.870,2.926l0.960,-0.940c0.385,-0.379 0.392,-0.998 0.013,-1.383zm-12.134,7.532l2.871,2.926l7.593,-7.448l-2.872,-2.927l-7.591,7.449l0.000,0.000zm-1.158,2.571l-0.549,1.974l1.984,-0.511l1.843,-0.474l-2.769,-2.824l-0.509,1.835z" stroke-width="0"/>'],
 			fullPage: [30, 30, '<path stroke-linejoin="round" d="m11.166,9.761l-5.237,5.239l5.237,5.238l1.905,-1.905l-3.333,-3.333l3.332,-3.333l-1.904,-1.906zm7.665,0l-1.903,1.905l3.332,3.333l-3.332,3.332l1.903,1.905l5.238,-5.238l-5.238,-5.237z" stroke-width="1.3" />'],
 			fullScreen: [30, 30, '<rect stroke-linejoin="round" height="11.169" width="17.655" y="9.415" x="6.172" stroke-width="1.5"/>' + '<path stroke-linejoin="round" d="m12.361,11.394l-3.604,3.605l3.605,3.605l1.311,-1.311l-2.294,-2.294l2.293,-2.294l-1.311,-1.311zm5.275,0l-1.310,1.311l2.293,2.294l-2.293,2.293l1.310,1.311l3.605,-3.605l-3.605,-3.605z"/>'],
 			loop: [30, 30, '<path stroke-linejoin="round" stroke-width="1" d="m14.632,10.097h5.524c2.373,0 4.297,2.147 4.297,4.796c0,1.272 -0.452,2.491 -1.258,3.391c-0.805,0.899 -1.898,1.404 -3.038,1.404h-0.613v1.370l-2.455,-2.740l2.455,-2.740v1.370h0.613c1.017,0 1.841,-0.920 1.841,-2.055c0,-1.135 -0.824,-2.055 -1.841,-2.055h-5.524v-2.740z"/>' + '<path stroke-linejoin="round" stroke-width="1" d="m15.367,19.902h-5.524c-2.373,0 -4.297,-2.147 -4.297,-4.796c0,-1.272 0.452,-2.491 1.258,-3.391c0.805,-0.899 1.898,-1.404 3.038,-1.404h0.613v-1.370l2.455,2.740l-2.455,2.740v-1.370h-0.613c-1.017,0 -1.841,0.920 -1.841,2.055c0,1.135 0.824,2.055 1.841,2.055h5.524v2.740z"/>'],
-			volume: [30, 30, '<ellipse id="volume_circle" style="fill-opacity:.6!important;" ry="5" rx="5" cy="15" cx="15" stroke-dasharray="32 90" stroke-width="1.8"/>']
+			volume: [30, 30, '<ellipse id="volume_circle" style="fill-opacity:.6!important" ry="5" rx="5" cy="15" cx="15" stroke-dasharray="32 90" stroke-width="1.8"/>'],
+			danmakuMode0: [30, 30, '<path style="fill-opacity:1!important" stroke-width="0" d="m14.981,17.821l-7.937,-2.821l7.937,-2.821l0,1.409l7.975,0l0,2.821l-7.975,0l0,1.409l0,0.002z"/>'],
+			danmakuMode1: [30, 30, '<path style="fill-opacity:1!important" stroke-width="0" d="m15.019,12.178l7.937,2.821l-7.937,2.821l0,-1.409l-7.975,0l0,-2.821l7.975,0l0,-1.409l0,-0.002z"/>'],
+			danmakuMode3: [30, 30, '<path stroke-width="3" d="m7.972,7.486l14.054,0"/>'],
+			danmakuMode2: [30, 30, '<path stroke-width="3" d="m7.972,22.513l14.054,0"/>']
 		};
 		function icon(name, event) {
 			var attr = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
@@ -2406,8 +2427,8 @@ var NyaP = function (_NyaPlayerCore) {
 
 		_this._.player = (0, _Object2HTML.Object2HTML)({
 			_: 'div', attr: { 'class': 'NyaP' }, child: [{ _: 'div', attr: { id: 'video_frame' }, child: [video, _this.danmakuFrame.container] }, { _: 'div', attr: { id: 'control' }, child: [{ _: 'span', attr: { id: 'control_left' }, child: [icon('play', { click: function click(e) {
-							return _this.playOrPause();
-						} }, { title: _('play') })] }, { _: 'span', attr: { id: 'control_center' }, child: [{ _: 'div', prop: { id: 'progress_info' }, child: [{ _: 'span', child: [{ _: 'canvas', prop: { id: 'progress', pad: 10 } }] }, { _: 'span', prop: { id: 'time' }, child: [{ _: 'span', prop: { id: 'current_time' }, child: ['00:00'] }, '/', { _: 'span', prop: { id: 'total_time' }, child: ['00:00'] }] }] }, { _: 'div', prop: { id: 'danmaku_input_frame' }, child: [{ _: 'span', prop: { id: 'danmaku_style' }, child: [{ _: 'div', attr: { id: 'danmaku_style_pannel' }, child: [{ _: 'input', attr: { id: 'danmaku_color' } }] }, icon('danmakuStyle')] }, { _: 'input', attr: { id: 'danmaku_input', placeholder: _('Input danmaku here') } }, { _: 'span', prop: { id: 'danmaku_submit', innerHTML: _('Send') } }] }] }, { _: 'span', attr: { id: 'control_right' }, child: [icon('addDanmaku', { click: function click(e) {
+							return _this.playToggle();
+						} }, { title: _('play') })] }, { _: 'span', attr: { id: 'control_center' }, child: [{ _: 'div', prop: { id: 'progress_info' }, child: [{ _: 'span', child: [{ _: 'canvas', prop: { id: 'progress', pad: 10 } }] }, { _: 'span', prop: { id: 'time' }, child: [{ _: 'span', prop: { id: 'current_time' }, child: ['00:00'] }, '/', { _: 'span', prop: { id: 'total_time' }, child: ['00:00'] }] }] }, { _: 'div', prop: { id: 'danmaku_input_frame' }, child: [{ _: 'span', prop: { id: 'danmaku_style' }, child: [{ _: 'div', attr: { id: 'danmaku_style_pannel' }, child: [{ _: 'div', attr: { id: 'danmaku_color_box' } }, { _: 'input', attr: { id: 'danmaku_color', placeholder: _('hex color'), maxlength: "6" } }, { _: 'span', attr: { id: 'danmaku_mode_box' }, child: [icon('danmakuMode0'), icon('danmakuMode2'), icon('danmakuMode3'), icon('danmakuMode1')] }, { _: 'span', attr: { id: 'danmaku_size_box' } }] }, icon('danmakuStyle')] }, { _: 'input', attr: { id: 'danmaku_input', placeholder: _('Input danmaku here') } }, { _: 'span', prop: { id: 'danmaku_submit', innerHTML: _('Send') } }] }] }, { _: 'span', attr: { id: 'control_right' }, child: [icon('addDanmaku', { click: function click(e) {
 							return _this.danmakuInput();
 						} }, { title: _('danmaku input') }), icon('volume', {}, { title: _('volume($0)', '100%') }), icon('loop', { click: function click(e) {
 							return _this.loop();
@@ -2421,6 +2442,18 @@ var NyaP = function (_NyaPlayerCore) {
 		//add elements with id to eles prop
 		[].slice.call(_this._.player.querySelectorAll('*')).forEach(function (e) {
 			if (e.id && !$[e.id]) $[e.id] = e;
+		});
+
+		//danmaku sizes
+		opt.danmakuSizes.forEach(function (s, ind) {
+			var e = (0, _Object2HTML.Object2HTML)({ _: 'span', attr: { style: 'font-size:' + (12 + ind * 3) + 'px;', title: s }, prop: { size: s }, child: ['A'] });
+			$.danmaku_size_box.appendChild(e);
+		});
+
+		//danmaku colors
+		opt.danmakuColors.forEach(function (c) {
+			var e = (0, _Object2HTML.Object2HTML)({ _: 'span', attr: { style: 'background-color:#' + c + ';', title: c }, prop: { color: c } });
+			$.danmaku_color_box.appendChild(e);
 		});
 
 		//progress
@@ -2469,7 +2502,7 @@ var NyaP = function (_NyaPlayerCore) {
 					$.total_time.innerHTML = (0, _NyaPCore.formatTime)(video.duration, video.duration);
 				},
 				volumechange: function volumechange(e) {
-					(0, _NyaPCore.setAttrs)($.volume_circle, { 'stroke-dasharray': video.volume * 10 * Math.PI + ' 90', style: 'fill-opacity:' + (video.muted ? .2 : .6) + '!important;' });
+					(0, _NyaPCore.setAttrs)($.volume_circle, { 'stroke-dasharray': video.volume * 10 * Math.PI + ' 90', style: 'fill-opacity:' + (video.muted ? .2 : .6) + '!important' });
 					$.icon_span_volume.setAttribute('title', _('volume($0)', video.muted ? _('muted') : (video.volume * 100 | 0) + '%'));
 				},
 				progress: function progress(e) {
@@ -2500,7 +2533,21 @@ var NyaP = function (_NyaPlayerCore) {
 			},
 			danmaku_container: {
 				click: function click(e) {
-					return _this.playOrPause();
+					return _this.playToggle();
+				}
+			},
+			danmaku_color: {
+				'input,change': function inputChange(e) {
+					var i = e.target,
+					    c = void 0;
+					if (c = i.value.match(/^([\da-f]{3}){1,2}$/i)) {
+						c = c[0];
+						i.style.backgroundColor = '#' + c;
+						_this._.danmakuColor = c;
+					} else {
+						_this._.danmakuColor = undefined;
+						i.style.backgroundColor = '';
+					}
 				}
 			},
 			icon_span_volume: {
@@ -2513,12 +2560,50 @@ var NyaP = function (_NyaPlayerCore) {
 					if (v < 0) v = 0;else if (v > 1) v = 1;
 					video.volume = v;
 				}
+			},
+			danmakuModeSwitch: {
+				click: function click() {
+					var m = 1 * this.id.match(/\d$/)[0];
+					if (NP._.danmakuMode !== undefined) $['icon_span_danmakuMode' + NP._.danmakuMode].classList.remove('active');
+					$['icon_span_danmakuMode' + m].classList.add('active');
+					NP._.danmakuMode = m;
+				}
+			},
+			danmaku_input: {
+				keydown: function keydown(e) {
+					if (e.code === 'Enter') _this.send();
+				}
+			},
+			danmaku_submit: {
+				click: function click(e) {
+					_this.send();
+				}
+			},
+			danmaku_size_box: {
+				click: function click(e) {
+					var t = e.target;
+					if (!t.size) return;
+					[].concat(_toConsumableArray($.danmaku_size_box.childNodes)).forEach(function (sp) {
+						if (_this._.danmakuSize === sp.size) sp.classList.remove('active');
+					});
+					t.classList.add('active');
+					_this._.danmakuSize = t.size;
+				}
 			}
 		};
-		for (var eleid in events) {
+		for (var eleid in $) {
 			//add events to elements
-			(0, _NyaPCore.addEvents)($[eleid], events[eleid]);
+			var eves = events[eleid];
+			if (eleid.startsWith('icon_span_danmakuMode')) {
+				eves = events.danmakuModeSwitch;
+			}
+			eves && (0, _NyaPCore.addEvents)($[eleid], eves);
 		}
+
+		$['icon_span_danmakuMode' + opt.defaultDanmakuMode].click(); //init to danmakuMode 0
+		[].concat(_toConsumableArray($.danmaku_size_box.childNodes)).forEach(function (sp) {
+			if (sp.size === opt.defaultDanmakuSize) sp.click();
+		});
 
 		console.debug(_this.eles);
 		return _this;
@@ -2582,6 +2667,13 @@ var NyaP = function (_NyaPlayerCore) {
 			this.emit('progressRefresh');
 		}
 	}, {
+		key: 'send',
+		value: function send() {
+			var color = this._.danmakuColor || this.opt.defaultDanmakuColor,
+			    content = this.eles.danmaku_input.value,
+			    mode = this._.danmakuMode;
+		}
+	}, {
 		key: 'drawProgress',
 		value: function drawProgress() {
 			var ctx = this._.progressContext,
@@ -2597,7 +2689,7 @@ var NyaP = function (_NyaPlayerCore) {
 			ctx.lineCap = "round";
 			//background
 			ctx.beginPath();
-			ctx.strokeStyle = '#e1e1e1';
+			ctx.strokeStyle = '#eee';
 			ctx.lineWidth = 7;
 			ctx.moveTo(pad, 15);
 			ctx.lineTo(pad + len, 15);
@@ -2632,7 +2724,7 @@ var NyaP = function (_NyaPlayerCore) {
 			//mouse
 			if (this._.progressX) {
 				ctx.beginPath();
-				ctx.strokeStyle = 'rgba(0,0,0,.1)';
+				ctx.strokeStyle = 'rgba(0,0,0,.05)';
 				ctx.moveTo(pad + len * cT / d, 15);
 				ctx.lineTo((0, _NyaPCore.limitIn)(this._.progressX, pad, pad + len), 15);
 				ctx.stroke();
@@ -2826,8 +2918,8 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 			this.video.paused || this.video.pause();
 		}
 	}, {
-		key: 'playOrPause',
-		value: function playOrPause() {
+		key: 'playToggle',
+		value: function playToggle() {
 			if (this.video.paused) {
 				this.play();
 			} else {
@@ -2882,8 +2974,15 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 function addEvents(target) {
 	var events = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
+	var _loop = function _loop(e) {
+		var se = e.split(/\,/g);
+		se.forEach(function (e2) {
+			return target.addEventListener(e2, events[e]);
+		});
+	};
+
 	for (var e in events) {
-		target.addEventListener(e, events[e]);
+		_loop(e);
 	}
 }
 function requestFullscreen(d) {
@@ -2929,6 +3028,12 @@ function limitIn(num, min, max) {
 	return num;
 }
 
+//Polyfill from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/startsWith
+if (!String.prototype.startsWith) String.prototype.startsWith = function (searchString, position) {
+	position = position || 0;
+	return this.substr(position, searchString.length) === searchString;
+};
+
 exports.default = NyaPlayerCore;
 exports.NyaPlayerCore = NyaPlayerCore;
 exports.addEvents = addEvents;
@@ -2962,12 +3067,6 @@ var i18n = {
 	}
 };
 
-//Polyfill from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/startsWith
-if (!String.prototype.startsWith) String.prototype.startsWith = function (searchString, position) {
-	position = position || 0;
-	return this.substr(position, searchString.length) === searchString;
-};
-
 i18n.langs['zh-CN'] = {
 	'play': '播放',
 	'loop': '循环',
@@ -2977,11 +3076,15 @@ i18n.langs['zh-CN'] = {
 	'full page': '全页模式',
 	'full screen': '全屏模式',
 	'volume($0)': '音量（$0）',
+	'hex color': 'Hex颜色',
 	'danmaku input': '弹幕输入框',
 	'Input danmaku here': '在这里输入弹幕',
 	'Failed to change to fullscreen mode': '无法切换到全屏模式'
 };
 
+if (!navigator.languages) {
+	navigator.languages = [navigator.language];
+}
 var _iteratorNormalCompletion = true;
 var _didIteratorError = false;
 var _iteratorError = undefined;

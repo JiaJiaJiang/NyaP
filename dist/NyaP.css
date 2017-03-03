@@ -10,7 +10,7 @@ LGPL license
 
 .NyaP svg[id^='icon'] > * { fill: #5f3c2c; fill-opacity: 0; stroke: #5f3c2c; transition: fill-opacity .2s; }
 
-.NyaP span[id^="icon_span_"] { background-color: inherit; cursor: pointer; }
+.NyaP span[id^="icon_span_"] { background-color: inherit; display: inline-block; cursor: pointer; }
 
 .NyaP span[id^="icon_span_"]:hover { background-color: #ececec !important; }
 
@@ -52,11 +52,21 @@ LGPL license
 
 .NyaP #danmaku_style:hover #danmaku_style_pannel { display: block; }
 
-.NyaP #danmaku_style_pannel { left: 0; width: 130px; height: 80px; bottom: 100%; display: none; position: absolute; background-color: #444; }
+.NyaP #danmaku_style_pannel { left: -25px; padding: 8px; bottom: 100%; display: none; position: absolute; border-radius: 2px; border: 1px solid #ccc; background-color: inherit; }
 
-.NyaP input#danmaku_color { border: 1px solid #ccc; }
+.NyaP input#danmaku_color { width: 58px; height: 28px; font-size: 14px; text-align: center; border-radius: 3px; border: 1px solid #ccc; text-shadow: 0px 0px 2px #fff; -webkit-text-stroke: 0.1px #fff; -moz-text-stroke: 0.1px #fff; -ms-text-stroke: 0.1px #fff; text-stroke: 0.1px #fff; }
+
+.NyaP #danmaku_mode_box, .NyaP #danmaku_size_box { font-size: 0; height: 30px; cursor: pointer; overflow: hidden; margin-left: 5px; border-radius: 3px; display: inline-flex; border: 1px solid #ccc; }
+
+.NyaP #danmaku_size_box > span { width: 34px; height: 30px; line-height: 30px; text-align: center; display: inline-block; font-family: monospace; vertical-align: middle; background-color: inherit; }
+
+.NyaP #danmaku_mode_box > span.active, .NyaP #danmaku_size_box > span.active { background-color: #ececec !important; }
 
 .NyaP #danmaku_submit { color: #fff; display: flex; cursor: pointer; padding: 0 14px; text-align: center; align-items: center; background-color: #707679; }
+
+.NyaP #danmaku_color_box { width: 100%; display: flex; margin-bottom: 8px; position: relative; justify-content: space-around; }
+
+.NyaP #danmaku_color_box > span { display: inline-block; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; border: 1px solid #ddd; }
 
 .NyaP #time { display: flex; padding: 0 5px; font-size: 14px; text-align: center; align-items: center; font-family: monospace; }
 

@@ -18,6 +18,13 @@ LGPL license
 	position: absolute;
 }
 
+@mixin text_stroke($value) {
+	-webkit-text-stroke: $value;
+	-moz-text-stroke: $value;
+	-ms-text-stroke: $value;
+	text-stroke: $value;
+}
+
 .NyaP{
 	@extend .NyaP_fullfill;
 
@@ -34,6 +41,7 @@ LGPL license
 	}
 	span[id^="icon_span_"]{
 		background-color: inherit;
+	    display: inline-block;
 		cursor: pointer;
 		&:hover{
 			background-color:#ececec!important;
@@ -136,16 +144,48 @@ LGPL license
 		}
 	}
 	#danmaku_style_pannel{
-		left: 0;
-		width: 130px;
-		height: 80px;
+		left: -25px;
+	    padding: 8px;
 		bottom: 100%;
 		display: none;
 		position: absolute;
-		background-color: #444;
+	    border-radius: 2px;
+        border: 1px solid #ccc;
+		//flex-wrap: wrap-reverse;
+		background-color: inherit;
 	}
 	input#danmaku_color{
-		border: 1px solid #ccc;
+	    width: 58px;
+	    height: 28px;
+	    font-size: 14px;
+	    text-align: center;
+	    border-radius: 3px;
+        border: 1px solid #ccc;
+        text-shadow: 0px 0px 2px #fff;
+        @include text_stroke(0.1px #fff);
+	}
+	#danmaku_mode_box,#danmaku_size_box{
+        font-size: 0;
+	    height: 30px;
+	    cursor: pointer;
+        overflow: hidden;
+		margin-left: 5px;
+	    border-radius: 3px;
+        display: inline-flex;
+	    border: 1px solid #ccc;
+	}
+	#danmaku_size_box>span{
+		width: 34px;
+		height: 30px;
+		line-height: 30px;
+		text-align: center;
+	    display: inline-block;
+		font-family: monospace;
+	    vertical-align: middle;
+		background-color: inherit;
+	}
+	#danmaku_mode_box>span.active,#danmaku_size_box>span.active{
+	    background-color: #ececec!important;
 	}
 	#danmaku_submit{
 	    color: #fff;
@@ -155,6 +195,22 @@ LGPL license
 	    text-align: center;
 	    align-items: center;
 		background-color: #707679;
+	}
+	#danmaku_color_box{
+	    width: 100%;
+        display: flex;
+		margin-bottom: 8px;
+	    position: relative;
+	    justify-content: space-around;
+
+		&>span{
+			display: inline-block;
+		    width: 30px;
+		    height: 30px;
+		    border-radius: 6px;
+		    cursor: pointer;
+		    border: 1px solid #ddd;
+		}
 	}
 	#time{
 	    display: flex;

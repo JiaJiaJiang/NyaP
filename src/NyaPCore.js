@@ -106,7 +106,7 @@ class NyaPlayerCore extends NyaPEventEmitter{
 	pause(){
 		this.video.paused||this.video.pause();
 	}
-	playOrPause(){
+	playToggle(){
 		if(this.video.paused){
 			this.play();
 		}else{
@@ -132,7 +132,10 @@ class NyaPlayerCore extends NyaPEventEmitter{
 //other functions
 
 function addEvents(target,events={}){
-	for(let e in events)target.addEventListener(e,events[e]);
+	for(let e in events){
+		let se=e.split(/\,/g);
+		se.forEach(e2=>target.addEventListener(e2,events[e]));
+	}
 }
 function requestFullscreen(d) {
 	try{
@@ -179,6 +182,12 @@ function limitIn(num,min,max){//limit the number in a range
 }
 
 
+//Polyfill from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/startsWith
+if (!String.prototype.startsWith)
+String.prototype.startsWith = function(searchString, position){
+	position = position || 0;
+	return this.substr(position, searchString.length) === searchString;
+};
 
 export default NyaPlayerCore;
 export {

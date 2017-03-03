@@ -156,6 +156,7 @@ LGPL license
 	}
 	input#danmaku_color{
 	    width: 58px;
+        //float: left;
 	    height: 28px;
 	    font-size: 14px;
 	    text-align: center;
@@ -165,6 +166,7 @@ LGPL license
         @include text_stroke(0.1px #fff);
 	}
 	#danmaku_mode_box,#danmaku_size_box{
+        //float: left;
         font-size: 0;
 	    height: 30px;
 	    cursor: pointer;
@@ -173,6 +175,7 @@ LGPL license
 	    border-radius: 3px;
         display: inline-flex;
 	    border: 1px solid #ccc;
+	    vertical-align: bottom;
 	}
 	#danmaku_size_box>span{
 		width: 34px;
@@ -199,6 +202,7 @@ LGPL license
 	#danmaku_color_box{
 	    width: 100%;
         display: flex;
+        flex-wrap: wrap;
 		margin-bottom: 8px;
 	    position: relative;
 	    justify-content: space-around;

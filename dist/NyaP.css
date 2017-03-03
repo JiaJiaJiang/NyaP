@@ -56,7 +56,7 @@ LGPL license
 
 .NyaP input#danmaku_color { width: 58px; height: 28px; font-size: 14px; text-align: center; border-radius: 3px; border: 1px solid #ccc; text-shadow: 0px 0px 2px #fff; -webkit-text-stroke: 0.1px #fff; -moz-text-stroke: 0.1px #fff; -ms-text-stroke: 0.1px #fff; text-stroke: 0.1px #fff; }
 
-.NyaP #danmaku_mode_box, .NyaP #danmaku_size_box { font-size: 0; height: 30px; cursor: pointer; overflow: hidden; margin-left: 5px; border-radius: 3px; display: inline-flex; border: 1px solid #ccc; }
+.NyaP #danmaku_mode_box, .NyaP #danmaku_size_box { font-size: 0; height: 30px; cursor: pointer; overflow: hidden; margin-left: 5px; border-radius: 3px; display: inline-flex; border: 1px solid #ccc; vertical-align: bottom; }
 
 .NyaP #danmaku_size_box > span { width: 34px; height: 30px; line-height: 30px; text-align: center; display: inline-block; font-family: monospace; vertical-align: middle; background-color: inherit; }
 
@@ -64,7 +64,7 @@ LGPL license
 
 .NyaP #danmaku_submit { color: #fff; display: flex; cursor: pointer; padding: 0 14px; text-align: center; align-items: center; background-color: #707679; }
 
-.NyaP #danmaku_color_box { width: 100%; display: flex; margin-bottom: 8px; position: relative; justify-content: space-around; }
+.NyaP #danmaku_color_box { width: 100%; display: flex; flex-wrap: wrap; margin-bottom: 8px; position: relative; justify-content: space-around; }
 
 .NyaP #danmaku_color_box > span { display: inline-block; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; border: 1px solid #ddd; }
 

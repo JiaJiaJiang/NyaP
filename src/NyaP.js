@@ -23,7 +23,7 @@ const _=i18n._;
 //NyaP options
 const NyaPOptions={
 	autoHideDanmakuInput:true,//hide danmakuinput after danmaku sent
-	danmakuColors:['fff','6cf','ff0','f00','0f0','00f','f0f'],//colors in the danmaku style pannel
+	danmakuColors:['fff','6cf','ff0','f00','0f0','00f','f0f','000'],//colors in the danmaku style pannel
 	defaultDanmakuColor:null,//when the color inputed is invalid,this color will be applied
 	defaultDanmakuMode:0,//right
 	danmakuSend:(d,callback)=>{callback(false);},//the func for sending danmaku
@@ -205,7 +205,7 @@ class NyaP extends NyaPlayerCore{
 			danmaku_color:{
 				'input,change':e=>{
 					let i=e.target,c;
-					if(c=i.value.match(/^([\da-f]{3}){1,2}$/i)){
+					if(c=i.value.match(/^([\da-f]{3}){1,2}$/i)){//match valid hex color code
 						c=c[0];
 						i.style.backgroundColor=`#${c}`;
 						this._.danmakuColor=c;
@@ -252,6 +252,14 @@ class NyaP extends NyaPlayerCore{
 					this._.danmakuSize=t.size;
 				}
 			},
+			danmaku_color_box:{
+				click:e=>{
+					if(e.target.color){
+						$.danmaku_color.value=e.target.color;
+						$.danmaku_color.dispatchEvent(new Event('change'));
+					}
+				}
+			},
 		}
 		for(let eleid in $){//add events to elements
 			let eves=events[eleid];
@@ -261,7 +269,7 @@ class NyaP extends NyaPlayerCore{
 			eves&&addEvents($[eleid],eves);
 		}
 
-		$['icon_span_danmakuMode'+opt.defaultDanmakuMode].click();//init to danmakuMode 0
+		$['icon_span_danmakuMode'+opt.defaultDanmakuMode].click();//init to default danmaku mode
 		[...$.danmaku_size_box.childNodes].forEach(sp=>{if(sp.size===opt.defaultDanmakuSize)sp.click()});
 
 		console.debug(this.eles)

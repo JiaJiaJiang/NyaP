@@ -2378,7 +2378,7 @@ var _ = _i18n.i18n._;
 //NyaP options
 var NyaPOptions = {
 	autoHideDanmakuInput: true, //hide danmakuinput after danmaku sent
-	danmakuColors: ['fff', '6cf', 'ff0', 'f00', '0f0', '00f', 'f0f'], //colors in the danmaku style pannel
+	danmakuColors: ['fff', '6cf', 'ff0', 'f00', '0f0', '00f', 'f0f', '000'], //colors in the danmaku style pannel
 	defaultDanmakuColor: null, //when the color inputed is invalid,this color will be applied
 	defaultDanmakuMode: 0, //right
 	danmakuSend: function danmakuSend(d, callback) {
@@ -2541,6 +2541,7 @@ var NyaP = function (_NyaPlayerCore) {
 					var i = e.target,
 					    c = void 0;
 					if (c = i.value.match(/^([\da-f]{3}){1,2}$/i)) {
+						//match valid hex color code
 						c = c[0];
 						i.style.backgroundColor = '#' + c;
 						_this._.danmakuColor = c;
@@ -2589,6 +2590,14 @@ var NyaP = function (_NyaPlayerCore) {
 					t.classList.add('active');
 					_this._.danmakuSize = t.size;
 				}
+			},
+			danmaku_color_box: {
+				click: function click(e) {
+					if (e.target.color) {
+						$.danmaku_color.value = e.target.color;
+						$.danmaku_color.dispatchEvent(new Event('change'));
+					}
+				}
 			}
 		};
 		for (var eleid in $) {
@@ -2600,7 +2609,7 @@ var NyaP = function (_NyaPlayerCore) {
 			eves && (0, _NyaPCore.addEvents)($[eleid], eves);
 		}
 
-		$['icon_span_danmakuMode' + opt.defaultDanmakuMode].click(); //init to danmakuMode 0
+		$['icon_span_danmakuMode' + opt.defaultDanmakuMode].click(); //init to default danmaku mode
 		[].concat(_toConsumableArray($.danmaku_size_box.childNodes)).forEach(function (sp) {
 			if (sp.size === opt.defaultDanmakuSize) sp.click();
 		});

@@ -146,27 +146,25 @@ LGPL license
 	#danmaku_style_pannel{
 		left: -25px;
 	    padding: 8px;
-		bottom: 100%;
+		bottom: 67%;
 		display: none;
 		position: absolute;
 	    border-radius: 2px;
         border: 1px solid #ccc;
-		//flex-wrap: wrap-reverse;
 		background-color: inherit;
 	}
 	input#danmaku_color{
 	    width: 58px;
-        //float: left;
 	    height: 28px;
 	    font-size: 14px;
 	    text-align: center;
 	    border-radius: 3px;
         border: 1px solid #ccc;
+        font-family: monospace;
         text-shadow: 0px 0px 2px #fff;
         @include text_stroke(0.1px #fff);
 	}
 	#danmaku_mode_box,#danmaku_size_box{
-        //float: left;
         font-size: 0;
 	    height: 30px;
 	    cursor: pointer;
@@ -214,6 +212,18 @@ LGPL license
 		    border-radius: 6px;
 		    cursor: pointer;
 		    border: 1px solid #ddd;
+		}
+	}
+	#settings_box{
+		position: absolute;
+		display: none;
+		bottom: $control_bar_height;
+		background-color:#ccc;
+		right: -10px;
+	}
+	#player_settings:active{
+		#settings_box{
+			display: flex;
 		}
 	}
 	#time{

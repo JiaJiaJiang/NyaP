@@ -15,6 +15,7 @@ i18n.langs['zh-CN']={
 	'Send':'发送',
 	'pause':'暂停',
 	'muted':'静音',
+	'settings':'设置',
 	'full page':'全页模式',
 	'full screen':'全屏模式',
 	'volume($0)':'音量（$0）',

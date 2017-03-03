@@ -2415,7 +2415,8 @@ var NyaP = function (_NyaPlayerCore) {
 			danmakuMode0: [30, 30, '<path style="fill-opacity:1!important" stroke-width="0" d="m14.981,17.821l-7.937,-2.821l7.937,-2.821l0,1.409l7.975,0l0,2.821l-7.975,0l0,1.409l0,0.002z"/>'],
 			danmakuMode1: [30, 30, '<path style="fill-opacity:1!important" stroke-width="0" d="m15.019,12.178l7.937,2.821l-7.937,2.821l0,-1.409l-7.975,0l0,-2.821l7.975,0l0,-1.409l0,-0.002z"/>'],
 			danmakuMode3: [30, 30, '<path stroke-width="3" d="m7.972,7.486l14.054,0"/>'],
-			danmakuMode2: [30, 30, '<path stroke-width="3" d="m7.972,22.513l14.054,0"/>']
+			danmakuMode2: [30, 30, '<path stroke-width="3" d="m7.972,22.513l14.054,0"/>'],
+			settings: [30, 30, '<path stroke="null" style="fill-opacity:1!important" d="m19.770,13.364l-0.223,-0.530c0.766,-1.732 0.715,-1.784 0.566,-1.934l-0.979,-0.956l-0.097,-0.081l-0.113,0c-0.059,0 -0.238,0 -1.727,0.675l-0.547,-0.220c-0.708,-1.755 -0.780,-1.755 -0.988,-1.755l-1.381,0c-0.207,0 -0.287,-0.000 -0.944,1.761l-0.545,0.221c-1.006,-0.424 -1.596,-0.639 -1.755,-0.639l-0.130,0.004l-1.053,1.032c-0.159,0.150 -0.215,0.203 0.594,1.909l-0.223,0.528c-1.793,0.693 -1.793,0.760 -1.793,0.972l0,1.354c0,0.212 0,0.287 1.799,0.932l0.223,0.528c-0.766,1.731 -0.714,1.783 -0.566,1.932l0.979,0.958l0.097,0.083l0.114,0c0.058,0 0.235,0 1.726,-0.676l0.547,0.222c0.708,1.755 0.780,1.754 0.988,1.754l1.381,0c0.211,0 0.286,0 0.945,-1.760l0.548,-0.221c1.004,0.424 1.593,0.640 1.751,0.640l0.131,-0.003l1.061,-1.039c0.151,-0.152 0.204,-0.204 -0.602,-1.903l0.221,-0.529c1.795,-0.694 1.795,-0.766 1.795,-0.974l0,-1.353c-0.000,-0.213 -0.000,-0.287 -1.801,-0.929zm-4.770,3.888c-1.266,0 -2.298,-1.011 -2.298,-2.254c0,-1.241 1.031,-2.252 2.298,-2.252c1.266,0 2.295,1.010 2.295,2.252c-0.000,1.242 -1.029,2.254 -2.295,2.254z"/>']
 		};
 		function icon(name, event) {
 			var attr = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
@@ -2432,7 +2433,7 @@ var NyaP = function (_NyaPlayerCore) {
 							return _this.danmakuInput();
 						} }, { title: _('danmaku input') }), icon('volume', {}, { title: _('volume($0)', '100%') }), icon('loop', { click: function click(e) {
 							return _this.loop();
-						} }, { title: _('loop') }), { _: 'span', prop: { id: 'player_mode' }, child: [icon('fullPage', { click: function click(e) {
+						} }, { title: _('loop') }), { _: 'span', prop: { id: 'player_settings' }, child: [icon('settings', { click: function click(e) {} }, { title: _('settings') }), { _: 'div', attr: { id: 'settings_box' }, child: ['poi'] }] }, { _: 'span', prop: { id: 'player_mode' }, child: [icon('fullPage', { click: function click(e) {
 								return _this.playerMode('fullPage');
 							} }, { title: _('full page') }), icon('fullScreen', { click: function click(e) {
 								return _this.playerMode('fullScreen');
@@ -2619,6 +2620,13 @@ var NyaP = function (_NyaPlayerCore) {
 	}
 
 	_createClass(NyaP, [{
+		key: 'settingsBoxToggle',
+		value: function settingsBoxToggle() {
+			var bool = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : !this.eles.settings_box.style.display;
+
+			this.eles.settings_box.style.display = bool ? 'flex' : '';
+		}
+	}, {
 		key: 'danmakuInput',
 		value: function danmakuInput() {
 			var bool = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : !this.eles.danmaku_input_frame.offsetHeight;
@@ -3082,6 +3090,7 @@ i18n.langs['zh-CN'] = {
 	'Send': '发送',
 	'pause': '暂停',
 	'muted': '静音',
+	'settings': '设置',
 	'full page': '全页模式',
 	'full screen': '全屏模式',
 	'volume($0)': '音量（$0）',

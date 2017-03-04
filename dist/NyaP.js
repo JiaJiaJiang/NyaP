@@ -2428,7 +2428,7 @@ var NyaP = function (_NyaPlayerCore) {
 					innerHTML: '<svg height=' + ico[1] + ' width=' + ico[0] + ' id="icon_' + name + '"">' + ico[2] + '</svg>' } });
 		}
 		function collectEles(ele) {
-			[].slice.call(ele.querySelectorAll('*')).forEach(function (e) {
+			(0, _NyaPCore.toArray)(ele.querySelectorAll('*')).forEach(function (e) {
 				if (e.id && !$[e.id]) $[e.id] = e;
 			});
 		}
@@ -2971,11 +2971,7 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 	}, {
 		key: 'playToggle',
 		value: function playToggle() {
-			if (this.video.paused) {
-				this.play();
-			} else {
-				this.pause();
-			}
+			this[this.video.paused ? 'play' : 'pause']();
 		}
 	}, {
 		key: 'seek',
@@ -2984,14 +2980,27 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 			this.video.currentTime = time / 1000;
 		}
 	}, {
-		key: 'addDanmaku',
-		value: function addDanmaku(obj) {}
+		key: 'loadDanmaku',
+		value: function loadDanmaku(obj) {
+			this.danmakuFrame.load(obj);
+		}
+	}, {
+		key: 'loadDanmakuList',
+		value: function loadDanmakuList(obj) {
+			this.danmakuFrame.loadList(obj);
+		}
 	}, {
 		key: 'removeDanmaku',
-		value: function removeDanmaku(obj) {}
+		value: function removeDanmaku(obj) {
+			this.danmakuFrame.unload(obj);
+		}
 	}, {
-		key: 'Danmaku',
-		value: function Danmaku(bool) {}
+		key: 'danmakuToggle',
+		value: function danmakuToggle() {
+			var bool = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : !this.danmakuFrame.working;
+
+			this.danmakuFrame[bool ? 'strat' : 'stop']();
+		}
 	}, {
 		key: 'player',
 		get: function get() {
@@ -3026,8 +3035,7 @@ function addEvents(target) {
 	var events = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
 	var _loop = function _loop(e) {
-		var se = e.split(/\,/g);
-		se.forEach(function (e2) {
+		e.split(/\,/g).forEach(function (e2) {
 			return target.addEventListener(e2, events[e]);
 		});
 	};
@@ -3053,10 +3061,9 @@ function isFullscreen() {
 	return !!(d.fullscreen || d.mozFullScreen || d.webkitIsFullScreen || d.msFullscreenElement);
 }
 function formatTime(sec, total) {
-	var h = void 0,
-	    r = void 0,
-	    s = sec | 0;
-	h = s / 3600 | 0;
+	var r = void 0,
+	    s = sec | 0,
+	    h = s / 3600 | 0;
 	if (total >= 3600) s = s % 3600;
 	r = [padTime(s / 60 | 0), padTime(s % 60)];
 	total >= 3600 && r.unshift(h);
@@ -3074,17 +3081,16 @@ function setAttrs(ele, obj) {
 }
 function limitIn(num, min, max) {
 	//limit the number in a range
-	if (num < min) return min;
-	if (num > max) return max;
-	return num;
+	return num < min ? min : num > max ? max : num;
 }
 function toArray(obj) {
 	return [].concat(_toConsumableArray(obj));
 }
 
 //Polyfill from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/startsWith
-if (!String.prototype.startsWith) String.prototype.startsWith = function (searchString, position) {
-	position = position || 0;
+if (!String.prototype.startsWith) String.prototype.startsWith = function (searchString) {
+	var position = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+
 	return this.substr(position, searchString.length) === searchString;
 };
 

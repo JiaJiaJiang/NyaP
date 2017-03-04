@@ -107,18 +107,23 @@ class NyaPlayerCore extends NyaPEventEmitter{
 		this.video.paused||this.video.pause();
 	}
 	playToggle(){
-		if(this.video.paused){
-			this.play();
-		}else{
-			this.pause();
-		}
+		this[this.video.paused?'play':'pause']();
 	}
 	seek(time){//msec
 		this.video.currentTime=time/1000;
 	}
-	addDanmaku(obj){}
-	removeDanmaku(obj){}
-	Danmaku(bool){}
+	loadDanmaku(obj){
+		this.danmakuFrame.load(obj);
+	}
+	loadDanmakuList(obj){
+		this.danmakuFrame.loadList(obj);
+	}
+	removeDanmaku(obj){
+		this.danmakuFrame.unload(obj);
+	}
+	danmakuToggle(bool=!this.danmakuFrame.working){
+		this.danmakuFrame[bool?'strat':'stop']();
+	}
 	get player(){return this._.player;}
 	get video(){return this._.video;}
 	get src(){return this.video.src;}
@@ -132,10 +137,8 @@ class NyaPlayerCore extends NyaPEventEmitter{
 //other functions
 
 function addEvents(target,events={}){
-	for(let e in events){
-		let se=e.split(/\,/g);
-		se.forEach(e2=>target.addEventListener(e2,events[e]));
-	}
+	for(let e in events)
+		e.split(/\,/g).forEach(e2=>target.addEventListener(e2,events[e]));
 }
 function requestFullscreen(d) {
 	try{
@@ -161,8 +164,7 @@ function isFullscreen() {
 	return !!(d.fullscreen || d.mozFullScreen || d.webkitIsFullScreen || d.msFullscreenElement);
 }
 function formatTime(sec,total){
-	let h,r,s=sec|0;
-	h=(s/3600)|0;
+	let r,s=sec|0,h=(s/3600)|0;
 	if(total>=3600)s=s%3600;
 	r=[padTime((s/60)|0),padTime(s%60)];
 	(total>=3600)&&r.unshift(h);
@@ -176,9 +178,7 @@ function setAttrs(ele,obj){//set multi attrs to a Element
 		ele.setAttribute(a,obj[a])
 }
 function limitIn(num,min,max){//limit the number in a range
-	if(num<min)return min;
-	if(num>max)return max;
-	return num;
+	return num<min?min:(num>max?max:num);
 }
 function toArray(obj){
 	return [...obj];
@@ -187,8 +187,7 @@ function toArray(obj){
 
 //Polyfill from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/startsWith
 if (!String.prototype.startsWith)
-String.prototype.startsWith = function(searchString, position){
-	position = position || 0;
+String.prototype.startsWith = function(searchString, position=0){
 	return this.substr(position, searchString.length) === searchString;
 };
 

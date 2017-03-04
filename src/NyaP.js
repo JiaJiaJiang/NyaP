@@ -66,7 +66,7 @@ class NyaP extends NyaPlayerCore{
 				innerHTML:`<svg height=${ico[1]} width=${ico[0]} id="icon_${name}"">${ico[2]}</svg>`}});
 		}
 		function collectEles(ele){
-			[].slice.call(ele.querySelectorAll('*')).forEach(e=>{
+			toArray(ele.querySelectorAll('*')).forEach(e=>{
 				if(e.id&&!$[e.id])$[e.id]=e;
 			});
 		}
@@ -143,7 +143,7 @@ class NyaP extends NyaPlayerCore{
 			$.danmaku_mode_box.appendChild(icon(`danmakuMode${m}`));
 		});
 		collectEles($.danmaku_mode_box);
-		
+
 
 		//progress
 		setTimeout(()=>{

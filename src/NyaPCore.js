@@ -6,7 +6,7 @@ LGPL license
 
 import {DanmakuFrame,DanmakuFrameModule} from '../lib/danmaku-frame/src/danmaku-frame.js'
 import initText2d from '../lib/danmaku-text/src/danmaku-text.js'
-import {Object2HTML} from '../lib/Object2HTML/Object2HTML.js'
+import O2H from '../lib/Object2HTML/Object2HTML.js'
 
 
 initText2d(DanmakuFrame,DanmakuFrameModule);//init text2d mod
@@ -57,7 +57,7 @@ class NyaPlayerCore extends NyaPEventEmitter{
 		super();
 		opt=this.opt=Object.assign({},NyaPOptions,opt);
 		this._={};//for private variables
-		const video=this._.video=Object2HTML({_:'video',attr:{id:'main_video'}});
+		const video=this._.video=O2H({_:'video',attr:{id:'main_video'}});
 		this.danmakuFrame=new DanmakuFrame();
 		this.danmakuFrame.enable('text2d');
 
@@ -180,6 +180,9 @@ function limitIn(num,min,max){//limit the number in a range
 	if(num>max)return max;
 	return num;
 }
+function toArray(obj){
+	return [...obj];
+}
 
 
 //Polyfill from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/startsWith
@@ -200,4 +203,5 @@ export {
 	padTime,
 	setAttrs,
 	limitIn,
+	toArray,
 }

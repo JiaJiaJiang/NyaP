@@ -60,11 +60,12 @@ LGPL license
 
 		&>video#main_video{
 			@extend .NyaP_fullfill;
+			cursor: pointer;
 			background-color: #000;
 		}
 		&>div#danmaku_container{
 			@extend .NyaP_fullfill;
-			cursor: pointer;
+		    pointer-events: none;
 		}
 	}
 	&>#control{

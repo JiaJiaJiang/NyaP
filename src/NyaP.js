@@ -5,7 +5,7 @@ LGPL license
 'use strict';
 
 import {i18n} from './i18n.js';
-import {Object2HTML} from '../lib/Object2HTML/Object2HTML.js'
+import O2H from '../lib/Object2HTML/Object2HTML.js'
 import ResizeSensor from '../lib/danmaku-frame/lib/ResizeSensor.js';
 import {NyaPlayerCore,
 		addEvents,
@@ -15,7 +15,8 @@ import {NyaPlayerCore,
 		formatTime,
 		setAttrs,
 		padTime,
-		limitIn} from './NyaPCore.js';
+		limitIn,
+		toArray} from './NyaPCore.js';
 
 const _=i18n._;
 
@@ -24,6 +25,7 @@ const _=i18n._;
 const NyaPOptions={
 	autoHideDanmakuInput:true,//hide danmakuinput after danmaku sent
 	danmakuColors:['fff','6cf','ff0','f00','0f0','00f','f0f','000'],//colors in the danmaku style pannel
+	danmakuModes:[0,3,2,1],//0:right	1:left	2:bottom	3:top
 	defaultDanmakuColor:null,//when the color inputed is invalid,this color will be applied
 	defaultDanmakuMode:0,//right
 	danmakuSend:(d,callback)=>{callback(false);},//the func for sending danmaku
@@ -60,11 +62,16 @@ class NyaP extends NyaPlayerCore{
 		}
 		function icon(name,event,attr={}){
 			const ico=icons[name];
-			return Object2HTML({_:'span',event,attr,prop:{id:`icon_span_${name}`,
+			return O2H({_:'span',event,attr,prop:{id:`icon_span_${name}`,
 				innerHTML:`<svg height=${ico[1]} width=${ico[0]} id="icon_${name}"">${ico[2]}</svg>`}});
 		}
+		function collectEles(ele){
+			[].slice.call(ele.querySelectorAll('*')).forEach(e=>{
+				if(e.id&&!$[e.id])$[e.id]=e;
+			});
+		}
 
-		this._.player=Object2HTML({
+		this._.player=O2H({
 			_:'div',attr:{'class':'NyaP'},child:[
 				{_:'div',attr:{id:'video_frame'},child:[
 					video,
@@ -90,9 +97,7 @@ class NyaP extends NyaPlayerCore{
 								{_:'div',attr:{id:'danmaku_style_pannel'},child:[
 									{_:'div',attr:{id:'danmaku_color_box'}},
 									{_:'input',attr:{id:'danmaku_color',placeholder:_('hex color'),maxlength:"6"}},
-									{_:'span',attr:{id:'danmaku_mode_box'},child:[
-										icon('danmakuMode0'),icon('danmakuMode2'),icon('danmakuMode3'),icon('danmakuMode1'),
-									]},
+									{_:'span',attr:{id:'danmaku_mode_box'}},
 									{_:'span',attr:{id:'danmaku_size_box'}},
 								]},
 								icon('danmakuStyle'),
@@ -105,10 +110,10 @@ class NyaP extends NyaPlayerCore{
 						icon('addDanmaku',{click:e=>this.danmakuInput()},{title:_('danmaku input')}),
 						icon('volume',{},{title:_('volume($0)','100%')}),
 						icon('loop',{click:e=>this.loop()},{title:_('loop')}),
-						{_:'span',prop:{id:'player_settings'},child:[
+						/*{_:'span',prop:{id:'player_settings'},child:[
 							icon('settings',{click:e=>{}},{title:_('settings')}),
 							{_:'div',attr:{id:'settings_box'},child:['poi']}
-						]},
+						]},*/
 						{_:'span',prop:{id:'player_mode'},child:[
 							icon('fullPage',{click:e=>this.playerMode('fullPage')},{title:_('full page')}),
 							icon('fullScreen',{click:e=>this.playerMode('fullScreen')},{title:_('full screen')})
@@ -119,21 +124,26 @@ class NyaP extends NyaPlayerCore{
 		});
 
 		//add elements with id to eles prop
-		[].slice.call(this._.player.querySelectorAll('*')).forEach(e=>{
-			if(e.id&&!$[e.id])$[e.id]=e;
-		});
+		collectEles(this._.player);
 
 		//danmaku sizes
 		opt.danmakuSizes.forEach((s,ind)=>{
-			let e=Object2HTML({_:'span',attr:{style:`font-size:${12+ind*3}px;`,title:s},prop:{size:s},child:['A']});
+			let e=O2H({_:'span',attr:{style:`font-size:${12+ind*3}px;`,title:s},prop:{size:s},child:['A']});
 			$.danmaku_size_box.appendChild(e);
 		});
 
 		//danmaku colors
 		opt.danmakuColors.forEach(c=>{
-			let e=Object2HTML({_:'span',attr:{style:`background-color:#${c};`,title:c},prop:{color:c}});
+			let e=O2H({_:'span',attr:{style:`background-color:#${c};`,title:c},prop:{color:c}});
 			$.danmaku_color_box.appendChild(e);
 		});
+
+		//danmaku modes
+		opt.danmakuModes.forEach(m=>{
+			$.danmaku_mode_box.appendChild(icon(`danmakuMode${m}`));
+		});
+		collectEles($.danmaku_mode_box);
+		
 
 		//progress
 		setTimeout(()=>{
@@ -183,7 +193,17 @@ class NyaP extends NyaPlayerCore{
 				progress:e=>{this.drawProgress();},
 				_loopChange:e=>{
 					this.eles.icon_span_loop.classList[e.value?'add':'remove']('active_icon');
-				}
+				},
+				click:e=>this.playToggle(),
+				mouseup:e=>{
+					if(e.button===2){//right key
+						e.preventDefault();
+						this.menu([e.layerX,e.layerY]);
+					}
+				},
+				contextmenu:e=>{
+					e.preventDefault();
+				},
 			},
 			progress:{
 				mousemove:e=>{
@@ -203,9 +223,6 @@ class NyaP extends NyaPlayerCore{
 					pre=limitIn(pre,0,1);
 					video.currentTime=pre*video.duration;
 				}
-			},
-			danmaku_container:{
-				click:e=>this.playToggle(),
 			},
 			danmaku_color:{
 				'input,change':e=>{
@@ -250,7 +267,7 @@ class NyaP extends NyaPlayerCore{
 				click:e=>{
 					let t=e.target;
 					if(!t.size)return;
-					[...$.danmaku_size_box.childNodes].forEach(sp=>{
+					toArray($.danmaku_size_box.childNodes).forEach(sp=>{
 						if(this._.danmakuSize===sp.size)sp.classList.remove('active');
 					});
 					t.classList.add('active');
@@ -268,14 +285,13 @@ class NyaP extends NyaPlayerCore{
 		}
 		for(let eleid in $){//add events to elements
 			let eves=events[eleid];
-			if(eleid.startsWith('icon_span_danmakuMode')){
+			if(eleid.startsWith('icon_span_danmakuMode'))
 				eves=events.danmakuModeSwitch;
-			}
 			eves&&addEvents($[eleid],eves);
 		}
 
 		$['icon_span_danmakuMode'+opt.defaultDanmakuMode].click();//init to default danmaku mode
-		[...$.danmaku_size_box.childNodes].forEach(sp=>{if(sp.size===opt.defaultDanmakuSize)sp.click()});
+		toArray($.danmaku_size_box.childNodes).forEach(sp=>{if(sp.size===opt.defaultDanmakuSize)sp.click()});
 
 		console.debug(this.eles)
 	}
@@ -314,8 +330,7 @@ class NyaP extends NyaPlayerCore{
 		this._.playerMode=mode;
 		this.emit('playerModeChange',mode);
 	}
-	loop(bool){
-		if(bool===undefined)bool=!this.video.loop;
+	loop(bool=!this.video.loop){
 		this.video.loop=bool;
 	}
 	refreshProgress(){
@@ -328,8 +343,15 @@ class NyaP extends NyaPlayerCore{
 	send(){
 		let color=this._.danmakuColor||this.opt.defaultDanmakuColor,
 			content=this.eles.danmaku_input.value,
-			mode=this._.danmakuMode
+			size=this._.danmakuSize,
+			mode=this._.danmakuMode;
 
+	}
+	menu(name,position){
+		console.log('position',position)
+		if(position){//if position is defined,find out the danmaku at that position and enable danmaku oprion in menu
+
+		}
 	}
 	drawProgress(){
 		const ctx=this._.progressContext,

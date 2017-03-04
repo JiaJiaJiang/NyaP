@@ -70,6 +70,7 @@ function Object2HTML(obj, func) {
 	return ele;
 }
 
+exports.default = Object2HTML;
 exports.Object2HTML = Object2HTML;
 
 },{}],2:[function(require,module,exports){
@@ -2357,6 +2358,8 @@ var _i18n = require('./i18n.js');
 
 var _Object2HTML = require('../lib/Object2HTML/Object2HTML.js');
 
+var _Object2HTML2 = _interopRequireDefault(_Object2HTML);
+
 var _ResizeSensor = require('../lib/danmaku-frame/lib/ResizeSensor.js');
 
 var _ResizeSensor2 = _interopRequireDefault(_ResizeSensor);
@@ -2364,8 +2367,6 @@ var _ResizeSensor2 = _interopRequireDefault(_ResizeSensor);
 var _NyaPCore = require('./NyaPCore.js');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -2379,6 +2380,7 @@ var _ = _i18n.i18n._;
 var NyaPOptions = {
 	autoHideDanmakuInput: true, //hide danmakuinput after danmaku sent
 	danmakuColors: ['fff', '6cf', 'ff0', 'f00', '0f0', '00f', 'f0f', '000'], //colors in the danmaku style pannel
+	danmakuModes: [0, 3, 2, 1], //0:right	1:left	2:bottom	3:top
 	defaultDanmakuColor: null, //when the color inputed is invalid,this color will be applied
 	defaultDanmakuMode: 0, //right
 	danmakuSend: function danmakuSend(d, callback) {
@@ -2422,18 +2424,28 @@ var NyaP = function (_NyaPlayerCore) {
 			var attr = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
 			var ico = icons[name];
-			return (0, _Object2HTML.Object2HTML)({ _: 'span', event: event, attr: attr, prop: { id: 'icon_span_' + name,
+			return (0, _Object2HTML2.default)({ _: 'span', event: event, attr: attr, prop: { id: 'icon_span_' + name,
 					innerHTML: '<svg height=' + ico[1] + ' width=' + ico[0] + ' id="icon_' + name + '"">' + ico[2] + '</svg>' } });
 		}
+		function collectEles(ele) {
+			[].slice.call(ele.querySelectorAll('*')).forEach(function (e) {
+				if (e.id && !$[e.id]) $[e.id] = e;
+			});
+		}
 
-		_this._.player = (0, _Object2HTML.Object2HTML)({
+		_this._.player = (0, _Object2HTML2.default)({
 			_: 'div', attr: { 'class': 'NyaP' }, child: [{ _: 'div', attr: { id: 'video_frame' }, child: [video, _this.danmakuFrame.container] }, { _: 'div', attr: { id: 'control' }, child: [{ _: 'span', attr: { id: 'control_left' }, child: [icon('play', { click: function click(e) {
 							return _this.playToggle();
-						} }, { title: _('play') })] }, { _: 'span', attr: { id: 'control_center' }, child: [{ _: 'div', prop: { id: 'progress_info' }, child: [{ _: 'span', child: [{ _: 'canvas', prop: { id: 'progress', pad: 10 } }] }, { _: 'span', prop: { id: 'time' }, child: [{ _: 'span', prop: { id: 'current_time' }, child: ['00:00'] }, '/', { _: 'span', prop: { id: 'total_time' }, child: ['00:00'] }] }] }, { _: 'div', prop: { id: 'danmaku_input_frame' }, child: [{ _: 'span', prop: { id: 'danmaku_style' }, child: [{ _: 'div', attr: { id: 'danmaku_style_pannel' }, child: [{ _: 'div', attr: { id: 'danmaku_color_box' } }, { _: 'input', attr: { id: 'danmaku_color', placeholder: _('hex color'), maxlength: "6" } }, { _: 'span', attr: { id: 'danmaku_mode_box' }, child: [icon('danmakuMode0'), icon('danmakuMode2'), icon('danmakuMode3'), icon('danmakuMode1')] }, { _: 'span', attr: { id: 'danmaku_size_box' } }] }, icon('danmakuStyle')] }, { _: 'input', attr: { id: 'danmaku_input', placeholder: _('Input danmaku here') } }, { _: 'span', prop: { id: 'danmaku_submit', innerHTML: _('Send') } }] }] }, { _: 'span', attr: { id: 'control_right' }, child: [icon('addDanmaku', { click: function click(e) {
+						} }, { title: _('play') })] }, { _: 'span', attr: { id: 'control_center' }, child: [{ _: 'div', prop: { id: 'progress_info' }, child: [{ _: 'span', child: [{ _: 'canvas', prop: { id: 'progress', pad: 10 } }] }, { _: 'span', prop: { id: 'time' }, child: [{ _: 'span', prop: { id: 'current_time' }, child: ['00:00'] }, '/', { _: 'span', prop: { id: 'total_time' }, child: ['00:00'] }] }] }, { _: 'div', prop: { id: 'danmaku_input_frame' }, child: [{ _: 'span', prop: { id: 'danmaku_style' }, child: [{ _: 'div', attr: { id: 'danmaku_style_pannel' }, child: [{ _: 'div', attr: { id: 'danmaku_color_box' } }, { _: 'input', attr: { id: 'danmaku_color', placeholder: _('hex color'), maxlength: "6" } }, { _: 'span', attr: { id: 'danmaku_mode_box' } }, { _: 'span', attr: { id: 'danmaku_size_box' } }] }, icon('danmakuStyle')] }, { _: 'input', attr: { id: 'danmaku_input', placeholder: _('Input danmaku here') } }, { _: 'span', prop: { id: 'danmaku_submit', innerHTML: _('Send') } }] }] }, { _: 'span', attr: { id: 'control_right' }, child: [icon('addDanmaku', { click: function click(e) {
 							return _this.danmakuInput();
 						} }, { title: _('danmaku input') }), icon('volume', {}, { title: _('volume($0)', '100%') }), icon('loop', { click: function click(e) {
 							return _this.loop();
-						} }, { title: _('loop') }), { _: 'span', prop: { id: 'player_settings' }, child: [icon('settings', { click: function click(e) {} }, { title: _('settings') }), { _: 'div', attr: { id: 'settings_box' }, child: ['poi'] }] }, { _: 'span', prop: { id: 'player_mode' }, child: [icon('fullPage', { click: function click(e) {
+						} }, { title: _('loop') }),
+					/*{_:'span',prop:{id:'player_settings'},child:[
+     	icon('settings',{click:e=>{}},{title:_('settings')}),
+     	{_:'div',attr:{id:'settings_box'},child:['poi']}
+     ]},*/
+					{ _: 'span', prop: { id: 'player_mode' }, child: [icon('fullPage', { click: function click(e) {
 								return _this.playerMode('fullPage');
 							} }, { title: _('full page') }), icon('fullScreen', { click: function click(e) {
 								return _this.playerMode('fullScreen');
@@ -2441,21 +2453,25 @@ var NyaP = function (_NyaPlayerCore) {
 		});
 
 		//add elements with id to eles prop
-		[].slice.call(_this._.player.querySelectorAll('*')).forEach(function (e) {
-			if (e.id && !$[e.id]) $[e.id] = e;
-		});
+		collectEles(_this._.player);
 
 		//danmaku sizes
 		opt.danmakuSizes.forEach(function (s, ind) {
-			var e = (0, _Object2HTML.Object2HTML)({ _: 'span', attr: { style: 'font-size:' + (12 + ind * 3) + 'px;', title: s }, prop: { size: s }, child: ['A'] });
+			var e = (0, _Object2HTML2.default)({ _: 'span', attr: { style: 'font-size:' + (12 + ind * 3) + 'px;', title: s }, prop: { size: s }, child: ['A'] });
 			$.danmaku_size_box.appendChild(e);
 		});
 
 		//danmaku colors
 		opt.danmakuColors.forEach(function (c) {
-			var e = (0, _Object2HTML.Object2HTML)({ _: 'span', attr: { style: 'background-color:#' + c + ';', title: c }, prop: { color: c } });
+			var e = (0, _Object2HTML2.default)({ _: 'span', attr: { style: 'background-color:#' + c + ';', title: c }, prop: { color: c } });
 			$.danmaku_color_box.appendChild(e);
 		});
+
+		//danmaku modes
+		opt.danmakuModes.forEach(function (m) {
+			$.danmaku_mode_box.appendChild(icon('danmakuMode' + m));
+		});
+		collectEles($.danmaku_mode_box);
 
 		//progress
 		setTimeout(function () {
@@ -2511,6 +2527,19 @@ var NyaP = function (_NyaPlayerCore) {
 				},
 				_loopChange: function _loopChange(e) {
 					_this.eles.icon_span_loop.classList[e.value ? 'add' : 'remove']('active_icon');
+				},
+				click: function click(e) {
+					return _this.playToggle();
+				},
+				mouseup: function mouseup(e) {
+					if (e.button === 2) {
+						//right key
+						e.preventDefault();
+						_this.menu([e.layerX, e.layerY]);
+					}
+				},
+				contextmenu: function contextmenu(e) {
+					e.preventDefault();
 				}
 			},
 			progress: {
@@ -2530,11 +2559,6 @@ var NyaP = function (_NyaPlayerCore) {
 					    pre = (e.layerX - t.pad) / (t.offsetWidth - 2 * t.pad);
 					pre = (0, _NyaPCore.limitIn)(pre, 0, 1);
 					video.currentTime = pre * video.duration;
-				}
-			},
-			danmaku_container: {
-				click: function click(e) {
-					return _this.playToggle();
 				}
 			},
 			danmaku_color: {
@@ -2585,7 +2609,7 @@ var NyaP = function (_NyaPlayerCore) {
 				click: function click(e) {
 					var t = e.target;
 					if (!t.size) return;
-					[].concat(_toConsumableArray($.danmaku_size_box.childNodes)).forEach(function (sp) {
+					(0, _NyaPCore.toArray)($.danmaku_size_box.childNodes).forEach(function (sp) {
 						if (_this._.danmakuSize === sp.size) sp.classList.remove('active');
 					});
 					t.classList.add('active');
@@ -2604,14 +2628,12 @@ var NyaP = function (_NyaPlayerCore) {
 		for (var eleid in $) {
 			//add events to elements
 			var eves = events[eleid];
-			if (eleid.startsWith('icon_span_danmakuMode')) {
-				eves = events.danmakuModeSwitch;
-			}
+			if (eleid.startsWith('icon_span_danmakuMode')) eves = events.danmakuModeSwitch;
 			eves && (0, _NyaPCore.addEvents)($[eleid], eves);
 		}
 
 		$['icon_span_danmakuMode' + opt.defaultDanmakuMode].click(); //init to default danmaku mode
-		[].concat(_toConsumableArray($.danmaku_size_box.childNodes)).forEach(function (sp) {
+		(0, _NyaPCore.toArray)($.danmaku_size_box.childNodes).forEach(function (sp) {
 			if (sp.size === opt.defaultDanmakuSize) sp.click();
 		});
 
@@ -2670,8 +2692,9 @@ var NyaP = function (_NyaPlayerCore) {
 		}
 	}, {
 		key: 'loop',
-		value: function loop(bool) {
-			if (bool === undefined) bool = !this.video.loop;
+		value: function loop() {
+			var bool = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : !this.video.loop;
+
 			this.video.loop = bool;
 		}
 	}, {
@@ -2688,7 +2711,16 @@ var NyaP = function (_NyaPlayerCore) {
 		value: function send() {
 			var color = this._.danmakuColor || this.opt.defaultDanmakuColor,
 			    content = this.eles.danmaku_input.value,
+			    size = this._.danmakuSize,
 			    mode = this._.danmakuMode;
+		}
+	}, {
+		key: 'menu',
+		value: function menu(name, position) {
+			console.log('position', position);
+			if (position) {//if position is defined,find out the danmaku at that position and enable danmaku oprion in menu
+
+			}
 		}
 	}, {
 		key: 'drawProgress',
@@ -2764,7 +2796,7 @@ LGPL license
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.limitIn = exports.setAttrs = exports.padTime = exports.formatTime = exports.isFullscreen = exports.exitFullscreen = exports.requestFullscreen = exports.addEvents = exports.NyaPlayerCore = undefined;
+exports.toArray = exports.limitIn = exports.setAttrs = exports.padTime = exports.formatTime = exports.isFullscreen = exports.exitFullscreen = exports.requestFullscreen = exports.addEvents = exports.NyaPlayerCore = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -2775,6 +2807,8 @@ var _danmakuText = require('../lib/danmaku-text/src/danmaku-text.js');
 var _danmakuText2 = _interopRequireDefault(_danmakuText);
 
 var _Object2HTML = require('../lib/Object2HTML/Object2HTML.js');
+
+var _Object2HTML2 = _interopRequireDefault(_Object2HTML);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2877,7 +2911,7 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 
 		opt = _this.opt = Object.assign({}, NyaPOptions, opt);
 		_this._ = {}; //for private variables
-		var video = _this._.video = (0, _Object2HTML.Object2HTML)({ _: 'video', attr: { id: 'main_video' } });
+		var video = _this._.video = (0, _Object2HTML2.default)({ _: 'video', attr: { id: 'main_video' } });
 		_this.danmakuFrame = new _danmakuFrame.DanmakuFrame();
 		_this.danmakuFrame.enable('text2d');
 
@@ -3044,6 +3078,9 @@ function limitIn(num, min, max) {
 	if (num > max) return max;
 	return num;
 }
+function toArray(obj) {
+	return [].concat(_toConsumableArray(obj));
+}
 
 //Polyfill from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/startsWith
 if (!String.prototype.startsWith) String.prototype.startsWith = function (searchString, position) {
@@ -3061,6 +3098,7 @@ exports.formatTime = formatTime;
 exports.padTime = padTime;
 exports.setAttrs = setAttrs;
 exports.limitIn = limitIn;
+exports.toArray = toArray;
 
 },{"../lib/Object2HTML/Object2HTML.js":1,"../lib/danmaku-frame/src/danmaku-frame.js":3,"../lib/danmaku-text/src/danmaku-text.js":5}],8:[function(require,module,exports){
 'use strict';

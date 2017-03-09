@@ -1,27 +1,54 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<meta charset="utf-8">
 	<title>NyaP demo</title>
 	<script src="../dist/NyaP.js"></script>
-	<meta charset="utf-8">
 	<link rel="stylesheet" type="text/css" href="../dist/NyaP.css">
 	<style type="text/css">
 		body{    margin: 0;display:flex;background-color: #000;align-items: center;height: 100%;justify-content: center;position: absolute;width: 100%;}
 	</style>
 </head>
 <body>
-
-<div id="player_container" style="position:relative;width:705px;height:476px;"></div>
+<div id="player_container" style="position:relative;width:920px;height:550px;"></div>
 
 <script>
+var tests={
+	1:['danmaku.js','//dn-jia-io.qbox.me/video/osu%20Dont%20cry%2020140811%20001526.mp4','osu.mp4'],
+	2:['danmaku2.js','//dn-jia-io.qbox.me/video/27107IOSYSTheLovelyFreezingTomboyishBathCirnosHotSpring.mp4','9.mp4'],
+}
+
+var number=location.hash.match(/\#(\d+)$/);
+number=(number)?Number(number[1]):1;
+
+var dm=document.createElement('script');
+dm.src=tests[number][0];
+document.head.appendChild(dm);
+
 var NP=new NyaP({
-	src:(location.protocol==='file:')?'嘘の火花.mp4':'//io.luojia.me/video/%E5%98%98%E3%81%AE%E7%81%AB%E8%8A%B1.mp4',
-	//muted:true,
+	src:((location.protocol==='file:'))?tests[number][2]:tests[number][1],
+	muted:true,
 	volume:0.56,
+	danmakuOption:{
+		allowLines:true,
+		screenLimit:0,
+	}
 });
 document.querySelector('#player_container').appendChild(NP.player);
-//NP.video.play()
-//NP.loop(true);
+
+window.addEventListener('load',function(){
+	var danmakus=[],textDM={_:'text'};
+	for(var i=0;i<rawDanmakuList.length;i++){
+		var item=rawDanmakuList[i];
+		danmakus.push(Object.assign(Object.create(textDM),{text:item.c,time:item.t,mode:item.ty,style:{fontSize:item.s,color:'#'+(item.co||'fff')},date:item.d,id:item.id}));
+	}
+	NP.loadDanmakuList(danmakus);
+	//NP.text2d.COL.debug.on();
+	//NP.video.play()
+	//NP.loop(true);
+});
+
+
 </script>
 
 </body>

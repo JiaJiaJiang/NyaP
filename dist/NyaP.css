@@ -62,7 +62,7 @@ LGPL license
 
 .NyaP #danmaku_mode_box > span.active, .NyaP #danmaku_size_box > span.active { background-color: #ececec !important; }
 
-.NyaP #danmaku_submit { color: #fff; display: flex; cursor: pointer; padding: 0 14px; text-align: center; align-items: center; background-color: #707679; }
+.NyaP #danmaku_submit { color: #fff; display: flex; cursor: pointer; padding: 0 14px; text-align: center; align-items: center; background-color: #616161; }
 
 .NyaP #danmaku_color_box { width: 100%; display: flex; flex-wrap: wrap; margin-bottom: 8px; position: relative; justify-content: space-around; }
 

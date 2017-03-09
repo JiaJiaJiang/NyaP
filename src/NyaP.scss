@@ -62,6 +62,12 @@ LGPL license
 			@extend .NyaP_fullfill;
 			cursor: pointer;
 			background-color: #000;
+			-webkit-touch-callout: none;
+			-webkit-user-select: none;
+			-o-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+			user-select: none;
 		}
 		&>div#danmaku_container{
 			@extend .NyaP_fullfill;
@@ -196,7 +202,7 @@ LGPL license
 	    padding: 0 14px;
 	    text-align: center;
 	    align-items: center;
-		background-color: #707679;
+		background-color: #616161;
 	}
 	#danmaku_color_box{
 	    width: 100%;

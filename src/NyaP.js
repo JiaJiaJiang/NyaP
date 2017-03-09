@@ -110,10 +110,6 @@ class NyaP extends NyaPlayerCore{
 						icon('addDanmaku',{click:e=>this.danmakuInput()},{title:_('danmaku input')}),
 						icon('volume',{},{title:_('volume($0)','100%')}),
 						icon('loop',{click:e=>this.loop()},{title:_('loop')}),
-						/*{_:'span',prop:{id:'player_settings'},child:[
-							icon('settings',{click:e=>{}},{title:_('settings')}),
-							{_:'div',attr:{id:'settings_box'},child:['poi']}
-						]},*/
 						{_:'span',prop:{id:'player_mode'},child:[
 							icon('fullPage',{click:e=>this.playerMode('fullPage')},{title:_('full page')}),
 							icon('fullScreen',{click:e=>this.playerMode('fullScreen')},{title:_('full screen')})
@@ -178,13 +174,13 @@ class NyaP extends NyaPlayerCore{
 				},
 				timeupdate:(e,notevent)=>{
 					if(Date.now()-this._.lastTimeUpdate <30)return;
-					$.current_time.innerHTML=formatTime(video.currentTime,video.duration);
+					this._setTimeInfo(formatTime(video.currentTime,video.duration));
 					this.drawProgress();
 					this._.lastTimeUpdate=Date.now();
 					notevent||setTimeout(events.main_video.timeupdate,250,null,true);//for smooth progress bar
 				},
 				loadedmetadata:e=>{
-					$.total_time.innerHTML=formatTime(video.duration,video.duration);
+					this._setTimeInfo(null,formatTime(video.duration,video.duration));
 				},
 				volumechange:e=>{
 					setAttrs($.volume_circle,{'stroke-dasharray':`${video.volume*10*Math.PI} 90`,style:`fill-opacity:${video.muted?.2:.6}!important`});
@@ -198,7 +194,7 @@ class NyaP extends NyaPlayerCore{
 				mouseup:e=>{
 					if(e.button===2){//right key
 						e.preventDefault();
-						this.menu([e.layerX,e.layerY]);
+						this.menu([e.offsetX,e.offsetY]);
 					}
 				},
 				contextmenu:e=>{
@@ -207,19 +203,19 @@ class NyaP extends NyaPlayerCore{
 			},
 			progress:{
 				mousemove:e=>{
-					this._.progressX=e.layerX;this.drawProgress();
+					this._.progressX=e.offsetX;this.drawProgress();
 					let t=e.target,
-						pre=(e.layerX-t.pad)/(t.offsetWidth-2*t.pad);
+						pre=(e.offsetX-t.pad)/(t.offsetWidth-2*t.pad);
 					pre=limitIn(pre,0,1);
-					$.total_time.innerHTML=formatTime(pre*video.duration,video.duration);
+					this._setTimeInfo(null,formatTime(pre*video.duration,video.duration));
 				},
 				mouseout:e=>{
 					this._.progressX=undefined;this.drawProgress();
-					$.total_time.innerHTML=formatTime(video.duration,video.duration);
+					this._setTimeInfo(null,formatTime(video.duration,video.duration));
 				},
 				click:e=>{
 					let t=e.target,
-						pre=(e.layerX-t.pad)/(t.offsetWidth-2*t.pad);
+						pre=(e.offsetX-t.pad)/(t.offsetWidth-2*t.pad);
 					pre=limitIn(pre,0,1);
 					video.currentTime=pre*video.duration;
 				}
@@ -295,6 +291,18 @@ class NyaP extends NyaPlayerCore{
 
 		console.debug(this.eles)
 	}
+	_setTimeInfo(a=null,b=null){
+		if(a!==null){
+			requestAnimationFrame(()=>{
+				this.eles.current_time.innerHTML=a;
+			});
+		}
+		if(b!==null){
+			requestAnimationFrame(()=>{
+				this.eles.total_time.innerHTML=b;
+			});
+		}
+	}
 	settingsBoxToggle(bool=!this.eles.settings_box.style.display){
 		this.eles.settings_box.style.display=bool?'flex':'';
 	}
@@ -347,13 +355,14 @@ class NyaP extends NyaPlayerCore{
 			mode=this._.danmakuMode;
 
 	}
-	menu(name,position){
+	menu(position){
 		console.log('position',position)
 		if(position){//if position is defined,find out the danmaku at that position and enable danmaku oprion in menu
-
+			let ds=this.danmakuFrame.modules.text2d.danmakuAt(position[0],position[1]);
+			console.log(ds)
 		}
 	}
-	drawProgress(){
+	_progressDrawer(){
 		const ctx=this._.progressContext,
 				c=this.eles.progress,
 				w=c.width,
@@ -407,6 +416,14 @@ class NyaP extends NyaPlayerCore{
 			ctx.lineTo(limitIn(this._.progressX,pad,pad+len),15);
 			ctx.stroke();
 		}
+		this._.drawingProgress=false;
+	}
+	drawProgress(){
+		if(this._.drawingProgress)return;
+		this._.drawingProgress=true;
+		requestAnimationFrame(()=>{
+			this._progressDrawer();
+		});
 	}
 }
 

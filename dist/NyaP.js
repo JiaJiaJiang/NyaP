@@ -329,7 +329,7 @@ var DanmakuFrame = function () {
 		this.rate = 1;
 		this.timeBase = 0;
 		this.media = null;
-		this.fps = 30;
+		this.fps = 0;
 		this.working = false;
 		this.modules = {}; //constructed module list
 		var _iteratorNormalCompletion = true;
@@ -362,7 +362,17 @@ var DanmakuFrame = function () {
 			_this.container.ResizeSensor = new _ResizeSensor2.default(_this.container, function () {
 				_this.resize();
 			});
+			_this.resize();
 		}, 0);
+		var draw = function draw() {
+			if (_this.fps === 0) {
+				requestAnimationFrame(draw);
+			} else {
+				setTimeout(draw, 1000 / _this.fps);
+			}
+			_this.moduleFunction('draw');
+		};
+		draw();
 	}
 
 	_createClass(DanmakuFrame, [{
@@ -413,61 +423,49 @@ var DanmakuFrame = function () {
 	}, {
 		key: 'start',
 		value: function start() {
+			if (this.working) return;
+			console.log('start');
 			this.working = true;
 			this.moduleFunction('start');
-			this.draw();
 		}
 	}, {
 		key: 'pause',
 		value: function pause() {
+			console.log('pause');
 			this.working = false;
 			this.moduleFunction('pause');
 		}
 	}, {
-		key: 'stop',
-		value: function stop() {
-			this.working = false;
-			this.moduleFunction('stop');
-		}
-	}, {
 		key: 'resize',
 		value: function resize() {
+			console.log('resize');
 			this.moduleFunction('resize');
 		}
 	}, {
 		key: 'moduleFunction',
-		value: function moduleFunction(name) {
-			for (var _len = arguments.length, arg = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-				arg[_key - 1] = arguments[_key];
-			}
-
+		value: function moduleFunction(name, arg) {
 			for (var m in this.modules) {
-				var _modules$m;
-
-				this.modules[m][name] && (_modules$m = this.modules[m])[name].apply(_modules$m, arg);
+				this.modules[m][name] && this.modules[m][name](arg);
 			}
-		}
-	}, {
-		key: 'draw',
-		value: function draw() {
-			var _this2 = this;
-
-			if (this.working === false) return;
-			if (this.fps === 0) {
-				requestAnimationFrame(function () {
-					_this2.draw();
-				});
-			} else {
-				setTimeout(function () {
-					_this2.draw();
-				}, 1000 / this.fps);
-			}
-			this.moduleFunction('draw');
 		}
 	}, {
 		key: 'setMedia',
 		value: function setMedia(media) {
+			var _this2 = this;
+
 			this.media = media;
+			addEvents(media, {
+				playing: function playing() {
+					_this2.start();
+				},
+				pause: function pause() {
+					_this2.pause();
+				},
+				ratechange: function ratechange() {
+					_this2.rate = _this2.media.playbackRate;
+				}
+			});
+			this.moduleFunction('media', media);
 		}
 	}, {
 		key: 'time',
@@ -477,7 +475,7 @@ var DanmakuFrame = function () {
 			this.moduleFunction('time', t); //let all mods know when the time be set
 		},
 		get: function get() {
-			return this.media ? this.media.currentTime * 1000000 : Date.now() - this.timeBase;
+			return this.media ? this.media.currentTime * 1000 | 0 : Date.now() - this.timeBase;
 		}
 	}], [{
 		key: 'addModule',
@@ -511,17 +509,475 @@ pause(){}
 stop(){}*/
 ;
 
+function addEvents(target) {
+	var events = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+	var _loop = function _loop(e) {
+		e.split(/\,/g).forEach(function (e2) {
+			return target.addEventListener(e2, events[e]);
+		});
+	};
+
+	for (var e in events) {
+		_loop(e);
+	}
+}
+
 exports.DanmakuFrame = DanmakuFrame;
 exports.DanmakuFrameModule = DanmakuFrameModule;
 
 },{"../lib/ResizeSensor.js":2}],4:[function(require,module,exports){
+'use strict';
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+(function (root) {
+
+  // Store setTimeout reference so promise-polyfill will be unaffected by
+  // other code modifying setTimeout (like sinon.useFakeTimers())
+  var setTimeoutFunc = setTimeout;
+
+  function noop() {}
+
+  // Polyfill for Function.prototype.bind
+  function bind(fn, thisArg) {
+    return function () {
+      fn.apply(thisArg, arguments);
+    };
+  }
+
+  function Promise(fn) {
+    if (_typeof(this) !== 'object') throw new TypeError('Promises must be constructed via new');
+    if (typeof fn !== 'function') throw new TypeError('not a function');
+    this._state = 0;
+    this._handled = false;
+    this._value = undefined;
+    this._deferreds = [];
+
+    doResolve(fn, this);
+  }
+
+  function handle(self, deferred) {
+    while (self._state === 3) {
+      self = self._value;
+    }
+    if (self._state === 0) {
+      self._deferreds.push(deferred);
+      return;
+    }
+    self._handled = true;
+    Promise._immediateFn(function () {
+      var cb = self._state === 1 ? deferred.onFulfilled : deferred.onRejected;
+      if (cb === null) {
+        (self._state === 1 ? resolve : reject)(deferred.promise, self._value);
+        return;
+      }
+      var ret;
+      try {
+        ret = cb(self._value);
+      } catch (e) {
+        reject(deferred.promise, e);
+        return;
+      }
+      resolve(deferred.promise, ret);
+    });
+  }
+
+  function resolve(self, newValue) {
+    try {
+      // Promise Resolution Procedure: https://github.com/promises-aplus/promises-spec#the-promise-resolution-procedure
+      if (newValue === self) throw new TypeError('A promise cannot be resolved with itself.');
+      if (newValue && ((typeof newValue === 'undefined' ? 'undefined' : _typeof(newValue)) === 'object' || typeof newValue === 'function')) {
+        var then = newValue.then;
+        if (newValue instanceof Promise) {
+          self._state = 3;
+          self._value = newValue;
+          finale(self);
+          return;
+        } else if (typeof then === 'function') {
+          doResolve(bind(then, newValue), self);
+          return;
+        }
+      }
+      self._state = 1;
+      self._value = newValue;
+      finale(self);
+    } catch (e) {
+      reject(self, e);
+    }
+  }
+
+  function reject(self, newValue) {
+    self._state = 2;
+    self._value = newValue;
+    finale(self);
+  }
+
+  function finale(self) {
+    if (self._state === 2 && self._deferreds.length === 0) {
+      Promise._immediateFn(function () {
+        if (!self._handled) {
+          Promise._unhandledRejectionFn(self._value);
+        }
+      });
+    }
+
+    for (var i = 0, len = self._deferreds.length; i < len; i++) {
+      handle(self, self._deferreds[i]);
+    }
+    self._deferreds = null;
+  }
+
+  function Handler(onFulfilled, onRejected, promise) {
+    this.onFulfilled = typeof onFulfilled === 'function' ? onFulfilled : null;
+    this.onRejected = typeof onRejected === 'function' ? onRejected : null;
+    this.promise = promise;
+  }
+
+  /**
+   * Take a potentially misbehaving resolver function and make sure
+   * onFulfilled and onRejected are only called once.
+   *
+   * Makes no guarantees about asynchrony.
+   */
+  function doResolve(fn, self) {
+    var done = false;
+    try {
+      fn(function (value) {
+        if (done) return;
+        done = true;
+        resolve(self, value);
+      }, function (reason) {
+        if (done) return;
+        done = true;
+        reject(self, reason);
+      });
+    } catch (ex) {
+      if (done) return;
+      done = true;
+      reject(self, ex);
+    }
+  }
+
+  Promise.prototype['catch'] = function (onRejected) {
+    return this.then(null, onRejected);
+  };
+
+  Promise.prototype.then = function (onFulfilled, onRejected) {
+    var prom = new this.constructor(noop);
+
+    handle(this, new Handler(onFulfilled, onRejected, prom));
+    return prom;
+  };
+
+  Promise.all = function (arr) {
+    var args = Array.prototype.slice.call(arr);
+
+    return new Promise(function (resolve, reject) {
+      if (args.length === 0) return resolve([]);
+      var remaining = args.length;
+
+      function res(i, val) {
+        try {
+          if (val && ((typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object' || typeof val === 'function')) {
+            var then = val.then;
+            if (typeof then === 'function') {
+              then.call(val, function (val) {
+                res(i, val);
+              }, reject);
+              return;
+            }
+          }
+          args[i] = val;
+          if (--remaining === 0) {
+            resolve(args);
+          }
+        } catch (ex) {
+          reject(ex);
+        }
+      }
+
+      for (var i = 0; i < args.length; i++) {
+        res(i, args[i]);
+      }
+    });
+  };
+
+  Promise.resolve = function (value) {
+    if (value && (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' && value.constructor === Promise) {
+      return value;
+    }
+
+    return new Promise(function (resolve) {
+      resolve(value);
+    });
+  };
+
+  Promise.reject = function (value) {
+    return new Promise(function (resolve, reject) {
+      reject(value);
+    });
+  };
+
+  Promise.race = function (values) {
+    return new Promise(function (resolve, reject) {
+      for (var i = 0, len = values.length; i < len; i++) {
+        values[i].then(resolve, reject);
+      }
+    });
+  };
+
+  // Use polyfill for setImmediate for performance gains
+  Promise._immediateFn = typeof setImmediate === 'function' && function (fn) {
+    setImmediate(fn);
+  } || function (fn) {
+    setTimeoutFunc(fn, 0);
+  };
+
+  Promise._unhandledRejectionFn = function _unhandledRejectionFn(err) {
+    if (typeof console !== 'undefined' && console) {
+      console.warn('Possible Unhandled Promise Rejection:', err); // eslint-disable-line no-console
+    }
+  };
+
+  /**
+   * Set the immediate function to execute callbacks
+   * @param fn {function} Function to execute
+   * @deprecated
+   */
+  Promise._setImmediateFn = function _setImmediateFn(fn) {
+    Promise._immediateFn = fn;
+  };
+
+  /**
+   * Change the function to execute on unhandled rejection
+   * @param {function} fn Function to execute on unhandled rejection
+   * @deprecated
+   */
+  Promise._setUnhandledRejectionFn = function _setUnhandledRejectionFn(fn) {
+    Promise._unhandledRejectionFn = fn;
+  };
+
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = Promise;
+  } else if (!root.Promise) {
+    root.Promise = Promise;
+  }
+})(undefined);
+
+},{}],5:[function(require,module,exports){
+(function (process,global){
 "use strict";
+
+(function (global, undefined) {
+    "use strict";
+
+    if (global.setImmediate) {
+        return;
+    }
+
+    var nextHandle = 1; // Spec says greater than zero
+    var tasksByHandle = {};
+    var currentlyRunningATask = false;
+    var doc = global.document;
+    var registerImmediate;
+
+    function setImmediate(callback) {
+        // Callback can either be a function or a string
+        if (typeof callback !== "function") {
+            callback = new Function("" + callback);
+        }
+        // Copy function arguments
+        var args = new Array(arguments.length - 1);
+        for (var i = 0; i < args.length; i++) {
+            args[i] = arguments[i + 1];
+        }
+        // Store and register the task
+        var task = { callback: callback, args: args };
+        tasksByHandle[nextHandle] = task;
+        registerImmediate(nextHandle);
+        return nextHandle++;
+    }
+
+    function clearImmediate(handle) {
+        delete tasksByHandle[handle];
+    }
+
+    function run(task) {
+        var callback = task.callback;
+        var args = task.args;
+        switch (args.length) {
+            case 0:
+                callback();
+                break;
+            case 1:
+                callback(args[0]);
+                break;
+            case 2:
+                callback(args[0], args[1]);
+                break;
+            case 3:
+                callback(args[0], args[1], args[2]);
+                break;
+            default:
+                callback.apply(undefined, args);
+                break;
+        }
+    }
+
+    function runIfPresent(handle) {
+        // From the spec: "Wait until any invocations of this algorithm started before this one have completed."
+        // So if we're currently running a task, we'll need to delay this invocation.
+        if (currentlyRunningATask) {
+            // Delay by doing a setTimeout. setImmediate was tried instead, but in Firefox 7 it generated a
+            // "too much recursion" error.
+            setTimeout(runIfPresent, 0, handle);
+        } else {
+            var task = tasksByHandle[handle];
+            if (task) {
+                currentlyRunningATask = true;
+                try {
+                    run(task);
+                } finally {
+                    clearImmediate(handle);
+                    currentlyRunningATask = false;
+                }
+            }
+        }
+    }
+
+    function installNextTickImplementation() {
+        registerImmediate = function registerImmediate(handle) {
+            process.nextTick(function () {
+                runIfPresent(handle);
+            });
+        };
+    }
+
+    function canUsePostMessage() {
+        // The test against `importScripts` prevents this implementation from being installed inside a web worker,
+        // where `global.postMessage` means something completely different and can't be used for this purpose.
+        if (global.postMessage && !global.importScripts) {
+            var postMessageIsAsynchronous = true;
+            var oldOnMessage = global.onmessage;
+            global.onmessage = function () {
+                postMessageIsAsynchronous = false;
+            };
+            global.postMessage("", "*");
+            global.onmessage = oldOnMessage;
+            return postMessageIsAsynchronous;
+        }
+    }
+
+    function installPostMessageImplementation() {
+        // Installs an event handler on `global` for the `message` event: see
+        // * https://developer.mozilla.org/en/DOM/window.postMessage
+        // * http://www.whatwg.org/specs/web-apps/current-work/multipage/comms.html#crossDocumentMessages
+
+        var messagePrefix = "setImmediate$" + Math.random() + "$";
+        var onGlobalMessage = function onGlobalMessage(event) {
+            if (event.source === global && typeof event.data === "string" && event.data.indexOf(messagePrefix) === 0) {
+                runIfPresent(+event.data.slice(messagePrefix.length));
+            }
+        };
+
+        if (global.addEventListener) {
+            global.addEventListener("message", onGlobalMessage, false);
+        } else {
+            global.attachEvent("onmessage", onGlobalMessage);
+        }
+
+        registerImmediate = function registerImmediate(handle) {
+            global.postMessage(messagePrefix + handle, "*");
+        };
+    }
+
+    function installMessageChannelImplementation() {
+        var channel = new MessageChannel();
+        channel.port1.onmessage = function (event) {
+            var handle = event.data;
+            runIfPresent(handle);
+        };
+
+        registerImmediate = function registerImmediate(handle) {
+            channel.port2.postMessage(handle);
+        };
+    }
+
+    function installReadyStateChangeImplementation() {
+        var html = doc.documentElement;
+        registerImmediate = function registerImmediate(handle) {
+            // Create a <script> element; its readystatechange event will be fired asynchronously once it is inserted
+            // into the document. Do so, thus queuing up the task. Remember to clean up once it's been called.
+            var script = doc.createElement("script");
+            script.onreadystatechange = function () {
+                runIfPresent(handle);
+                script.onreadystatechange = null;
+                html.removeChild(script);
+                script = null;
+            };
+            html.appendChild(script);
+        };
+    }
+
+    function installSetTimeoutImplementation() {
+        registerImmediate = function registerImmediate(handle) {
+            setTimeout(runIfPresent, 0, handle);
+        };
+    }
+
+    // If supported, we should attach to the prototype of global, since that is where setTimeout et al. live.
+    var attachTo = Object.getPrototypeOf && Object.getPrototypeOf(global);
+    attachTo = attachTo && attachTo.setTimeout ? attachTo : global;
+
+    // Don't get fooled by e.g. browserify environments.
+    if ({}.toString.call(global.process) === "[object process]") {
+        // For Node.js before 0.9
+        installNextTickImplementation();
+    } else if (canUsePostMessage()) {
+        // For non-IE10 modern browsers
+        installPostMessageImplementation();
+    } else if (global.MessageChannel) {
+        // For web workers, where supported
+        installMessageChannelImplementation();
+    } else if (doc && "onreadystatechange" in doc.createElement("script")) {
+        // For IE 6–8
+        installReadyStateChangeImplementation();
+    } else {
+        // For older browsers
+        installSetTimeoutImplementation();
+    }
+
+    attachTo.setImmediate = setImmediate;
+    attachTo.clearImmediate = clearImmediate;
+})(typeof self === "undefined" ? typeof global === "undefined" ? undefined : global : self);
+
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+
+},{"_process":8}],6:[function(require,module,exports){
+/*
+MIT LICENSE
+Copyright (c) 2016 iTisso
+https://github.com/iTisso/CanvasObjLibrary
+varsion:2.0
+*/
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+require('../lib/setImmediate/setImmediate.js');
+
+var _promise = require('../lib/promise/promise.js');
+
+var _promise2 = _interopRequireDefault(_promise);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
@@ -529,1347 +985,1394 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-/*
-MIT LICENSE
-Copyright (c) 2016 iTisso
-https://github.com/iTisso/CanvasObjLibrary
-varsion:2.0
-*/
+if (!window.Promise) window.Promise = _promise2.default;
 
-(function (root, factory) {
-	if (typeof define === "function" && define.amd) {
-		define(factory);
-	} else if ((typeof exports === "undefined" ? "undefined" : _typeof(exports)) === "object") {
-		module.exports = factory();
-	} else {
-		root.CanvasObjLibrary = factory();
+var defProp = Object.defineProperty;
+
+//class:CanvasObjLibrary
+
+var CanvasObjLibrary = function () {
+	function CanvasObjLibrary(canvas) {
+		var _this = this;
+
+		_classCallCheck(this, CanvasObjLibrary);
+
+		if (canvas instanceof HTMLCanvasElement === false) throw new TypeError('canvas required');
+		var COL = this;
+		Object.assign(this, {
+			/*The main canvas*/
+			canvas: canvas,
+			/*Canvas' context*/
+			context: canvas.getContext('2d'),
+			default: {
+				/*default font*/
+				font: {
+					fontStyle: null,
+					fontWeight: null,
+					fontVariant: null,
+					color: "#000",
+					textAlign: 'start', //left right center start end
+					lineHeight: null,
+					fontSize: 14,
+					fontFamily: "Arial",
+					strokeWidth: 0,
+					strokeColor: "#000",
+					shadowBlur: 0,
+					shadowColor: "#000",
+					shadowOffsetX: 0,
+					shadowOffsetY: 0,
+					fill: true,
+					reverse: false
+				},
+				style: {
+					width: 1,
+					height: 1,
+					hidden: false,
+					opacity: 1,
+					clipOverflow: false,
+					backgroundColor: null,
+					composite: null,
+					debugBorderColor: 'black',
+					x: 0,
+					y: 0,
+					zoomX: 1,
+					zoomY: 1,
+					rotate: 0,
+					rotatePointX: 0,
+					rotatePointY: 0,
+					positionPointX: 0,
+					positionPointY: 0,
+					zoomPointX: 0,
+					zoomPointY: 0,
+					skewX: 1,
+					skewY: 1,
+					skewPointX: 0,
+					skewPointY: 0
+				}
+			},
+			stat: {
+				mouse: {
+					x: null,
+					y: null,
+					previousX: null,
+					previousY: null
+				},
+				/*The currently focused on obj*/
+				onfocus: null,
+				/*The currently mouseover obj*/
+				onover: null,
+				canvasOnFocus: false,
+				canvasOnover: false
+
+			},
+			tmp: {
+				graphID: 0,
+				onOverGraph: null,
+				toClickGraph: null,
+				matrix1: new Float32Array([1, 0, 0, 0, 1, 0]),
+				matrix2: new Float32Array([1, 0, 0, 0, 1, 0]),
+				matrix3: new Float32Array([1, 0, 0, 0, 1, 0])
+			},
+
+			root: null, //root Graph
+
+			class: {},
+
+			autoClear: true,
+			//Debug info
+			debug: {
+				switch: false,
+				count: 0,
+				frame: 0,
+				FPS: 0,
+				_lastFrameTime: Date.now(),
+				on: function on() {
+					this.switch = true;
+				},
+				off: function off() {
+					this.switch = false;
+				}
+			}
+		});
+		//set classes
+		for (var c in COL_Class) {
+			this.class[c] = COL_Class[c](this);
+		} //init root graph
+		this.root = new this.class.FunctionGraph();
+		this.root.name = 'root';
+		//prevent root's parentNode being modified
+		defProp(this.root, 'parentNode', { configurable: false });
+
+		//adjust canvas drawing size
+		this.adjustCanvas();
+
+		//const canvas=this.canvas;
+		//add events
+		addEvents(canvas, {
+			mouseout: function mouseout(e) {
+				_this.stat.canvasOnover = false;
+				//clear mouse pos data
+				_this.stat.mouse.x = null;
+				_this.stat.mouse.y = null;
+				//clear onover obj
+				var onover = _this.stat.onover;
+				_this._commonEventHandle(e);
+				_this.stat.onover = null;
+			},
+			mouseover: function mouseover(e) {
+				_this.stat.canvasOnover = true;
+			},
+			mousemove: function mousemove(e) {
+				_this.tmp.toClick = false;
+				_this._commonEventHandle(e);
+			},
+			mousedown: function mousedown(e) {
+				_this.tmp.toClickGraph = _this.stat.onover;
+				_this.stat.canvasOnFocus = true;
+				_this.stat.onfocus = _this.stat.onover;
+				_this._commonEventHandle(e);
+			},
+			mouseup: function mouseup(e) {
+				return _this._commonEventHandle(e);
+			},
+			click: function click(e) {
+				if (_this.tmp.toClickGraph) _this._commonEventHandle(e);
+			},
+			dblclick: function dblclick(e) {
+				return _this._commonEventHandle(e);
+			},
+			selectstart: function selectstart(e) {
+				return e.preventDefault();
+			},
+			wheel: function wheel(e) {
+				var ce = new _this.class.WheelEvent('wheel');
+				ce.origin = e;
+				(_this.stat.onover || _this.root).emit(ce);
+			}
+		});
+		addEvents(document, {
+			mousedown: function mousedown(e) {
+				if (e.target !== _this.canvas) {
+					_this.stat.canvasOnFocus = false;
+				}
+			},
+			mouseout: function mouseout(e) {
+				if (_this.stat.mouse.x !== null) {
+					var eve = new window.MouseEvent('mouseout');
+					_this.canvas.dispatchEvent(eve);
+				}
+			},
+			keydown: function keydown(e) {
+				return _this._commonEventHandle(e);
+			},
+			keyup: function keyup(e) {
+				return _this._commonEventHandle(e);
+			},
+			keypress: function keypress(e) {
+				return _this._commonEventHandle(e);
+			}
+
+		});
 	}
-})(undefined, function () {
-	'use strict';
 
-	//class:CanvasObjLibrary
-
-	var CanvasObjLibrary = function () {
-		function CanvasObjLibrary(canvas) {
-			var _this = this;
-
-			_classCallCheck(this, CanvasObjLibrary);
-
-			if (canvas instanceof HTMLCanvasElement === false) throw new TypeError('canvas required');
-			var COL = this;
-			Object.assign(this, {
-				/*The main canvas*/
-				canvas: canvas,
-				/*Canvas' context*/
-				context: canvas.getContext('2d'),
-				default: {
-					/*default font*/
-					font: {
-						fontStyle: null,
-						fontWeight: null,
-						fontVariant: null,
-						color: "#000",
-						lineHeight: null,
-						fontSize: 14,
-						fontFamily: "Arial",
-						strokeWidth: 0,
-						strokeColor: "#000",
-						shadowBlur: 0,
-						shadowColor: "#000",
-						shadowOffsetX: 0,
-						shadowOffsetY: 0,
-						fill: true,
-						reverse: false
-					},
-					style: {
-						width: 1,
-						height: 1,
-						hidden: false,
-						opacity: 1,
-						clipOverflow: false,
-						backgroundColor: null,
-						composite: null,
-						debugBorderColor: 'black',
-						x: 0,
-						y: 0,
-						zoomX: 1,
-						zoomY: 1,
-						rotate: 0,
-						rotatePointX: 0,
-						rotatePointY: 0,
-						positionPointX: 0,
-						positionPointY: 0,
-						zoomPointX: 0,
-						zoomPointY: 0,
-						skewX: 1,
-						skewY: 1,
-						skewPointX: 0,
-						skewPointY: 0
-					}
-				},
-				stat: {
-					mouse: {
-						x: null,
-						y: null,
-						previousX: null,
-						previousY: null
-					},
-					/*The currently focused on obj*/
-					onfocus: null,
-					/*The currently mouseover obj*/
-					onover: null,
-					canvasOnFocus: false,
-					canvasOnover: false
-
-				},
-				tmp: {
-					graphID: 0,
-					onOverGraph: null,
-					toClickGraph: null,
-					matrix1: new Float32Array([1, 0, 0, 0, 1, 0]),
-					matrix2: new Float32Array([1, 0, 0, 0, 1, 0]),
-					matrix3: new Float32Array([1, 0, 0, 0, 1, 0])
-				},
-
-				root: null, //root Graph
-
-				class: {},
-
-				autoClear: true,
-				//Debug info
-				debug: {
-					switch: false,
-					count: 0,
-					FPS: 0,
-					_lastFrameTime: Date.now(),
-					_recordOffset: 0,
-					_timeRecorder: new Uint32Array(15), //记录5帧绘制时的时间来计算fps
-					on: function on() {
-						this.switch = true;
-					},
-					off: function off() {
-						this.switch = false;
-					}
-				}
-			});
-			//set classes
-			for (var c in COL_Class) {
-				this.class[c] = COL_Class[c](this);
-			} //init root graph
-			this.root = new this.class.FunctionGraph();
-			this.root.name = 'root';
-			//this.root.drawer=null;
-			//prevent root's parentNode being modified
-			Object.defineProperty(this.root, 'parentNode', { configurable: false });
-
-			//adjust canvas drawing size
-			this.adjustCanvas();
-
-			//const canvas=this.canvas;
-			//add events
-			addEvents(canvas, {
-				mouseout: function mouseout(e) {
-					_this.stat.canvasOnover = false;
-					//clear mouse pos data
-					_this.stat.mouse.x = null;
-					_this.stat.mouse.y = null;
-					//clear onover obj
-					var onover = _this.stat.onover;
-					_this._commonEventHandle(e);
-					_this.stat.onover = null;
-				},
-				mouseover: function mouseover(e) {
-					_this.stat.canvasOnover = true;
-				},
-				mousemove: function mousemove(e) {
-					_this.tmp.toClick = false;
-					_this._commonEventHandle(e);
-				},
-				mousedown: function mousedown(e) {
-					_this.tmp.toClickGraph = _this.stat.onover;
-					_this.stat.canvasOnFocus = true;
-					_this.stat.onfocus = _this.stat.onover;
-					_this._commonEventHandle(e);
-				},
-				mouseup: function mouseup(e) {
-					return _this._commonEventHandle(e);
-				},
-				click: function click(e) {
-					if (_this.tmp.toClickGraph) _this._commonEventHandle(e);
-				},
-				dblclick: function dblclick(e) {
-					return _this._commonEventHandle(e);
-				},
-				selectstart: function selectstart(e) {
-					return e.preventDefault();
-				},
-				wheel: function wheel(e) {
-					var ce = new _this.class.WheelEvent('wheel');
-					ce.originEvent = e;
-					(_this.stat.onover || _this.root).emit(ce);
-				}
-			});
-			addEvents(document, {
-				mousedown: function mousedown(e) {
-					if (e.target !== _this.canvas) {
-						_this.stat.canvasOnFocus = false;
-					}
-				},
-				mouseout: function mouseout(e) {
-					if (_this.stat.mouse.x !== null) {
-						var eve = new window.MouseEvent('mouseout');
-						_this.canvas.dispatchEvent(eve);
-					}
-				},
-				keydown: function keydown(e) {
-					return _this._commonEventHandle(e);
-				},
-				keyup: function keyup(e) {
-					return _this._commonEventHandle(e);
-				},
-				keypress: function keypress(e) {
-					return _this._commonEventHandle(e);
-				}
-
-			});
+	_createClass(CanvasObjLibrary, [{
+		key: 'generateGraphID',
+		value: function generateGraphID() {
+			return ++this.tmp.graphID;
 		}
+	}, {
+		key: 'adjustCanvas',
+		value: function adjustCanvas() {
+			var width = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.canvas.offsetWidth;
+			var height = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : this.canvas.offsetHeight;
 
-		_createClass(CanvasObjLibrary, [{
-			key: "generateGraphID",
-			value: function generateGraphID() {
-				return ++this.tmp.graphID;
+			this.root.style.width = this.canvas.width = width;
+			this.root.style.height = this.canvas.height = height;
+			var ce = new this.class.Event('resize');
+			this.root.emit(ce);
+		}
+	}, {
+		key: '_commonEventHandle',
+		value: function _commonEventHandle(e) {
+			if (e instanceof MouseEvent) {
+				this.stat.previousX = this.stat.mouse.x;
+				this.stat.previousY = this.stat.mouse.y;
+				if (e.type === 'mouseout') {
+					this.stat.mouse.x = null;
+					this.stat.mouse.y = null;
+				} else {
+					this.stat.mouse.x = e.layerX;
+					this.stat.mouse.y = e.layerY;
+				}
+				var ce = new this.class.MouseEvent(e.type);
+				ce.origin = e;
+				(this.stat.onover || this.root).emit(ce);
+			} else if (e instanceof KeyboardEvent) {
+				if (!this.stat.canvasOnFocus) return;
+				var _ce = new this.class.KeyboardEvent(e.type);
+				_ce.origin = e;
+				(this.stat.onfocus || this.root).emit(_ce);
 			}
-		}, {
-			key: "adjustCanvas",
-			value: function adjustCanvas() {
-				var width = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.canvas.offsetWidth;
-				var height = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : this.canvas.offsetHeight;
+		}
+	}, {
+		key: 'clear',
+		value: function clear() {
+			this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		}
+	}, {
+		key: 'draw',
+		value: function draw() {
+			this.debug.count = 0;
+			this.debug.frame++;
+			this.autoClear && this.clear();
+			this.traverseGraphTree(0);
+			this.debug.switch && this.drawDebug();
+		}
+		/*
+  	traverse mode
+  		0	draw graphs and check onover graph
+  		1	check onover graph
+  */
 
-				this.root.style.width = this.canvas.width = width;
-				this.root.style.height = this.canvas.height = height;
-				var ce = new this.class.Event('resize');
-				this.root.emit(ce);
-			}
-		}, {
-			key: "_commonEventHandle",
-			value: function _commonEventHandle(e) {
-				if (e instanceof MouseEvent) {
-					this.stat.previousX = this.stat.mouse.x;
-					this.stat.previousY = this.stat.mouse.y;
-					if (e.type === 'mouseout') {
-						this.stat.mouse.x = null;
-						this.stat.mouse.y = null;
-					} else {
-						this.stat.mouse.x = e.layerX;
-						this.stat.mouse.y = e.layerY;
-					}
-					var ce = new this.class.MouseEvent(e.type);
-					ce.originEvent = e;
-					(this.stat.onover || this.root).emit(ce);
-				} else if (e instanceof KeyboardEvent) {
-					if (!this.stat.canvasOnFocus) return;
-					var _ce = new this.class.KeyboardEvent(e.type);
-					_ce.originEvent = e;
-					(this.stat.onfocus || this.root).emit(_ce);
+	}, {
+		key: 'traverseGraphTree',
+		value: function traverseGraphTree() {
+			var mode = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+
+			this.context.setTransform(1, 0, 0, 1, 0, 0);
+			this.drawGraph(this.root, mode);
+			if (this.tmp.onOverGraph !== this.stat.onover) {
+				//new onover graph
+				var oldOnover = this.stat.onover;
+				this.tmp.toClickGraph = null;
+				this.stat.onover = this.tmp.onOverGraph;
+				if (oldOnover) {
+					var ceout = new this.class.MouseEvent('mouseout');
+					oldOnover.emit(ceout);
+				}
+
+				if (this.stat.onover) {
+					var ceover = new this.class.MouseEvent('mouseover');
+					this.stat.onover.emit(ceover);
 				}
 			}
-		}, {
-			key: "clear",
-			value: function clear() {
-				this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+			this.tmp.onOverGraph = null;
+		}
+	}, {
+		key: 'drawDebug',
+		value: function drawDebug() {
+			var ct = this.context,
+			    d = this.debug,
+			    s = this.stat,
+			    n = Date.now(),
+			    x = this.stat.mouse.x,
+			    y = this.stat.mouse.y;
+			//fps
+			d.FPS = 1000 / (n - d._lastFrameTime) + 0.5 | 0;
+			d._lastFrameTime = n;
+			//draw
+			ct.save();
+			ct.beginPath();
+			ct.setTransform(1, 0, 0, 1, 0, 0);
+			ct.font = "16px Arial";
+			ct.textBaseline = "bottom";
+			ct.globalCompositeOperation = "lighter";
+			ct.fillStyle = "red";
+			ct.fillText("point:" + String(x) + "," + String(y) + " FPS:" + d.FPS + " Items:" + d.count + " Frame:" + d.frame, 0, this.canvas.height);
+			ct.fillText("onover:" + (s.onover ? s.onover.GID : "null") + " onfocus:" + (s.onfocus ? s.onfocus.GID : "null"), 0, this.canvas.height - 20);
+			ct.strokeStyle = "red";
+			ct.globalCompositeOperation = "source-over";
+			ct.moveTo(x, y + 6);
+			ct.lineTo(x, y - 6);
+			ct.moveTo(x - 6, y);
+			ct.lineTo(x + 6, y);
+			ct.stroke();
+			ct.restore();
+		}
+	}, {
+		key: 'drawGraph',
+		value: function drawGraph(g) {
+			var mode = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+
+			if (g.style.hidden === true) return;
+			var ct = this.context,
+			    style = g.style,
+			    M = this.tmp.matrix1,
+			    tM = this.tmp.matrix2,
+			    _M = this.tmp.matrix3;
+			this.debug.count++;
+			ct.save();
+			if (mode === 0) {
+				if (style.composite) ct.globalCompositeOperation = style.composite;
+				if (style.opacity !== ct.globalAlpha) ct.globalAlpha = style.opacity;
 			}
-		}, {
-			key: "draw",
-			value: function draw() {
-				this.debug.count = 0;
-				this.autoClear && this.clear();
-				this.traverseGraphTree(0);
-				this.debug.switch && this.drawDebug();
-			}
-			/*
-   	traverse mode
-   		0	draw graphs and check onover graph
-   		1	check onover graph
-   */
-
-		}, {
-			key: "traverseGraphTree",
-			value: function traverseGraphTree() {
-				var mode = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
-
-				this.context.setTransform(1, 0, 0, 1, 0, 0);
-				this.drawGraph(this.root, mode);
-				if (this.tmp.onOverGraph !== this.stat.onover) {
-					//new onover graph
-					var oldOnover = this.stat.onover;
-					this.tmp.toClickGraph = null;
-					this.stat.onover = this.tmp.onOverGraph;
-					if (oldOnover) {
-						var ceout = new this.class.MouseEvent('mouseout');
-						oldOnover.emit(ceout);
-					}
-
-					if (this.stat.onover) {
-						var ceover = new this.class.MouseEvent('mouseover');
-						this.stat.onover.emit(ceover);
-					}
+			//position & offset
+			M[0] = 1;M[1] = 0;M[2] = style.x - style.positionPointX;
+			M[3] = 0;M[4] = 1;M[5] = style.y - style.positionPointY;
+			if (style.skewX !== 1 || style.skewY !== 1) {
+				if (style.skewPointX !== 0 || style.skewPointY !== 0) {
+					_M[0] = 1;_M[1] = 0;_M[2] = style.skewPointX;_M[3] = 0;_M[4] = 1;_M[5] = style.skewPointY;
+					multiplyMatrix(M, _M, tM);
+					_M[0] = style.skewX;_M[2] = 0;_M[4] = style.skewY;_M[5] = 0;
+					multiplyMatrix(tM, _M, M);
+					_M[0] = 1;_M[2] = -style.skewPointX;_M[4] = 1;_M[5] = -style.skewPointY;
+					multiplyMatrix(M, _M, tM);
+				} else {
+					_M[0] = style.skewX;_M[1] = 0;_M[2] = 0;_M[3] = 0;_M[4] = style.skewY;_M[5] = 0;
+					multiplyMatrix(M, _M, tM);
 				}
-				this.tmp.onOverGraph = null;
+				M.set(tM);
 			}
-		}, {
-			key: "drawDebug",
-			value: function drawDebug() {
-				var ct = this.context,
-				    d = this.debug,
-				    r = d._timeRecorder,
-				    n = Date.now();
-				//fps
-				r[d._recordOffset++] = n - d._lastFrameTime;
-				d._lastFrameTime = n;
-				if (d._recordOffset === 15) d._recordOffset = 0;
-				d.FPS = 15000 / (r[0] + r[1] + r[2] + r[3] + r[4] + r[5] + r[6] + r[7] + r[8] + r[9] + r[10] + r[11] + r[12] + r[13] + r[14]) + 0.5 | 0;
-				//draw
+			//rotate
+			if (style.rotate !== 0) {
+				var r = style.rotate * 0.0174532925;
+				if (style.rotatePointX !== 0 || style.rotatePointY !== 0) {
+					_M[0] = 1;_M[1] = 0;_M[2] = style.rotatePointX;_M[3] = 0;_M[4] = 1;_M[5] = style.rotatePointY;
+					multiplyMatrix(M, _M, tM);
+					_M[0] = Math.cos(r);_M[1] = -Math.sin(r);_M[2] = 0;_M[3] = Math.sin(r);_M[4] = Math.cos(r);_M[5] = 0;
+					multiplyMatrix(tM, _M, M);
+					_M[0] = 1;_M[1] = 0;_M[2] = -style.rotatePointX;_M[3] = 0;_M[4] = 1;_M[5] = -style.rotatePointY;
+					multiplyMatrix(M, _M, tM);
+				} else {
+					_M[0] = Math.cos(r);_M[1] = -Math.sin(r);_M[2] = 0;_M[3] = Math.sin(r);_M[4] = Math.cos(r);_M[5] = 0;
+					multiplyMatrix(M, _M, tM);
+				}
+				M.set(tM);
+			}
+			//zoom
+			if (style.zoomX !== 1 || style.zoomY !== 1) {
+				if (style.zoomPointX !== 0 || style.zoomPointY !== 0) {
+					_M[0] = 1;_M[1] = 0;_M[2] = style.zoomPointX;_M[3] = 0;_M[4] = 1;_M[5] = style.zoomPointY;
+					multiplyMatrix(M, _M, tM);
+					_M[0] = style.zoomX;_M[2] = 0;_M[4] = style.zoomY;_M[5] = 0;
+					multiplyMatrix(tM, _M, M);
+					_M[0] = 1;_M[2] = -style.zoomPointX;_M[4] = 1;_M[5] = -style.zoomPointY;
+					multiplyMatrix(M, _M, tM);
+				} else {
+					_M[0] = style.zoomX;_M[1] = 0;_M[2] = 0;_M[3] = 0;_M[4] = style.zoomY;_M[5] = 0;
+					multiplyMatrix(M, _M, tM);
+				}
+				M.set(tM);
+			}
+			ct.transform(M[0], M[3], M[1], M[4], M[2], M[5]);
+			if (this.debug.switch && mode === 0) {
 				ct.save();
 				ct.beginPath();
-				ct.setTransform(1, 0, 0, 1, 0, 0);
-				ct.font = "16px Arial";
-				ct.textBaseline = "bottom";
-				ct.globalCompositeOperation = "lighter";
-				ct.fillStyle = "red";
-				ct.fillText("point:" + String(this.stat.mouse.x) + "," + String(this.stat.mouse.y) + " FPS:" + this.debug.FPS + " Items:" + this.debug.count, 0, this.canvas.height);
-				ct.fillText("onover:" + (this.stat.onover ? this.stat.onover.GID : "null") + " onfocus:" + (this.stat.onfocus ? this.stat.onfocus.GID : "null"), 0, this.canvas.height - 20);
-				ct.strokeStyle = "red";
-				ct.globalCompositeOperation = "source-over";
-				ct.moveTo(this.stat.mouse.x, this.stat.mouse.y + 6);
-				ct.lineTo(this.stat.mouse.x, this.stat.mouse.y - 6);
-				ct.moveTo(this.stat.mouse.x - 6, this.stat.mouse.y);
-				ct.lineTo(this.stat.mouse.x + 6, this.stat.mouse.y);
-				ct.stroke();
+				ct.globalAlpha = 0.5;
+				ct.globalCompositeOperation = 'source-over';
+				ct.strokeStyle = style.debugBorderColor;
+				ct.strokeWidth = 1.5;
+				ct.strokeRect(0, 0, style.width, style.height);
+				ct.strokeWidth = 1;
+				ct.globalAlpha = 1;
+				ct.strokeStyle = 'green';
+				ct.strokeRect(style.positionPointX - 5, style.positionPointY - 5, 10, 10);
+				ct.strokeStyle = 'blue';
+				ct.strokeRect(style.rotatePointX - 4, style.rotatePointX - 4, 8, 8);
+				ct.strokeStyle = 'olive';
+				ct.strokeRect(style.zoomPointX - 3, style.zoomPointX - 3, 6, 6);
+				ct.strokeStyle = '#6cf';
+				ct.strokeRect(style.skewPointX - 2, style.skewPointX - 2, 4, 4);
 				ct.restore();
 			}
-		}, {
-			key: "drawGraph",
-			value: function drawGraph(g) {
-				var mode = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+			if (style.clipOverflow) {
+				ct.beginPath();
+				ct.rect(0, 0, style.width, style.height);
+				ct.clip();
+			}
+			switch (mode) {
+				case 0:
+					{
+						g.drawer && g.drawer(ct);break;
+					}
+				case 1:
+					{
+						g.checkIfOnOver(true, mode);break;
+					}
+			}
+			if (g.childNodes.length) {
+				var _iteratorNormalCompletion = true;
+				var _didIteratorError = false;
+				var _iteratorError = undefined;
 
-				if (g.style.hidden === true) return;
-				var ct = this.context,
-				    style = g.style,
-				    _M = this.tmp.matrix3;
-				var M = this.tmp.matrix1,
-				    tM = this.tmp.matrix2;
-				this.debug.count++;
-				ct.save();
-				if (mode === 0) {
-					style.composite && (ct.globalCompositeOperation = style.composite);
-					ct.globalAlpha = style.opacity;
-				}
-				//position & offset
-				M[0] = 1;M[1] = 0;M[2] = style.x - style.positionPointX;
-				M[3] = 0;M[4] = 1;M[5] = style.y - style.positionPointY;
-				if (style.skewX !== 1 || style.skewY !== 1) {
-					if (style.skewPointX !== 0 || style.skewPointY !== 0) {
-						_M[0] = 1;_M[1] = 0;_M[2] = style.skewPointX;_M[3] = 0;_M[4] = 1;_M[5] = style.skewPointY;
-						multiplyMatrix(M, _M, tM);
-						_M[0] = style.skewX;_M[2] = 0;_M[4] = style.skewY;_M[5] = 0;
-						multiplyMatrix(tM, _M, M);
-						_M[0] = 1;_M[2] = -style.skewPointX;_M[4] = 1;_M[5] = -style.skewPointY;
-						multiplyMatrix(M, _M, tM);
-					} else {
-						_M[0] = style.skewX;_M[1] = 0;_M[2] = 0;_M[3] = 0;_M[4] = style.skewY;_M[5] = 0;
-						multiplyMatrix(M, _M, tM);
-					}
-					M.set(tM);
-				}
-				//rotate
-				if (style.rotate !== 0) {
-					var r = style.rotate * 0.0174532925;
-					if (style.rotatePointX !== 0 || style.rotatePointY !== 0) {
-						_M[0] = 1;_M[1] = 0;_M[2] = style.rotatePointX;_M[3] = 0;_M[4] = 1;_M[5] = style.rotatePointY;
-						multiplyMatrix(M, _M, tM);
-						_M[0] = Math.cos(r);_M[1] = -Math.sin(r);_M[2] = 0;_M[3] = Math.sin(r);_M[4] = Math.cos(r);_M[5] = 0;
-						multiplyMatrix(tM, _M, M);
-						_M[0] = 1;_M[1] = 0;_M[2] = -style.rotatePointX;_M[3] = 0;_M[4] = 1;_M[5] = -style.rotatePointY;
-						multiplyMatrix(M, _M, tM);
-					} else {
-						_M[0] = Math.cos(r);_M[1] = -Math.sin(r);_M[2] = 0;_M[3] = Math.sin(r);_M[4] = Math.cos(r);_M[5] = 0;
-						multiplyMatrix(M, _M, tM);
-					}
-					M.set(tM);
-				}
-				//zoom
-				if (style.zoomX !== 1 || style.zoomY !== 1) {
-					if (style.zoomPointX !== 0 || style.zoomPointY !== 0) {
-						_M[0] = 1;_M[1] = 0;_M[2] = style.zoomPointX;_M[3] = 0;_M[4] = 1;_M[5] = style.zoomPointY;
-						multiplyMatrix(M, _M, tM);
-						_M[0] = style.zoomX;_M[2] = 0;_M[4] = style.zoomY;_M[5] = 0;
-						multiplyMatrix(tM, _M, M);
-						_M[0] = 1;_M[2] = -style.zoomPointX;_M[4] = 1;_M[5] = -style.zoomPointY;
-						multiplyMatrix(M, _M, tM);
-					} else {
-						_M[0] = style.zoomX;_M[1] = 0;_M[2] = 0;_M[3] = 0;_M[4] = style.zoomY;_M[5] = 0;
-						multiplyMatrix(M, _M, tM);
-					}
-					M.set(tM);
-				}
-				ct.transform(M[0], M[3], M[1], M[4], M[2], M[5]);
-				if (this.debug.switch && mode === 0) {
-					ct.save();
-					ct.beginPath();
-					ct.globalAlpha = 0.5;
-					ct.globalCompositeOperation = 'source-over';
-					ct.strokeStyle = g.style.debugBorderColor;
-					ct.strokeWidth = 1.5;
-					ct.strokeRect(0, 0, style.width, style.height);
-					ct.strokeWidth = 1;
-					ct.globalAlpha = 1;
-					ct.strokeStyle = 'green';
-					ct.strokeRect(style.positionPointX - 5, style.positionPointY - 5, 10, 10);
-					ct.strokeStyle = 'blue';
-					ct.strokeRect(style.rotatePointX - 4, style.rotatePointX - 4, 8, 8);
-					ct.strokeStyle = 'olive';
-					ct.strokeRect(style.zoomPointX - 3, style.zoomPointX - 3, 6, 6);
-					ct.strokeStyle = '#6cf';
-					ct.strokeRect(style.skewPointX - 2, style.skewPointX - 2, 4, 4);
-					ct.restore();
-				}
-				if (g.style.clipOverflow) {
-					ct.beginPath();
-					ct.rect(0, 0, style.width, style.height);
-					ct.clip();
-				}
-				switch (mode) {
-					case 0:
-						{
-							g.drawer && g.drawer(ct);break;
-						}
-					case 1:
-						{
-							g.checkIfOnOver(true, mode);break;
-						}
-				}
-				if (g.childNodes.length) {
-					var _iteratorNormalCompletion = true;
-					var _didIteratorError = false;
-					var _iteratorError = undefined;
+				try {
+					for (var _iterator = g.childNodes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+						var c = _step.value;
 
+						this.drawGraph(c, mode);
+					}
+				} catch (err) {
+					_didIteratorError = true;
+					_iteratorError = err;
+				} finally {
 					try {
-						for (var _iterator = g.childNodes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-							var c = _step.value;
-
-							this.drawGraph(c, mode);
+						if (!_iteratorNormalCompletion && _iterator.return) {
+							_iterator.return();
 						}
-					} catch (err) {
-						_didIteratorError = true;
-						_iteratorError = err;
 					} finally {
-						try {
-							if (!_iteratorNormalCompletion && _iterator.return) {
-								_iterator.return();
-							}
-						} finally {
-							if (_didIteratorError) {
-								throw _iteratorError;
-							}
+						if (_didIteratorError) {
+							throw _iteratorError;
 						}
-					}
-				}
-				ct.restore();
-			}
-		}]);
-
-		return CanvasObjLibrary;
-	}();
-
-	var COL_Class = {
-		Event: function Event(host) {
-			var COL = host;
-			return function Event(type) {
-				_classCallCheck(this, Event);
-
-				this.type = type;
-				this.timeStamp = Date.now();
-			};
-		},
-		GraphEvent: function GraphEvent(host) {
-			var COL = host;
-			return function (_host$class$Event) {
-				_inherits(GraphEvent, _host$class$Event);
-
-				function GraphEvent(type) {
-					_classCallCheck(this, GraphEvent);
-
-					var _this2 = _possibleConstructorReturn(this, (GraphEvent.__proto__ || Object.getPrototypeOf(GraphEvent)).call(this, type));
-
-					_this2.propagation = true;
-					_this2.stoped = false;
-					_this2.target = null;
-					return _this2;
-				}
-
-				_createClass(GraphEvent, [{
-					key: "stopPropagation",
-					value: function stopPropagation() {
-						this.propagation = false;
-					}
-				}, {
-					key: "stopImmediatePropagation",
-					value: function stopImmediatePropagation() {
-						this.stoped = true;
-					}
-				}, {
-					key: "altKey",
-					get: function get() {
-						return this.originEvent.altKey;
-					}
-				}, {
-					key: "ctrlKey",
-					get: function get() {
-						return this.originEvent.ctrlKey;
-					}
-				}, {
-					key: "metaKey",
-					get: function get() {
-						return this.originEvent.metaKey;
-					}
-				}, {
-					key: "shiftKey",
-					get: function get() {
-						return this.originEvent.shiftKey;
-					}
-				}]);
-
-				return GraphEvent;
-			}(host.class.Event);
-		},
-		MouseEvent: function MouseEvent(host) {
-			return function (_host$class$GraphEven) {
-				_inherits(MouseEvent, _host$class$GraphEven);
-
-				function MouseEvent(type) {
-					_classCallCheck(this, MouseEvent);
-
-					return _possibleConstructorReturn(this, (MouseEvent.__proto__ || Object.getPrototypeOf(MouseEvent)).call(this, type));
-				}
-
-				_createClass(MouseEvent, [{
-					key: "button",
-					get: function get() {
-						return this.originEvent.button;
-					}
-				}, {
-					key: "buttons",
-					get: function get() {
-						return this.originEvent.buttons;
-					}
-				}, {
-					key: "movementX",
-					get: function get() {
-						return host.stat.mouse.x - host.stat.previousX;
-					}
-				}, {
-					key: "movementY",
-					get: function get() {
-						return host.stat.mouse.y - host.stat.previousY;
-					}
-				}]);
-
-				return MouseEvent;
-			}(host.class.GraphEvent);
-		},
-		WheelEvent: function WheelEvent(host) {
-			return function (_host$class$MouseEven) {
-				_inherits(WheelEvent, _host$class$MouseEven);
-
-				function WheelEvent(type) {
-					_classCallCheck(this, WheelEvent);
-
-					return _possibleConstructorReturn(this, (WheelEvent.__proto__ || Object.getPrototypeOf(WheelEvent)).call(this, type));
-				}
-
-				_createClass(WheelEvent, [{
-					key: "deltaX",
-					get: function get() {
-						return this.originEvent.deltaX;
-					}
-				}, {
-					key: "deltaY",
-					get: function get() {
-						return this.originEvent.deltaY;
-					}
-				}, {
-					key: "deltaZ",
-					get: function get() {
-						return this.originEvent.deltaZ;
-					}
-				}, {
-					key: "deltaMode",
-					get: function get() {
-						return this.originEvent.deltaMode;
-					}
-				}]);
-
-				return WheelEvent;
-			}(host.class.MouseEvent);
-		},
-		KeyboardEvent: function KeyboardEvent(host) {
-			return function (_host$class$GraphEven2) {
-				_inherits(KeyboardEvent, _host$class$GraphEven2);
-
-				function KeyboardEvent(type) {
-					_classCallCheck(this, KeyboardEvent);
-
-					return _possibleConstructorReturn(this, (KeyboardEvent.__proto__ || Object.getPrototypeOf(KeyboardEvent)).call(this, type));
-				}
-
-				_createClass(KeyboardEvent, [{
-					key: "key",
-					get: function get() {
-						return this.originEvent.key;
-					}
-				}, {
-					key: "code",
-					get: function get() {
-						return this.originEvent.code;
-					}
-				}, {
-					key: "repeat",
-					get: function get() {
-						return this.originEvent.repeat;
-					}
-				}, {
-					key: "keyCode",
-					get: function get() {
-						return this.originEvent.keyCode;
-					}
-				}, {
-					key: "charCode",
-					get: function get() {
-						return this.originEvent.charCode;
-					}
-				}, {
-					key: "location",
-					get: function get() {
-						return this.originEvent.location;
-					}
-				}]);
-
-				return KeyboardEvent;
-			}(host.class.GraphEvent);
-		},
-		GraphEventEmitter: function GraphEventEmitter(host) {
-			var COL = host;
-			return function () {
-				function GraphEventEmitter() {
-					_classCallCheck(this, GraphEventEmitter);
-
-					this._events = {};
-				}
-
-				_createClass(GraphEventEmitter, [{
-					key: "emit",
-					value: function emit(e) {
-						if (e instanceof host.class.Event === false) return;
-						e.target = this;
-						this._resolve(e);
-					}
-				}, {
-					key: "_resolve",
-					value: function _resolve(e) {
-						if (e.type in this._events) {
-							var hs = this._events[e.type];
-							try {
-								var _iteratorNormalCompletion2 = true;
-								var _didIteratorError2 = false;
-								var _iteratorError2 = undefined;
-
-								try {
-									for (var _iterator2 = hs[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-										var h = _step2.value;
-										h.call(this, e);if (e.stoped) return;
-									}
-								} catch (err) {
-									_didIteratorError2 = true;
-									_iteratorError2 = err;
-								} finally {
-									try {
-										if (!_iteratorNormalCompletion2 && _iterator2.return) {
-											_iterator2.return();
-										}
-									} finally {
-										if (_didIteratorError2) {
-											throw _iteratorError2;
-										}
-									}
-								}
-
-								;
-							} catch (e) {
-								console.error(e);
-							}
-						}
-						if (e.propagation === true && this.parentNode) this.parentNode._resolve(e);
-					}
-				}, {
-					key: "on",
-					value: function on(name, handle) {
-						if (!(handle instanceof Function)) return;
-						if (!(name in this._events)) this._events[name] = [];
-						this._events[name].push(handle);
-					}
-				}, {
-					key: "removeEvent",
-					value: function removeEvent(name, handle) {
-						if (!(name in this._events)) return;
-						if (arguments.length === 1) {
-							delete this._events[name];return;
-						}
-						var ind = void 0;
-						if (ind = this._events[name].indexOf(handle) >= 0) this._events[name].splice(ind, 1);
-						if (this._events[name].length === 0) delete this._events[name];
-					}
-				}]);
-
-				return GraphEventEmitter;
-			}();
-		},
-		GraphStyle: function GraphStyle(host) {
-			return function () {
-				function GraphStyle(inhertFrom) {
-					_classCallCheck(this, GraphStyle);
-
-					if (inhertFrom && this.inhert(inhertFrom)) return;
-					this.__proto__.__proto__ = host.default.style;
-					this._calculatableStyleChanged = false;
-				}
-
-				_createClass(GraphStyle, [{
-					key: "inhertGraph",
-					value: function inhertGraph(graph) {
-						//inhert a graph's style
-						if (!(graph instanceof host.class.Graph)) throw new TypeError('graph is not a Graph instance');
-						this.inhertStyle(graph.style);
-						return true;
-					}
-				}, {
-					key: "inhertStyle",
-					value: function inhertStyle(style) {
-						if (!(style instanceof host.class.GraphStyle)) throw new TypeError('graph is not a Graph instance');
-						this.__proto__ = style;
-						return true;
-					}
-				}, {
-					key: "inhert",
-					value: function inhert(from) {
-						if (from instanceof host.class.Graph) {
-							this.inhertGraph(from);
-							return true;
-						} else if (from instanceof host.class.GraphStyle) {
-							this.inhertStyle(from);
-							return true;
-						}
-						return false;
-					}
-				}, {
-					key: "cancelInhert",
-					value: function cancelInhert() {
-						this.__proto__ = Object.prototype;
-					}
-				}, {
-					key: "getPoint",
-					value: function getPoint(name) {
-						switch (name) {
-							case 'center':
-								{
-									return [this.width / 2, this.height / 2];
-								}
-						}
-						return [0, 0];
-					}
-				}, {
-					key: "position",
-					value: function position(x, y) {
-						this.x = x;
-						this.y = y;
-					}
-				}, {
-					key: "zoom",
-					value: function zoom(x, y) {
-						if (arguments.length == 1) {
-							this.zoomX = this.zoomY = x;
-						} else {
-							this.zoomX = x;
-							this.zoomY = y;
-						}
-					}
-				}, {
-					key: "size",
-					value: function size(w, h) {
-						this.width = w;
-						this.height = h;
-					}
-				}, {
-					key: "setRotatePoint",
-					value: function setRotatePoint(x, y) {
-						if (arguments.length == 2) {
-							this.rotatePointX = x;
-							this.rotatePointY = y;
-						} else if (arguments.length == 1) {
-							var _getPoint = this.getPoint(x);
-
-							var _getPoint2 = _slicedToArray(_getPoint, 2);
-
-							this.rotatePointX = _getPoint2[0];
-							this.rotatePointY = _getPoint2[1];
-						}
-					}
-				}, {
-					key: "setPositionPoint",
-					value: function setPositionPoint(x, y) {
-						if (arguments.length == 2) {
-							this.positionPointX = x;
-							this.positionPointY = y;
-						} else if (arguments.length == 1) {
-							var _getPoint3 = this.getPoint(x);
-
-							var _getPoint4 = _slicedToArray(_getPoint3, 2);
-
-							this.positionPointX = _getPoint4[0];
-							this.positionPointY = _getPoint4[1];
-						}
-					}
-				}, {
-					key: "setZoomPoint",
-					value: function setZoomPoint(x, y) {
-						if (arguments.length == 2) {
-							this.zoomPointX = x;
-							this.zoomPointY = y;
-						} else if (arguments.length == 1) {
-							var _getPoint5 = this.getPoint(x);
-
-							var _getPoint6 = _slicedToArray(_getPoint5, 2);
-
-							this.zoomPointX = _getPoint6[0];
-							this.zoomPointY = _getPoint6[1];
-						}
-					}
-				}, {
-					key: "setSkewPoint",
-					value: function setSkewPoint(x, y) {
-						if (arguments.length == 2) {
-							this.skewPointX = x;
-							this.skewPointY = y;
-						} else if (arguments.length == 1) {
-							var _getPoint7 = this.getPoint(x);
-
-							var _getPoint8 = _slicedToArray(_getPoint7, 2);
-
-							this.skewPointX = _getPoint8[0];
-							this.skewPointY = _getPoint8[1];
-						}
-					}
-				}]);
-
-				return GraphStyle;
-			}();
-		},
-		Graph: function Graph(host) {
-			return function (_host$class$GraphEven3) {
-				_inherits(Graph, _host$class$GraphEven3);
-
-				function Graph() {
-					_classCallCheck(this, Graph);
-
-					//this.name=name;
-					var _this6 = _possibleConstructorReturn(this, (Graph.__proto__ || Object.getPrototypeOf(Graph)).call(this));
-
-					_this6.host = host;
-					_this6.GID = _this6.host.generateGraphID();
-					_this6.onoverCheck = true;
-					Object.defineProperties(_this6, {
-						style: { value: new host.class.GraphStyle(), configurable: true },
-						childNodes: { value: [] },
-						parentNode: { value: undefined, configurable: true }
-					});
-					return _this6;
-				}
-
-				_createClass(Graph, [{
-					key: "createShadow",
-					value: function createShadow() {
-						var shadow = Object.create(this);
-						shadow.GID = this.host.generateGraphID();
-						shadow.shadowParent = this;
-						Object.defineProperties(shadow, {
-							style: { value: new host.class.GraphStyle(this.style), configurable: true },
-							parentNode: { value: undefined, configurable: true }
-						});
-						return shadow;
-					}
-					//add a graph to childNodes' end
-
-				}, {
-					key: "appendChild",
-					value: function appendChild(graph) {
-						if (!(graph instanceof host.class.Graph)) throw new TypeError('graph is not a Graph instance');
-						if (graph === this) throw new Error('can not add myself as a child');
-						if (graph.parentNode !== this) {
-							Object.defineProperty(graph, 'parentNode', {
-								value: this
-							});
-						} else {
-							var i = this.findChild(graph);
-							if (i >= 0) this.childNodes.splice(i, 1);
-						}
-						this.childNodes.push(graph);
-					}
-					//insert this graph after the graph
-
-				}, {
-					key: "insertAfter",
-					value: function insertAfter(graph) {
-						if (!(graph instanceof host.class.Graph)) throw new TypeError('graph is not a Graph instance');
-						if (graph === this) throw new Error('can not add myself as a child');
-						var p = graph.parentNode,
-						    io = void 0,
-						    it = void 0;
-						if (!p) throw new Error('no parentNode');
-						it = p.findChild(graph);
-						//if(it<0)return false;
-						if (p !== this.parentNode) {
-							Object.defineProperty(this, 'parentNode', {
-								value: p
-							});
-						} else {
-							io = p.findChild(this);
-							if (io >= 0) p.childNodes.splice(io, 1);
-						}
-						p.childNodes.splice(io < it ? it : it + 1, 0, this);
-					}
-					//insert this graph before the graph
-
-				}, {
-					key: "insertBefore",
-					value: function insertBefore(graph) {
-						if (!(graph instanceof host.class.Graph)) throw new TypeError('graph is not a Graph instance');
-						if (graph === this) throw new Error('can not add myself as a child');
-						var p = graph.parentNode,
-						    io = void 0,
-						    it = void 0;
-						if (!p) throw new Error('no parentNode');
-						it = p.findChild(graph);
-						//if(it<0)return false;
-						if (p !== this.parentNode) {
-							Object.defineProperty(this, 'parentNode', {
-								value: p
-							});
-						} else {
-							io = p.findChild(this);
-							if (io >= 0) p.childNodes.splice(io, 1);
-						}
-						p.childNodes.splice(io < it ? it - 1 : it, 0, this);
-					}
-				}, {
-					key: "findChild",
-					value: function findChild(graph) {
-						for (var i = this.childNodes.length; i--;) {
-							if (this.childNodes[i] === graph) return i;
-						}return -1;
-					}
-				}, {
-					key: "removeChild",
-					value: function removeChild(graph) {
-						var i = this.findChild(graph);
-						if (i < 0) return;
-						this.childNodes.splice(i, 1);
-						Object.defineProperty(this, 'parentNode', {
-							value: undefined
-						});
-					}
-				}, {
-					key: "checkIfOnOver",
-					value: function checkIfOnOver() {
-						var runHitRange = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
-						var mode = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
-
-						if (this.onoverCheck === false || !this.hitRange) return false;
-						var m = this.host.stat.mouse;
-						if (m.x === null) return false;
-						if (this === this.host.tmp.onOverGraph) return true;
-						runHitRange && this.hitRange(this.host.context);
-						if (mode === 0 && this.host.debug.switch) {
-							this.host.context.save();
-							this.host.context.strokeStyle = 'yellow';
-							this.host.context.stroke();
-							this.host.context.restore();
-						}
-						if (this.host.context.isPointInPath(m.x, m.y)) {
-							this.host.tmp.onOverGraph = this;
-							return true;
-						}
-						return false;
-					}
-				}, {
-					key: "delete",
-					value: function _delete() {
-						//remove it from the related objects
-						if (this.parentNode) this.parentNode.removeChild(this);
-						if (this.host.stat.onover === this) this.host.stat.onover = null;
-						if (this.host.stat.onfocus === this) this.host.stat.onfocus = null;
-					}
-				}]);
-
-				return Graph;
-			}(host.class.GraphEventEmitter);
-		},
-		FunctionGraph: function FunctionGraph(host) {
-			return function (_host$class$Graph) {
-				_inherits(FunctionGraph, _host$class$Graph);
-
-				function FunctionGraph(drawer) {
-					_classCallCheck(this, FunctionGraph);
-
-					var _this7 = _possibleConstructorReturn(this, (FunctionGraph.__proto__ || Object.getPrototypeOf(FunctionGraph)).call(this));
-
-					if (drawer instanceof Function) {
-						_this7.drawer = drawer;
-					}
-					_this7.style.debugBorderColor = '#f00';
-					return _this7;
-				}
-
-				_createClass(FunctionGraph, [{
-					key: "drawer",
-					value: function drawer(ct) {
-						//onover point check
-						this.checkIfOnOver(true);
-					}
-				}, {
-					key: "hitRange",
-					value: function hitRange(ct) {
-						ct.beginPath();
-						ct.rect(0, 0, this.style.width, this.style.height);
-					}
-				}]);
-
-				return FunctionGraph;
-			}(host.class.Graph);
-		},
-		ImageGraph: function ImageGraph(host) {
-			return function (_host$class$FunctionG) {
-				_inherits(ImageGraph, _host$class$FunctionG);
-
-				function ImageGraph(image) {
-					_classCallCheck(this, ImageGraph);
-
-					var _this8 = _possibleConstructorReturn(this, (ImageGraph.__proto__ || Object.getPrototypeOf(ImageGraph)).call(this));
-
-					if (image) _this8.use(image);
-					_this8.style.debugBorderColor = '#0f0';
-					return _this8;
-				}
-
-				_createClass(ImageGraph, [{
-					key: "use",
-					value: function use(image) {
-						var _this9 = this;
-
-						if (image instanceof Image) {
-							this.image = image;
-							if (!image.complete) {
-								image.addEventListener('load', function (e) {
-									_this9.resetStyleSize();
-								});
-							} else {
-								this.resetStyleSize();
-							}
-							return true;
-						} else if (image instanceof HTMLCanvasElement) {
-							this.image = image;
-							this.resetStyleSize();
-							return true;
-						}
-						throw new TypeError('Wrong image type');
-					}
-				}, {
-					key: "resetStyleSize",
-					value: function resetStyleSize() {
-						this.style.width = this.width;
-						this.style.height = this.height;
-					}
-				}, {
-					key: "drawer",
-					value: function drawer(ct) {
-						//onover point check
-						//ct.beginPath();
-						ct.drawImage(this.image, 0, 0);
-						this.checkIfOnOver(true);
-					}
-				}, {
-					key: "hitRange",
-					value: function hitRange(ct) {
-						ct.beginPath();
-						ct.rect(0, 0, this.style.width, this.style.height);
-					}
-				}, {
-					key: "width",
-					get: function get() {
-						if (this.image instanceof Image) return this.image.naturalWidth;
-						if (this.image instanceof HTMLCanvasElement) return this.image.width;
-						return 0;
-					}
-				}, {
-					key: "height",
-					get: function get() {
-						if (this.image instanceof Image) return this.image.naturalHeight;
-						if (this.image instanceof HTMLCanvasElement) return this.image.height;
-						return 0;
-					}
-				}]);
-
-				return ImageGraph;
-			}(host.class.FunctionGraph);
-		},
-		CanvasGraph: function CanvasGraph(host) {
-			return function (_host$class$ImageGrap) {
-				_inherits(CanvasGraph, _host$class$ImageGrap);
-
-				function CanvasGraph() {
-					_classCallCheck(this, CanvasGraph);
-
-					var _this10 = _possibleConstructorReturn(this, (CanvasGraph.__proto__ || Object.getPrototypeOf(CanvasGraph)).call(this));
-
-					_this10.image = document.createElement('canvas');
-					_this10.context = _this10.image.getContext('2d');
-					_this10.autoClear = true;
-					return _this10;
-				}
-
-				_createClass(CanvasGraph, [{
-					key: "draw",
-					value: function draw(func) {
-						if (this.autoClear) this.context.clearRect(0, 0, this.width, this.height);
-						func(this.context);
-					}
-				}, {
-					key: "width",
-					set: function set(w) {
-						this.image.width = w;
-					}
-				}, {
-					key: "height",
-					set: function set(h) {
-						this.image.height = h;
-					}
-				}]);
-
-				return CanvasGraph;
-			}(host.class.ImageGraph);
-		},
-		TextGraph: function TextGraph(host) {
-			return function (_host$class$FunctionG2) {
-				_inherits(TextGraph, _host$class$FunctionG2);
-
-				function TextGraph() {
-					var text = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-
-					_classCallCheck(this, TextGraph);
-
-					//this._cache=null;
-					var _this11 = _possibleConstructorReturn(this, (TextGraph.__proto__ || Object.getPrototypeOf(TextGraph)).call(this));
-
-					_this11._fontString = '';
-					_this11._renderList = null;
-					_this11.autoSize = true;
-					_this11.font = Object.create(host.default.font);
-					_this11.realtimeRender = false;
-					_this11.style.debugBorderColor = '#00f';
-					_this11.text = text;
-					Object.defineProperty(_this11, '_cache', { configurable: true });
-					return _this11;
-				}
-
-				_createClass(TextGraph, [{
-					key: "prepare",
-					value: function prepare() {
-						//prepare text details
-						if (!this._cache && !this.realtimeRender) {
-							Object.defineProperty(this, '_cache', { value: document.createElement("canvas") });
-						}
-						var font = "";
-						this.font.fontStyle && (font = this.font.fontStyle);
-						this.font.fontVariant && (font = font + " " + this.font.fontVariant);
-						this.font.fontWeight && (font = font + " " + this.font.fontWeight);
-						font = font + " " + this.font.fontSize + "px";
-						this.font.fontFamily && (font = font + " " + this.font.fontFamily);
-						this._fontString = font;
-
-						if (this.realtimeRender) return;
-						var imgobj = this._cache,
-						    ct = imgobj.getContext("2d");
-						ct.font = font;
-						ct.clearRect(0, 0, imgobj.width, imgobj.height);
-						this._renderList = this.text.split(/\n/g);
-						this.estimatePadding = Math.max(this.font.shadowBlur + 5 + Math.max(Math.abs(this.font.shadowOffsetY), Math.abs(this.font.shadowOffsetX)), this.font.strokeWidth + 3);
-						if (this.autoSize) {
-							var w = 0,
-							    tw = void 0,
-							    lh = typeof this.font.lineHeigh === 'number' ? this.font.lineHeigh : this.font.fontSize;
-							for (var i = this._renderList.length; i--;) {
-								tw = ct.measureText(this._renderList[i]).width;
-								tw > w && (w = tw); //max
-							}
-							imgobj.width = (this.style.width = w) + this.estimatePadding * 2;
-							imgobj.height = (this.style.height = this._renderList.length * lh) + (lh < this.font.fontSize) ? this.font.fontSize * 2 : 0 + this.estimatePadding * 2;
-						} else {
-							imgobj.width = this.style.width;
-							imgobj.height = this.style.height;
-						}
-						ct.translate(this.estimatePadding, this.estimatePadding);
-						this.render(ct);
-					}
-				}, {
-					key: "render",
-					value: function render(ct) {
-						//render text
-						if (!this._renderList) return;
-						ct.font = this._fontString; //set font
-						ct.textBaseline = 'top';
-						ct.lineWidth = this.font.strokeWidth;
-						ct.fillStyle = this.font.color;
-						ct.strokeStyle = this.font.strokeColor;
-						ct.shadowBlur = this.font.shadowBlur;
-						ct.shadowOffsetX = this.font.shadowOffsetX;
-						ct.shadowOffsetY = this.font.shadowOffsetY;
-						for (var i = this._renderList.length; i--;) {
-							this.font.fill && ct.fillText(this._renderList[i], 0, this.font.lineHeight * i);
-							this.font.strokeWidth && ct.strokeText(this._renderList[i], 0, this.font.lineHeight * i);
-						}
-					}
-				}, {
-					key: "drawer",
-					value: function drawer(ct) {
-						//ct.beginPath();
-						if (this.realtimeRender) {
-							//realtime render the text
-							//onover point check
-							this.checkIfOnOver(true);
-							this.render(ct);
-						} else {
-							//draw the cache
-							if (!this._cache) {
-								this.prepare();
-							}
-							ct.drawImage(this._cache, -this.estimatePadding, -this.estimatePadding);
-							this.checkIfOnOver(true);
-						}
-					}
-				}, {
-					key: "hitRange",
-					value: function hitRange(ct) {
-						ct.beginPath();
-						ct.rect(0, 0, this.style.width, this.style.height);
-					}
-				}]);
-
-				return TextGraph;
-			}(host.class.FunctionGraph);
-		}
-	};
-
-	function addEvents(target) {
-		var events = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
-		for (var e in events) {
-			target.addEventListener(e, events[e]);
-		}
-	}
-
-	function multiplyMatrix(m1, m2, r) {
-		r[0] = m1[0] * m2[0] + m1[1] * m2[3];
-		r[1] = m1[0] * m2[1] + m1[1] * m2[4];
-		r[2] = m1[0] * m2[2] + m1[1] * m2[5] + m1[2];
-		r[3] = m1[3] * m2[0] + m1[4] * m2[3];
-		r[4] = m1[3] * m2[1] + m1[4] * m2[4];
-		r[5] = m1[3] * m2[2] + m1[4] * m2[5] + m1[5];
-	}
-
-	//code from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
-	if (typeof Object.assign != 'function') Object.assign = function (target) {
-		'use strict';
-		// We must check against these specific cases.
-
-		if (target === undefined || target === null) {
-			throw new TypeError('Cannot convert undefined or null to object');
-		}
-		var output = Object(target);
-		for (var index = 1; index < arguments.length; index++) {
-			var source = arguments[index];
-			if (source !== undefined && source !== null) {
-				for (var nextKey in source) {
-					if (source.hasOwnProperty(nextKey)) {
-						output[nextKey] = source[nextKey];
 					}
 				}
 			}
+			ct.restore();
 		}
-		return output;
-	};
-
-	if (!Float32Array.__proto__.from) {
-		(function () {
-			var copy_data = [];
-			Float32Array.__proto__.from = function (obj, func, thisObj) {
-				var typedArrayClass = Float32Array.__proto__;
-				if (typeof this !== "function") throw new TypeError("# is not a constructor");
-				if (this.__proto__ !== typedArrayClass) throw new TypeError("this is not a typed array.");
-				func = func || function (elem) {
-					return elem;
-				};
-				if (typeof func !== "function") throw new TypeError("specified argument is not a function");
-				obj = Object(obj);
-				if (!obj["length"]) return new this(0);
-				copy_data.length = 0;
-				for (var i = 0; i < obj.length; i++) {
-					copy_data.push(obj[i]);
-				}
-				copy_data = copy_data.map(func, thisObj);
-				var typed_array = new this(copy_data.length);
-				for (var _i = 0; _i < typed_array.length; _i++) {
-					typed_array[_i] = copy_data[_i];
-				}
-				return typed_array;
-			};
-		})();
-	}
-
-	(function () {
-		if (window.requestAnimationFrame) return;
-		var lastTime = 0;
-		var vendors = ['ms', 'moz', 'webkit', 'o'];
-		for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-			window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
-			window.cancelRequestAnimationFrame = window[vendors[x] + 'CancelRequestAnimationFrame'];
-		}
-		if (!window.requestAnimationFrame) window.requestAnimationFrame = function (callback, element, interval) {
-			var currTime = Date.now();
-			var timeToCall = interval || Math.max(0, 1000 / 60 - (currTime - lastTime));
-			callback(0);
-			var id = window.setTimeout(function () {
-				callback(currTime + timeToCall);
-			}, timeToCall);
-			lastTime = currTime + timeToCall;
-			return id;
-		};
-		if (!window.cancelAnimationFrame) window.cancelAnimationFrame = function (id) {
-			clearTimeout(id);
-		};
-	})();
+	}]);
 
 	return CanvasObjLibrary;
-});
+}();
 
-},{}],5:[function(require,module,exports){
+var COL_Class = {
+	Event: function Event(host) {
+		var COL = host;
+		return function Event(type) {
+			_classCallCheck(this, Event);
+
+			this.type = type;
+			this.timeStamp = Date.now();
+		};
+	},
+	GraphEvent: function GraphEvent(host) {
+		var COL = host;
+		return function (_host$class$Event) {
+			_inherits(GraphEvent, _host$class$Event);
+
+			function GraphEvent(type) {
+				_classCallCheck(this, GraphEvent);
+
+				var _this2 = _possibleConstructorReturn(this, (GraphEvent.__proto__ || Object.getPrototypeOf(GraphEvent)).call(this, type));
+
+				_this2.propagation = true;
+				_this2.stoped = false;
+				_this2.target = null;
+				return _this2;
+			}
+
+			_createClass(GraphEvent, [{
+				key: 'stopPropagation',
+				value: function stopPropagation() {
+					this.propagation = false;
+				}
+			}, {
+				key: 'stopImmediatePropagation',
+				value: function stopImmediatePropagation() {
+					this.stoped = true;
+				}
+			}, {
+				key: 'altKey',
+				get: function get() {
+					return this.origin.altKey;
+				}
+			}, {
+				key: 'ctrlKey',
+				get: function get() {
+					return this.origin.ctrlKey;
+				}
+			}, {
+				key: 'metaKey',
+				get: function get() {
+					return this.origin.metaKey;
+				}
+			}, {
+				key: 'shiftKey',
+				get: function get() {
+					return this.origin.shiftKey;
+				}
+			}]);
+
+			return GraphEvent;
+		}(host.class.Event);
+	},
+	MouseEvent: function MouseEvent(host) {
+		return function (_host$class$GraphEven) {
+			_inherits(MouseEvent, _host$class$GraphEven);
+
+			function MouseEvent() {
+				_classCallCheck(this, MouseEvent);
+
+				return _possibleConstructorReturn(this, (MouseEvent.__proto__ || Object.getPrototypeOf(MouseEvent)).apply(this, arguments));
+			}
+
+			_createClass(MouseEvent, [{
+				key: 'button',
+				get: function get() {
+					return this.origin.button;
+				}
+			}, {
+				key: 'buttons',
+				get: function get() {
+					return this.origin.buttons;
+				}
+			}, {
+				key: 'movementX',
+				get: function get() {
+					return host.stat.mouse.x - host.stat.previousX;
+				}
+			}, {
+				key: 'movementY',
+				get: function get() {
+					return host.stat.mouse.y - host.stat.previousY;
+				}
+			}]);
+
+			return MouseEvent;
+		}(host.class.GraphEvent);
+	},
+	WheelEvent: function WheelEvent(host) {
+		return function (_host$class$MouseEven) {
+			_inherits(WheelEvent, _host$class$MouseEven);
+
+			function WheelEvent() {
+				_classCallCheck(this, WheelEvent);
+
+				return _possibleConstructorReturn(this, (WheelEvent.__proto__ || Object.getPrototypeOf(WheelEvent)).apply(this, arguments));
+			}
+
+			_createClass(WheelEvent, [{
+				key: 'deltaX',
+				get: function get() {
+					return this.origin.deltaX;
+				}
+			}, {
+				key: 'deltaY',
+				get: function get() {
+					return this.origin.deltaY;
+				}
+			}, {
+				key: 'deltaZ',
+				get: function get() {
+					return this.origin.deltaZ;
+				}
+			}, {
+				key: 'deltaMode',
+				get: function get() {
+					return this.origin.deltaMode;
+				}
+			}]);
+
+			return WheelEvent;
+		}(host.class.MouseEvent);
+	},
+	KeyboardEvent: function KeyboardEvent(host) {
+		return function (_host$class$GraphEven2) {
+			_inherits(KeyboardEvent, _host$class$GraphEven2);
+
+			function KeyboardEvent() {
+				_classCallCheck(this, KeyboardEvent);
+
+				return _possibleConstructorReturn(this, (KeyboardEvent.__proto__ || Object.getPrototypeOf(KeyboardEvent)).apply(this, arguments));
+			}
+
+			_createClass(KeyboardEvent, [{
+				key: 'key',
+				get: function get() {
+					return this.origin.key;
+				}
+			}, {
+				key: 'code',
+				get: function get() {
+					return this.origin.code;
+				}
+			}, {
+				key: 'repeat',
+				get: function get() {
+					return this.origin.repeat;
+				}
+			}, {
+				key: 'keyCode',
+				get: function get() {
+					return this.origin.keyCode;
+				}
+			}, {
+				key: 'charCode',
+				get: function get() {
+					return this.origin.charCode;
+				}
+			}, {
+				key: 'location',
+				get: function get() {
+					return this.origin.location;
+				}
+			}]);
+
+			return KeyboardEvent;
+		}(host.class.GraphEvent);
+	},
+	GraphEventEmitter: function GraphEventEmitter(host) {
+		var COL = host;
+		return function () {
+			function GraphEventEmitter() {
+				_classCallCheck(this, GraphEventEmitter);
+
+				this._events = {};
+			}
+
+			_createClass(GraphEventEmitter, [{
+				key: 'emit',
+				value: function emit(e) {
+					if (e instanceof host.class.Event === false) return;
+					e.target = this;
+					this._resolve(e);
+				}
+			}, {
+				key: '_resolve',
+				value: function _resolve(e) {
+					if (e.type in this._events) {
+						var hs = this._events[e.type];
+						try {
+							var _iteratorNormalCompletion2 = true;
+							var _didIteratorError2 = false;
+							var _iteratorError2 = undefined;
+
+							try {
+								for (var _iterator2 = hs[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+									var h = _step2.value;
+									h.call(this, e);if (e.stoped) return;
+								}
+							} catch (err) {
+								_didIteratorError2 = true;
+								_iteratorError2 = err;
+							} finally {
+								try {
+									if (!_iteratorNormalCompletion2 && _iterator2.return) {
+										_iterator2.return();
+									}
+								} finally {
+									if (_didIteratorError2) {
+										throw _iteratorError2;
+									}
+								}
+							}
+
+							;
+						} catch (e) {
+							console.error(e);
+						}
+					}
+					if (e.propagation === true && this.parentNode) this.parentNode._resolve(e);
+				}
+			}, {
+				key: 'on',
+				value: function on(name, handle) {
+					if (!(handle instanceof Function)) return;
+					if (!(name in this._events)) this._events[name] = [];
+					this._events[name].push(handle);
+				}
+			}, {
+				key: 'removeEvent',
+				value: function removeEvent(name, handle) {
+					if (!(name in this._events)) return;
+					if (arguments.length === 1) {
+						delete this._events[name];return;
+					}
+					var ind = void 0;
+					if (ind = this._events[name].indexOf(handle) >= 0) this._events[name].splice(ind, 1);
+					if (this._events[name].length === 0) delete this._events[name];
+				}
+			}]);
+
+			return GraphEventEmitter;
+		}();
+	},
+	GraphStyle: function GraphStyle(host) {
+		return function () {
+			function GraphStyle(inhertFrom) {
+				_classCallCheck(this, GraphStyle);
+
+				if (inhertFrom && this.inhert(inhertFrom)) return;
+				this.__proto__.__proto__ = host.default.style;
+				this._calculatableStyleChanged = false;
+			}
+
+			_createClass(GraphStyle, [{
+				key: 'inhertGraph',
+				value: function inhertGraph(graph) {
+					//inhert a graph's style
+					if (!(graph instanceof host.class.Graph)) throw new TypeError('graph is not a Graph instance');
+					this.inhertStyle(graph.style);
+					return true;
+				}
+			}, {
+				key: 'inhertStyle',
+				value: function inhertStyle(style) {
+					if (!(style instanceof host.class.GraphStyle)) throw new TypeError('graph is not a Graph instance');
+					this.__proto__ = style;
+					return true;
+				}
+			}, {
+				key: 'inhert',
+				value: function inhert(from) {
+					if (from instanceof host.class.Graph) {
+						this.inhertGraph(from);
+						return true;
+					} else if (from instanceof host.class.GraphStyle) {
+						this.inhertStyle(from);
+						return true;
+					}
+					return false;
+				}
+			}, {
+				key: 'cancelInhert',
+				value: function cancelInhert() {
+					this.__proto__ = Object.prototype;
+				}
+			}, {
+				key: 'getPoint',
+				value: function getPoint(name) {
+					switch (name) {
+						case 'center':
+							{
+								return [this.width / 2, this.height / 2];
+							}
+					}
+					return [0, 0];
+				}
+			}, {
+				key: 'position',
+				value: function position(x, y) {
+					this.x = x;
+					this.y = y;
+				}
+			}, {
+				key: 'zoom',
+				value: function zoom(x, y) {
+					if (arguments.length == 1) {
+						this.zoomX = this.zoomY = x;
+					} else {
+						this.zoomX = x;
+						this.zoomY = y;
+					}
+				}
+			}, {
+				key: 'size',
+				value: function size(w, h) {
+					this.width = w;
+					this.height = h;
+				}
+			}, {
+				key: 'setRotatePoint',
+				value: function setRotatePoint(x, y) {
+					if (arguments.length == 2) {
+						this.rotatePointX = x;
+						this.rotatePointY = y;
+					} else if (arguments.length == 1) {
+						var _getPoint = this.getPoint(x);
+
+						var _getPoint2 = _slicedToArray(_getPoint, 2);
+
+						this.rotatePointX = _getPoint2[0];
+						this.rotatePointY = _getPoint2[1];
+					}
+				}
+			}, {
+				key: 'setPositionPoint',
+				value: function setPositionPoint(x, y) {
+					if (arguments.length == 2) {
+						this.positionPointX = x;
+						this.positionPointY = y;
+					} else if (arguments.length == 1) {
+						var _getPoint3 = this.getPoint(x);
+
+						var _getPoint4 = _slicedToArray(_getPoint3, 2);
+
+						this.positionPointX = _getPoint4[0];
+						this.positionPointY = _getPoint4[1];
+					}
+				}
+			}, {
+				key: 'setZoomPoint',
+				value: function setZoomPoint(x, y) {
+					if (arguments.length == 2) {
+						this.zoomPointX = x;
+						this.zoomPointY = y;
+					} else if (arguments.length == 1) {
+						var _getPoint5 = this.getPoint(x);
+
+						var _getPoint6 = _slicedToArray(_getPoint5, 2);
+
+						this.zoomPointX = _getPoint6[0];
+						this.zoomPointY = _getPoint6[1];
+					}
+				}
+			}, {
+				key: 'setSkewPoint',
+				value: function setSkewPoint(x, y) {
+					if (arguments.length == 2) {
+						this.skewPointX = x;
+						this.skewPointY = y;
+					} else if (arguments.length == 1) {
+						var _getPoint7 = this.getPoint(x);
+
+						var _getPoint8 = _slicedToArray(_getPoint7, 2);
+
+						this.skewPointX = _getPoint8[0];
+						this.skewPointY = _getPoint8[1];
+					}
+				}
+			}]);
+
+			return GraphStyle;
+		}();
+	},
+	Graph: function Graph(host) {
+		return function (_host$class$GraphEven3) {
+			_inherits(Graph, _host$class$GraphEven3);
+
+			function Graph() {
+				_classCallCheck(this, Graph);
+
+				//this.name=name;
+				var _this6 = _possibleConstructorReturn(this, (Graph.__proto__ || Object.getPrototypeOf(Graph)).call(this));
+
+				_this6.host = host;
+				_this6.GID = _this6.host.generateGraphID();
+				_this6.onoverCheck = true;
+				Object.defineProperties(_this6, {
+					style: { value: new host.class.GraphStyle(), configurable: true },
+					childNodes: { value: [] },
+					parentNode: { value: undefined, configurable: true }
+				});
+				return _this6;
+			}
+
+			_createClass(Graph, [{
+				key: 'createShadow',
+				value: function createShadow() {
+					var shadow = Object.create(this);
+					shadow.GID = this.host.generateGraphID();
+					shadow.shadowParent = this;
+					Object.defineProperties(shadow, {
+						style: { value: new host.class.GraphStyle(this.style), configurable: true },
+						parentNode: { value: undefined, configurable: true }
+					});
+					return shadow;
+				}
+				//add a graph to childNodes' end
+
+			}, {
+				key: 'appendChild',
+				value: function appendChild(graph) {
+					if (!(graph instanceof host.class.Graph)) throw new TypeError('graph is not a Graph instance');
+					if (graph === this) throw new Error('can not add myself as a child');
+					if (graph.parentNode !== this) {
+						defProp(graph, 'parentNode', {
+							value: this
+						});
+					} else {
+						var i = this.findChild(graph);
+						if (i >= 0) this.childNodes.splice(i, 1);
+					}
+					this.childNodes.push(graph);
+				}
+				//insert this graph after the graph
+
+			}, {
+				key: 'insertAfter',
+				value: function insertAfter(graph) {
+					if (!(graph instanceof host.class.Graph)) throw new TypeError('graph is not a Graph instance');
+					if (graph === this) throw new Error('can not add myself as a child');
+					var p = graph.parentNode,
+					    io = void 0,
+					    it = void 0;
+					if (!p) throw new Error('no parentNode');
+					it = p.findChild(graph);
+					//if(it<0)return false;
+					if (p !== this.parentNode) {
+						defProp(this, 'parentNode', {
+							value: p
+						});
+					} else {
+						io = p.findChild(this);
+						if (io >= 0) p.childNodes.splice(io, 1);
+					}
+					p.childNodes.splice(io < it ? it : it + 1, 0, this);
+				}
+				//insert this graph before the graph
+
+			}, {
+				key: 'insertBefore',
+				value: function insertBefore(graph) {
+					if (!(graph instanceof host.class.Graph)) throw new TypeError('graph is not a Graph instance');
+					if (graph === this) throw new Error('can not add myself as a child');
+					var p = graph.parentNode,
+					    io = void 0,
+					    it = void 0;
+					if (!p) throw new Error('no parentNode');
+					it = p.findChild(graph);
+					//if(it<0)return false;
+					if (p !== this.parentNode) {
+						defProp(this, 'parentNode', {
+							value: p
+						});
+					} else {
+						io = p.findChild(this);
+						if (io >= 0) p.childNodes.splice(io, 1);
+					}
+					p.childNodes.splice(io < it ? it - 1 : it, 0, this);
+				}
+			}, {
+				key: 'findChild',
+				value: function findChild(graph) {
+					for (var i = this.childNodes.length; i--;) {
+						if (this.childNodes[i] === graph) return i;
+					}return -1;
+				}
+			}, {
+				key: 'removeChild',
+				value: function removeChild(graph) {
+					var i = this.findChild(graph);
+					if (i < 0) return;
+					this.childNodes.splice(i, 1);
+					defProp(this, 'parentNode', {
+						value: undefined
+					});
+				}
+			}, {
+				key: 'checkIfOnOver',
+				value: function checkIfOnOver() {
+					var runHitRange = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+					var mode = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+
+					if (this.onoverCheck === false || !this.hitRange) return false;
+					var m = this.host.stat.mouse;
+					if (m.x === null) return false;
+					if (this === this.host.tmp.onOverGraph) return true;
+					runHitRange && this.hitRange(this.host.context);
+					if (mode === 0 && this.host.debug.switch) {
+						this.host.context.save();
+						this.host.context.strokeStyle = 'yellow';
+						this.host.context.stroke();
+						this.host.context.restore();
+					}
+					if (this.host.context.isPointInPath(m.x, m.y)) {
+						this.host.tmp.onOverGraph = this;
+						return true;
+					}
+					return false;
+				}
+			}, {
+				key: 'delete',
+				value: function _delete() {
+					//remove it from the related objects
+					if (this.parentNode) this.parentNode.removeChild(this);
+					if (this.host.stat.onover === this) this.host.stat.onover = null;
+					if (this.host.stat.onfocus === this) this.host.stat.onfocus = null;
+				}
+			}]);
+
+			return Graph;
+		}(host.class.GraphEventEmitter);
+	},
+	FunctionGraph: function FunctionGraph(host) {
+		return function (_host$class$Graph) {
+			_inherits(FunctionGraph, _host$class$Graph);
+
+			function FunctionGraph(drawer) {
+				_classCallCheck(this, FunctionGraph);
+
+				var _this7 = _possibleConstructorReturn(this, (FunctionGraph.__proto__ || Object.getPrototypeOf(FunctionGraph)).call(this));
+
+				if (drawer instanceof Function) {
+					_this7.drawer = drawer;
+				}
+				_this7.style.debugBorderColor = '#f00';
+				return _this7;
+			}
+
+			_createClass(FunctionGraph, [{
+				key: 'drawer',
+				value: function drawer(ct) {
+					//onover point check
+					this.checkIfOnOver(true);
+				}
+			}, {
+				key: 'hitRange',
+				value: function hitRange(ct) {
+					ct.beginPath();
+					ct.rect(0, 0, this.style.width, this.style.height);
+				}
+			}]);
+
+			return FunctionGraph;
+		}(host.class.Graph);
+	},
+	ImageGraph: function ImageGraph(host) {
+		return function (_host$class$FunctionG) {
+			_inherits(ImageGraph, _host$class$FunctionG);
+
+			function ImageGraph(image) {
+				_classCallCheck(this, ImageGraph);
+
+				var _this8 = _possibleConstructorReturn(this, (ImageGraph.__proto__ || Object.getPrototypeOf(ImageGraph)).call(this));
+
+				if (image) _this8.use(image);
+				_this8.useImageBitmap = true;
+				_this8.style.debugBorderColor = '#0f0';
+				return _this8;
+			}
+
+			_createClass(ImageGraph, [{
+				key: 'use',
+				value: function use(image) {
+					var _this9 = this;
+
+					if (image instanceof Image) {
+						this.image = image;
+						if (!image.complete) {
+							image.addEventListener('load', function (e) {
+								_this9.resetStyleSize();
+								_this9._createBitmap();
+							});
+						} else {
+							this.resetStyleSize();
+							this._createBitmap();
+						}
+						return true;
+					} else if (image instanceof HTMLCanvasElement) {
+						this.image = image;
+						this.resetStyleSize();
+						return true;
+					}
+					throw new TypeError('Wrong image type');
+				}
+			}, {
+				key: '_createBitmap',
+				value: function _createBitmap() {
+					var _this10 = this;
+
+					if (this.useImageBitmap && typeof createImageBitmap === 'function') {
+						//use ImageBitmap
+						createImageBitmap(this.image).then(function (bitmap) {
+							if (_this10._bitmap) _this10._bitmap.close();
+							_this10._bitmap = bitmap;
+						});
+					}
+				}
+			}, {
+				key: 'resetStyleSize',
+				value: function resetStyleSize() {
+					this.style.width = this.width;
+					this.style.height = this.height;
+				}
+			}, {
+				key: 'drawer',
+				value: function drawer(ct) {
+					//onover point check
+					//ct.beginPath();
+					ct.drawImage(this.useImageBitmap && this._bitmap ? this._bitmap : this.image, 0, 0);
+					this.checkIfOnOver(true);
+				}
+			}, {
+				key: 'hitRange',
+				value: function hitRange(ct) {
+					ct.beginPath();
+					ct.rect(0, 0, this.style.width, this.style.height);
+				}
+			}, {
+				key: 'width',
+				get: function get() {
+					if (this.image instanceof Image) return this.image.naturalWidth;
+					if (this.image instanceof HTMLCanvasElement) return this.image.width;
+					return 0;
+				}
+			}, {
+				key: 'height',
+				get: function get() {
+					if (this.image instanceof Image) return this.image.naturalHeight;
+					if (this.image instanceof HTMLCanvasElement) return this.image.height;
+					return 0;
+				}
+			}]);
+
+			return ImageGraph;
+		}(host.class.FunctionGraph);
+	},
+	CanvasGraph: function CanvasGraph(host) {
+		return function (_host$class$ImageGrap) {
+			_inherits(CanvasGraph, _host$class$ImageGrap);
+
+			function CanvasGraph() {
+				_classCallCheck(this, CanvasGraph);
+
+				var _this11 = _possibleConstructorReturn(this, (CanvasGraph.__proto__ || Object.getPrototypeOf(CanvasGraph)).call(this));
+
+				_this11.image = document.createElement('canvas');
+				_this11.context = _this11.image.getContext('2d');
+				_this11.useImageBitmap = false;
+				_this11.autoClear = true;
+				return _this11;
+			}
+
+			_createClass(CanvasGraph, [{
+				key: 'draw',
+				value: function draw(func) {
+					if (this.autoClear) this.context.clearRect(0, 0, this.width, this.height);
+					func(this.context, this.canvas);
+					if (this.useImageBitmap) this._createBitmap();
+				}
+			}, {
+				key: 'width',
+				set: function set(w) {
+					this.image.width = w;
+				}
+			}, {
+				key: 'height',
+				set: function set(h) {
+					this.image.height = h;
+				}
+			}]);
+
+			return CanvasGraph;
+		}(host.class.ImageGraph);
+	},
+	TextGraph: function TextGraph(host) {
+		return function (_host$class$FunctionG2) {
+			_inherits(TextGraph, _host$class$FunctionG2);
+
+			function TextGraph() {
+				var text = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+
+				_classCallCheck(this, TextGraph);
+
+				//this._cache=null;
+				var _this12 = _possibleConstructorReturn(this, (TextGraph.__proto__ || Object.getPrototypeOf(TextGraph)).call(this));
+
+				_this12._fontString = '';
+				_this12._renderList = null;
+				_this12.autoSize = true;
+				_this12.font = Object.create(host.default.font);
+				_this12.realtimeRender = false;
+				_this12.useImageBitmap = true;
+				_this12.style.debugBorderColor = '#00f';
+				_this12.text = text;
+				defProp(_this12, '_cache', { configurable: true });
+				return _this12;
+			}
+
+			_createClass(TextGraph, [{
+				key: 'prepare',
+				value: function prepare() {
+					var _this13 = this;
+
+					var async = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+					//prepare text details
+					if (!this._cache && !this.realtimeRender) {
+						defProp(this, '_cache', { value: document.createElement("canvas") });
+					}
+					var font = "";
+					this.font.fontStyle && (font = this.font.fontStyle);
+					this.font.fontVariant && (font = font + ' ' + this.font.fontVariant);
+					this.font.fontWeight && (font = font + ' ' + this.font.fontWeight);
+					font = font + ' ' + this.font.fontSize + 'px';
+					this.font.fontFamily && (font = font + ' ' + this.font.fontFamily);
+					this._fontString = font;
+
+					if (this.realtimeRender) return;
+					var imgobj = this._cache,
+					    ct = imgobj.ctx2d || (imgobj.ctx2d = imgobj.getContext("2d"));
+					ct.font = font;
+					this._renderList = this.text.split(/\n/g);
+					this.estimatePadding = Math.max(this.font.shadowBlur + 5 + Math.max(Math.abs(this.font.shadowOffsetY), Math.abs(this.font.shadowOffsetX)), this.font.strokeWidth + 3);
+					if (this.autoSize) {
+						var w = 0,
+						    tw = void 0,
+						    lh = typeof this.font.lineHeigh === 'number' ? this.font.lineHeigh : this.font.fontSize;
+						for (var i = this._renderList.length; i--;) {
+							tw = ct.measureText(this._renderList[i]).width;
+							tw > w && (w = tw); //max
+						}
+						imgobj.width = (this.style.width = w) + this.estimatePadding * 2;
+						imgobj.height = (this.style.height = this._renderList.length * lh) + (lh < this.font.fontSize ? this.font.fontSize * 2 : 0) + this.estimatePadding * 2;
+					} else {
+						imgobj.width = this.style.width;
+						imgobj.height = this.style.height;
+					}
+					ct.translate(this.estimatePadding, this.estimatePadding);
+					if (async) {
+						setImmediate(function () {
+							_this13._renderToCache();
+						});
+					} else {
+						this._renderToCache();
+					}
+				}
+			}, {
+				key: '_renderToCache',
+				value: function _renderToCache() {
+					var _this14 = this;
+
+					this.render(this._cache.ctx2d);
+					if (this.useImageBitmap && typeof createImageBitmap === 'function') {
+						//use ImageBitmap
+						createImageBitmap(this._cache).then(function (bitmap) {
+							if (_this14._bitmap) _this14._bitmap.close();
+							_this14._bitmap = bitmap;
+						});
+					}
+				}
+			}, {
+				key: 'render',
+				value: function render(ct) {
+					//render text
+					if (!this._renderList) return;
+					ct.save();
+					ct.font = this._fontString; //set font
+					ct.textBaseline = 'top';
+					ct.lineWidth = this.font.strokeWidth;
+					ct.fillStyle = this.font.color;
+					ct.strokeStyle = this.font.strokeColor;
+					ct.shadowBlur = this.font.shadowBlur;
+					ct.shadowColor = this.font.shadowColor;
+					ct.shadowOffsetX = this.font.shadowOffsetX;
+					ct.shadowOffsetY = this.font.shadowOffsetY;
+					ct.textAlign = this.font.textAlign;
+					var lh = typeof this.font.lineHeigh === 'number' ? this.font.lineHeigh : this.font.fontSize,
+					    x = void 0;
+					switch (this.font.textAlign) {
+						case 'left':case 'start':
+							{
+								x = 0;break;
+							}
+						case 'center':
+							{
+								x = this.style.width / 2;break;
+							}
+						case 'right':case 'end':
+							{
+								x = this.style.width;
+							}
+					}
+
+					for (var i = this._renderList.length; i--;) {
+						this.font.strokeWidth && ct.strokeText(this._renderList[i], x, lh * i);
+						this.font.fill && ct.fillText(this._renderList[i], x, lh * i);
+					}
+					ct.restore();
+				}
+			}, {
+				key: 'drawer',
+				value: function drawer(ct) {
+					//ct.beginPath();
+					if (this.realtimeRender) {
+						//realtime render the text
+						//onover point check
+						this.checkIfOnOver(true);
+						this.render(ct);
+					} else {
+						//draw the cache
+						if (!this._cache) {
+							this.prepare();
+						}
+						ct.drawImage(this.useImageBitmap && this._bitmap ? this._bitmap : this._cache, -this.estimatePadding, -this.estimatePadding);
+						this.checkIfOnOver(true);
+					}
+				}
+			}, {
+				key: 'hitRange',
+				value: function hitRange(ct) {
+					ct.beginPath();
+					ct.rect(0, 0, this.style.width, this.style.height);
+				}
+			}]);
+
+			return TextGraph;
+		}(host.class.FunctionGraph);
+	}
+};
+
+function addEvents(target) {
+	var events = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+	for (var e in events) {
+		target.addEventListener(e, events[e]);
+	}
+}
+
+function multiplyMatrix(m1, m2, r) {
+	r[0] = m1[0] * m2[0] + m1[1] * m2[3];
+	r[1] = m1[0] * m2[1] + m1[1] * m2[4];
+	r[2] = m1[0] * m2[2] + m1[1] * m2[5] + m1[2];
+	r[3] = m1[3] * m2[0] + m1[4] * m2[3];
+	r[4] = m1[3] * m2[1] + m1[4] * m2[4];
+	r[5] = m1[3] * m2[2] + m1[4] * m2[5] + m1[5];
+}
+
+//code from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
+if (typeof Object.assign != 'function') Object.assign = function (target) {
+	'use strict';
+	// We must check against these specific cases.
+
+	if (target === undefined || target === null) {
+		throw new TypeError('Cannot convert undefined or null to object');
+	}
+	var output = Object(target);
+	for (var index = 1; index < arguments.length; index++) {
+		var source = arguments[index];
+		if (source !== undefined && source !== null) {
+			for (var nextKey in source) {
+				if (source.hasOwnProperty(nextKey)) {
+					output[nextKey] = source[nextKey];
+				}
+			}
+		}
+	}
+	return output;
+};
+
+if (!Float32Array.__proto__.from) {
+	(function () {
+		var copy_data = [];
+		Float32Array.__proto__.from = function (obj, func, thisObj) {
+			var typedArrayClass = Float32Array.__proto__;
+			if (typeof this !== "function") throw new TypeError("# is not a constructor");
+			if (this.__proto__ !== typedArrayClass) throw new TypeError("this is not a typed array.");
+			func = func || function (elem) {
+				return elem;
+			};
+			if (typeof func !== "function") throw new TypeError("specified argument is not a function");
+			obj = Object(obj);
+			if (!obj["length"]) return new this(0);
+			copy_data.length = 0;
+			for (var i = 0; i < obj.length; i++) {
+				copy_data.push(obj[i]);
+			}
+			copy_data = copy_data.map(func, thisObj);
+			var typed_array = new this(copy_data.length);
+			for (var _i = 0; _i < typed_array.length; _i++) {
+				typed_array[_i] = copy_data[_i];
+			}
+			return typed_array;
+		};
+	})();
+}
+
+(function () {
+	if (window.requestAnimationFrame) return;
+	var lastTime = 0;
+	var vendors = ['ms', 'moz', 'webkit', 'o'];
+	for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+		window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
+		window.cancelRequestAnimationFrame = window[vendors[x] + 'CancelRequestAnimationFrame'];
+	}
+	if (!window.requestAnimationFrame) window.requestAnimationFrame = function (callback, element, interval) {
+		var currTime = Date.now();
+		var timeToCall = interval || Math.max(0, 1000 / 60 - (currTime - lastTime));
+		callback(0);
+		var id = window.setTimeout(function () {
+			callback(currTime + timeToCall);
+		}, timeToCall);
+		lastTime = currTime + timeToCall;
+		return id;
+	};
+	if (!window.cancelAnimationFrame) window.cancelAnimationFrame = function (id) {
+		clearTimeout(id);
+	};
+})();
+
+exports.default = CanvasObjLibrary;
+
+},{"../lib/promise/promise.js":4,"../lib/setImmediate/setImmediate.js":5}],7:[function(require,module,exports){
 /*
 Copyright luojia@luojia.me
 LGPL license
@@ -1884,7 +2387,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _CanvasObjLibrary = require('../lib/COL/CanvasObjLibrary.js');
+var _CanvasObjLibrary = require('../lib/CanvasObjLibrary/src/CanvasObjLibrary.js');
 
 var _CanvasObjLibrary2 = _interopRequireDefault(_CanvasObjLibrary);
 
@@ -1895,6 +2398,23 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+/*
+danmaku obj struct
+{
+	_:'text',
+	time:(number)msec time,
+	text:(string),
+	style:(object)to be combined whit default style,
+	mode:(number)
+}
+
+danmaku mode
+	0:right
+	1:left
+	2:bottom
+	3:top
+*/
 
 function init(DanmakuFrame, DanmakuFrameModule) {
 	var Text2D = function (_DanmakuFrameModule) {
@@ -1907,25 +2427,25 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 
 			_this.list = []; //danmaku object array
 			_this.indexMark = 0; //to record the index of last danmaku in the list
-			_this.resetTunnel();
+			_this.tunnel = new tunnelManager();
 			_this.paused = true;
 			_this.defaultStyle = { //these styles can be overwrote by the 'font' property of danmaku object
 				fontStyle: null,
-				fontWeight: 600,
+				fontWeight: 300,
 				fontVariant: null,
-				color: "#fbfbfb",
+				color: "#fff",
 				lineHeight: null, //when this style is was not a number,the number will be the same as fontSize
 				fontSize: 30,
 				fontFamily: "Arial",
 				strokeWidth: 1, //outline width
-				strokeColor: "#000",
-				shadowBlur: 10,
+				strokeColor: "#888",
+				shadowBlur: 5,
+				textAlign: 'start', //left right center start end
 				shadowColor: "#000",
 				shadowOffsetX: 0,
 				shadowOffsetY: 0,
 				fill: true, //if the text should be filled
 				reverse: false,
-				speed: 5,
 				opacity: 1
 			};
 
@@ -1933,26 +2453,59 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			Object.assign(_this.canvas.style, { position: 'absolute', width: '100%', height: '100%', top: 0, left: 0 });
 			_this.context2d = _this.canvas.getContext('2d'); //the canvas context
 			_this.COL = new _CanvasObjLibrary2.default(_this.canvas); //the library
+			_this.COL.imageSmoothingEnabled = false;
 			_this.COL.autoClear = false;
 			frame.container.appendChild(_this.canvas);
 			_this.COL_GraphCache = []; //COL text graph cache
+			_this.COL_DanmakuText = [];
 			_this.layer = new _this.COL.class.FunctionGraph(); //text layer
+			_this.layer.drawer = function (ct) {
+				_this._layerDrawFunc(ct);
+			}; //set draw func
 			_this.COL.root.appendChild(_this.layer);
 			_this.cacheCleanTime = 0;
 			_this.danmakuMoveTime = 0;
-			//this._clearRange=[0,0];
+			_this.danmakuCheckSwitch = true;
 			_this.options = {
 				allowLines: false, //allow multi-line danmaku
 				screenLimit: 0, //the most number of danmaku on the screen
-				clearWhenTimeReset: true };
+				clearWhenTimeReset: true, //clear danmaku on screen when the time is reset
+				speed: 5
+			};
+			document.addEventListener('visibilityChange', function (e) {
+				if (document.hidden) {
+					_this.pause();
+				} else {
+					_this.reCheckIndexMark();
+					_this.start();
+				}
+			});
 			return _this;
 		}
 
 		_createClass(Text2D, [{
+			key: 'media',
+			value: function media(_media) {
+				var _this2 = this;
+
+				addEvents(_media, {
+					seeked: function seeked() {
+						_this2.time();
+						_this2.start();
+					},
+					seeking: function seeking() {
+						_this2.pause();
+					},
+					stalled: function stalled() {
+						_this2.pause();
+					}
+				});
+			}
+		}, {
 			key: 'start',
 			value: function start() {
 				this.paused = false;
-				this.resetTimeOfDanmakuOnScreen();
+				//this.resetTimeOfDanmakuOnScreen();
 			}
 		}, {
 			key: 'pause',
@@ -1960,19 +2513,24 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				this.paused = true;
 			}
 		}, {
-			key: 'stop',
-			value: function stop() {
-				this.COL.clear(); //clear the canvas
-			}
-		}, {
 			key: 'load',
 			value: function load(d) {
 				if (!d || d._ !== 'text') {
 					return false;
 				}
-				var ind = dichotomy(this.list, d.time, 0, this.list.length - 1, false);
-				this.list.splice(ind, 0, d);
-				if (ind <= this.indexMark) this.indexMark++;
+				if (typeof d.text !== 'string') {
+					console.error('wrong danmaku object:', d);
+					return false;
+				}
+				var t = d.time,
+				    ind = void 0,
+				    arr = this.list;
+				ind = dichotomy(arr, d.time, 0, arr.length - 1, false);
+				arr.splice(ind, 0, d);
+				if (ind < this.indexMark) this.indexMark++;
+				//round d.size to prevent Iifinity loop in tunnel
+				d.size = d.size + 0.5 | 0;
+				if (d.size === NaN || d.size === Infinity) d.size = this.defaultStyle.fontSize;
 				return true;
 			}
 		}, {
@@ -2014,102 +2572,170 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				return true;
 			}
 		}, {
-			key: 'resetTunnel',
-			value: function resetTunnel() {
-				this.tunnels = {
-					right: [],
-					left: [],
-					bottom: [],
-					top: []
-				};
-			}
-		}, {
-			key: 'draw',
-			value: function draw() {
-				if (!this.enabled) return;
-				//find danmaku from indexMark to current time
+			key: '_layerDrawFunc',
+			value: function _layerDrawFunc(ctx) {
 				var cTime = this.frame.time,
 				    cHeight = this.COL.canvas.height,
 				    cWidth = this.COL.canvas.width,
-				    ctx = this.COL.context;
-				var t = void 0,
-				    d = void 0;
-				if (this.list.length) for (; this.list[this.indexMark].time <= cTime; this.indexMark++) {
-					//add new danmaku
-					if (this.options.screenLimit > 0 && this.layer.childNodes.length >= this.options.screenLimit) break; //break if the number of danmaku on screen has up to limit
-					if (document.hidden) continue;
-					d = this.list[this.indexMark];
-					t = this.COL_GraphCache.length ? this.COL_GraphCache.shift() : new this.COL.class.TextGraph();
-					t.onoverCheck = false;
-					t.danmaku = d;
-					t.drawn = false;
-					t.text = this.allowLines ? d.text : d.text.replace(/\n/g, ' ');
-					t.time = cTime;
-					t.font = Object.create(this.defaultStyle);
-					Object.assign(t.font, d.style);
-					t.style.opacity = t.font.opacity;
+				    rate = this.frame.rate,
+				    speed = this.options.speed;
 
-					t.prepare();
-					//find tunnel number
-					var size = t.style.height,
-					    tnum = this.getTunnel(d.tunnel, size);
-					t.tunnelNumber = tnum;
-					//calc margin
-					var margin = (tnum < 0 ? 0 : tnum) % cHeight;
-					t.style.setPositionPoint(t.style.width / 2, 0);
-					switch (d.tunnel) {
-						case 0:case 1:case 3:
+				var x = void 0,
+				    Mright = void 0,
+				    i = void 0,
+				    t = void 0,
+				    DT = this.COL_DanmakuText;
+				for (i = 0; i < DT.length; i++) {
+					t = this.COL_DanmakuText[i];
+					if (i + 1 < DT.length && t.time > DT[i + 1].time) {
+						this.removeText(t);
+						continue;
+					}
+					switch (t.danmaku.mode) {
+						case 0:case 1:
 							{
-								t.style.top = margin;break;
+								Mright = !t.danmaku.mode;
+								t.style.x = x = (Mright ? cWidth : -t.style.width) + (Mright ? -1 : 1) * rate * (t.style.width + cWidth) * (cTime - t.time) * speed / 60000;
+								if (Mright && x < -t.style.width || !Mright && x > cWidth + t.style.width) {
+									//go out the canvas
+									this.removeText(t);
+									continue;
+								} else if (t.tunnelNumber >= 0 && (Mright && x + t.style.width + 30 < cWidth || !Mright && x > 30)) {
+									this.tunnel.removeMark(t);
+								}
+								ctx.drawImage(t._bitmap ? t._bitmap : t._cache, x - t.estimatePadding, t.style.y - t.estimatePadding);
+								break;
 							}
-						case 2:
+						case 2:case 3:
 							{
-								t.style.top = cHeight - margin;
+								if (cTime - t.time > speed * 1000 / rate) {
+									this.removeText(t);
+									continue;
+								}
+								ctx.drawImage(t._bitmap ? t._bitmap : t._cache, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding);
 							}
 					}
-
-					tunnel[tnum] = t.style.top + size > cHeight ? cHeight - t.style.top - 1 : size;
-					this.layer.appendChild(t);
 				}
-
-				//const cRange=this._clearRange;
+			}
+		}, {
+			key: 'draw',
+			value: function draw(force) {
+				if (!this.enabled) return;
+				//find danmaku from indexMark to current time
+				if (!force && (this.danmakuMoveTime == cTime || this.paused)) return;
+				var cTime = this.frame.time,
+				    cHeight = this.COL.canvas.height,
+				    cWidth = this.COL.canvas.width,
+				    ctx = this.COL.context,
+				    now = Date.now();
+				var t = void 0,
+				    d = void 0;
+				if (!force && this.list.length && this.danmakuCheckSwitch && !document.hidden) {
+					for (; (d = this.list[this.indexMark]) && d.time <= cTime; this.indexMark++) {
+						//add new danmaku
+						if (this.options.screenLimit > 0 && this.COL_DanmakuText.length >= this.options.screenLimit || document.hidden) continue; //continue if the number of danmaku on screen has up to limit or doc is not visible
+						d = this.list[this.indexMark];
+						t = this.COL_GraphCache.length ? this.COL_GraphCache.shift() : new this.COL.class.TextGraph();
+						t.onoverCheck = false;
+						t.danmaku = d;
+						t.drawn = false;
+						t.text = this.options.allowLines ? d.text : d.text.replace(/\n/g, ' ');
+						t.time = d.time;
+						t.font = Object.create(this.defaultStyle);
+						Object.assign(t.font, d.style);
+						t.style.opacity = t.font.opacity;
+						if (d.mode > 1) t.font.textAlign = 'center';
+						t.prepare(true);
+						//find tunnel number
+						var size = t.style.height,
+						    tnum = this.tunnel.getTunnel(t, this.COL.canvas.height);
+						//calc margin
+						var margin = (tnum < 0 ? 0 : tnum) % cHeight;
+						switch (d.mode) {
+							case 0:case 1:case 3:
+								{
+									t.style.y = margin;break;
+								}
+							case 2:
+								{
+									t.style.y = cHeight - margin - t.style.height - 1;
+								}
+						}
+						if (d.mode > 1) {
+							t.style.x = (cWidth - t.style.width) / 2;
+						}
+						this.COL_DanmakuText.push(t);
+					}
+					this.danmakuCheckSwitch = false;
+				} else {
+					this.danmakuCheckSwitch = true;
+				}
 				//calc all danmaku's position
+				this.danmakuMoveTime = cTime;
+				this._clearCanvas();
+
+				this.COL.draw();
+				//clean cache
+				if (now - this.cacheCleanTime > 5000) {
+					this.cacheCleanTime = now;
+					if (this.COL_GraphCache.length > 20) {
+						//save 20 cached danmaku
+						for (var ti = 0; ti < this.COL_GraphCache.length; ti++) {
+							if (now - this.COL_GraphCache[ti].removeTime > 10000) {
+								//delete cache which has live over 10s
+								this.COL_GraphCache.splice(ti, 1);
+							} else {
+								break;
+							}
+						}
+					}
+				}
+			}
+		}, {
+			key: 'removeText',
+			value: function removeText(t) {
+				//remove the danmaku from screen
+				var ind = this.COL_DanmakuText.indexOf(t);
+				t._bitmap = null;
+				if (ind >= 0) this.COL_DanmakuText.splice(ind, 1);
+				this.tunnel.removeMark(t);
+				t.danmaku = null;
+				t.removeTime = Date.now();
+				this.COL_GraphCache.push(t);
+			}
+		}, {
+			key: 'resize',
+			value: function resize() {
+				this.COL.adjustCanvas();
+				this.draw(true);
+			}
+		}, {
+			key: '_evaluateIfFullClearMode',
+			value: function _evaluateIfFullClearMode() {
+				if (this.COL.debug.switch) return true;
+				if (this.canvas.width * this.canvas.height / this.COL_DanmakuText.length < 50000) return true;
+				return false;
+			}
+		}, {
+			key: '_clearCanvas',
+			value: function _clearCanvas(forceFull) {
+				if (forceFull || this._evaluateIfFullClearMode()) {
+					this.COL.clear();
+					return;
+				}
+				var ctx = this.COL.context;
 				var _iteratorNormalCompletion2 = true;
 				var _didIteratorError2 = false;
 				var _iteratorError2 = undefined;
 
 				try {
-					for (var _iterator2 = this.layer.childNodes[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-						t = _step2.value;
+					for (var _iterator2 = this.COL_DanmakuText[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+						var t = _step2.value;
 
-						this.danmakuMoveTime = cTime;
 						if (t.drawn) {
 							ctx.clearRect(t.style.x - t.estimatePadding, t.style.y - t.estimatePadding, t._cache.width, t._cache.height);
 						} else {
 							t.drawn = true;
-						}
-
-						switch (t.danmaku.tunnel) {
-							case 0:case 1:
-								{
-									var direc = t.danmaku.tunnel;
-									t.style.x = (direc ? cWidth + t.style.width / 2 : -t.style.width / 2) + (direc ? -1 : 1) * this.frame.rate * 520 * (cTime - t.time) / t.font.speed / 1000;
-									if (direc || t.style.x < -t.style.width || direc && t.style.x > cWidth + t.style.width) {
-										//go out the canvas
-										this.removeText(t);
-									} else if (t.tunnelNumber >= 0 && (direc || t.style.x + t.style.width / 2 + 30 < cWidth || direc && t.style.x - t.style.width / 2 > 30)) {
-										delete this.tunnels[tunnels[t.danmaku.tunnel]][t.tunnelNumber];
-										t.tunnelNumber = -1;
-									}
-									break;
-								}
-							case 2:case 3:
-								{
-									t.style.x = cWidth / 2;
-									if (cTime - t.time > t.font.speed * 1000 / this.frame.rate) {
-										this.removeText(t);
-									}
-								}
 						}
 					}
 				} catch (err) {
@@ -2126,67 +2752,6 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 						}
 					}
 				}
-
-				this.COL.draw();
-				//clean cache
-				if (Date.now() - this.cacheCleanTime > 5000) {
-					this.cacheCleanTime = Date.now();
-					if (this.COL_GraphCache.length > 20) {
-						//save 20 cached danmaku
-						for (var ti = 0; ti < this.COL_GraphCache.length; ti++) {
-							if (Date.now() - this.COL_GraphCache[ti].removeTime > 10000) {
-								//delete cache which has live over 10s
-								this.COL_GraphCache.splice(ti, 1);
-							} else {
-								break;
-							}
-						}
-					}
-				}
-			}
-		}, {
-			key: 'getTunnel',
-			value: function getTunnel(tid, size) {
-				//get the tunnel index that can contain the danmaku of the sizes
-				var tunnel = this.tunnels[tunnels[tid]],
-				    tnum = -1,
-				    ti = 0,
-				    cHeight = this.COL.canvas.height;
-				if (size > cHeight) return -1;
-
-				while (tnum < 0) {
-					for (var i2 = 0; i2 < size; i2++) {
-						if (tunnel[ti + i2] !== undefined) {
-							//used
-							ti += i2 + tunnel[ti + i2];
-							break;
-						} else if ((ti + i2) % cHeight === 0) {
-							//new page
-							ti += i2;
-							break;
-						} else if (i2 === size - 1) {
-							//get
-							tnum = ti;
-							break;
-						}
-					}
-				}
-				return tnum;
-			}
-		}, {
-			key: 'removeText',
-			value: function removeText(t) {
-				//remove the danmaku from screen
-				this.layer.removeChild(t);
-				t.danmaku = null;
-				t.tunnelNumber >= 0 && delete this.tunnels[tunnels[t.danmaku.tunnel]][t.tunnelNumber];
-				t.removeTime = Date.now();
-				this.COL_GraphCache.push(t);
-			}
-		}, {
-			key: 'resize',
-			value: function resize() {
-				this.draw();
 			}
 		}, {
 			key: 'clear',
@@ -2197,8 +2762,8 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				var _iteratorError3 = undefined;
 
 				try {
-					for (var _iterator3 = this.layer.childNodes[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-						t = _step3.value;
+					for (var _iterator3 = this.COL_DanmakuText[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+						var t = _step3.value;
 
 						if (t.danmaku) this.removeText(t);
 					}
@@ -2217,13 +2782,22 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 					}
 				}
 
-				this.resetTunnel();
+				this.tunnel.reset();
+				this._clearCanvas(true);
+			}
+		}, {
+			key: 'reCheckIndexMark',
+			value: function reCheckIndexMark() {
+				var t = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.frame.time;
+
+				this.indexMark = dichotomy(this.list, t, 0, this.list.length - 1, true);
 			}
 		}, {
 			key: 'time',
-			value: function time(t) {
+			value: function time() {
+				var t = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.frame.time;
 				//reset time,you should invoke it when the media has seeked to another time
-				this.indexMark = dichotomy(this.list, t, 0, this.list.length - 1, true);
+				this.reCheckIndexMark();
 				if (this.options.clearWhenTimeReset) {
 					this.clear();
 				} else {
@@ -2233,19 +2807,20 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		}, {
 			key: 'resetTimeOfDanmakuOnScreen',
 			value: function resetTimeOfDanmakuOnScreen() {
+				var cTime = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.frame.time;
+
 				//cause the position of the danmaku is based on time
 				//and if you don't want these danmaku on the screen to disappear,their time should be reset
-				var cTime = Date.now();
 				var _iteratorNormalCompletion4 = true;
 				var _didIteratorError4 = false;
 				var _iteratorError4 = undefined;
 
 				try {
-					for (var _iterator4 = this.layer.childNodes[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-						var _t = _step4.value;
+					for (var _iterator4 = this.COL_DanmakuText[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+						var t = _step4.value;
 
-						if (!_t.danmaku) continue;
-						_t.time = cTime - (this.danmakuMoveTime - _t.time);
+						if (!t.danmaku) continue;
+						t.time = cTime - (this.danmakuMoveTime - t.time);
 					}
 				} catch (err) {
 					_didIteratorError4 = true;
@@ -2273,11 +2848,11 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				var _iteratorError5 = undefined;
 
 				try {
-					for (var _iterator5 = this.layer.childNodes[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-						var _t2 = _step5.value;
+					for (var _iterator5 = this.COL_DanmakuText[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+						var t = _step5.value;
 
-						if (!_t2.danmaku) continue;
-						if (_t2.x <= x && _t2.x + _t2.style.width >= x && _t2.y <= y && _t2.y + _t2.style.height >= y) list.push(_t2.danmaku);
+						if (!t.danmaku) continue;
+						if (t.style.x <= x && t.style.x + t.style.width >= x && t.style.y <= y && t.style.y + t.style.height >= y) list.push(t.danmaku);
 					}
 				} catch (err) {
 					_didIteratorError5 = true;
@@ -2301,14 +2876,12 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			value: function enable() {
 				//enable the plugin
 				this.layer.style.hidden = false;
-				this.canvas.hidden = false;
 			}
 		}, {
 			key: 'disable',
 			value: function disable() {
 				//disable the plugin
 				this.layer.style.hidden = true;
-				this.canvas.hidden = false;
 				this.clear();
 			}
 		}]);
@@ -2316,36 +2889,317 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		return Text2D;
 	}(DanmakuFrameModule);
 
+	var tunnelManager = function () {
+		function tunnelManager() {
+			_classCallCheck(this, tunnelManager);
+
+			this.reset();
+		}
+
+		_createClass(tunnelManager, [{
+			key: 'reset',
+			value: function reset() {
+				this.right = {};
+				this.left = {};
+				this.bottom = {};
+				this.top = {};
+			}
+		}, {
+			key: 'getTunnel',
+			value: function getTunnel(tobj, cHeight) {
+				//get the tunnel index that can contain the danmaku of the sizes
+				var tunnel = this.tunnel(tobj.danmaku.mode),
+				    size = tobj.style.height,
+				    ti = 0,
+				    tnum = -1;
+				if (typeof size !== 'number' || size < 0) {
+					console.error('Incorrect size:' + size);
+					size = 1;
+				}
+				if (size > cHeight) return 0;
+
+				while (tnum < 0) {
+					for (var t = ti + size - 1; ti <= t;) {
+						if (tunnel[ti]) {
+							//used
+							ti += tunnel[ti].tunnelHeight;
+							break;
+						} else if (ti !== 0 && ti % (cHeight - 1) === 0) {
+							//new page
+							ti++;
+							break;
+						} else if (ti === t) {
+							//get
+							tnum = ti - size + 1;
+							break;
+						} else {
+							ti++;
+						}
+					}
+				}
+				tobj.tunnelNumber = tnum;
+				tobj.tunnelHeight = tobj.style.y + size > cHeight ? 1 : size;
+				this.addMark(tobj);
+				return tnum;
+			}
+		}, {
+			key: 'addMark',
+			value: function addMark(tobj) {
+				var t = this.tunnel(tobj.danmaku.mode);
+				if (!t[tobj.tunnelNumber]) t[tobj.tunnelNumber] = tobj;
+			}
+		}, {
+			key: 'removeMark',
+			value: function removeMark(tobj) {
+				var t = void 0,
+				    tun = tobj.tunnelNumber;
+				if (tun >= 0 && (t = this.tunnel(tobj.danmaku.mode))[tun] === tobj) {
+					delete t[tun];
+					tobj.tunnelNumber = -1;
+				}
+			}
+		}, {
+			key: 'tunnel',
+			value: function tunnel(id) {
+				return this[tunnels[id]];
+			}
+		}]);
+
+		return tunnelManager;
+	}();
+
 	var tunnels = ['right', 'left', 'bottom', 'top'];
 
-	function dichotomy(arr, t, start, end, position) {
-		if (arr.length === 0) return -1;
-		var m = void 0;
+	function dichotomy(arr, t, start, end) {
+		var position = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
+
+		if (arr.length === 0) return 0;
+		var m = start,
+		    s = start,
+		    e = end;
 		while (start <= end) {
+			//dichotomy
 			m = start + end >> 1;
-			if (t <= arr[m].time) start = m;else end = m - 1;
+			if (t <= arr[m].time) end = m - 1;else {
+				start = m + 1;
+			}
 		}
-		if (position === true) {
-			//top
-			while (arr[start - 1] && arr[start - 1].time === arr[start].time) {
+		if (position) {
+			//find to top
+			while (start > 0 && arr[start - 1].time === t) {
 				start--;
 			}
-		} else if (position === false) {
-			//end
-			while (arr[start + 1] && arr[start + 1].time === arr[start].time) {
+		} else {
+			//find to end
+			while (start <= e && arr[start].time === t) {
 				start++;
 			}
 		}
-
 		return start;
 	}
 
 	DanmakuFrame.addModule('text2d', Text2D);
 };
 
+function addEvents(target) {
+	var events = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+	var _loop = function _loop(e) {
+		e.split(/\,/g).forEach(function (e2) {
+			return target.addEventListener(e2, events[e]);
+		});
+	};
+
+	for (var e in events) {
+		_loop(e);
+	}
+}
+
 exports.default = init;
 
-},{"../lib/COL/CanvasObjLibrary.js":4}],6:[function(require,module,exports){
+},{"../lib/CanvasObjLibrary/src/CanvasObjLibrary.js":6}],8:[function(require,module,exports){
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+},{}],9:[function(require,module,exports){
 /*
 Copyright luojia@luojia.me
 LGPL license
@@ -2440,12 +3294,7 @@ var NyaP = function (_NyaPlayerCore) {
 							return _this.danmakuInput();
 						} }, { title: _('danmaku input') }), icon('volume', {}, { title: _('volume($0)', '100%') }), icon('loop', { click: function click(e) {
 							return _this.loop();
-						} }, { title: _('loop') }),
-					/*{_:'span',prop:{id:'player_settings'},child:[
-     	icon('settings',{click:e=>{}},{title:_('settings')}),
-     	{_:'div',attr:{id:'settings_box'},child:['poi']}
-     ]},*/
-					{ _: 'span', prop: { id: 'player_mode' }, child: [icon('fullPage', { click: function click(e) {
+						} }, { title: _('loop') }), { _: 'span', prop: { id: 'player_mode' }, child: [icon('fullPage', { click: function click(e) {
 								return _this.playerMode('fullPage');
 							} }, { title: _('full page') }), icon('fullScreen', { click: function click(e) {
 								return _this.playerMode('fullScreen');
@@ -2510,13 +3359,13 @@ var NyaP = function (_NyaPlayerCore) {
 				},
 				timeupdate: function timeupdate(e, notevent) {
 					if (Date.now() - _this._.lastTimeUpdate < 30) return;
-					$.current_time.innerHTML = (0, _NyaPCore.formatTime)(video.currentTime, video.duration);
+					_this._setTimeInfo((0, _NyaPCore.formatTime)(video.currentTime, video.duration));
 					_this.drawProgress();
 					_this._.lastTimeUpdate = Date.now();
 					notevent || setTimeout(events.main_video.timeupdate, 250, null, true); //for smooth progress bar
 				},
 				loadedmetadata: function loadedmetadata(e) {
-					$.total_time.innerHTML = (0, _NyaPCore.formatTime)(video.duration, video.duration);
+					_this._setTimeInfo(null, (0, _NyaPCore.formatTime)(video.duration, video.duration));
 				},
 				volumechange: function volumechange(e) {
 					(0, _NyaPCore.setAttrs)($.volume_circle, { 'stroke-dasharray': video.volume * 10 * Math.PI + ' 90', style: 'fill-opacity:' + (video.muted ? .2 : .6) + '!important' });
@@ -2535,7 +3384,7 @@ var NyaP = function (_NyaPlayerCore) {
 					if (e.button === 2) {
 						//right key
 						e.preventDefault();
-						_this.menu([e.layerX, e.layerY]);
+						_this.menu([e.offsetX, e.offsetY]);
 					}
 				},
 				contextmenu: function contextmenu(e) {
@@ -2544,19 +3393,19 @@ var NyaP = function (_NyaPlayerCore) {
 			},
 			progress: {
 				mousemove: function mousemove(e) {
-					_this._.progressX = e.layerX;_this.drawProgress();
+					_this._.progressX = e.offsetX;_this.drawProgress();
 					var t = e.target,
-					    pre = (e.layerX - t.pad) / (t.offsetWidth - 2 * t.pad);
+					    pre = (e.offsetX - t.pad) / (t.offsetWidth - 2 * t.pad);
 					pre = (0, _NyaPCore.limitIn)(pre, 0, 1);
-					$.total_time.innerHTML = (0, _NyaPCore.formatTime)(pre * video.duration, video.duration);
+					_this._setTimeInfo(null, (0, _NyaPCore.formatTime)(pre * video.duration, video.duration));
 				},
 				mouseout: function mouseout(e) {
 					_this._.progressX = undefined;_this.drawProgress();
-					$.total_time.innerHTML = (0, _NyaPCore.formatTime)(video.duration, video.duration);
+					_this._setTimeInfo(null, (0, _NyaPCore.formatTime)(video.duration, video.duration));
 				},
 				click: function click(e) {
 					var t = e.target,
-					    pre = (e.layerX - t.pad) / (t.offsetWidth - 2 * t.pad);
+					    pre = (e.offsetX - t.pad) / (t.offsetWidth - 2 * t.pad);
 					pre = (0, _NyaPCore.limitIn)(pre, 0, 1);
 					video.currentTime = pre * video.duration;
 				}
@@ -2642,6 +3491,25 @@ var NyaP = function (_NyaPlayerCore) {
 	}
 
 	_createClass(NyaP, [{
+		key: '_setTimeInfo',
+		value: function _setTimeInfo() {
+			var _this2 = this;
+
+			var a = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+			var b = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+
+			if (a !== null) {
+				requestAnimationFrame(function () {
+					_this2.eles.current_time.innerHTML = a;
+				});
+			}
+			if (b !== null) {
+				requestAnimationFrame(function () {
+					_this2.eles.total_time.innerHTML = b;
+				});
+			}
+		}
+	}, {
 		key: 'settingsBoxToggle',
 		value: function settingsBoxToggle() {
 			var bool = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : !this.eles.settings_box.style.display;
@@ -2716,15 +3584,17 @@ var NyaP = function (_NyaPlayerCore) {
 		}
 	}, {
 		key: 'menu',
-		value: function menu(name, position) {
+		value: function menu(position) {
 			console.log('position', position);
-			if (position) {//if position is defined,find out the danmaku at that position and enable danmaku oprion in menu
-
+			if (position) {
+				//if position is defined,find out the danmaku at that position and enable danmaku oprion in menu
+				var ds = this.danmakuFrame.modules.text2d.danmakuAt(position[0], position[1]);
+				console.log(ds);
 			}
 		}
 	}, {
-		key: 'drawProgress',
-		value: function drawProgress() {
+		key: '_progressDrawer',
+		value: function _progressDrawer() {
 			var ctx = this._.progressContext,
 			    c = this.eles.progress,
 			    w = c.width,
@@ -2778,6 +3648,18 @@ var NyaP = function (_NyaPlayerCore) {
 				ctx.lineTo((0, _NyaPCore.limitIn)(this._.progressX, pad, pad + len), 15);
 				ctx.stroke();
 			}
+			this._.drawingProgress = false;
+		}
+	}, {
+		key: 'drawProgress',
+		value: function drawProgress() {
+			var _this3 = this;
+
+			if (this._.drawingProgress) return;
+			this._.drawingProgress = true;
+			requestAnimationFrame(function () {
+				_this3._progressDrawer();
+			});
 		}
 	}]);
 
@@ -2786,7 +3668,7 @@ var NyaP = function (_NyaPlayerCore) {
 
 window.NyaP = NyaP;
 
-},{"../lib/Object2HTML/Object2HTML.js":1,"../lib/danmaku-frame/lib/ResizeSensor.js":2,"./NyaPCore.js":7,"./i18n.js":8}],7:[function(require,module,exports){
+},{"../lib/Object2HTML/Object2HTML.js":1,"../lib/danmaku-frame/lib/ResizeSensor.js":2,"./NyaPCore.js":10,"./i18n.js":11}],10:[function(require,module,exports){
 /*
 Copyright luojia@luojia.me
 LGPL license
@@ -2812,11 +3694,11 @@ var _Object2HTML2 = _interopRequireDefault(_Object2HTML);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -2827,7 +3709,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var NyaPOptions = {
 	muted: false,
 	volume: 1,
-	loop: false
+	loop: false,
+	textStyle: {},
+	danmakuOption: {}
 };
 
 var NyaPEventEmitter = function () {
@@ -2839,12 +3723,12 @@ var NyaPEventEmitter = function () {
 
 	_createClass(NyaPEventEmitter, [{
 		key: 'emit',
-		value: function emit(e) {
-			this._resolve(e);
+		value: function emit(e, arg) {
+			this._resolve(e, arg);
 		}
 	}, {
 		key: '_resolve',
-		value: function _resolve(e) {
+		value: function _resolve(e, arg) {
 			if (e in this._events) {
 				var hs = this._events[e];
 				try {
@@ -2855,7 +3739,7 @@ var NyaPEventEmitter = function () {
 					try {
 						for (var _iterator = hs[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 							var h = _step.value;
-							h.call.apply(h, [this, e].concat(_toConsumableArray(args)));
+							h.call(this, e, arg);
 						}
 					} catch (err) {
 						_didIteratorError = true;
@@ -2913,7 +3797,10 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 		_this._ = {}; //for private variables
 		var video = _this._.video = (0, _Object2HTML2.default)({ _: 'video', attr: { id: 'main_video' } });
 		_this.danmakuFrame = new _danmakuFrame.DanmakuFrame();
+		_this.danmakuFrame.setMedia(video);
 		_this.danmakuFrame.enable('text2d');
+		_this.setDanmakuOptions(opt.danmakuOption);
+		_this.setDanmakuOptions(opt.textStyle);
 
 		//options
 		setTimeout(function (a) {
@@ -2938,20 +3825,6 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 				});
 			})();
 		}
-		/*addEvents(this.video,{
-  	playing:()=>{
-  		this.danmakuFrame.start();
-  	},
-  	pause:()=>{
-  		this.danmakuFrame.pause();
-  	},
-  	stalled:()=>{
-  		this.danmakuFrame.pause();
-  	},
-  	ratechange:()=>{
-  		this.danmakuFrame.rate=this.video.playbackRate;
-  	}
-  });*/
 
 		_this.emit('coreLoad');
 		//this.danmakuFrame.container
@@ -3002,6 +3875,20 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 			this.danmakuFrame[bool ? 'strat' : 'stop']();
 		}
 	}, {
+		key: 'setDefaultTextStyle',
+		value: function setDefaultTextStyle(opt) {
+			if (opt) for (var n in opt) {
+				this.text2d.defaultStyle[n] = opt[n];
+			}
+		}
+	}, {
+		key: 'setDanmakuOptions',
+		value: function setDanmakuOptions(opt) {
+			if (opt) for (var n in opt) {
+				this.text2d.options[n] = opt[n];
+			}
+		}
+	}, {
 		key: 'player',
 		get: function get() {
 			return this._.player;
@@ -3018,6 +3905,11 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 		},
 		set: function set(s) {
 			this.video.src = s;
+		}
+	}, {
+		key: 'text2d',
+		get: function get() {
+			return this.danmakuFrame.modules.text2d;
 		}
 	}, {
 		key: 'videoSize',
@@ -3106,7 +3998,7 @@ exports.setAttrs = setAttrs;
 exports.limitIn = limitIn;
 exports.toArray = toArray;
 
-},{"../lib/Object2HTML/Object2HTML.js":1,"../lib/danmaku-frame/src/danmaku-frame.js":3,"../lib/danmaku-text/src/danmaku-text.js":5}],8:[function(require,module,exports){
+},{"../lib/Object2HTML/Object2HTML.js":1,"../lib/danmaku-frame/src/danmaku-frame.js":3,"../lib/danmaku-text/src/danmaku-text.js":7}],11:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3187,6 +4079,6 @@ console.debug('Language:' + i18n.lang);
 
 exports.i18n = i18n;
 
-},{}]},{},[6])
+},{}]},{},[9])
 
 //# sourceMappingURL=NyaP.js.map

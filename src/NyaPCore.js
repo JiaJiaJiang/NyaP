@@ -17,6 +17,8 @@ const NyaPOptions={
 	muted:false,
 	volume:1,
 	loop:false,
+	textStyle:{},
+	danmakuOption:{},
 }
 
 
@@ -24,14 +26,14 @@ class NyaPEventEmitter{
 	constructor(){
 		this._events={};
 	}
-	emit(e,...args){
-		this._resolve(e);
+	emit(e,arg){
+		this._resolve(e,arg);
 	}
-	_resolve(e){
+	_resolve(e,arg){
 		if(e in this._events){
 			const hs=this._events[e];
 			try{
-				for(let h of hs){h.call(this,e,...args);};
+				for(let h of hs){h.call(this,e,arg);};
 			}catch(e){
 				console.error(e);
 			}
@@ -59,7 +61,10 @@ class NyaPlayerCore extends NyaPEventEmitter{
 		this._={};//for private variables
 		const video=this._.video=O2H({_:'video',attr:{id:'main_video'}});
 		this.danmakuFrame=new DanmakuFrame();
+		this.danmakuFrame.setMedia(video);
 		this.danmakuFrame.enable('text2d');
+		this.setDanmakuOptions(opt.danmakuOption);
+		this.setDanmakuOptions(opt.textStyle);
 
 
 		//options
@@ -82,20 +87,6 @@ class NyaPlayerCore extends NyaPEventEmitter{
 				}
 			});
 		}
-		/*addEvents(this.video,{
-			playing:()=>{
-				this.danmakuFrame.start();
-			},
-			pause:()=>{
-				this.danmakuFrame.pause();
-			},
-			stalled:()=>{
-				this.danmakuFrame.pause();
-			},
-			ratechange:()=>{
-				this.danmakuFrame.rate=this.video.playbackRate;
-			}
-		});*/
 		
 		this.emit('coreLoad');
 		//this.danmakuFrame.container
@@ -128,7 +119,14 @@ class NyaPlayerCore extends NyaPEventEmitter{
 	get video(){return this._.video;}
 	get src(){return this.video.src;}
 	set src(s){this.video.src=s;}
+	get text2d(){return this.danmakuFrame.modules.text2d;}
 	get videoSize(){return [this.video.videoWidth,this.video.videoHeight];}
+	setDefaultTextStyle(opt){
+		if(opt)for(let n in opt)this.text2d.defaultStyle[n]=opt[n];
+	}
+	setDanmakuOptions(opt){
+		if(opt)for(let n in opt)this.text2d.options[n]=opt[n];
+	}
 }
 
 

@@ -172,12 +172,12 @@ class NyaP extends NyaPlayerCore{
 				stalled:e=>{
 					$.icon_span_play.classList.remove('active_icon');
 				},
-				timeupdate:(e,notevent)=>{
+				timeupdate:(e)=>{
 					if(Date.now()-this._.lastTimeUpdate <30)return;
 					this._setTimeInfo(formatTime(video.currentTime,video.duration));
 					this.drawProgress();
 					this._.lastTimeUpdate=Date.now();
-					notevent||setTimeout(events.main_video.timeupdate,250,null,true);//for smooth progress bar
+					//notevent||setTimeout(events.main_video.timeupdate,250,null,true);//for smooth progress bar
 				},
 				loadedmetadata:e=>{
 					this._setTimeInfo(null,formatTime(video.duration,video.duration));
@@ -292,16 +292,15 @@ class NyaP extends NyaPlayerCore{
 		console.debug(this.eles)
 	}
 	_setTimeInfo(a=null,b=null){
-		if(a!==null){
-			requestAnimationFrame(()=>{
+		requestAnimationFrame(()=>{
+			if(a!==null){
 				this.eles.current_time.innerHTML=a;
-			});
-		}
-		if(b!==null){
-			requestAnimationFrame(()=>{
+			}
+			if(b!==null){
 				this.eles.total_time.innerHTML=b;
-			});
-		}
+			}
+		});
+		
 	}
 	settingsBoxToggle(bool=!this.eles.settings_box.style.display){
 		this.eles.settings_box.style.display=bool?'flex':'';

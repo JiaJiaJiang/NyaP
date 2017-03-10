@@ -1241,20 +1241,13 @@ var CanvasObjLibrary = function () {
 
 			this.context.setTransform(1, 0, 0, 1, 0, 0);
 			this.drawGraph(this.root, mode);
-			if (this.tmp.onOverGraph !== this.stat.onover) {
+			var oldOnover = this.stat.onover;
+			if (this.tmp.onOverGraph !== oldOnover) {
 				//new onover graph
-				var oldOnover = this.stat.onover;
 				this.tmp.toClickGraph = null;
 				this.stat.onover = this.tmp.onOverGraph;
-				if (oldOnover) {
-					var ceout = new this.class.MouseEvent('mouseout');
-					oldOnover.emit(ceout);
-				}
-
-				if (this.stat.onover) {
-					var ceover = new this.class.MouseEvent('mouseover');
-					this.stat.onover.emit(ceover);
-				}
+				if (oldOnover) oldOnover.emit(new this.class.MouseEvent('mouseout'));
+				if (this.stat.onover) this.stat.onover.emit(new this.class.MouseEvent('mouseover'));
 			}
 			this.tmp.onOverGraph = null;
 		}
@@ -1325,16 +1318,17 @@ var CanvasObjLibrary = function () {
 			}
 			//rotate
 			if (style.rotate !== 0) {
-				var r = style.rotate * 0.0174532925;
+				var s = Math.sin(style.rotate * 0.0174532925),
+				    c = Math.cos(style.rotate * 0.0174532925);
 				if (style.rotatePointX !== 0 || style.rotatePointY !== 0) {
 					_M[0] = 1;_M[1] = 0;_M[2] = style.rotatePointX;_M[3] = 0;_M[4] = 1;_M[5] = style.rotatePointY;
 					multiplyMatrix(M, _M, tM);
-					_M[0] = Math.cos(r);_M[1] = -Math.sin(r);_M[2] = 0;_M[3] = Math.sin(r);_M[4] = Math.cos(r);_M[5] = 0;
+					_M[0] = c;_M[1] = -s;_M[2] = 0;_M[3] = s;_M[4] = c;_M[5] = 0;
 					multiplyMatrix(tM, _M, M);
 					_M[0] = 1;_M[1] = 0;_M[2] = -style.rotatePointX;_M[3] = 0;_M[4] = 1;_M[5] = -style.rotatePointY;
 					multiplyMatrix(M, _M, tM);
 				} else {
-					_M[0] = Math.cos(r);_M[1] = -Math.sin(r);_M[2] = 0;_M[3] = Math.sin(r);_M[4] = Math.cos(r);_M[5] = 0;
+					_M[0] = c;_M[1] = -s;_M[2] = 0;_M[3] = s;_M[4] = c;_M[5] = 0;
 					multiplyMatrix(M, _M, tM);
 				}
 				M.set(tM);
@@ -1380,43 +1374,14 @@ var CanvasObjLibrary = function () {
 				ct.rect(0, 0, style.width, style.height);
 				ct.clip();
 			}
-			switch (mode) {
-				case 0:
-					{
-						g.drawer && g.drawer(ct);break;
-					}
-				case 1:
-					{
-						g.checkIfOnOver(true, mode);break;
-					}
+			if (mode === 0) {
+				g.drawer && g.drawer(ct);
+			} else if (mode === 1) {
+				g.checkIfOnOver(true, mode);
 			}
-			if (g.childNodes.length) {
-				var _iteratorNormalCompletion = true;
-				var _didIteratorError = false;
-				var _iteratorError = undefined;
-
-				try {
-					for (var _iterator = g.childNodes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-						var c = _step.value;
-
-						this.drawGraph(c, mode);
-					}
-				} catch (err) {
-					_didIteratorError = true;
-					_iteratorError = err;
-				} finally {
-					try {
-						if (!_iteratorNormalCompletion && _iterator.return) {
-							_iterator.return();
-						}
-					} finally {
-						if (_didIteratorError) {
-							throw _iteratorError;
-						}
-					}
-				}
-			}
-			ct.restore();
+			for (var i = 0; i < g.childNodes.length; i++) {
+				this.drawGraph(g.childNodes[i], mode);
+			}ct.restore();
 		}
 	}]);
 
@@ -1621,31 +1586,10 @@ var COL_Class = {
 					if (e.type in this._events) {
 						var hs = this._events[e.type];
 						try {
-							var _iteratorNormalCompletion2 = true;
-							var _didIteratorError2 = false;
-							var _iteratorError2 = undefined;
-
-							try {
-								for (var _iterator2 = hs[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-									var h = _step2.value;
-									h.call(this, e);if (e.stoped) return;
-								}
-							} catch (err) {
-								_didIteratorError2 = true;
-								_iteratorError2 = err;
-							} finally {
-								try {
-									if (!_iteratorNormalCompletion2 && _iterator2.return) {
-										_iterator2.return();
-									}
-								} finally {
-									if (_didIteratorError2) {
-										throw _iteratorError2;
-									}
-								}
+							for (var i = 0; i < hs.length; i++) {
+								hs[i].call(this, e);
+								if (e.stoped) return;
 							}
-
-							;
 						} catch (e) {
 							console.error(e);
 						}
@@ -2153,8 +2097,6 @@ var COL_Class = {
 			_createClass(TextGraph, [{
 				key: 'prepare',
 				value: function prepare() {
-					var _this13 = this;
-
 					var async = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
 					//prepare text details
 					if (!this._cache && !this.realtimeRender) {
@@ -2190,24 +2132,20 @@ var COL_Class = {
 					}
 					ct.translate(this.estimatePadding, this.estimatePadding);
 					if (async) {
-						setImmediate(function () {
-							_this13._renderToCache();
-						});
+						setImmediate(this._renderToCache, this);
 					} else {
-						this._renderToCache();
+						this._renderToCache(this);
 					}
 				}
 			}, {
 				key: '_renderToCache',
-				value: function _renderToCache() {
-					var _this14 = this;
-
-					this.render(this._cache.ctx2d);
-					if (this.useImageBitmap && typeof createImageBitmap === 'function') {
+				value: function _renderToCache(t) {
+					t.render(t._cache.ctx2d);
+					if (t.useImageBitmap && typeof createImageBitmap === 'function') {
 						//use ImageBitmap
-						createImageBitmap(this._cache).then(function (bitmap) {
-							if (_this14._bitmap) _this14._bitmap.close();
-							_this14._bitmap = bitmap;
+						createImageBitmap(t._cache).then(function (bitmap) {
+							if (t._bitmap) t._bitmap.close();
+							t._bitmap = bitmap;
 						});
 					}
 				}
@@ -2574,11 +2512,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		}, {
 			key: '_layerDrawFunc',
 			value: function _layerDrawFunc(ctx) {
-				var cTime = this.frame.time,
-				    cHeight = this.COL.canvas.height,
-				    cWidth = this.COL.canvas.width,
-				    rate = this.frame.rate,
-				    speed = this.options.speed;
+				var cWidth = this.COL.canvas.width;
 
 				var x = void 0,
 				    Mright = void 0,
@@ -2588,6 +2522,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				for (i = 0; i < DT.length; i++) {
 					t = this.COL_DanmakuText[i];
 					if (i + 1 < DT.length && t.time > DT[i + 1].time) {
+						//clean danmakus at the wrong time
 						this.removeText(t);
 						continue;
 					}
@@ -2595,7 +2530,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 						case 0:case 1:
 							{
 								Mright = !t.danmaku.mode;
-								t.style.x = x = (Mright ? cWidth : -t.style.width) + (Mright ? -1 : 1) * rate * (t.style.width + cWidth) * (cTime - t.time) * speed / 60000;
+								t.style.x = x = (Mright ? cWidth : -t.style.width) + (Mright ? -1 : 1) * this.frame.rate * (t.style.width + cWidth) * (this.frame.time - t.time) * this.options.speed / 60000;
 								if (Mright && x < -t.style.width || !Mright && x > cWidth + t.style.width) {
 									//go out the canvas
 									this.removeText(t);
@@ -2603,16 +2538,16 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 								} else if (t.tunnelNumber >= 0 && (Mright && x + t.style.width + 30 < cWidth || !Mright && x > 30)) {
 									this.tunnel.removeMark(t);
 								}
-								ctx.drawImage(t._bitmap ? t._bitmap : t._cache, x - t.estimatePadding, t.style.y - t.estimatePadding);
+								ctx.drawImage(t._bitmap ? t._bitmap : t._cache, x - t.estimatePadding + 0.5 | 0, t.style.y - t.estimatePadding);
 								break;
 							}
 						case 2:case 3:
 							{
-								if (cTime - t.time > speed * 1000 / rate) {
+								if (this.frame.time - t.time > this.options.speed * 1000 / this.frame.rate) {
 									this.removeText(t);
 									continue;
 								}
-								ctx.drawImage(t._bitmap ? t._bitmap : t._cache, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding);
+								ctx.drawImage(t._bitmap ? t._bitmap : t._cache, t.style.x - t.estimatePadding + 0.5 | 0, t.style.y - t.estimatePadding);
 							}
 					}
 				}
@@ -2622,16 +2557,13 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			value: function draw(force) {
 				if (!this.enabled) return;
 				//find danmaku from indexMark to current time
-				if (!force && (this.danmakuMoveTime == cTime || this.paused)) return;
-				var cTime = this.frame.time,
-				    cHeight = this.COL.canvas.height,
-				    cWidth = this.COL.canvas.width,
-				    ctx = this.COL.context,
+				if (!force && (this.danmakuMoveTime == this.frame.time || this.paused)) return;
+				var cHeight = this.COL.canvas.height,
 				    now = Date.now();
 				var t = void 0,
 				    d = void 0;
 				if (!force && this.list.length && this.danmakuCheckSwitch && !document.hidden) {
-					for (; (d = this.list[this.indexMark]) && d.time <= cTime; this.indexMark++) {
+					for (; (d = this.list[this.indexMark]) && d.time <= this.frame.time; this.indexMark++) {
 						//add new danmaku
 						if (this.options.screenLimit > 0 && this.COL_DanmakuText.length >= this.options.screenLimit || document.hidden) continue; //continue if the number of danmaku on screen has up to limit or doc is not visible
 						d = this.list[this.indexMark];
@@ -2662,7 +2594,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 								}
 						}
 						if (d.mode > 1) {
-							t.style.x = (cWidth - t.style.width) / 2;
+							t.style.x = (this.COL.canvas.width - t.style.width) / 2;
 						}
 						this.COL_DanmakuText.push(t);
 					}
@@ -2671,7 +2603,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 					this.danmakuCheckSwitch = true;
 				}
 				//calc all danmaku's position
-				this.danmakuMoveTime = cTime;
+				this.danmakuMoveTime = this.frame.time;
 				this._clearCanvas();
 
 				this.COL.draw();
@@ -3357,12 +3289,12 @@ var NyaP = function (_NyaPlayerCore) {
 				stalled: function stalled(e) {
 					$.icon_span_play.classList.remove('active_icon');
 				},
-				timeupdate: function timeupdate(e, notevent) {
+				timeupdate: function timeupdate(e) {
 					if (Date.now() - _this._.lastTimeUpdate < 30) return;
 					_this._setTimeInfo((0, _NyaPCore.formatTime)(video.currentTime, video.duration));
 					_this.drawProgress();
 					_this._.lastTimeUpdate = Date.now();
-					notevent || setTimeout(events.main_video.timeupdate, 250, null, true); //for smooth progress bar
+					//notevent||setTimeout(events.main_video.timeupdate,250,null,true);//for smooth progress bar
 				},
 				loadedmetadata: function loadedmetadata(e) {
 					_this._setTimeInfo(null, (0, _NyaPCore.formatTime)(video.duration, video.duration));
@@ -3498,16 +3430,14 @@ var NyaP = function (_NyaPlayerCore) {
 			var a = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 			var b = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
-			if (a !== null) {
-				requestAnimationFrame(function () {
+			requestAnimationFrame(function () {
+				if (a !== null) {
 					_this2.eles.current_time.innerHTML = a;
-				});
-			}
-			if (b !== null) {
-				requestAnimationFrame(function () {
+				}
+				if (b !== null) {
 					_this2.eles.total_time.innerHTML = b;
-				});
-			}
+				}
+			});
 		}
 	}, {
 		key: 'settingsBoxToggle',

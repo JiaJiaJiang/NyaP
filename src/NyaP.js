@@ -239,9 +239,11 @@ class NyaP extends NyaPlayerCore{
 				},
 				wheel:e=>{
 					e.preventDefault();
-					let v=video.volume+(e.deltaY/100);
-					if(v<0)v=0;else if(v>1)v=1;
-					video.volume=v;
+					if(e.deltaMode!==0)return;
+					let delta;
+					if(e.deltaY>10 || e.deltaY<-10)delta=e.deltaY/10;
+					else{delta=e.deltaY;}
+					video.volume=limitIn(video.volume+(delta/100),0,1);
 				}
 			},
 			danmakuModeSwitch:{

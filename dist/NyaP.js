@@ -966,6 +966,7 @@ varsion:2.0
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+exports.requestIdleCallback = exports.CanvasObjLibrary = undefined;
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
@@ -2090,6 +2091,7 @@ var COL_Class = {
 				_this12.useImageBitmap = true;
 				_this12.style.debugBorderColor = '#00f';
 				_this12.text = text;
+				_this12._renderToCache = _this12._renderToCache.bind(_this12);
 				defProp(_this12, '_cache', { configurable: true });
 				return _this12;
 			}
@@ -2132,20 +2134,22 @@ var COL_Class = {
 					}
 					ct.translate(this.estimatePadding, this.estimatePadding);
 					if (async) {
-						setImmediate(this._renderToCache, this);
+						requestIdleCallback(this._renderToCache);
 					} else {
-						this._renderToCache(this);
+						this._renderToCache();
 					}
 				}
 			}, {
 				key: '_renderToCache',
-				value: function _renderToCache(t) {
-					t.render(t._cache.ctx2d);
-					if (t.useImageBitmap && typeof createImageBitmap === 'function') {
+				value: function _renderToCache() {
+					var _this13 = this;
+
+					this.render(this._cache.ctx2d);
+					if (this.useImageBitmap && typeof createImageBitmap === 'function') {
 						//use ImageBitmap
-						createImageBitmap(t._cache).then(function (bitmap) {
-							if (t._bitmap) t._bitmap.close();
-							t._bitmap = bitmap;
+						createImageBitmap(this._cache).then(function (bitmap) {
+							if (_this13._bitmap) _this13._bitmap.close();
+							_this13._bitmap = bitmap;
 						});
 					}
 				}
@@ -2308,7 +2312,11 @@ if (!Float32Array.__proto__.from) {
 	};
 })();
 
+var requestIdleCallback = window.requestIdleCallback || setImmediate;
+
 exports.default = CanvasObjLibrary;
+exports.CanvasObjLibrary = CanvasObjLibrary;
+exports.requestIdleCallback = requestIdleCallback;
 
 },{"../lib/promise/promise.js":4,"../lib/setImmediate/setImmediate.js":5}],7:[function(require,module,exports){
 /*
@@ -2326,10 +2334,6 @@ Object.defineProperty(exports, "__esModule", {
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _CanvasObjLibrary = require('../lib/CanvasObjLibrary/src/CanvasObjLibrary.js');
-
-var _CanvasObjLibrary2 = _interopRequireDefault(_CanvasObjLibrary);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -2390,7 +2394,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			_this.canvas = document.createElement('canvas'); //the canvas
 			Object.assign(_this.canvas.style, { position: 'absolute', width: '100%', height: '100%', top: 0, left: 0 });
 			_this.context2d = _this.canvas.getContext('2d'); //the canvas context
-			_this.COL = new _CanvasObjLibrary2.default(_this.canvas); //the library
+			_this.COL = new _CanvasObjLibrary.CanvasObjLibrary(_this.canvas); //the library
 			_this.COL.imageSmoothingEnabled = false;
 			_this.COL.autoClear = false;
 			frame.container.appendChild(_this.canvas);
@@ -2418,6 +2422,9 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 					_this.start();
 				}
 			});
+			_this._checkNewDanmaku = _this._checkNewDanmaku.bind(_this);
+			_this._cleanCache = _this._cleanCache.bind(_this);
+			setInterval(_this._cleanCache, 5000); //set an interval for cache cleaning
 			return _this;
 		}
 
@@ -2512,116 +2519,125 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		}, {
 			key: '_layerDrawFunc',
 			value: function _layerDrawFunc(ctx) {
+				var t = void 0;
+				for (var i = 0; i < this.COL_DanmakuText.length; i++) {
+					t = this.COL_DanmakuText[i];
+					ctx.drawImage(t.useImageBitmap && t._bitmap ? t._bitmap : t._cache, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding);
+				}
+			}
+		}, {
+			key: '_checkNewDanmaku',
+			value: function _checkNewDanmaku() {
+				var cHeight = this.COL.canvas.height,
+				    cWidth = this.COL.canvas.width;
+				var t = void 0,
+				    d = void 0,
+				    H = document.hidden;
+				if (this.list.length) for (; (d = this.list[this.indexMark]) && d.time <= this.frame.time; this.indexMark++) {
+					//add new danmaku
+					if (this.options.screenLimit > 0 && this.COL_DanmakuText.length >= this.options.screenLimit || H) continue; //continue if the number of danmaku on screen has up to limit or doc is not visible
+					t = this.COL_GraphCache.length ? this.COL_GraphCache.shift() : new this.COL.class.TextGraph();
+					t.onoverCheck = false;
+					t.danmaku = d;
+					t.drawn = false;
+					t.text = this.options.allowLines ? d.text : d.text.replace(/\n/g, ' ');
+					t.time = d.time;
+					t.font = Object.create(this.defaultStyle);
+					Object.assign(t.font, d.style);
+					t.style.opacity = t.font.opacity;
+					if (d.mode > 1) t.font.textAlign = 'center';
+					t.prepare(true);
+					//find tunnel number
+					var size = t.style.height,
+					    tnum = this.tunnel.getTunnel(t, this.COL.canvas.height);
+					//calc margin
+					var margin = (tnum < 0 ? 0 : tnum) % cHeight;
+					switch (d.mode) {
+						case 0:case 1:case 3:
+							{
+								t.style.y = margin;break;
+							}
+						case 2:
+							{
+								t.style.y = cHeight - margin - t.style.height - 1;
+							}
+					}
+					if (d.mode > 1) {
+						t.style.x = (this.COL.canvas.width - t.style.width) / 2;
+					} else {
+						t.style.x = cWidth;
+					}
+					this.COL_DanmakuText.push(t);
+				}
+				//calc all danmaku's position
+				this._calcDanmakuPosition();
+			}
+		}, {
+			key: '_calcDanmakuPosition',
+			value: function _calcDanmakuPosition() {
+				if (this.danmakuMoveTime == this.frame.time || this.paused) return;
 				var cWidth = this.COL.canvas.width;
-
 				var x = void 0,
-				    Mright = void 0,
+				    R = void 0,
 				    i = void 0,
 				    t = void 0,
-				    DT = this.COL_DanmakuText;
+				    DT = this.COL_DanmakuText,
+				    F = this.frame;
+				this.danmakuMoveTime = F.time;
+				for (i = 0; i < DT.length; i++) {
+					if (i + 1 < DT.length && DT[i].time <= DT[i + 1].time) break; //clean danmakus at the wrong time
+					this.removeText(t);
+				}
 				for (i = 0; i < DT.length; i++) {
 					t = this.COL_DanmakuText[i];
-					if (i + 1 < DT.length && t.time > DT[i + 1].time) {
-						//clean danmakus at the wrong time
-						this.removeText(t);
-						continue;
-					}
 					switch (t.danmaku.mode) {
 						case 0:case 1:
 							{
-								Mright = !t.danmaku.mode;
-								t.style.x = x = (Mright ? cWidth : -t.style.width) + (Mright ? -1 : 1) * this.frame.rate * (t.style.width + cWidth) * (this.frame.time - t.time) * this.options.speed / 60000;
-								if (Mright && x < -t.style.width || !Mright && x > cWidth + t.style.width) {
+								R = !t.danmaku.mode;
+								t.style.x = x = (R ? cWidth : -t.style.width) + (R ? -1 : 1) * F.rate * (t.style.width + cWidth) * (F.time - t.time) * this.options.speed / 60000;
+								if (R && x < -t.style.width || !R && x > cWidth + t.style.width) {
 									//go out the canvas
 									this.removeText(t);
-									continue;
-								} else if (t.tunnelNumber >= 0 && (Mright && x + t.style.width + 30 < cWidth || !Mright && x > 30)) {
+								} else if (t.tunnelNumber >= 0 && (R && x + t.style.width + 10 < cWidth || !R && x > 30)) {
 									this.tunnel.removeMark(t);
 								}
-								ctx.drawImage(t._bitmap ? t._bitmap : t._cache, x - t.estimatePadding, t.style.y - t.estimatePadding);
 								break;
 							}
 						case 2:case 3:
 							{
-								if (this.frame.time - t.time > this.options.speed * 1000 / this.frame.rate) {
+								if (F.time - t.time > this.options.speed * 1000 / F.rate) {
 									this.removeText(t);
-									continue;
 								}
-								ctx.drawImage(t._bitmap ? t._bitmap : t._cache, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding);
 							}
+					}
+				}
+			}
+		}, {
+			key: '_cleanCache',
+			value: function _cleanCache() {
+				//clean COL text object cache
+				var now = Date.now();
+				if (this.COL_GraphCache.length > 20) {
+					//save 20 cached danmaku
+					for (var ti = 0; ti < this.COL_GraphCache.length; ti++) {
+						if (now - this.COL_GraphCache[ti].removeTime > 10000) {
+							//delete cache which has live over 10s
+							this.COL_GraphCache.splice(ti, 1);
+						} else {
+							break;
+						}
 					}
 				}
 			}
 		}, {
 			key: 'draw',
 			value: function draw(force) {
-				if (!this.enabled) return;
-				//find danmaku from indexMark to current time
-				if (!force && (this.danmakuMoveTime == this.frame.time || this.paused)) return;
-				var cHeight = this.COL.canvas.height,
-				    now = Date.now();
-				var t = void 0,
-				    d = void 0;
-				if (!force && this.list.length && this.danmakuCheckSwitch && !document.hidden) {
-					for (; (d = this.list[this.indexMark]) && d.time <= this.frame.time; this.indexMark++) {
-						//add new danmaku
-						if (this.options.screenLimit > 0 && this.COL_DanmakuText.length >= this.options.screenLimit || document.hidden) continue; //continue if the number of danmaku on screen has up to limit or doc is not visible
-						d = this.list[this.indexMark];
-						t = this.COL_GraphCache.length ? this.COL_GraphCache.shift() : new this.COL.class.TextGraph();
-						t.onoverCheck = false;
-						t.danmaku = d;
-						t.drawn = false;
-						t.text = this.options.allowLines ? d.text : d.text.replace(/\n/g, ' ');
-						t.time = d.time;
-						t.font = Object.create(this.defaultStyle);
-						Object.assign(t.font, d.style);
-						t.style.opacity = t.font.opacity;
-						if (d.mode > 1) t.font.textAlign = 'center';
-						t.prepare(true);
-						//find tunnel number
-						var size = t.style.height,
-						    tnum = this.tunnel.getTunnel(t, this.COL.canvas.height);
-						//calc margin
-						var margin = (tnum < 0 ? 0 : tnum) % cHeight;
-						switch (d.mode) {
-							case 0:case 1:case 3:
-								{
-									t.style.y = margin;break;
-								}
-							case 2:
-								{
-									t.style.y = cHeight - margin - t.style.height - 1;
-								}
-						}
-						if (d.mode > 1) {
-							t.style.x = (this.COL.canvas.width - t.style.width) / 2;
-						}
-						this.COL_DanmakuText.push(t);
-					}
-					this.danmakuCheckSwitch = false;
-				} else {
-					this.danmakuCheckSwitch = true;
-				}
-				//calc all danmaku's position
-				this.danmakuMoveTime = this.frame.time;
+				if (!this.enabled || !force && this.paused) return;
 				this._clearCanvas();
-
 				this.COL.draw();
-				//clean cache
-				if (now - this.cacheCleanTime > 5000) {
-					this.cacheCleanTime = now;
-					if (this.COL_GraphCache.length > 20) {
-						//save 20 cached danmaku
-						for (var ti = 0; ti < this.COL_GraphCache.length; ti++) {
-							if (now - this.COL_GraphCache[ti].removeTime > 10000) {
-								//delete cache which has live over 10s
-								this.COL_GraphCache.splice(ti, 1);
-							} else {
-								break;
-							}
-						}
-					}
-				}
+
+				//find danmaku from indexMark to current time
+				(0, _CanvasObjLibrary.requestIdleCallback)(this._checkNewDanmaku);
 			}
 		}, {
 			key: 'removeText',
@@ -2644,8 +2660,8 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		}, {
 			key: '_evaluateIfFullClearMode',
 			value: function _evaluateIfFullClearMode() {
+				if (this.COL_DanmakuText.length > 3) return true;
 				if (this.COL.debug.switch) return true;
-				if (this.canvas.width * this.canvas.height / this.COL_DanmakuText.length < 50000) return true;
 				return false;
 			}
 		}, {

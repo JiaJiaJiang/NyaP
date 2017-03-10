@@ -2538,7 +2538,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 								} else if (t.tunnelNumber >= 0 && (Mright && x + t.style.width + 30 < cWidth || !Mright && x > 30)) {
 									this.tunnel.removeMark(t);
 								}
-								ctx.drawImage(t._bitmap ? t._bitmap : t._cache, x - t.estimatePadding + 0.5 | 0, t.style.y - t.estimatePadding);
+								ctx.drawImage(t._bitmap ? t._bitmap : t._cache, x - t.estimatePadding, t.style.y - t.estimatePadding);
 								break;
 							}
 						case 2:case 3:
@@ -2547,7 +2547,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 									this.removeText(t);
 									continue;
 								}
-								ctx.drawImage(t._bitmap ? t._bitmap : t._cache, t.style.x - t.estimatePadding + 0.5 | 0, t.style.y - t.estimatePadding);
+								ctx.drawImage(t._bitmap ? t._bitmap : t._cache, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding);
 							}
 					}
 				}
@@ -3363,9 +3363,12 @@ var NyaP = function (_NyaPlayerCore) {
 				},
 				wheel: function wheel(e) {
 					e.preventDefault();
-					var v = video.volume + e.deltaY / 100;
-					if (v < 0) v = 0;else if (v > 1) v = 1;
-					video.volume = v;
+					if (e.deltaMode !== 0) return;
+					var delta = void 0;
+					if (e.deltaY > 10 || e.deltaY < -10) delta = e.deltaY / 10;else {
+						delta = e.deltaY;
+					}
+					video.volume = (0, _NyaPCore.limitIn)(video.volume + delta / 100, 0, 1);
 				}
 			},
 			danmakuModeSwitch: {

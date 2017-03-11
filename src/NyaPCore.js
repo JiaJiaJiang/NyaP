@@ -33,7 +33,7 @@ class NyaPEventEmitter{
 		if(e in this._events){
 			const hs=this._events[e];
 			try{
-				for(let h of hs){h.call(this,e,arg);};
+				hs.forEach(h=>{h.call(this,e,arg)});
 			}catch(e){
 				console.error(e);
 			}

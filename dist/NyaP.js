@@ -40,31 +40,10 @@ function Object2HTML(obj, func) {
 	}
 	//childNodes
 	if (_typeof(obj.child) === 'object' && obj.child.length > 0) {
-		var _iteratorNormalCompletion = true;
-		var _didIteratorError = false;
-		var _iteratorError = undefined;
-
-		try {
-			for (var _iterator = obj.child[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-				o = _step.value;
-
-				e = o instanceof Node ? o : Object2HTML(o, func);
-				e instanceof Node && ele.appendChild(e);
-			}
-		} catch (err) {
-			_didIteratorError = true;
-			_iteratorError = err;
-		} finally {
-			try {
-				if (!_iteratorNormalCompletion && _iterator.return) {
-					_iterator.return();
-				}
-			} finally {
-				if (_didIteratorError) {
-					throw _iteratorError;
-				}
-			}
-		}
+		obj.child.forEach(function (o) {
+			e = o instanceof Node ? o : Object2HTML(o, func);
+			e instanceof Node && ele.appendChild(e);
+		});
 	}
 	func && func(ele);
 	return ele;
@@ -332,31 +311,9 @@ var DanmakuFrame = function () {
 		this.fps = 0;
 		this.working = false;
 		this.modules = {}; //constructed module list
-		var _iteratorNormalCompletion = true;
-		var _didIteratorError = false;
-		var _iteratorError = undefined;
-
-		try {
-			for (var _iterator = DanmakuFrame.moduleList[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-				var m = _step.value;
-				//init all modules
-				this.initModule(m[0]);
-			}
-		} catch (err) {
-			_didIteratorError = true;
-			_iteratorError = err;
-		} finally {
-			try {
-				if (!_iteratorNormalCompletion && _iterator.return) {
-					_iterator.return();
-				}
-			} finally {
-				if (_didIteratorError) {
-					throw _iteratorError;
-				}
-			}
-		}
-
+		DanmakuFrame.moduleList.forEach(function (m) {
+			return _this.initModule(m[0]);
+		}); //init all modules
 		setTimeout(function () {
 			//container size sensor
 			_this.container.ResizeSensor = new _ResizeSensor2.default(_this.container, function () {
@@ -2505,20 +2462,23 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				if (this.list.length) for (; (d = this.list[this.indexMark]) && d.time <= this.frame.time; this.indexMark++) {
 					//add new danmaku
 					if (this.options.screenLimit > 0 && this.COL_DanmakuText.length >= this.options.screenLimit || H) continue; //continue if the number of danmaku on screen has up to limit or doc is not visible
-					t = this.COL_GraphCache.length ? this.COL_GraphCache.shift() : new this.COL.class.TextGraph();
-					t.onoverCheck = false;
+					if (this.COL_GraphCache.length) {
+						t = this.COL_GraphCache.shift();
+					} else {
+						t = new this.COL.class.TextGraph();
+						t.onoverCheck = false;
+					}
 					t.danmaku = d;
 					t.drawn = false;
 					t.text = this.options.allowLines ? d.text : d.text.replace(/\n/g, ' ');
 					t.time = d.time;
-					t.font = Object.create(this.defaultStyle);
-					Object.assign(t.font, d.style);
+					t.font = Object.assign({}, d.style);
+					t.font.__proto__ = this.defaultStyle;
 					t.style.opacity = t.font.opacity;
 					if (d.mode > 1) t.font.textAlign = 'center';
 					t.prepare(true);
 					//find tunnel number
-					var size = t.style.height,
-					    tnum = this.tunnel.getTunnel(t, this.COL.canvas.height);
+					var tnum = this.tunnel.getTunnel(t, this.COL.canvas.height);
 					//calc margin
 					var margin = (tnum < 0 ? 0 : tnum) % cHeight;
 					switch (d.mode) {
@@ -2546,33 +2506,30 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			value: function _calcDanmakuPosition() {
 				var F = this.frame,
 				    T = F.time;
-				if (this.danmakuMoveTime == T || this.paused) return;
+				if (this.danmakuMoveTime === T || this.paused) return;
 				var cWidth = this.COL.canvas.width;
-				var x = void 0,
-				    R = void 0,
+				var R = void 0,
 				    i = void 0,
-				    t = void 0,
-				    DT = this.COL_DanmakuText;
+				    t = void 0;
 				this.danmakuMoveTime = T;
-				for (i = 0; i < DT.length; i++) {
-					if (i + 1 < DT.length && DT[i].time <= DT[i + 1].time) break; //clean danmakus at the wrong time
-					this.removeText(DT[i]);
+				for (i = 0; i < this.COL_DanmakuText.length; i++) {
+					if (i + 1 < this.COL_DanmakuText.length && this.COL_DanmakuText[i].time <= this.COL_DanmakuText[i + 1].time) break; //clean danmakus at the wrong time
+					this.removeText(this.COL_DanmakuText[i]);
 				}
-				for (i = 0; i < DT.length; i++) {
+				for (i = this.COL_DanmakuText.length; i--;) {
 					t = this.COL_DanmakuText[i];
 					switch (t.danmaku.mode) {
 						case 0:case 1:
 							{
 								R = !t.danmaku.mode;
-								x = (R ? cWidth : -t.style.width) + (R ? -1 : 1) * F.rate * (t.style.width + cWidth) * (T - t.time) * this.options.speed / 60000;
-								if (R && x < -t.style.width || !R && x > cWidth + t.style.width) {
+								t.style.x = (R ? cWidth : -t.style.width) + (R ? -1 : 1) * F.rate * (t.style.width + cWidth) * (T - t.time) * this.options.speed / 60000;
+								if (R && t.style.x < -t.style.width || !R && t.style.x > cWidth + t.style.width) {
 									//go out the canvas
 									this.removeText(t);
 									continue;
-								} else if (t.tunnelNumber >= 0 && (R && x + t.style.width + 10 < cWidth || !R && x > 30)) {
+								} else if (t.tunnelNumber >= 0 && (R && t.style.x + t.style.width + 10 < cWidth || !R && t.style.x > 30)) {
 									this.tunnel.removeMark(t);
 								}
-								t.style.x = x;
 								break;
 							}
 						case 2:case 3:
@@ -3569,34 +3526,14 @@ var NyaPEventEmitter = function () {
 	}, {
 		key: '_resolve',
 		value: function _resolve(e, arg) {
+			var _this = this;
+
 			if (e in this._events) {
 				var hs = this._events[e];
 				try {
-					var _iteratorNormalCompletion = true;
-					var _didIteratorError = false;
-					var _iteratorError = undefined;
-
-					try {
-						for (var _iterator = hs[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-							var h = _step.value;
-							h.call(this, e, arg);
-						}
-					} catch (err) {
-						_didIteratorError = true;
-						_iteratorError = err;
-					} finally {
-						try {
-							if (!_iteratorNormalCompletion && _iterator.return) {
-								_iterator.return();
-							}
-						} finally {
-							if (_didIteratorError) {
-								throw _iteratorError;
-							}
-						}
-					}
-
-					;
+					hs.forEach(function (h) {
+						h.call(_this, e, arg);
+					});
 				} catch (e) {
 					console.error(e);
 				}
@@ -3631,22 +3568,22 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 	function NyaPlayerCore(opt) {
 		_classCallCheck(this, NyaPlayerCore);
 
-		var _this = _possibleConstructorReturn(this, (NyaPlayerCore.__proto__ || Object.getPrototypeOf(NyaPlayerCore)).call(this));
+		var _this2 = _possibleConstructorReturn(this, (NyaPlayerCore.__proto__ || Object.getPrototypeOf(NyaPlayerCore)).call(this));
 
-		opt = _this.opt = Object.assign({}, NyaPOptions, opt);
-		_this._ = {}; //for private variables
-		var video = _this._.video = (0, _Object2HTML2.default)({ _: 'video', attr: { id: 'main_video' } });
-		_this.danmakuFrame = new _danmakuFrame.DanmakuFrame();
-		_this.danmakuFrame.setMedia(video);
-		_this.danmakuFrame.enable('text2d');
-		_this.setDanmakuOptions(opt.danmakuOption);
-		_this.setDanmakuOptions(opt.textStyle);
+		opt = _this2.opt = Object.assign({}, NyaPOptions, opt);
+		_this2._ = {}; //for private variables
+		var video = _this2._.video = (0, _Object2HTML2.default)({ _: 'video', attr: { id: 'main_video' } });
+		_this2.danmakuFrame = new _danmakuFrame.DanmakuFrame();
+		_this2.danmakuFrame.setMedia(video);
+		_this2.danmakuFrame.enable('text2d');
+		_this2.setDanmakuOptions(opt.danmakuOption);
+		_this2.setDanmakuOptions(opt.textStyle);
 
 		//options
 		setTimeout(function (a) {
 			['src', 'muted', 'volume', 'loop'].forEach(function (o) {
 				//dont change the order
-				opt[o] !== undefined && (_this.video[o] = opt[o]);
+				opt[o] !== undefined && (_this2.video[o] = opt[o]);
 			});
 		}, 0);
 
@@ -3666,9 +3603,9 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 			})();
 		}
 
-		_this.emit('coreLoad');
+		_this2.emit('coreLoad');
 		//this.danmakuFrame.container
-		return _this;
+		return _this2;
 	}
 
 	_createClass(NyaPlayerCore, [{
@@ -3844,6 +3781,9 @@ exports.toArray = toArray;
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 var i18n = {
 	lang: null,
 	langs: {},
@@ -3879,42 +3819,26 @@ i18n.langs['zh-CN'] = {
 if (!navigator.languages) {
 	navigator.languages = [navigator.language];
 }
-var _iteratorNormalCompletion = true;
-var _didIteratorError = false;
-var _iteratorError = undefined;
 
-try {
-	for (var _iterator = navigator.languages[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-		var lang = _step.value;
+navigator.languages;
 
-		if (i18n.langs[lang]) {
-			i18n.lang = lang;
+var _arr = [].concat(_toConsumableArray(navigator.languages));
+
+for (var _i = 0; _i < _arr.length; _i++) {
+	var lang = _arr[_i];
+	if (i18n.langs[lang]) {
+		i18n.lang = lang;
+		break;
+	}
+	var code = lang.match(/^\w+/)[0];
+	for (var cod in i18n.langs) {
+		if (cod.startsWith(code)) {
+			i18n.lang = cod;
 			break;
 		}
-		var code = lang.match(/^\w+/)[0];
-		for (var cod in i18n.langs) {
-			if (cod.startsWith(code)) {
-				i18n.lang = cod;
-				break;
-			}
-		}
-		if (i18n.lang) break;
 	}
-} catch (err) {
-	_didIteratorError = true;
-	_iteratorError = err;
-} finally {
-	try {
-		if (!_iteratorNormalCompletion && _iterator.return) {
-			_iterator.return();
-		}
-	} finally {
-		if (_didIteratorError) {
-			throw _iteratorError;
-		}
-	}
+	if (i18n.lang) break;
 }
-
 console.debug('Language:' + i18n.lang);
 
 exports.i18n = i18n;

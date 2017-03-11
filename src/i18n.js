@@ -32,7 +32,9 @@ i18n.langs['zh-CN']={
 if(!navigator.languages){
 	navigator.languages=[navigator.language];
 }
-for(let lang of navigator.languages){
+
+navigator.languages
+for(let lang of [...navigator.languages]){
 	if(i18n.langs[lang]){
 		i18n.lang=lang;
 		break;

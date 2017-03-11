@@ -311,9 +311,11 @@ var DanmakuFrame = function () {
 		this.fps = 0;
 		this.working = false;
 		this.modules = {}; //constructed module list
-		DanmakuFrame.moduleList.forEach(function (m) {
-			return _this.initModule(m[0]);
-		}); //init all modules
+		for (var m in DanmakuFrame.moduleList) {
+			//init all modules
+			this.initModule(m);
+		}
+
 		setTimeout(function () {
 			//container size sensor
 			_this.container.ResizeSensor = new _ResizeSensor2.default(_this.container, function () {
@@ -353,7 +355,7 @@ var DanmakuFrame = function () {
 	}, {
 		key: 'initModule',
 		value: function initModule(name) {
-			var mod = DanmakuFrame.moduleList.get(name);
+			var mod = DanmakuFrame.moduleList[name];
 			if (!mod) throw 'Module [' + name + '] does not exist.';
 			var module = new mod(this);
 			if (module instanceof DanmakuFrameModule === false) throw 'Constructor of ' + name + ' is not extended from DanmakuFrameModule';
@@ -434,18 +436,18 @@ var DanmakuFrame = function () {
 	}], [{
 		key: 'addModule',
 		value: function addModule(name, module) {
-			if (this.moduleList.has(name)) {
+			if (name in this.moduleList) {
 				console.warn('The module "' + name + '" has already been added.');
 				return;
 			}
-			this.moduleList.set(name, module);
+			this.moduleList[name] = module;
 		}
 	}]);
 
 	return DanmakuFrame;
 }();
 
-DanmakuFrame.moduleList = new Map();
+DanmakuFrame.moduleList = {};
 
 var DanmakuFrameModule = function DanmakuFrameModule(frame) {
 	_classCallCheck(this, DanmakuFrameModule);

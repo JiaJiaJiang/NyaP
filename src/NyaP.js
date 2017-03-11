@@ -294,7 +294,6 @@ class NyaP extends NyaPlayerCore{
 		$['icon_span_danmakuMode'+opt.defaultDanmakuMode].click();//init to default danmaku mode
 		toArray($.danmaku_size_box.childNodes).forEach(sp=>{if(sp.size===opt.defaultDanmakuSize)sp.click()});
 
-		console.debug(this.eles)
 	}
 	_setTimeInfo(a=null,b=null){
 		requestAnimationFrame(()=>{

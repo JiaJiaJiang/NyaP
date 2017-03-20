@@ -2708,7 +2708,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				clearWhenTimeReset: true, //clear danmaku on screen when the time is reset
 				speed: 5
 			};
-			document.addEventListener('visibilityChange', function (e) {
+			document.addEventListener('visibilitychange', function (e) {
 				if (document.hidden) {
 					_this.pause();
 				} else {
@@ -2744,15 +2744,13 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		}, {
 			key: 'start',
 			value: function start() {
-				console.log('start');
 				this.paused = false;
-				this._clearCanvas(true);
+				//this._clearCanvas(true);
 				//this.resetTimeOfDanmakuOnScreen();
 			}
 		}, {
 			key: 'pause',
 			value: function pause() {
-				console.log('pause');
 				this.paused = true;
 			}
 		}, {
@@ -2811,10 +2809,11 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				    cWidth = this.COL.canvas.width;
 				var t = void 0,
 				    d = void 0,
-				    time = this.frame.time;
+				    time = this.frame.time,
+				    hidden = document.hidden;
 				if (this.list.length) for (; this.indexMark < this.list.length && (d = this.list[this.indexMark]) && d.time <= time; this.indexMark++) {
 					//add new danmaku
-					if (this.options.screenLimit > 0 && this.COL_DanmakuText.length >= this.options.screenLimit) {
+					if (this.options.screenLimit > 0 && this.COL_DanmakuText.length >= this.options.screenLimit || hidden) {
 						continue;
 					} //continue if the number of danmaku on screen has up to limit or doc is not visible
 					if (this.COL_GraphCache.length) {
@@ -2867,10 +2866,6 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				    i = void 0,
 				    t = void 0;
 				this.danmakuMoveTime = T;
-				/*for(i=0;i<this.COL_DanmakuText.length;i++){
-    	if(i+1<this.COL_DanmakuText.length && this.COL_DanmakuText[i].time<=this.COL_DanmakuText[i+1].time)break;//clean danmakus at the wrong time
-    	this.removeText(this.COL_DanmakuText[i]);
-    }*/
 				for (i = this.COL_DanmakuText.length; i--;) {
 					t = this.COL_DanmakuText[i];
 					if (t.time > T) {
@@ -2950,6 +2945,11 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			value: function _evaluateIfFullClearMode() {
 				if (this.COL_DanmakuText.length > 3) return true;
 				if (this.COL.debug.switch) return true;
+				var l = this.COL_GraphCache[this.COL_GraphCache.length - 1];
+				if (l && l.drawn) {
+					l.drawn = false;
+					return true;
+				}
 				return false;
 			}
 		}, {
@@ -2981,10 +2981,10 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			}
 		}, {
 			key: 'reCheckIndexMark',
-			value: function reCheckIndexMark(t) {
-				console.log(formatTime(t / 1000, 3600));
+			value: function reCheckIndexMark() {
+				var t = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.frame.time;
+
 				this.indexMark = dichotomy(this.list, t, 0, this.list.length - 1, true);
-				console.log(formatTime(this.list[this.indexMark].time / 1000, 3600));
 			}
 		}, {
 			key: 'time',
@@ -3167,15 +3167,9 @@ function addEvents(target) {
 		_loop(e);
 	}
 }
-
-function formatTime(sec, total) {
-	var r = void 0,
-	    s = sec | 0,
-	    h = s / 3600 | 0;
-	if (total >= 3600) s = s % 3600;
-	r = [s / 60 | 0, s % 60];
-	total >= 3600 && r.unshift(h);
-	return r.join(':');
+function limitIn(num, min, max) {
+	//limit the number in a range
+	return num < min ? min : num > max ? max : num;
 }
 
 exports.default = init;

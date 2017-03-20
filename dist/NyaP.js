@@ -311,6 +311,7 @@ var DanmakuFrame = function () {
 		this.fps = 0;
 		this.working = false;
 		this.modules = {}; //constructed module list
+		this.moduleList = [];
 		for (var m in DanmakuFrame.moduleList) {
 			//init all modules
 			this.initModule(m);
@@ -361,6 +362,7 @@ var DanmakuFrame = function () {
 			if (module instanceof DanmakuFrameModule === false) throw 'Constructor of ' + name + ' is not extended from DanmakuFrameModule';
 			module.enabled = true;
 			this.modules[name] = module;
+			this.moduleList.push(name);
 			console.debug('Mod Inited: ' + name);
 			return true;
 		}
@@ -400,8 +402,9 @@ var DanmakuFrame = function () {
 	}, {
 		key: 'moduleFunction',
 		value: function moduleFunction(name, arg) {
-			for (var m in this.modules) {
-				this.modules[m][name] && this.modules[m][name](arg);
+			for (var i = 0, m; i < this.moduleList.length; i++) {
+				m = this.modules[this.moduleList[i]];
+				if (m[name]) m[name](arg);
 			}
 		}
 	}, {
@@ -474,6 +477,373 @@ exports.DanmakuFrame = DanmakuFrame;
 exports.DanmakuFrameModule = DanmakuFrameModule;
 
 },{"../lib/ResizeSensor.js":2}],4:[function(require,module,exports){
+/*
+Copyright luojia@luojia.me
+LGPL license
+*/
+'use strict';
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+(function (f) {
+	if (typeof define === "function" && define.amd) {
+		define(f);
+	} else if ((typeof exports === "undefined" ? "undefined" : _typeof(exports)) === "object") {
+		module.exports = f();
+	} else {
+		(0, eval)('this').Mat = f();
+	}
+})(function () {
+	var global = (0, eval)('this');
+	var TypedArray = global.Float32Array && global.Float32Array.prototype;
+
+	function _createClass2(Constructor) {
+		var Matrix = function () {
+			function Matrix() {
+				_classCallCheck(this, Matrix);
+			}
+
+			_createClass(Matrix, [{
+				key: "length",
+				get: function get() {
+					return this._len;
+				}
+			}], [{
+				key: "leftMultiply",
+				value: function leftMultiply(m) {
+					return this.set(Mat.multiply(m, this, Mat.Matrixes.T3));
+				}
+			}, {
+				key: "rightMultiply",
+				value: function rightMultiply(m) {
+					return this.set(Mat.multiply(this, m, Mat.Matrixes.T3));
+				}
+			}, {
+				key: "fill",
+				value: function fill(n) {
+					arguments.length || (n = 0);
+					for (var i = this.length; i--;) {
+						this[i] = n;
+					}return this;
+				}
+			}, {
+				key: "set",
+				value: function set(arr, offset) {
+					offset || (offset = 0);
+					for (var i = arr.length + offset <= this.length ? arr.length : this.length - offset; i--;) {
+						this[offset + i] = arr[i];
+					}return this;
+				}
+			}, {
+				key: "put",
+				value: function put(m, row, column) {
+					Mat.put(this, m, row || 0, column || 0);
+					return this;
+				}
+			}, {
+				key: "rotate2d",
+				value: function rotate2d(t) {
+					return this.set(Mat.rotate2d(this, t, Mat.Matrixes.T3));
+				}
+			}, {
+				key: "translate2d",
+				value: function translate2d(x, y) {
+					return this.set(Mat.translate2d(this, x, y, Mat.Matrixes.T3));
+				}
+			}, {
+				key: "scale2d",
+				value: function scale2d(x, y) {
+					return this.set(Mat.scale2d(this, x, y, Mat.Matrixes.T3));
+				}
+			}, {
+				key: "rotate3d",
+				value: function rotate3d(tx, ty, tz) {
+					return this.set(Mat.rotate3d(this, tx, ty, tz, Mat.Matrixes.T4));
+				}
+			}, {
+				key: "scale3d",
+				value: function scale3d(x, y, z) {
+					return this.set(Mat.scale3d(this, x, y, z, Mat.Matrixes.T4));
+				}
+			}, {
+				key: "translate3d",
+				value: function translate3d(x, y, z) {
+					return this.set(Mat.translate3d(this, x, y, z, Mat.Matrixes.T4));
+				}
+			}, {
+				key: "rotateX",
+				value: function rotateX(t) {
+					return this.set(Mat.rotateX(this, t, Mat.Matrixes.T4));
+				}
+			}, {
+				key: "rotateY",
+				value: function rotateY(t) {
+					return this.set(Mat.rotateY(this, t, Mat.Matrixes.T4));
+				}
+			}, {
+				key: "rotateZ",
+				value: function rotateZ(t) {
+					return this.set(Mat.rotateZ(this, t, Mat.Matrixes.T4));
+				}
+			}, {
+				key: "clone",
+				value: function clone() {
+					return Mat(this.row, this.column).set(this);
+				}
+			}, {
+				key: "toString",
+				value: function toString() {
+					if (this.length === 0) return '';
+					for (var i = 0, lines = [], tmp = []; i < this.length; i++) {
+						if (i && i % this.column === 0) {
+							lines.push(tmp.join('\t'));
+							tmp.length = 0;
+						}
+						tmp.push(this[i] || 0);
+					}
+					lines.push(tmp.join('	'));
+					return lines.join('\n');
+				}
+			}]);
+
+			return Matrix;
+		}();
+
+		var staticMethods = function () {
+			function staticMethods() {
+				_classCallCheck(this, staticMethods);
+			}
+
+			_createClass(staticMethods, null, [{
+				key: "Identity",
+
+				//static methods
+				value: function Identity(n) {
+					//return a new Identity Matrix
+					var m = Mat(n, n, 0);
+					for (var i = n; i--;) {
+						m[i * n + i] = 1;
+					}return m;
+				}
+			}, {
+				key: "multiply",
+				value: function multiply(a, b, result) {
+					if (a.column !== b.row) throw 'wrong matrix';
+					var row = a.row,
+					    column = Math.min(a.column, b.column),
+					    r = result || Mat(row, column),
+					    c = void 0,
+					    i = void 0,
+					    ind = void 0;
+					for (var l = row; l--;) {
+						for (c = column; c--;) {
+							r[ind = l * r.column + c] = 0;
+							for (i = a.column; i--;) {
+								r[ind] += a[l * a.column + i] * b[c + i * b.column];
+							}
+						}
+					}
+					return r;
+				}
+			}, {
+				key: "multiplyString",
+				value: function multiplyString(a, b, array) {
+					var ignoreZero = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
+					//work out the equation for every elements,only for debug and only works with Array matrixes
+					if (a.column !== b.row) throw 'wrong matrix';
+					var r = array || Mat(a.row, b.column),
+					    l,
+					    c,
+					    i,
+					    ind;
+					for (l = a.row; l--;) {
+						for (c = b.column; c--;) {
+							r[ind = l * b.column + c] = '';
+							for (i = 0; i < a.column; i++) {
+								if (ignoreZero && (a[l * a.column + i] == 0 || b[c + i * b.column] == 0)) continue;
+								r[ind] += (i && r[ind] ? '+' : '') + '(' + a[l * a.column + i] + ')*(' + b[c + i * b.column] + ')';
+							}
+						}
+					}
+					return r;
+				}
+			}, {
+				key: "add",
+				value: function add(a, b, result) {
+					if (a.column !== b.column || a.row !== b.row) throw 'wrong matrix';
+					var r = result || Mat(a.row, b.column);
+					for (var i = a.length; i--;) {
+						r[i] = a[i] + b[i];
+					}return r;
+				}
+			}, {
+				key: "minus",
+				value: function minus(a, b, result) {
+					if (a.column !== b.column || a.row !== b.row) throw 'wrong matrix';
+					var r = result || Mat(a.row, b.column);
+					for (var i = a.length; i--;) {
+						r[i] = a[i] - b[i];
+					}return r;
+				}
+			}, {
+				key: "rotate2d",
+				value: function rotate2d(m, t, result) {
+					var Mr = Mat.Matrixes.rotate2d;
+					Mr[0] = Mr[4] = Math.cos(t);
+					Mr[1] = -(Mr[3] = Math.sin(t));
+					return Mat.multiply(Mr, m, result || Mat(3, 3));
+				}
+			}, {
+				key: "scale2d",
+				value: function scale2d(m, x, y, result) {
+					var Mr = Mat.Matrixes.scale2d;
+					Mr[0] = x;
+					Mr[4] = y;
+					return Mat.multiply(Mr, m, result || Mat(3, 3));
+				}
+			}, {
+				key: "translate2d",
+				value: function translate2d(m, x, y, result) {
+					var Mr = Mat.Matrixes.translate2d;
+					Mr[2] = x;
+					Mr[5] = y;
+					return Mat.multiply(Mr, m, result || Mat(3, 3));
+				}
+			}, {
+				key: "rotate3d",
+				value: function rotate3d(m, tx, ty, tz, result) {
+					var Xc = Math.cos(tx),
+					    Xs = Math.sin(tx),
+					    Yc = Math.cos(ty),
+					    Ys = Math.sin(ty),
+					    Zc = Math.cos(tz),
+					    Zs = Math.sin(tz),
+					    Mr = Mat.Matrixes.rotate3d;
+					Mr[0] = Zc * Yc;
+					Mr[1] = Zc * Ys * Xs - Zs * Xc;
+					Mr[2] = Zc * Ys * Xc + Zs * Xs;
+					Mr[4] = Zs * Yc;
+					Mr[5] = Zs * Ys * Xs + Zc * Xc;
+					Mr[6] = Zs * Ys * Xc - Zc * Xs;
+					Mr[8] = -Ys;
+					Mr[9] = Yc * Xs;
+					Mr[10] = Yc * Xc;
+					return Mat.multiply(Mr, m, result || Mat(4, 4));
+				}
+			}, {
+				key: "rotateX",
+				value: function rotateX(m, t, result) {
+					var Mr = Mat.Matrixes.rotateX;
+					Mr[10] = Mr[5] = Math.cos(t);
+					Mr[6] = -(Mr[9] = Math.sin(t));
+					return Mat.multiply(Mr, m, result || Mat(4, 4));
+				}
+			}, {
+				key: "rotateY",
+				value: function rotateY(m, t, result) {
+					var Mr = Mat.Matrixes.rotateY;
+					Mr[10] = Mr[0] = Math.cos(t);
+					Mr[8] = -(Mr[2] = Math.sin(t));
+					return Mat.multiply(Mr, m, result || Mat(4, 4));
+				}
+			}, {
+				key: "rotateZ",
+				value: function rotateZ(m, t, result) {
+					var Mr = Mat.Matrixes.rotateZ;
+					Mr[5] = Mr[0] = Math.cos(t);
+					Mr[1] = -(Mr[4] = Math.sin(t));
+					return Mat.multiply(Mr, m, result || Mat(4, 4));
+				}
+			}, {
+				key: "scale3d",
+				value: function scale3d(m, x, y, z, result) {
+					var Mr = Mat.Matrixes.scale3d;
+					Mr[0] = x;
+					Mr[5] = y;
+					Mr[10] = z;
+					return Mat.multiply(Mr, m, result || Mat(4, 4));
+				}
+			}, {
+				key: "translate3d",
+				value: function translate3d(m, x, y, z, result) {
+					var Mr = Mat.Matrixes.translate3d;
+					Mr[12] = x;
+					Mr[13] = y;
+					Mr[14] = z;
+					return Mat.multiply(Mr, m, result || Mat(4, 4));
+				}
+			}, {
+				key: "put",
+				value: function put(m, sub, row, column) {
+					var c = void 0,
+					    ind = void 0,
+					    i = void 0;
+					row || (row = 0);
+					column || (column = 0);
+					for (var l = sub.row; l--;) {
+						if (l + row >= m.row) continue;
+						for (c = sub.column; c--;) {
+							if (c + column >= m.column) continue;
+							m[(l + row) * m.column + c + column] = sub[l * sub.column + c];
+						}
+					}
+				}
+			}, {
+				key: "createClass",
+				value: function createClass(Constructor) {
+					return _createClass2(Constructor);
+				}
+			}]);
+
+			return staticMethods;
+		}();
+
+		var testArray = new Constructor(1);
+		Object.defineProperty(Matrix, '_instanceofTypedArray', { value: !!(TypedArray && TypedArray.isPrototypeOf(testArray)) });
+		testArray = null;
+
+		Object.setPrototypeOf(Matrix, Constructor.prototype);
+		function Mat(l, c, fill) {
+			var M = new Constructor(l * c);
+			Object.setPrototypeOf(M, Matrix);
+			Object.defineProperty(M, 'length', { value: l * c });
+			Object.defineProperty(M, 'row', { value: l });
+			Object.defineProperty(M, 'column', { value: c });
+			if (arguments.length >= 3) {
+				if (Matrix._instanceofTypedArray && fill === 0) {} else if (typeof fill === 'number') {
+					M.fill(fill);
+				} else if (fill.length) {
+					M.set(fill);
+				}
+			}
+			return M;
+		}
+		Object.setPrototypeOf(Mat, staticMethods);
+		Mat.Matrixes = { //do not modify these matrixes manually and dont use them
+			I3: Mat.Identity(3),
+			I4: Mat.Identity(4),
+			T3: Mat(3, 3, 0),
+			T4: Mat(4, 4, 0),
+			rotate2d: Mat.Identity(3),
+			translate2d: Mat.Identity(3),
+			scale2d: Mat.Identity(3),
+			translate3d: Mat.Identity(4),
+			rotate3d: Mat.Identity(4),
+			rotateX: Mat.Identity(4),
+			rotateY: Mat.Identity(4),
+			rotateZ: Mat.Identity(4),
+			scale3d: Mat.Identity(4)
+		};
+		return Mat;
+	}
+	return _createClass2(global.Float32Array ? Float32Array : Array);
+});
+
+},{}],5:[function(require,module,exports){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -712,7 +1082,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   }
 })(undefined);
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 (function (process,global){
 "use strict";
 
@@ -901,12 +1271,12 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"_process":8}],6:[function(require,module,exports){
+},{"_process":9}],7:[function(require,module,exports){
 /*
 MIT LICENSE
-Copyright (c) 2016 iTisso
+Copyright (c) 2017 iTisso
 https://github.com/iTisso/CanvasObjLibrary
-varsion:2.0
+varsion:2.1
 */
 'use strict';
 
@@ -924,6 +1294,10 @@ require('../lib/setImmediate/setImmediate.js');
 var _promise = require('../lib/promise/promise.js');
 
 var _promise2 = _interopRequireDefault(_promise);
+
+var _Mat = require('../lib/Mat/Mat.js');
+
+var _Mat2 = _interopRequireDefault(_Mat);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -952,6 +1326,7 @@ var CanvasObjLibrary = function () {
 			canvas: canvas,
 			/*Canvas' context*/
 			context: canvas.getContext('2d'),
+			Matrix: _Mat2.default,
 			default: {
 				/*default font*/
 				font: {
@@ -973,6 +1348,9 @@ var CanvasObjLibrary = function () {
 					reverse: false
 				},
 				style: {
+					POSITIONMATRIX: 0x1,
+					ROTATEMATRIX: 0x10,
+					ZOOMMATRIX: 0x100,
 					width: 1,
 					height: 1,
 					hidden: false,
@@ -983,19 +1361,16 @@ var CanvasObjLibrary = function () {
 					debugBorderColor: 'black',
 					x: 0,
 					y: 0,
+					positionPointX: 0,
+					positionPointY: 0,
 					zoomX: 1,
 					zoomY: 1,
+					zoomPointX: 0,
+					zoomPointY: 0,
 					rotate: 0,
 					rotatePointX: 0,
 					rotatePointY: 0,
-					positionPointX: 0,
-					positionPointY: 0,
-					zoomPointX: 0,
-					zoomPointY: 0,
-					skewX: 1,
-					skewY: 1,
-					skewPointX: 0,
-					skewPointY: 0
+					_tempMat: _Mat2.default.Identity(3)
 				}
 			},
 			stat: {
@@ -1016,10 +1391,7 @@ var CanvasObjLibrary = function () {
 			tmp: {
 				graphID: 0,
 				onOverGraph: null,
-				toClickGraph: null,
-				matrix1: new Float32Array([1, 0, 0, 0, 1, 0]),
-				matrix2: new Float32Array([1, 0, 0, 0, 1, 0]),
-				matrix3: new Float32Array([1, 0, 0, 0, 1, 0])
+				toClickGraph: null
 			},
 
 			root: null, //root Graph
@@ -1238,64 +1610,22 @@ var CanvasObjLibrary = function () {
 			if (g.style.hidden === true) return;
 			var ct = this.context,
 			    style = g.style,
-			    M = this.tmp.matrix1,
-			    tM = this.tmp.matrix2,
-			    _M = this.tmp.matrix3;
+			    M = style._tempMat;
 			this.debug.count++;
 			ct.save();
 			if (mode === 0) {
-				if (style.composite) ct.globalCompositeOperation = style.composite;
-				if (style.opacity !== ct.globalAlpha) ct.globalAlpha = style.opacity;
+				ct.globalCompositeOperation = style.composite;
+				ct.globalAlpha = style.opacity;
 			}
 			//position & offset
-			M[0] = 1;M[1] = 0;M[2] = style.x - style.positionPointX;
-			M[3] = 0;M[4] = 1;M[5] = style.y - style.positionPointY;
-			if (style.skewX !== 1 || style.skewY !== 1) {
-				if (style.skewPointX !== 0 || style.skewPointY !== 0) {
-					_M[0] = 1;_M[1] = 0;_M[2] = style.skewPointX;_M[3] = 0;_M[4] = 1;_M[5] = style.skewPointY;
-					multiplyMatrix(M, _M, tM);
-					_M[0] = style.skewX;_M[2] = 0;_M[4] = style.skewY;_M[5] = 0;
-					multiplyMatrix(tM, _M, M);
-					_M[0] = 1;_M[2] = -style.skewPointX;_M[4] = 1;_M[5] = -style.skewPointY;
-					multiplyMatrix(M, _M, tM);
-				} else {
-					_M[0] = style.skewX;_M[1] = 0;_M[2] = 0;_M[3] = 0;_M[4] = style.skewY;_M[5] = 0;
-					multiplyMatrix(M, _M, tM);
-				}
-				M.set(tM);
-			}
-			//rotate
-			if (style.rotate !== 0) {
-				var s = Math.sin(style.rotate * 0.0174532925),
-				    c = Math.cos(style.rotate * 0.0174532925);
-				if (style.rotatePointX !== 0 || style.rotatePointY !== 0) {
-					_M[0] = 1;_M[1] = 0;_M[2] = style.rotatePointX;_M[3] = 0;_M[4] = 1;_M[5] = style.rotatePointY;
-					multiplyMatrix(M, _M, tM);
-					_M[0] = c;_M[1] = -s;_M[2] = 0;_M[3] = s;_M[4] = c;_M[5] = 0;
-					multiplyMatrix(tM, _M, M);
-					_M[0] = 1;_M[1] = 0;_M[2] = -style.rotatePointX;_M[3] = 0;_M[4] = 1;_M[5] = -style.rotatePointY;
-					multiplyMatrix(M, _M, tM);
-				} else {
-					_M[0] = c;_M[1] = -s;_M[2] = 0;_M[3] = s;_M[4] = c;_M[5] = 0;
-					multiplyMatrix(M, _M, tM);
-				}
-				M.set(tM);
-			}
-			//zoom
-			if (style.zoomX !== 1 || style.zoomY !== 1) {
-				if (style.zoomPointX !== 0 || style.zoomPointY !== 0) {
-					_M[0] = 1;_M[1] = 0;_M[2] = style.zoomPointX;_M[3] = 0;_M[4] = 1;_M[5] = style.zoomPointY;
-					multiplyMatrix(M, _M, tM);
-					_M[0] = style.zoomX;_M[2] = 0;_M[4] = style.zoomY;_M[5] = 0;
-					multiplyMatrix(tM, _M, M);
-					_M[0] = 1;_M[2] = -style.zoomPointX;_M[4] = 1;_M[5] = -style.zoomPointY;
-					multiplyMatrix(M, _M, tM);
-				} else {
-					_M[0] = style.zoomX;_M[1] = 0;_M[2] = 0;_M[3] = 0;_M[4] = style.zoomY;_M[5] = 0;
-					multiplyMatrix(M, _M, tM);
-				}
-				M.set(tM);
-			}
+			M.set(style.positionMatrix);
+			if (style.beforeMatrix) M.rightMultiply(style.beforeMatrix);
+			if (style.rotate % 360 !== 0) M.rightMultiply(style.rotateMatrix);
+			if (style.zoomX !== 1 || style.zoomY !== 1) M.rightMultiply(style.zoomMatrix);
+			if (style.afterMatrix) M.rightMultiply(style.afterMatrix);
+
+			//if(style.zoomX!==1 || style.zoomY!==1)M.leftMultiply(style.zoomMatrix);
+
 			ct.transform(M[0], M[3], M[1], M[4], M[2], M[5]);
 			if (this.debug.switch && mode === 0) {
 				ct.save();
@@ -1572,9 +1902,12 @@ var COL_Class = {
 			function GraphStyle(inhertFrom) {
 				_classCallCheck(this, GraphStyle);
 
-				if (inhertFrom && this.inhert(inhertFrom)) return;
-				this.__proto__.__proto__ = host.default.style;
-				this._calculatableStyleChanged = false;
+				if (!(inhertFrom && this.inhert(inhertFrom))) this.__proto__.__proto__ = host.default.style;
+				this.positionMatrix = _Mat2.default.Identity(3);
+				this.zoomMatrix = _Mat2.default.Identity(3);
+				this.rotateMatrix = _Mat2.default.Identity(3);
+				this.beforeMatrix = null;
+				this.afterMatrix = null;
 			}
 
 			_createClass(GraphStyle, [{
@@ -1621,10 +1954,17 @@ var COL_Class = {
 					return [0, 0];
 				}
 			}, {
+				key: 'size',
+				value: function size(w, h) {
+					this.width = w;
+					this.height = h;
+				}
+			}, {
 				key: 'position',
 				value: function position(x, y) {
 					this.x = x;
 					this.y = y;
+					this.calcMatrix(0x1);
 				}
 			}, {
 				key: 'zoom',
@@ -1635,12 +1975,13 @@ var COL_Class = {
 						this.zoomX = x;
 						this.zoomY = y;
 					}
+					this.calcMatrix(0x100);
 				}
 			}, {
-				key: 'size',
-				value: function size(w, h) {
-					this.width = w;
-					this.height = h;
+				key: 'setRotate',
+				value: function setRotate(d) {
+					this.rotate = d;
+					this.calcMatrix(0x10);
 				}
 			}, {
 				key: 'setRotatePoint',
@@ -1656,6 +1997,7 @@ var COL_Class = {
 						this.rotatePointX = _getPoint2[0];
 						this.rotatePointY = _getPoint2[1];
 					}
+					this.calcMatrix(0x10);
 				}
 			}, {
 				key: 'setPositionPoint',
@@ -1671,6 +2013,7 @@ var COL_Class = {
 						this.positionPointX = _getPoint4[0];
 						this.positionPointY = _getPoint4[1];
 					}
+					this.calcMatrix(0x1);
 				}
 			}, {
 				key: 'setZoomPoint',
@@ -1686,20 +2029,33 @@ var COL_Class = {
 						this.zoomPointX = _getPoint6[0];
 						this.zoomPointY = _getPoint6[1];
 					}
+					this.calcMatrix(0x100);
 				}
 			}, {
-				key: 'setSkewPoint',
-				value: function setSkewPoint(x, y) {
-					if (arguments.length == 2) {
-						this.skewPointX = x;
-						this.skewPointY = y;
-					} else if (arguments.length == 1) {
-						var _getPoint7 = this.getPoint(x);
-
-						var _getPoint8 = _slicedToArray(_getPoint7, 2);
-
-						this.skewPointX = _getPoint8[0];
-						this.skewPointY = _getPoint8[1];
+				key: 'calcMatrix',
+				value: function calcMatrix(type) {
+					if ((type & 0x1) === 0x1) {
+						//position
+						this.positionMatrix[2] = this.x - this.positionPointX;
+						this.positionMatrix[5] = this.y - this.positionPointY;
+					}
+					if ((type & 0x10) === 0x10) {
+						//rotate
+						var r = this.rotateMatrix,
+						    s = Math.sin(this.rotate * 0.0174532925),
+						    c = Math.cos(this.rotate * 0.0174532925);
+						r[4] = r[0] = c;
+						r[1] = -(r[3] = s);
+						r[2] = (1 - c) * this.rotatePointX + s * this.rotatePointY;
+						r[5] = (1 - c) * this.rotatePointY - s * this.rotatePointX;
+					}
+					if ((type & 0x100) === 0x100) {
+						//zoom
+						var _r = this.zoomMatrix;
+						_r[0] = this.zoomX;
+						_r[2] = (1 - this.zoomX) * this.zoomPointX;
+						_r[4] = this.zoomY;
+						_r[5] = (1 - this.zoomY) * this.zoomPointY;
 					}
 				}
 			}]);
@@ -2178,15 +2534,6 @@ function addEvents(target) {
 	}
 }
 
-function multiplyMatrix(m1, m2, r) {
-	r[0] = m1[0] * m2[0] + m1[1] * m2[3];
-	r[1] = m1[0] * m2[1] + m1[1] * m2[4];
-	r[2] = m1[0] * m2[2] + m1[1] * m2[5] + m1[2];
-	r[3] = m1[3] * m2[0] + m1[4] * m2[3];
-	r[4] = m1[3] * m2[1] + m1[4] * m2[4];
-	r[5] = m1[3] * m2[2] + m1[4] * m2[5] + m1[5];
-}
-
 //code from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
 if (typeof Object.assign != 'function') Object.assign = function (target) {
 	'use strict';
@@ -2265,7 +2612,7 @@ exports.default = CanvasObjLibrary;
 exports.CanvasObjLibrary = CanvasObjLibrary;
 exports.requestIdleCallback = requestIdleCallback;
 
-},{"../lib/promise/promise.js":4,"../lib/setImmediate/setImmediate.js":5}],7:[function(require,module,exports){
+},{"../lib/Mat/Mat.js":4,"../lib/promise/promise.js":5,"../lib/setImmediate/setImmediate.js":6}],8:[function(require,module,exports){
 /*
 Copyright luojia@luojia.me
 LGPL license
@@ -2382,8 +2729,9 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 
 				addEvents(_media, {
 					seeked: function seeked() {
-						_this2.time();
 						_this2.start();
+						_this2.time();
+						_this2._clearCanvas();
 					},
 					seeking: function seeking() {
 						_this2.pause();
@@ -2396,12 +2744,15 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		}, {
 			key: 'start',
 			value: function start() {
+				console.log('start');
 				this.paused = false;
+				this._clearCanvas(true);
 				//this.resetTimeOfDanmakuOnScreen();
 			}
 		}, {
 			key: 'pause',
 			value: function pause() {
+				console.log('pause');
 				this.paused = true;
 			}
 		}, {
@@ -2447,9 +2798,9 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		}, {
 			key: '_layerDrawFunc',
 			value: function _layerDrawFunc(ctx) {
-				var t = void 0;
-				for (var i = 0; i < this.COL_DanmakuText.length; i++) {
+				for (var i = 0, t; i < this.COL_DanmakuText.length; i++) {
 					t = this.COL_DanmakuText[i];
+					t.drawn || (t.drawn = true);
 					ctx.drawImage(t.useImageBitmap && t._bitmap ? t._bitmap : t._cache, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding);
 				}
 			}
@@ -2460,10 +2811,12 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				    cWidth = this.COL.canvas.width;
 				var t = void 0,
 				    d = void 0,
-				    H = document.hidden;
-				if (this.list.length) for (; (d = this.list[this.indexMark]) && d.time <= this.frame.time; this.indexMark++) {
+				    time = this.frame.time;
+				if (this.list.length) for (; this.indexMark < this.list.length && (d = this.list[this.indexMark]) && d.time <= time; this.indexMark++) {
 					//add new danmaku
-					if (this.options.screenLimit > 0 && this.COL_DanmakuText.length >= this.options.screenLimit || H) continue; //continue if the number of danmaku on screen has up to limit or doc is not visible
+					if (this.options.screenLimit > 0 && this.COL_DanmakuText.length >= this.options.screenLimit) {
+						continue;
+					} //continue if the number of danmaku on screen has up to limit or doc is not visible
 					if (this.COL_GraphCache.length) {
 						t = this.COL_GraphCache.shift();
 					} else {
@@ -2514,12 +2867,16 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				    i = void 0,
 				    t = void 0;
 				this.danmakuMoveTime = T;
-				for (i = 0; i < this.COL_DanmakuText.length; i++) {
-					if (i + 1 < this.COL_DanmakuText.length && this.COL_DanmakuText[i].time <= this.COL_DanmakuText[i + 1].time) break; //clean danmakus at the wrong time
-					this.removeText(this.COL_DanmakuText[i]);
-				}
+				/*for(i=0;i<this.COL_DanmakuText.length;i++){
+    	if(i+1<this.COL_DanmakuText.length && this.COL_DanmakuText[i].time<=this.COL_DanmakuText[i+1].time)break;//clean danmakus at the wrong time
+    	this.removeText(this.COL_DanmakuText[i]);
+    }*/
 				for (i = this.COL_DanmakuText.length; i--;) {
 					t = this.COL_DanmakuText[i];
+					if (t.time > T) {
+						this.removeText(t);
+						continue;
+					}
 					switch (t.danmaku.mode) {
 						case 0:case 1:
 							{
@@ -2529,7 +2886,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 									//go out the canvas
 									this.removeText(t);
 									continue;
-								} else if (t.tunnelNumber >= 0 && (R && t.style.x + t.style.width + 10 < cWidth || !R && t.style.x > 30)) {
+								} else if (t.tunnelNumber >= 0 && (R && t.style.x + t.style.width + 10 < cWidth || !R && t.style.x > 10)) {
 									this.tunnel.removeMark(t);
 								}
 								break;
@@ -2548,7 +2905,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			value: function _cleanCache() {
 				//clean COL text object cache
 				var now = Date.now();
-				if (this.COL_GraphCache.length > 20) {
+				if (this.COL_GraphCache.length > 30) {
 					//save 20 cached danmaku
 					for (var ti = 0; ti < this.COL_GraphCache.length; ti++) {
 						if (now - this.COL_GraphCache[ti].removeTime > 10000) {
@@ -2564,7 +2921,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			key: 'draw',
 			value: function draw(force) {
 				if (!this.enabled || !force && this.paused) return;
-				this._clearCanvas();
+				this._clearCanvas(force);
 				this.COL.draw();
 
 				//find danmaku from indexMark to current time
@@ -2602,40 +2959,39 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 					this.COL.clear();
 					return;
 				}
-				var ctx = this.COL.context;
-				this.COL_DanmakuText.forEach(function (t) {
+				var ctx = this.COL.context,
+				    t = void 0;
+				for (var i = this.COL_DanmakuText.length; i--;) {
+					t = this.COL_DanmakuText[i];
 					if (t.drawn) {
 						ctx.clearRect(t.style.x - t.estimatePadding, t.style.y - t.estimatePadding, t._cache.width, t._cache.height);
-					} else {
-						t.drawn = true;
 					}
-				});
+				}
 			}
 		}, {
 			key: 'clear',
 			value: function clear() {
-				var _this4 = this;
-
 				//clear danmaku on the screen
-				this.COL_DanmakuText.forEach(function (t) {
-					if (t.danmaku) _this4.removeText(t);
-				});
+				for (var i = this.COL_DanmakuText.length, T; i--;) {
+					T = this.COL_DanmakuText[i];
+					if (T.danmaku) this.removeText(T);
+				}
 				this.tunnel.reset();
 				this._clearCanvas(true);
 			}
 		}, {
 			key: 'reCheckIndexMark',
-			value: function reCheckIndexMark() {
-				var t = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.frame.time;
-
+			value: function reCheckIndexMark(t) {
+				console.log(formatTime(t / 1000, 3600));
 				this.indexMark = dichotomy(this.list, t, 0, this.list.length - 1, true);
+				console.log(formatTime(this.list[this.indexMark].time / 1000, 3600));
 			}
 		}, {
 			key: 'time',
 			value: function time() {
 				var t = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.frame.time;
 				//reset time,you should invoke it when the media has seeked to another time
-				this.reCheckIndexMark();
+				this.reCheckIndexMark(t);
 				if (this.options.clearWhenTimeReset) {
 					this.clear();
 				} else {
@@ -2645,7 +3001,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		}, {
 			key: 'resetTimeOfDanmakuOnScreen',
 			value: function resetTimeOfDanmakuOnScreen() {
-				var _this5 = this;
+				var _this4 = this;
 
 				var cTime = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.frame.time;
 
@@ -2653,7 +3009,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				//and if you don't want these danmaku on the screen to disappear,their time should be reset
 				this.COL_DanmakuText.forEach(function (t) {
 					if (!t.danmaku) return;
-					t.time = cTime - (_this5.danmakuMoveTime - t.time);
+					t.time = cTime - (_this4.danmakuMoveTime - t.time);
 				});
 			}
 		}, {
@@ -2812,9 +3168,19 @@ function addEvents(target) {
 	}
 }
 
+function formatTime(sec, total) {
+	var r = void 0,
+	    s = sec | 0,
+	    h = s / 3600 | 0;
+	if (total >= 3600) s = s % 3600;
+	r = [s / 60 | 0, s % 60];
+	total >= 3600 && r.unshift(h);
+	return r.join(':');
+}
+
 exports.default = init;
 
-},{"../lib/CanvasObjLibrary/src/CanvasObjLibrary.js":6}],8:[function(require,module,exports){
+},{"../lib/CanvasObjLibrary/src/CanvasObjLibrary.js":7}],9:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -2996,7 +3362,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 /*
 Copyright luojia@luojia.me
 LGPL license
@@ -3467,7 +3833,7 @@ var NyaP = function (_NyaPlayerCore) {
 
 window.NyaP = NyaP;
 
-},{"../lib/Object2HTML/Object2HTML.js":1,"../lib/danmaku-frame/lib/ResizeSensor.js":2,"./NyaPCore.js":10,"./i18n.js":11}],10:[function(require,module,exports){
+},{"../lib/Object2HTML/Object2HTML.js":1,"../lib/danmaku-frame/lib/ResizeSensor.js":2,"./NyaPCore.js":11,"./i18n.js":12}],11:[function(require,module,exports){
 /*
 Copyright luojia@luojia.me
 LGPL license
@@ -3777,7 +4143,7 @@ exports.setAttrs = setAttrs;
 exports.limitIn = limitIn;
 exports.toArray = toArray;
 
-},{"../lib/Object2HTML/Object2HTML.js":1,"../lib/danmaku-frame/src/danmaku-frame.js":3,"../lib/danmaku-text/src/danmaku-text.js":7}],11:[function(require,module,exports){
+},{"../lib/Object2HTML/Object2HTML.js":1,"../lib/danmaku-frame/src/danmaku-frame.js":3,"../lib/danmaku-text/src/danmaku-text.js":8}],12:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3845,6 +4211,6 @@ console.debug('Language:' + i18n.lang);
 
 exports.i18n = i18n;
 
-},{}]},{},[9])
+},{}]},{},[10])
 
 //# sourceMappingURL=NyaP.js.map

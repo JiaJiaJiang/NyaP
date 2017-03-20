@@ -2713,7 +2713,9 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 					_this.pause();
 				} else {
 					_this.reCheckIndexMark();
-					_this.start();
+					if (_this.frame.working) _this.start();else {
+						_this.draw(true);
+					}
 				}
 			});
 			_this._checkNewDanmaku = _this._checkNewDanmaku.bind(_this);
@@ -2917,7 +2919,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			value: function draw(force) {
 				if (!this.enabled || !force && this.paused) return;
 				this._clearCanvas(force);
-				this.COL.draw();
+				this.list.length && this.COL.draw();
 
 				//find danmaku from indexMark to current time
 				(0, _CanvasObjLibrary.requestIdleCallback)(this._checkNewDanmaku);

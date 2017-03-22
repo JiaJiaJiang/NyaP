@@ -32,6 +32,12 @@ var NP=new NyaP({
 	danmakuOption:{
 		allowLines:true,
 		screenLimit:0,
+	},
+	danmakuSend:(d,callback)=>{
+		console.log(d);
+		let d2={_:'text',text:d.text,time:d.time,mode:d.mode,style:{fontSize:d.size},date:Date.now(),id:0}
+		if(d.color)d2.style.color=d.color;
+		callback(d2);
 	}
 });
 document.querySelector('#player_container').appendChild(NP.player);
@@ -49,7 +55,10 @@ window.addEventListener('load',function(){
 });
 
 
+
 </script>
+
+<div style="position:fixed;bottom:0;left:0;color:#fff;">本演示发送的弹幕不会提交至服务器，仅本地预览。</div>
 
 </body>
 </html>

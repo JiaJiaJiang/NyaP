@@ -26,7 +26,7 @@ const NyaPOptions={
 	autoHideDanmakuInput:true,//hide danmakuinput after danmaku sent
 	danmakuColors:['fff','6cf','ff0','f00','0f0','00f','f0f','000'],//colors in the danmaku style pannel
 	danmakuModes:[0,3,2,1],//0:right	1:left	2:bottom	3:top
-	defaultDanmakuColor:null,//when the color inputed is invalid,this color will be applied
+	defaultDanmakuColor:null,//a hex color(without #),when the color inputed is invalid,this color will be applied
 	defaultDanmakuMode:0,//right
 	danmakuSend:(d,callback)=>{callback(false);},//the func for sending danmaku
 	danmakuSizes:[25,30,45],
@@ -353,10 +353,21 @@ class NyaP extends NyaPlayerCore{
 	}
 	send(){
 		let color=this._.danmakuColor||this.opt.defaultDanmakuColor,
-			content=this.eles.danmaku_input.value,
+			text=this.eles.danmaku_input.value,
 			size=this._.danmakuSize,
-			mode=this._.danmakuMode;
+			mode=this._.danmakuMode,
+			time=this.danmakuFrame.time,
+			d={color,text,size,mode,time};
 
+		if(this.opt.danmakuSend){
+			this.opt.danmakuSend(d,(danmaku)=>{
+				if(danmaku&&danmaku._==='text')
+					this.eles.danmaku_input.value='';
+					let result=this.danmakuFrame.modules.TextDanmaku.load(danmaku);
+					result.highlight=true;
+					//this.danmakuFrame.modules.TextDanmaku._addNewDanmaku(result);
+			});
+		}
 	}
 	menu(position){
 		console.log('position',position)

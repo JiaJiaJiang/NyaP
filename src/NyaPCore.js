@@ -4,12 +4,12 @@ LGPL license
 */
 'use strict';
 
-import {DanmakuFrame,DanmakuFrameModule} from '../lib/danmaku-frame/src/danmaku-frame.js'
-import initText2d from '../lib/danmaku-text/src/danmaku-text.js'
+import {DanmakuFrame,DanmakuFrameModule,ResizeSensor} from '../lib/danmaku-frame/src/danmaku-frame.js'
+import initTextDanmaku from '../lib/danmaku-text/src/danmaku-text.js'
 import O2H from '../lib/Object2HTML/Object2HTML.js'
 
 
-initText2d(DanmakuFrame,DanmakuFrameModule);//init text2d mod
+initTextDanmaku(DanmakuFrame,DanmakuFrameModule);//init TextDanmaku mod
 
 
 //default options
@@ -62,7 +62,7 @@ class NyaPlayerCore extends NyaPEventEmitter{
 		const video=this._.video=O2H({_:'video',attr:{id:'main_video'}});
 		this.danmakuFrame=new DanmakuFrame();
 		this.danmakuFrame.setMedia(video);
-		this.danmakuFrame.enable('text2d');
+		this.danmakuFrame.enable('TextDanmaku');
 		this.setDanmakuOptions(opt.danmakuOption);
 		this.setDanmakuOptions(opt.textStyle);
 
@@ -119,13 +119,13 @@ class NyaPlayerCore extends NyaPEventEmitter{
 	get video(){return this._.video;}
 	get src(){return this.video.src;}
 	set src(s){this.video.src=s;}
-	get text2d(){return this.danmakuFrame.modules.text2d;}
+	get TextDanmaku(){return this.danmakuFrame.modules.TextDanmaku;}
 	get videoSize(){return [this.video.videoWidth,this.video.videoHeight];}
 	setDefaultTextStyle(opt){
-		if(opt)for(let n in opt)this.text2d.defaultStyle[n]=opt[n];
+		if(opt)for(let n in opt)this.TextDanmaku.defaultStyle[n]=opt[n];
 	}
 	setDanmakuOptions(opt){
-		if(opt)for(let n in opt)this.text2d.options[n]=opt[n];
+		if(opt)for(let n in opt)this.TextDanmaku.options[n]=opt[n];
 	}
 }
 
@@ -201,4 +201,5 @@ export {
 	setAttrs,
 	limitIn,
 	toArray,
+	ResizeSensor,
 }

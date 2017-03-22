@@ -6,7 +6,6 @@ LGPL license
 
 import {i18n} from './i18n.js';
 import O2H from '../lib/Object2HTML/Object2HTML.js'
-import ResizeSensor from '../lib/danmaku-frame/lib/ResizeSensor.js';
 import {NyaPlayerCore,
 		addEvents,
 		requestFullscreen,
@@ -16,7 +15,8 @@ import {NyaPlayerCore,
 		setAttrs,
 		padTime,
 		limitIn,
-		toArray} from './NyaPCore.js';
+		toArray,
+		ResizeSensor} from './NyaPCore.js';
 
 const _=i18n._;
 
@@ -361,7 +361,7 @@ class NyaP extends NyaPlayerCore{
 	menu(position){
 		console.log('position',position)
 		if(position){//if position is defined,find out the danmaku at that position and enable danmaku oprion in menu
-			let ds=this.danmakuFrame.modules.text2d.danmakuAt(position[0],position[1]);
+			let ds=this.danmakuFrame.modules.TextDanmaku.danmakuAt(position[0],position[1]);
 			console.log(ds)
 		}
 	}

@@ -279,7 +279,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.DanmakuFrameModule = exports.DanmakuFrame = undefined;
+exports.ResizeSensor = exports.DanmakuFrameModule = exports.DanmakuFrame = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /*
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      Copyright luojia@luojia.me
@@ -475,6 +475,7 @@ function addEvents(target) {
 
 exports.DanmakuFrame = DanmakuFrame;
 exports.DanmakuFrameModule = DanmakuFrameModule;
+exports.ResizeSensor = _ResizeSensor2.default;
 
 },{"../lib/ResizeSensor.js":2}],4:[function(require,module,exports){
 /*
@@ -1271,1348 +1272,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"_process":9}],7:[function(require,module,exports){
-/*
-MIT LICENSE
-Copyright (c) 2017 iTisso
-https://github.com/iTisso/CanvasObjLibrary
-varsion:2.1
-*/
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-exports.requestIdleCallback = exports.CanvasObjLibrary = undefined;
-
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-require('../lib/setImmediate/setImmediate.js');
-
-var _promise = require('../lib/promise/promise.js');
-
-var _promise2 = _interopRequireDefault(_promise);
-
-var _Mat = require('../lib/Mat/Mat.js');
-
-var _Mat2 = _interopRequireDefault(_Mat);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-if (!window.Promise) window.Promise = _promise2.default;
-
-var defProp = Object.defineProperty;
-
-//class:CanvasObjLibrary
-
-var CanvasObjLibrary = function () {
-	function CanvasObjLibrary(canvas) {
-		var _this = this;
-
-		_classCallCheck(this, CanvasObjLibrary);
-
-		if (canvas instanceof HTMLCanvasElement === false) throw new TypeError('canvas required');
-		var COL = this;
-		Object.assign(this, {
-			/*The main canvas*/
-			canvas: canvas,
-			/*Canvas' context*/
-			context: canvas.getContext('2d'),
-			Matrix: _Mat2.default,
-			default: {
-				/*default font*/
-				font: {
-					fontStyle: null,
-					fontWeight: null,
-					fontVariant: null,
-					color: "#000",
-					textAlign: 'start', //left right center start end
-					lineHeight: null,
-					fontSize: 14,
-					fontFamily: "Arial",
-					strokeWidth: 0,
-					strokeColor: "#000",
-					shadowBlur: 0,
-					shadowColor: "#000",
-					shadowOffsetX: 0,
-					shadowOffsetY: 0,
-					fill: true,
-					reverse: false
-				},
-				style: {
-					POSITIONMATRIX: 0x1,
-					ROTATEMATRIX: 0x10,
-					ZOOMMATRIX: 0x100,
-					width: 1,
-					height: 1,
-					hidden: false,
-					opacity: 1,
-					clipOverflow: false,
-					backgroundColor: null,
-					composite: null,
-					debugBorderColor: 'black',
-					x: 0,
-					y: 0,
-					positionPointX: 0,
-					positionPointY: 0,
-					zoomX: 1,
-					zoomY: 1,
-					zoomPointX: 0,
-					zoomPointY: 0,
-					rotate: 0,
-					rotatePointX: 0,
-					rotatePointY: 0,
-					_tempMat: _Mat2.default.Identity(3)
-				}
-			},
-			stat: {
-				mouse: {
-					x: null,
-					y: null,
-					previousX: null,
-					previousY: null
-				},
-				/*The currently focused on obj*/
-				onfocus: null,
-				/*The currently mouseover obj*/
-				onover: null,
-				canvasOnFocus: false,
-				canvasOnover: false
-
-			},
-			tmp: {
-				graphID: 0,
-				onOverGraph: null,
-				toClickGraph: null
-			},
-
-			root: null, //root Graph
-
-			class: {},
-
-			autoClear: true,
-			//Debug info
-			debug: {
-				switch: false,
-				count: 0,
-				frame: 0,
-				FPS: 0,
-				_lastFrameTime: Date.now(),
-				on: function on() {
-					this.switch = true;
-				},
-				off: function off() {
-					this.switch = false;
-				}
-			}
-		});
-		//set classes
-		for (var c in COL_Class) {
-			this.class[c] = COL_Class[c](this);
-		} //init root graph
-		this.root = new this.class.FunctionGraph();
-		this.root.name = 'root';
-		//prevent root's parentNode being modified
-		defProp(this.root, 'parentNode', { configurable: false });
-
-		//adjust canvas drawing size
-		this.adjustCanvas();
-
-		//const canvas=this.canvas;
-		//add events
-		addEvents(canvas, {
-			mouseout: function mouseout(e) {
-				_this.stat.canvasOnover = false;
-				//clear mouse pos data
-				_this.stat.mouse.x = null;
-				_this.stat.mouse.y = null;
-				//clear onover obj
-				var onover = _this.stat.onover;
-				_this._commonEventHandle(e);
-				_this.stat.onover = null;
-			},
-			mouseover: function mouseover(e) {
-				_this.stat.canvasOnover = true;
-			},
-			mousemove: function mousemove(e) {
-				_this.tmp.toClick = false;
-				_this._commonEventHandle(e);
-			},
-			mousedown: function mousedown(e) {
-				_this.tmp.toClickGraph = _this.stat.onover;
-				_this.stat.canvasOnFocus = true;
-				_this.stat.onfocus = _this.stat.onover;
-				_this._commonEventHandle(e);
-			},
-			mouseup: function mouseup(e) {
-				return _this._commonEventHandle(e);
-			},
-			click: function click(e) {
-				if (_this.tmp.toClickGraph) _this._commonEventHandle(e);
-			},
-			dblclick: function dblclick(e) {
-				return _this._commonEventHandle(e);
-			},
-			selectstart: function selectstart(e) {
-				return e.preventDefault();
-			},
-			wheel: function wheel(e) {
-				var ce = new _this.class.WheelEvent('wheel');
-				ce.origin = e;
-				(_this.stat.onover || _this.root).emit(ce);
-			}
-		});
-		addEvents(document, {
-			mousedown: function mousedown(e) {
-				if (e.target !== _this.canvas) {
-					_this.stat.canvasOnFocus = false;
-				}
-			},
-			mouseout: function mouseout(e) {
-				if (_this.stat.mouse.x !== null) {
-					var eve = new window.MouseEvent('mouseout');
-					_this.canvas.dispatchEvent(eve);
-				}
-			},
-			keydown: function keydown(e) {
-				return _this._commonEventHandle(e);
-			},
-			keyup: function keyup(e) {
-				return _this._commonEventHandle(e);
-			},
-			keypress: function keypress(e) {
-				return _this._commonEventHandle(e);
-			}
-
-		});
-	}
-
-	_createClass(CanvasObjLibrary, [{
-		key: 'generateGraphID',
-		value: function generateGraphID() {
-			return ++this.tmp.graphID;
-		}
-	}, {
-		key: 'adjustCanvas',
-		value: function adjustCanvas() {
-			var width = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.canvas.offsetWidth;
-			var height = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : this.canvas.offsetHeight;
-
-			this.root.style.width = this.canvas.width = width;
-			this.root.style.height = this.canvas.height = height;
-			var ce = new this.class.Event('resize');
-			this.root.emit(ce);
-		}
-	}, {
-		key: '_commonEventHandle',
-		value: function _commonEventHandle(e) {
-			if (e instanceof MouseEvent) {
-				this.stat.previousX = this.stat.mouse.x;
-				this.stat.previousY = this.stat.mouse.y;
-				if (e.type === 'mouseout') {
-					this.stat.mouse.x = null;
-					this.stat.mouse.y = null;
-				} else {
-					this.stat.mouse.x = e.layerX;
-					this.stat.mouse.y = e.layerY;
-				}
-				var ce = new this.class.MouseEvent(e.type);
-				ce.origin = e;
-				(this.stat.onover || this.root).emit(ce);
-			} else if (e instanceof KeyboardEvent) {
-				if (!this.stat.canvasOnFocus) return;
-				var _ce = new this.class.KeyboardEvent(e.type);
-				_ce.origin = e;
-				(this.stat.onfocus || this.root).emit(_ce);
-			}
-		}
-	}, {
-		key: 'clear',
-		value: function clear() {
-			this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-		}
-	}, {
-		key: 'draw',
-		value: function draw() {
-			this.debug.count = 0;
-			this.debug.frame++;
-			this.autoClear && this.clear();
-			this.traverseGraphTree(0);
-			this.debug.switch && this.drawDebug();
-		}
-		/*
-  	traverse mode
-  		0	draw graphs and check onover graph
-  		1	check onover graph
-  */
-
-	}, {
-		key: 'traverseGraphTree',
-		value: function traverseGraphTree() {
-			var mode = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
-
-			this.context.setTransform(1, 0, 0, 1, 0, 0);
-			this.drawGraph(this.root, mode);
-			var oldOnover = this.stat.onover;
-			if (this.tmp.onOverGraph !== oldOnover) {
-				//new onover graph
-				this.tmp.toClickGraph = null;
-				this.stat.onover = this.tmp.onOverGraph;
-				if (oldOnover) oldOnover.emit(new this.class.MouseEvent('mouseout'));
-				if (this.stat.onover) this.stat.onover.emit(new this.class.MouseEvent('mouseover'));
-			}
-			this.tmp.onOverGraph = null;
-		}
-	}, {
-		key: 'drawDebug',
-		value: function drawDebug() {
-			var ct = this.context,
-			    d = this.debug,
-			    s = this.stat,
-			    n = Date.now(),
-			    x = this.stat.mouse.x,
-			    y = this.stat.mouse.y;
-			//fps
-			d.FPS = 1000 / (n - d._lastFrameTime) + 0.5 | 0;
-			d._lastFrameTime = n;
-			//draw
-			ct.save();
-			ct.beginPath();
-			ct.setTransform(1, 0, 0, 1, 0, 0);
-			ct.font = "16px Arial";
-			ct.textBaseline = "bottom";
-			ct.globalCompositeOperation = "lighter";
-			ct.fillStyle = "red";
-			ct.fillText("point:" + String(x) + "," + String(y) + " FPS:" + d.FPS + " Items:" + d.count + " Frame:" + d.frame, 0, this.canvas.height);
-			ct.fillText("onover:" + (s.onover ? s.onover.GID : "null") + " onfocus:" + (s.onfocus ? s.onfocus.GID : "null"), 0, this.canvas.height - 20);
-			ct.strokeStyle = "red";
-			ct.globalCompositeOperation = "source-over";
-			ct.moveTo(x, y + 6);
-			ct.lineTo(x, y - 6);
-			ct.moveTo(x - 6, y);
-			ct.lineTo(x + 6, y);
-			ct.stroke();
-			ct.restore();
-		}
-	}, {
-		key: 'drawGraph',
-		value: function drawGraph(g) {
-			var mode = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
-
-			if (g.style.hidden === true) return;
-			var ct = this.context,
-			    style = g.style,
-			    M = style._tempMat;
-			this.debug.count++;
-			ct.save();
-			if (mode === 0) {
-				ct.globalCompositeOperation = style.composite;
-				ct.globalAlpha = style.opacity;
-			}
-			//position & offset
-			M.set(style.positionMatrix);
-			if (style.beforeMatrix) M.rightMultiply(style.beforeMatrix);
-			if (style.rotate % 360 !== 0) M.rightMultiply(style.rotateMatrix);
-			if (style.zoomX !== 1 || style.zoomY !== 1) M.rightMultiply(style.zoomMatrix);
-			if (style.afterMatrix) M.rightMultiply(style.afterMatrix);
-
-			//if(style.zoomX!==1 || style.zoomY!==1)M.leftMultiply(style.zoomMatrix);
-
-			ct.transform(M[0], M[3], M[1], M[4], M[2], M[5]);
-			if (this.debug.switch && mode === 0) {
-				ct.save();
-				ct.beginPath();
-				ct.globalAlpha = 0.5;
-				ct.globalCompositeOperation = 'source-over';
-				ct.strokeStyle = style.debugBorderColor;
-				ct.strokeWidth = 1.5;
-				ct.strokeRect(0, 0, style.width, style.height);
-				ct.strokeWidth = 1;
-				ct.globalAlpha = 1;
-				ct.strokeStyle = 'green';
-				ct.strokeRect(style.positionPointX - 5, style.positionPointY - 5, 10, 10);
-				ct.strokeStyle = 'blue';
-				ct.strokeRect(style.rotatePointX - 4, style.rotatePointX - 4, 8, 8);
-				ct.strokeStyle = 'olive';
-				ct.strokeRect(style.zoomPointX - 3, style.zoomPointX - 3, 6, 6);
-				ct.strokeStyle = '#6cf';
-				ct.strokeRect(style.skewPointX - 2, style.skewPointX - 2, 4, 4);
-				ct.restore();
-			}
-			if (style.clipOverflow) {
-				ct.beginPath();
-				ct.rect(0, 0, style.width, style.height);
-				ct.clip();
-			}
-			if (mode === 0) {
-				g.drawer && g.drawer(ct);
-			} else if (mode === 1) {
-				g.checkIfOnOver(true, mode);
-			}
-			for (var i = 0; i < g.childNodes.length; i++) {
-				this.drawGraph(g.childNodes[i], mode);
-			}ct.restore();
-		}
-	}]);
-
-	return CanvasObjLibrary;
-}();
-
-var COL_Class = {
-	Event: function Event(host) {
-		var COL = host;
-		return function Event(type) {
-			_classCallCheck(this, Event);
-
-			this.type = type;
-			this.timeStamp = Date.now();
-		};
-	},
-	GraphEvent: function GraphEvent(host) {
-		var COL = host;
-		return function (_host$class$Event) {
-			_inherits(GraphEvent, _host$class$Event);
-
-			function GraphEvent(type) {
-				_classCallCheck(this, GraphEvent);
-
-				var _this2 = _possibleConstructorReturn(this, (GraphEvent.__proto__ || Object.getPrototypeOf(GraphEvent)).call(this, type));
-
-				_this2.propagation = true;
-				_this2.stoped = false;
-				_this2.target = null;
-				return _this2;
-			}
-
-			_createClass(GraphEvent, [{
-				key: 'stopPropagation',
-				value: function stopPropagation() {
-					this.propagation = false;
-				}
-			}, {
-				key: 'stopImmediatePropagation',
-				value: function stopImmediatePropagation() {
-					this.stoped = true;
-				}
-			}, {
-				key: 'altKey',
-				get: function get() {
-					return this.origin.altKey;
-				}
-			}, {
-				key: 'ctrlKey',
-				get: function get() {
-					return this.origin.ctrlKey;
-				}
-			}, {
-				key: 'metaKey',
-				get: function get() {
-					return this.origin.metaKey;
-				}
-			}, {
-				key: 'shiftKey',
-				get: function get() {
-					return this.origin.shiftKey;
-				}
-			}]);
-
-			return GraphEvent;
-		}(host.class.Event);
-	},
-	MouseEvent: function MouseEvent(host) {
-		return function (_host$class$GraphEven) {
-			_inherits(MouseEvent, _host$class$GraphEven);
-
-			function MouseEvent() {
-				_classCallCheck(this, MouseEvent);
-
-				return _possibleConstructorReturn(this, (MouseEvent.__proto__ || Object.getPrototypeOf(MouseEvent)).apply(this, arguments));
-			}
-
-			_createClass(MouseEvent, [{
-				key: 'button',
-				get: function get() {
-					return this.origin.button;
-				}
-			}, {
-				key: 'buttons',
-				get: function get() {
-					return this.origin.buttons;
-				}
-			}, {
-				key: 'movementX',
-				get: function get() {
-					return host.stat.mouse.x - host.stat.previousX;
-				}
-			}, {
-				key: 'movementY',
-				get: function get() {
-					return host.stat.mouse.y - host.stat.previousY;
-				}
-			}]);
-
-			return MouseEvent;
-		}(host.class.GraphEvent);
-	},
-	WheelEvent: function WheelEvent(host) {
-		return function (_host$class$MouseEven) {
-			_inherits(WheelEvent, _host$class$MouseEven);
-
-			function WheelEvent() {
-				_classCallCheck(this, WheelEvent);
-
-				return _possibleConstructorReturn(this, (WheelEvent.__proto__ || Object.getPrototypeOf(WheelEvent)).apply(this, arguments));
-			}
-
-			_createClass(WheelEvent, [{
-				key: 'deltaX',
-				get: function get() {
-					return this.origin.deltaX;
-				}
-			}, {
-				key: 'deltaY',
-				get: function get() {
-					return this.origin.deltaY;
-				}
-			}, {
-				key: 'deltaZ',
-				get: function get() {
-					return this.origin.deltaZ;
-				}
-			}, {
-				key: 'deltaMode',
-				get: function get() {
-					return this.origin.deltaMode;
-				}
-			}]);
-
-			return WheelEvent;
-		}(host.class.MouseEvent);
-	},
-	KeyboardEvent: function KeyboardEvent(host) {
-		return function (_host$class$GraphEven2) {
-			_inherits(KeyboardEvent, _host$class$GraphEven2);
-
-			function KeyboardEvent() {
-				_classCallCheck(this, KeyboardEvent);
-
-				return _possibleConstructorReturn(this, (KeyboardEvent.__proto__ || Object.getPrototypeOf(KeyboardEvent)).apply(this, arguments));
-			}
-
-			_createClass(KeyboardEvent, [{
-				key: 'key',
-				get: function get() {
-					return this.origin.key;
-				}
-			}, {
-				key: 'code',
-				get: function get() {
-					return this.origin.code;
-				}
-			}, {
-				key: 'repeat',
-				get: function get() {
-					return this.origin.repeat;
-				}
-			}, {
-				key: 'keyCode',
-				get: function get() {
-					return this.origin.keyCode;
-				}
-			}, {
-				key: 'charCode',
-				get: function get() {
-					return this.origin.charCode;
-				}
-			}, {
-				key: 'location',
-				get: function get() {
-					return this.origin.location;
-				}
-			}]);
-
-			return KeyboardEvent;
-		}(host.class.GraphEvent);
-	},
-	GraphEventEmitter: function GraphEventEmitter(host) {
-		var COL = host;
-		return function () {
-			function GraphEventEmitter() {
-				_classCallCheck(this, GraphEventEmitter);
-
-				this._events = {};
-			}
-
-			_createClass(GraphEventEmitter, [{
-				key: 'emit',
-				value: function emit(e) {
-					if (e instanceof host.class.Event === false) return;
-					e.target = this;
-					this._resolve(e);
-				}
-			}, {
-				key: '_resolve',
-				value: function _resolve(e) {
-					if (e.type in this._events) {
-						var hs = this._events[e.type];
-						try {
-							for (var i = 0; i < hs.length; i++) {
-								hs[i].call(this, e);
-								if (e.stoped) return;
-							}
-						} catch (e) {
-							console.error(e);
-						}
-					}
-					if (e.propagation === true && this.parentNode) this.parentNode._resolve(e);
-				}
-			}, {
-				key: 'on',
-				value: function on(name, handle) {
-					if (!(handle instanceof Function)) return;
-					if (!(name in this._events)) this._events[name] = [];
-					this._events[name].push(handle);
-				}
-			}, {
-				key: 'removeEvent',
-				value: function removeEvent(name, handle) {
-					if (!(name in this._events)) return;
-					if (arguments.length === 1) {
-						delete this._events[name];return;
-					}
-					var ind = void 0;
-					if (ind = this._events[name].indexOf(handle) >= 0) this._events[name].splice(ind, 1);
-					if (this._events[name].length === 0) delete this._events[name];
-				}
-			}]);
-
-			return GraphEventEmitter;
-		}();
-	},
-	GraphStyle: function GraphStyle(host) {
-		return function () {
-			function GraphStyle(inhertFrom) {
-				_classCallCheck(this, GraphStyle);
-
-				if (!(inhertFrom && this.inhert(inhertFrom))) this.__proto__.__proto__ = host.default.style;
-				this.positionMatrix = _Mat2.default.Identity(3);
-				this.zoomMatrix = _Mat2.default.Identity(3);
-				this.rotateMatrix = _Mat2.default.Identity(3);
-				this.beforeMatrix = null;
-				this.afterMatrix = null;
-			}
-
-			_createClass(GraphStyle, [{
-				key: 'inhertGraph',
-				value: function inhertGraph(graph) {
-					//inhert a graph's style
-					if (!(graph instanceof host.class.Graph)) throw new TypeError('graph is not a Graph instance');
-					this.inhertStyle(graph.style);
-					return true;
-				}
-			}, {
-				key: 'inhertStyle',
-				value: function inhertStyle(style) {
-					if (!(style instanceof host.class.GraphStyle)) throw new TypeError('graph is not a Graph instance');
-					this.__proto__ = style;
-					return true;
-				}
-			}, {
-				key: 'inhert',
-				value: function inhert(from) {
-					if (from instanceof host.class.Graph) {
-						this.inhertGraph(from);
-						return true;
-					} else if (from instanceof host.class.GraphStyle) {
-						this.inhertStyle(from);
-						return true;
-					}
-					return false;
-				}
-			}, {
-				key: 'cancelInhert',
-				value: function cancelInhert() {
-					this.__proto__ = Object.prototype;
-				}
-			}, {
-				key: 'getPoint',
-				value: function getPoint(name) {
-					switch (name) {
-						case 'center':
-							{
-								return [this.width / 2, this.height / 2];
-							}
-					}
-					return [0, 0];
-				}
-			}, {
-				key: 'size',
-				value: function size(w, h) {
-					this.width = w;
-					this.height = h;
-				}
-			}, {
-				key: 'position',
-				value: function position(x, y) {
-					this.x = x;
-					this.y = y;
-					this.calcMatrix(0x1);
-				}
-			}, {
-				key: 'zoom',
-				value: function zoom(x, y) {
-					if (arguments.length == 1) {
-						this.zoomX = this.zoomY = x;
-					} else {
-						this.zoomX = x;
-						this.zoomY = y;
-					}
-					this.calcMatrix(0x100);
-				}
-			}, {
-				key: 'setRotate',
-				value: function setRotate(d) {
-					this.rotate = d;
-					this.calcMatrix(0x10);
-				}
-			}, {
-				key: 'setRotatePoint',
-				value: function setRotatePoint(x, y) {
-					if (arguments.length == 2) {
-						this.rotatePointX = x;
-						this.rotatePointY = y;
-					} else if (arguments.length == 1) {
-						var _getPoint = this.getPoint(x);
-
-						var _getPoint2 = _slicedToArray(_getPoint, 2);
-
-						this.rotatePointX = _getPoint2[0];
-						this.rotatePointY = _getPoint2[1];
-					}
-					this.calcMatrix(0x10);
-				}
-			}, {
-				key: 'setPositionPoint',
-				value: function setPositionPoint(x, y) {
-					if (arguments.length == 2) {
-						this.positionPointX = x;
-						this.positionPointY = y;
-					} else if (arguments.length == 1) {
-						var _getPoint3 = this.getPoint(x);
-
-						var _getPoint4 = _slicedToArray(_getPoint3, 2);
-
-						this.positionPointX = _getPoint4[0];
-						this.positionPointY = _getPoint4[1];
-					}
-					this.calcMatrix(0x1);
-				}
-			}, {
-				key: 'setZoomPoint',
-				value: function setZoomPoint(x, y) {
-					if (arguments.length == 2) {
-						this.zoomPointX = x;
-						this.zoomPointY = y;
-					} else if (arguments.length == 1) {
-						var _getPoint5 = this.getPoint(x);
-
-						var _getPoint6 = _slicedToArray(_getPoint5, 2);
-
-						this.zoomPointX = _getPoint6[0];
-						this.zoomPointY = _getPoint6[1];
-					}
-					this.calcMatrix(0x100);
-				}
-			}, {
-				key: 'calcMatrix',
-				value: function calcMatrix(type) {
-					if ((type & 0x1) === 0x1) {
-						//position
-						this.positionMatrix[2] = this.x - this.positionPointX;
-						this.positionMatrix[5] = this.y - this.positionPointY;
-					}
-					if ((type & 0x10) === 0x10) {
-						//rotate
-						var r = this.rotateMatrix,
-						    s = Math.sin(this.rotate * 0.0174532925),
-						    c = Math.cos(this.rotate * 0.0174532925);
-						r[4] = r[0] = c;
-						r[1] = -(r[3] = s);
-						r[2] = (1 - c) * this.rotatePointX + s * this.rotatePointY;
-						r[5] = (1 - c) * this.rotatePointY - s * this.rotatePointX;
-					}
-					if ((type & 0x100) === 0x100) {
-						//zoom
-						var _r = this.zoomMatrix;
-						_r[0] = this.zoomX;
-						_r[2] = (1 - this.zoomX) * this.zoomPointX;
-						_r[4] = this.zoomY;
-						_r[5] = (1 - this.zoomY) * this.zoomPointY;
-					}
-				}
-			}]);
-
-			return GraphStyle;
-		}();
-	},
-	Graph: function Graph(host) {
-		return function (_host$class$GraphEven3) {
-			_inherits(Graph, _host$class$GraphEven3);
-
-			function Graph() {
-				_classCallCheck(this, Graph);
-
-				//this.name=name;
-				var _this6 = _possibleConstructorReturn(this, (Graph.__proto__ || Object.getPrototypeOf(Graph)).call(this));
-
-				_this6.host = host;
-				_this6.GID = _this6.host.generateGraphID();
-				_this6.onoverCheck = true;
-				Object.defineProperties(_this6, {
-					style: { value: new host.class.GraphStyle(), configurable: true },
-					childNodes: { value: [] },
-					parentNode: { value: undefined, configurable: true }
-				});
-				return _this6;
-			}
-
-			_createClass(Graph, [{
-				key: 'createShadow',
-				value: function createShadow() {
-					var shadow = Object.create(this);
-					shadow.GID = this.host.generateGraphID();
-					shadow.shadowParent = this;
-					Object.defineProperties(shadow, {
-						style: { value: new host.class.GraphStyle(this.style), configurable: true },
-						parentNode: { value: undefined, configurable: true }
-					});
-					return shadow;
-				}
-				//add a graph to childNodes' end
-
-			}, {
-				key: 'appendChild',
-				value: function appendChild(graph) {
-					if (!(graph instanceof host.class.Graph)) throw new TypeError('graph is not a Graph instance');
-					if (graph === this) throw new Error('can not add myself as a child');
-					if (graph.parentNode !== this) {
-						defProp(graph, 'parentNode', {
-							value: this
-						});
-					} else {
-						var i = this.findChild(graph);
-						if (i >= 0) this.childNodes.splice(i, 1);
-					}
-					this.childNodes.push(graph);
-				}
-				//insert this graph after the graph
-
-			}, {
-				key: 'insertAfter',
-				value: function insertAfter(graph) {
-					if (!(graph instanceof host.class.Graph)) throw new TypeError('graph is not a Graph instance');
-					if (graph === this) throw new Error('can not add myself as a child');
-					var p = graph.parentNode,
-					    io = void 0,
-					    it = void 0;
-					if (!p) throw new Error('no parentNode');
-					it = p.findChild(graph);
-					//if(it<0)return false;
-					if (p !== this.parentNode) {
-						defProp(this, 'parentNode', {
-							value: p
-						});
-					} else {
-						io = p.findChild(this);
-						if (io >= 0) p.childNodes.splice(io, 1);
-					}
-					p.childNodes.splice(io < it ? it : it + 1, 0, this);
-				}
-				//insert this graph before the graph
-
-			}, {
-				key: 'insertBefore',
-				value: function insertBefore(graph) {
-					if (!(graph instanceof host.class.Graph)) throw new TypeError('graph is not a Graph instance');
-					if (graph === this) throw new Error('can not add myself as a child');
-					var p = graph.parentNode,
-					    io = void 0,
-					    it = void 0;
-					if (!p) throw new Error('no parentNode');
-					it = p.findChild(graph);
-					//if(it<0)return false;
-					if (p !== this.parentNode) {
-						defProp(this, 'parentNode', {
-							value: p
-						});
-					} else {
-						io = p.findChild(this);
-						if (io >= 0) p.childNodes.splice(io, 1);
-					}
-					p.childNodes.splice(io < it ? it - 1 : it, 0, this);
-				}
-			}, {
-				key: 'findChild',
-				value: function findChild(graph) {
-					for (var i = this.childNodes.length; i--;) {
-						if (this.childNodes[i] === graph) return i;
-					}return -1;
-				}
-			}, {
-				key: 'removeChild',
-				value: function removeChild(graph) {
-					var i = this.findChild(graph);
-					if (i < 0) return;
-					this.childNodes.splice(i, 1);
-					defProp(this, 'parentNode', {
-						value: undefined
-					});
-				}
-			}, {
-				key: 'checkIfOnOver',
-				value: function checkIfOnOver() {
-					var runHitRange = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
-					var mode = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
-
-					if (this.onoverCheck === false || !this.hitRange) return false;
-					var m = this.host.stat.mouse;
-					if (m.x === null) return false;
-					if (this === this.host.tmp.onOverGraph) return true;
-					runHitRange && this.hitRange(this.host.context);
-					if (mode === 0 && this.host.debug.switch) {
-						this.host.context.save();
-						this.host.context.strokeStyle = 'yellow';
-						this.host.context.stroke();
-						this.host.context.restore();
-					}
-					if (this.host.context.isPointInPath(m.x, m.y)) {
-						this.host.tmp.onOverGraph = this;
-						return true;
-					}
-					return false;
-				}
-			}, {
-				key: 'delete',
-				value: function _delete() {
-					//remove it from the related objects
-					if (this.parentNode) this.parentNode.removeChild(this);
-					if (this.host.stat.onover === this) this.host.stat.onover = null;
-					if (this.host.stat.onfocus === this) this.host.stat.onfocus = null;
-				}
-			}]);
-
-			return Graph;
-		}(host.class.GraphEventEmitter);
-	},
-	FunctionGraph: function FunctionGraph(host) {
-		return function (_host$class$Graph) {
-			_inherits(FunctionGraph, _host$class$Graph);
-
-			function FunctionGraph(drawer) {
-				_classCallCheck(this, FunctionGraph);
-
-				var _this7 = _possibleConstructorReturn(this, (FunctionGraph.__proto__ || Object.getPrototypeOf(FunctionGraph)).call(this));
-
-				if (drawer instanceof Function) {
-					_this7.drawer = drawer;
-				}
-				_this7.style.debugBorderColor = '#f00';
-				return _this7;
-			}
-
-			_createClass(FunctionGraph, [{
-				key: 'drawer',
-				value: function drawer(ct) {
-					//onover point check
-					this.checkIfOnOver(true);
-				}
-			}, {
-				key: 'hitRange',
-				value: function hitRange(ct) {
-					ct.beginPath();
-					ct.rect(0, 0, this.style.width, this.style.height);
-				}
-			}]);
-
-			return FunctionGraph;
-		}(host.class.Graph);
-	},
-	ImageGraph: function ImageGraph(host) {
-		return function (_host$class$FunctionG) {
-			_inherits(ImageGraph, _host$class$FunctionG);
-
-			function ImageGraph(image) {
-				_classCallCheck(this, ImageGraph);
-
-				var _this8 = _possibleConstructorReturn(this, (ImageGraph.__proto__ || Object.getPrototypeOf(ImageGraph)).call(this));
-
-				if (image) _this8.use(image);
-				_this8.useImageBitmap = true;
-				_this8.style.debugBorderColor = '#0f0';
-				return _this8;
-			}
-
-			_createClass(ImageGraph, [{
-				key: 'use',
-				value: function use(image) {
-					var _this9 = this;
-
-					if (image instanceof Image) {
-						this.image = image;
-						if (!image.complete) {
-							image.addEventListener('load', function (e) {
-								_this9.resetStyleSize();
-								_this9._createBitmap();
-							});
-						} else {
-							this.resetStyleSize();
-							this._createBitmap();
-						}
-						return true;
-					} else if (image instanceof HTMLCanvasElement) {
-						this.image = image;
-						this.resetStyleSize();
-						return true;
-					}
-					throw new TypeError('Wrong image type');
-				}
-			}, {
-				key: '_createBitmap',
-				value: function _createBitmap() {
-					var _this10 = this;
-
-					if (this.useImageBitmap && typeof createImageBitmap === 'function') {
-						//use ImageBitmap
-						createImageBitmap(this.image).then(function (bitmap) {
-							if (_this10._bitmap) _this10._bitmap.close();
-							_this10._bitmap = bitmap;
-						});
-					}
-				}
-			}, {
-				key: 'resetStyleSize',
-				value: function resetStyleSize() {
-					this.style.width = this.width;
-					this.style.height = this.height;
-				}
-			}, {
-				key: 'drawer',
-				value: function drawer(ct) {
-					//onover point check
-					//ct.beginPath();
-					ct.drawImage(this.useImageBitmap && this._bitmap ? this._bitmap : this.image, 0, 0);
-					this.checkIfOnOver(true);
-				}
-			}, {
-				key: 'hitRange',
-				value: function hitRange(ct) {
-					ct.beginPath();
-					ct.rect(0, 0, this.style.width, this.style.height);
-				}
-			}, {
-				key: 'width',
-				get: function get() {
-					if (this.image instanceof Image) return this.image.naturalWidth;
-					if (this.image instanceof HTMLCanvasElement) return this.image.width;
-					return 0;
-				}
-			}, {
-				key: 'height',
-				get: function get() {
-					if (this.image instanceof Image) return this.image.naturalHeight;
-					if (this.image instanceof HTMLCanvasElement) return this.image.height;
-					return 0;
-				}
-			}]);
-
-			return ImageGraph;
-		}(host.class.FunctionGraph);
-	},
-	CanvasGraph: function CanvasGraph(host) {
-		return function (_host$class$ImageGrap) {
-			_inherits(CanvasGraph, _host$class$ImageGrap);
-
-			function CanvasGraph() {
-				_classCallCheck(this, CanvasGraph);
-
-				var _this11 = _possibleConstructorReturn(this, (CanvasGraph.__proto__ || Object.getPrototypeOf(CanvasGraph)).call(this));
-
-				_this11.image = document.createElement('canvas');
-				_this11.context = _this11.image.getContext('2d');
-				_this11.useImageBitmap = false;
-				_this11.autoClear = true;
-				return _this11;
-			}
-
-			_createClass(CanvasGraph, [{
-				key: 'draw',
-				value: function draw(func) {
-					if (this.autoClear) this.context.clearRect(0, 0, this.width, this.height);
-					func(this.context, this.canvas);
-					if (this.useImageBitmap) this._createBitmap();
-				}
-			}, {
-				key: 'width',
-				set: function set(w) {
-					this.image.width = w;
-				}
-			}, {
-				key: 'height',
-				set: function set(h) {
-					this.image.height = h;
-				}
-			}]);
-
-			return CanvasGraph;
-		}(host.class.ImageGraph);
-	},
-	TextGraph: function TextGraph(host) {
-		return function (_host$class$FunctionG2) {
-			_inherits(TextGraph, _host$class$FunctionG2);
-
-			function TextGraph() {
-				var text = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-
-				_classCallCheck(this, TextGraph);
-
-				//this._cache=null;
-				var _this12 = _possibleConstructorReturn(this, (TextGraph.__proto__ || Object.getPrototypeOf(TextGraph)).call(this));
-
-				_this12._fontString = '';
-				_this12._renderList = null;
-				_this12.autoSize = true;
-				_this12.font = Object.create(host.default.font);
-				_this12.realtimeRender = false;
-				_this12.useImageBitmap = true;
-				_this12.style.debugBorderColor = '#00f';
-				_this12.text = text;
-				_this12._renderToCache = _this12._renderToCache.bind(_this12);
-				defProp(_this12, '_cache', { configurable: true });
-				return _this12;
-			}
-
-			_createClass(TextGraph, [{
-				key: 'prepare',
-				value: function prepare() {
-					var async = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-					//prepare text details
-					if (!this._cache && !this.realtimeRender) {
-						defProp(this, '_cache', { value: document.createElement("canvas") });
-					}
-					var font = "";
-					this.font.fontStyle && (font = this.font.fontStyle);
-					this.font.fontVariant && (font = font + ' ' + this.font.fontVariant);
-					this.font.fontWeight && (font = font + ' ' + this.font.fontWeight);
-					font = font + ' ' + this.font.fontSize + 'px';
-					this.font.fontFamily && (font = font + ' ' + this.font.fontFamily);
-					this._fontString = font;
-
-					if (this.realtimeRender) return;
-					var imgobj = this._cache,
-					    ct = imgobj.ctx2d || (imgobj.ctx2d = imgobj.getContext("2d"));
-					ct.font = font;
-					this._renderList = this.text.split(/\n/g);
-					this.estimatePadding = Math.max(this.font.shadowBlur + 5 + Math.max(Math.abs(this.font.shadowOffsetY), Math.abs(this.font.shadowOffsetX)), this.font.strokeWidth + 3);
-					if (this.autoSize) {
-						var w = 0,
-						    tw = void 0,
-						    lh = typeof this.font.lineHeigh === 'number' ? this.font.lineHeigh : this.font.fontSize;
-						for (var i = this._renderList.length; i--;) {
-							tw = ct.measureText(this._renderList[i]).width;
-							tw > w && (w = tw); //max
-						}
-						imgobj.width = (this.style.width = w) + this.estimatePadding * 2;
-						imgobj.height = (this.style.height = this._renderList.length * lh) + (lh < this.font.fontSize ? this.font.fontSize * 2 : 0) + this.estimatePadding * 2;
-					} else {
-						imgobj.width = this.style.width;
-						imgobj.height = this.style.height;
-					}
-					ct.translate(this.estimatePadding, this.estimatePadding);
-					if (async) {
-						requestIdleCallback(this._renderToCache);
-					} else {
-						this._renderToCache();
-					}
-				}
-			}, {
-				key: '_renderToCache',
-				value: function _renderToCache() {
-					var _this13 = this;
-
-					this.render(this._cache.ctx2d);
-					if (this.useImageBitmap && typeof createImageBitmap === 'function') {
-						//use ImageBitmap
-						createImageBitmap(this._cache).then(function (bitmap) {
-							if (_this13._bitmap) _this13._bitmap.close();
-							_this13._bitmap = bitmap;
-						});
-					}
-				}
-			}, {
-				key: 'render',
-				value: function render(ct) {
-					//render text
-					if (!this._renderList) return;
-					ct.save();
-					ct.font = this._fontString; //set font
-					ct.textBaseline = 'top';
-					ct.lineWidth = this.font.strokeWidth;
-					ct.fillStyle = this.font.color;
-					ct.strokeStyle = this.font.strokeColor;
-					ct.shadowBlur = this.font.shadowBlur;
-					ct.shadowColor = this.font.shadowColor;
-					ct.shadowOffsetX = this.font.shadowOffsetX;
-					ct.shadowOffsetY = this.font.shadowOffsetY;
-					ct.textAlign = this.font.textAlign;
-					var lh = typeof this.font.lineHeigh === 'number' ? this.font.lineHeigh : this.font.fontSize,
-					    x = void 0;
-					switch (this.font.textAlign) {
-						case 'left':case 'start':
-							{
-								x = 0;break;
-							}
-						case 'center':
-							{
-								x = this.style.width / 2;break;
-							}
-						case 'right':case 'end':
-							{
-								x = this.style.width;
-							}
-					}
-
-					for (var i = this._renderList.length; i--;) {
-						this.font.strokeWidth && ct.strokeText(this._renderList[i], x, lh * i);
-						this.font.fill && ct.fillText(this._renderList[i], x, lh * i);
-					}
-					ct.restore();
-				}
-			}, {
-				key: 'drawer',
-				value: function drawer(ct) {
-					//ct.beginPath();
-					if (this.realtimeRender) {
-						//realtime render the text
-						//onover point check
-						this.checkIfOnOver(true);
-						this.render(ct);
-					} else {
-						//draw the cache
-						if (!this._cache) {
-							this.prepare();
-						}
-						ct.drawImage(this.useImageBitmap && this._bitmap ? this._bitmap : this._cache, -this.estimatePadding, -this.estimatePadding);
-						this.checkIfOnOver(true);
-					}
-				}
-			}, {
-				key: 'hitRange',
-				value: function hitRange(ct) {
-					ct.beginPath();
-					ct.rect(0, 0, this.style.width, this.style.height);
-				}
-			}]);
-
-			return TextGraph;
-		}(host.class.FunctionGraph);
-	}
-};
-
-function addEvents(target) {
-	var events = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
-	for (var e in events) {
-		target.addEventListener(e, events[e]);
-	}
-}
-
-//code from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
-if (typeof Object.assign != 'function') Object.assign = function (target) {
-	'use strict';
-	// We must check against these specific cases.
-
-	if (target === undefined || target === null) {
-		throw new TypeError('Cannot convert undefined or null to object');
-	}
-	var output = Object(target);
-	for (var index = 1; index < arguments.length; index++) {
-		var source = arguments[index];
-		if (source !== undefined && source !== null) {
-			for (var nextKey in source) {
-				if (source.hasOwnProperty(nextKey)) {
-					output[nextKey] = source[nextKey];
-				}
-			}
-		}
-	}
-	return output;
-};
-
-if (!Float32Array.__proto__.from) {
-	(function () {
-		var copy_data = [];
-		Float32Array.__proto__.from = function (obj, func, thisObj) {
-			var typedArrayClass = Float32Array.__proto__;
-			if (typeof this !== "function") throw new TypeError("# is not a constructor");
-			if (this.__proto__ !== typedArrayClass) throw new TypeError("this is not a typed array.");
-			func = func || function (elem) {
-				return elem;
-			};
-			if (typeof func !== "function") throw new TypeError("specified argument is not a function");
-			obj = Object(obj);
-			if (!obj["length"]) return new this(0);
-			copy_data.length = 0;
-			for (var i = 0; i < obj.length; i++) {
-				copy_data.push(obj[i]);
-			}
-			copy_data = copy_data.map(func, thisObj);
-			var typed_array = new this(copy_data.length);
-			for (var _i = 0; _i < typed_array.length; _i++) {
-				typed_array[_i] = copy_data[_i];
-			}
-			return typed_array;
-		};
-	})();
-}
-
-(function () {
-	if (window.requestAnimationFrame) return;
-	var lastTime = 0;
-	var vendors = ['ms', 'moz', 'webkit', 'o'];
-	for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-		window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
-		window.cancelRequestAnimationFrame = window[vendors[x] + 'CancelRequestAnimationFrame'];
-	}
-	if (!window.requestAnimationFrame) window.requestAnimationFrame = function (callback, element, interval) {
-		var currTime = Date.now();
-		var timeToCall = interval || Math.max(0, 1000 / 60 - (currTime - lastTime));
-		callback(0);
-		var id = window.setTimeout(function () {
-			callback(currTime + timeToCall);
-		}, timeToCall);
-		lastTime = currTime + timeToCall;
-		return id;
-	};
-	if (!window.cancelAnimationFrame) window.cancelAnimationFrame = function (id) {
-		clearTimeout(id);
-	};
-})();
-
-var requestIdleCallback = window.requestIdleCallback || setImmediate;
-
-exports.default = CanvasObjLibrary;
-exports.CanvasObjLibrary = CanvasObjLibrary;
-exports.requestIdleCallback = requestIdleCallback;
-
-},{"../lib/Mat/Mat.js":4,"../lib/promise/promise.js":5,"../lib/setImmediate/setImmediate.js":6}],8:[function(require,module,exports){
+},{"_process":10}],7:[function(require,module,exports){
 /*
 Copyright luojia@luojia.me
 LGPL license
@@ -2627,13 +1287,33 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _CanvasObjLibrary = require('../lib/CanvasObjLibrary/src/CanvasObjLibrary.js');
+require('../lib/setImmediate/setImmediate.js');
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+var _promise = require('../lib/promise/promise.js');
+
+var _promise2 = _interopRequireDefault(_promise);
+
+var _Mat = require('../lib/Mat/Mat.js');
+
+var _Mat2 = _interopRequireDefault(_Mat);
+
+var _text2d = require('./text2d.js');
+
+var _text2d2 = _interopRequireDefault(_text2d);
+
+var _text3d = require('./text3d.js');
+
+var _text3d2 = _interopRequireDefault(_text3d);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+if (!window.Promise) window.Promise = _promise2.default;
 
 /*
 danmaku obj struct
@@ -2653,19 +1333,135 @@ danmaku mode
 */
 
 function init(DanmakuFrame, DanmakuFrameModule) {
-	var Text2D = function (_DanmakuFrameModule) {
-		_inherits(Text2D, _DanmakuFrameModule);
+	var defProp = Object.defineProperty;
+	var requestIdleCallback = window.requestIdleCallback || setImmediate;
 
-		function Text2D(frame) {
-			_classCallCheck(this, Text2D);
+	var TextGraph = function () {
+		//code copied from CanvasObjLibrary
+		function TextGraph() {
+			var text = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
 
-			var _this = _possibleConstructorReturn(this, (Text2D.__proto__ || Object.getPrototypeOf(Text2D)).call(this, frame));
+			_classCallCheck(this, TextGraph);
 
-			_this.list = []; //danmaku object array
-			_this.indexMark = 0; //to record the index of last danmaku in the list
-			_this.tunnel = new tunnelManager();
-			_this.paused = true;
-			_this.defaultStyle = { //these styles can be overwrote by the 'font' property of danmaku object
+			this._fontString = '';
+			this._renderList = null;
+			this.useImageBitmap = true;
+			this.style = {};
+			this.font = {};
+			this.text = text;
+			this._renderToCache = this._renderToCache.bind(this);
+			defProp(this, '_cache', { configurable: true });
+		}
+
+		_createClass(TextGraph, [{
+			key: 'prepare',
+			value: function prepare() {
+				var async = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+				//prepare text details
+				if (!this._cache) {
+					defProp(this, '_cache', { value: document.createElement("canvas") });
+				}
+				var ta = [];
+				this.font.fontStyle && ta.push(this.font.fontStyle);
+				this.font.fontVariant && ta.push(this.font.fontVariant);
+				this.font.fontWeight && ta.push(this.font.fontWeight);
+				ta.push(this.font.fontSize + 'px');
+				this.font.fontFamily && ta.push(this.font.fontFamily);
+				this._fontString = ta.join(' ');
+
+				var imgobj = this._cache,
+				    ct = imgobj.ctx2d || (imgobj.ctx2d = imgobj.getContext("2d"));
+				ct.font = this._fontString;
+				this._renderList = this.text.split(/\n/g);
+				this.estimatePadding = Math.max(this.font.shadowBlur + 5 + Math.max(Math.abs(this.font.shadowOffsetY), Math.abs(this.font.shadowOffsetX)), this.font.strokeWidth + 3);
+				var w = 0,
+				    tw = void 0,
+				    lh = typeof this.font.lineHeigh === 'number' ? this.font.lineHeigh : this.font.fontSize;
+				for (var i = this._renderList.length; i--;) {
+					tw = ct.measureText(this._renderList[i]).width;
+					tw > w && (w = tw); //max
+				}
+				imgobj.width = (this.style.width = w) + this.estimatePadding * 2;
+				imgobj.height = (this.style.height = this._renderList.length * lh) + (lh < this.font.fontSize ? this.font.fontSize * 2 : 0) + this.estimatePadding * 2;
+
+				ct.translate(this.estimatePadding, this.estimatePadding);
+				if (async) {
+					requestIdleCallback(this._renderToCache);
+				} else {
+					this._renderToCache();
+				}
+			}
+		}, {
+			key: '_renderToCache',
+			value: function _renderToCache() {
+				var _this = this;
+
+				this.render(this._cache.ctx2d);
+				if (this.useImageBitmap && typeof createImageBitmap === 'function') {
+					//use ImageBitmap
+					createImageBitmap(this._cache).then(function (bitmap) {
+						if (_this._bitmap) _this._bitmap.close();
+						_this._bitmap = bitmap;
+					});
+				}
+			}
+		}, {
+			key: 'render',
+			value: function render(ct) {
+				//render text
+				if (!this._renderList) return;
+				ct.save();
+				ct.font = this._fontString; //set font
+				ct.textBaseline = 'top';
+				ct.lineWidth = this.font.strokeWidth;
+				ct.fillStyle = this.font.color;
+				ct.strokeStyle = this.font.strokeColor;
+				ct.shadowBlur = this.font.shadowBlur;
+				ct.shadowColor = this.font.shadowColor;
+				ct.shadowOffsetX = this.font.shadowOffsetX;
+				ct.shadowOffsetY = this.font.shadowOffsetY;
+				ct.textAlign = this.font.textAlign;
+				var lh = typeof this.font.lineHeigh === 'number' ? this.font.lineHeigh : this.font.fontSize,
+				    x = void 0;
+				switch (this.font.textAlign) {
+					case 'left':case 'start':
+						{
+							x = 0;break;
+						}
+					case 'center':
+						{
+							x = this.style.width / 2;break;
+						}
+					case 'right':case 'end':
+						{
+							x = this.style.width;
+						}
+				}
+
+				for (var i = this._renderList.length; i--;) {
+					this.font.strokeWidth && ct.strokeText(this._renderList[i], x, lh * i);
+					this.font.fill && ct.fillText(this._renderList[i], x, lh * i);
+				}
+				ct.restore();
+			}
+		}]);
+
+		return TextGraph;
+	}();
+
+	var TextDanmaku = function (_DanmakuFrameModule) {
+		_inherits(TextDanmaku, _DanmakuFrameModule);
+
+		function TextDanmaku(frame) {
+			_classCallCheck(this, TextDanmaku);
+
+			var _this2 = _possibleConstructorReturn(this, (TextDanmaku.__proto__ || Object.getPrototypeOf(TextDanmaku)).call(this, frame));
+
+			_this2.list = []; //danmaku object array
+			_this2.indexMark = 0; //to record the index of last danmaku in the list
+			_this2.tunnel = new tunnelManager();
+			_this2.paused = true;
+			_this2.defaultStyle = { //these styles can be overwrote by the 'font' property of danmaku object
 				fontStyle: null,
 				fontWeight: 300,
 				fontVariant: null,
@@ -2685,24 +1481,35 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				opacity: 1
 			};
 
-			_this.canvas = document.createElement('canvas'); //the canvas
-			Object.assign(_this.canvas.style, { position: 'absolute', width: '100%', height: '100%', top: 0, left: 0 });
-			_this.context2d = _this.canvas.getContext('2d'); //the canvas context
-			_this.COL = new _CanvasObjLibrary.CanvasObjLibrary(_this.canvas); //the library
-			_this.COL.imageSmoothingEnabled = false;
-			_this.COL.autoClear = false;
-			frame.container.appendChild(_this.canvas);
-			_this.COL_GraphCache = []; //COL text graph cache
-			_this.COL_DanmakuText = [];
-			_this.layer = new _this.COL.class.FunctionGraph(); //text layer
-			_this.layer.drawer = function (ct) {
-				_this._layerDrawFunc(ct);
-			}; //set draw func
-			_this.COL.root.appendChild(_this.layer);
-			_this.cacheCleanTime = 0;
-			_this.danmakuMoveTime = 0;
-			_this.danmakuCheckSwitch = true;
-			_this.options = {
+			defProp(_this2, 'renderMode', { configurable: true });
+			_this2.text2d = new _text2d2.default(_this2);
+			_this2.text3d = new _text3d2.default(_this2);
+			_this2.textDanmakuContainer = document.createElement('div');
+			_this2.textDanmakuContainer.classList.add('NyaP_fullfill');
+			_this2.canvas = document.createElement('canvas'); //the canvas
+			_this2.canvas.classList.add('NyaP_fullfill');
+			_this2.canvas.id = 'text2d';
+			_this2.canvas3d = document.createElement('canvas'); //the canvas
+			_this2.canvas3d.classList.add('NyaP_fullfill');
+			_this2.canvas3d.id = 'text3d';
+			_this2.canvas.hidden = _this2.canvas3d.hidden = true;
+			_this2.context2d = _this2.canvas.getContext('2d'); //the canvas context
+			try {
+				_this2.context3d = _this2.canvas.getContext('webgl'); //the canvas3d context
+			} catch (e) {
+				console.warn('WebGL not supported');
+			}
+
+			_this2.textDanmakuContainer.appendChild(_this2.canvas);
+			_this2.textDanmakuContainer.appendChild(_this2.canvas3d);
+			frame.container.appendChild(_this2.textDanmakuContainer);
+			_this2.GraphCache = []; //COL text graph cache
+			_this2.DanmakuText = [];
+
+			_this2.cacheCleanTime = 0;
+			_this2.danmakuMoveTime = 0;
+			_this2.danmakuCheckSwitch = true;
+			_this2.options = {
 				allowLines: false, //allow multi-line danmaku
 				screenLimit: 0, //the most number of danmaku on the screen
 				clearWhenTimeReset: true, //clear danmaku on screen when the time is reset
@@ -2710,36 +1517,49 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			};
 			document.addEventListener('visibilitychange', function (e) {
 				if (document.hidden) {
-					_this.pause();
+					_this2.pause();
 				} else {
-					_this.reCheckIndexMark();
-					if (_this.frame.working) _this.start();else {
-						_this.draw(true);
+					_this2.reCheckIndexMark();
+					if (_this2.frame.working) _this2.start();else {
+						_this2.draw(true);
 					}
 				}
 			});
-			_this._checkNewDanmaku = _this._checkNewDanmaku.bind(_this);
-			_this._cleanCache = _this._cleanCache.bind(_this);
-			setInterval(_this._cleanCache, 5000); //set an interval for cache cleaning
-			return _this;
+			_this2._checkNewDanmaku = _this2._checkNewDanmaku.bind(_this2);
+			_this2._cleanCache = _this2._cleanCache.bind(_this2);
+			setInterval(_this2._cleanCache, 5000); //set an interval for cache cleaning
+			_this2.setRenderMode(2);
+			return _this2;
 		}
 
-		_createClass(Text2D, [{
+		_createClass(TextDanmaku, [{
+			key: 'setRenderMode',
+			value: function setRenderMode(n) {
+				if (this.renderMode === n) return;
+				defProp(this, 'renderMode', { value: n });
+				this.clear();
+				if (n === 2) {
+					this.canvas.hidden = !(this.canvas3d.hidden = true);
+				} else if (n === 3) {
+					this.canvas3d.hidden = !(this.canvas.hidden = true);
+				}
+			}
+		}, {
 			key: 'media',
 			value: function media(_media) {
-				var _this2 = this;
+				var _this3 = this;
 
 				addEvents(_media, {
 					seeked: function seeked() {
-						_this2.start();
-						_this2.time();
-						_this2._clearCanvas();
+						_this3.start();
+						_this3.time();
+						_this3._clearCanvas();
 					},
 					seeking: function seeking() {
-						_this2.pause();
+						_this3.pause();
 					},
 					stalled: function stalled() {
-						_this2.pause();
+						_this3.pause();
 					}
 				});
 			}
@@ -2779,10 +1599,10 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		}, {
 			key: 'loadList',
 			value: function loadList(danmakuArray) {
-				var _this3 = this;
+				var _this4 = this;
 
 				danmakuArray.forEach(function (d) {
-					return _this3.load(d);
+					return _this4.load(d);
 				});
 			}
 		}, {
@@ -2796,45 +1616,36 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				return true;
 			}
 		}, {
-			key: '_layerDrawFunc',
-			value: function _layerDrawFunc(ctx) {
-				for (var i = 0, t; i < this.COL_DanmakuText.length; i++) {
-					t = this.COL_DanmakuText[i];
-					t.drawn || (t.drawn = true);
-					ctx.drawImage(t.useImageBitmap && t._bitmap ? t._bitmap : t._cache, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding);
-				}
-			}
-		}, {
 			key: '_checkNewDanmaku',
 			value: function _checkNewDanmaku() {
-				var cHeight = this.COL.canvas.height,
-				    cWidth = this.COL.canvas.width;
+				var cHeight = this.canvas.height,
+				    cWidth = this.canvas.width;
 				var t = void 0,
 				    d = void 0,
 				    time = this.frame.time,
 				    hidden = document.hidden;
 				if (this.list.length) for (; this.indexMark < this.list.length && (d = this.list[this.indexMark]) && d.time <= time; this.indexMark++) {
 					//add new danmaku
-					if (this.options.screenLimit > 0 && this.COL_DanmakuText.length >= this.options.screenLimit || hidden) {
+					if (this.options.screenLimit > 0 && this.DanmakuText.length >= this.options.screenLimit || hidden) {
 						continue;
 					} //continue if the number of danmaku on screen has up to limit or doc is not visible
-					if (this.COL_GraphCache.length) {
-						t = this.COL_GraphCache.shift();
+					if (this.GraphCache.length) {
+						t = this.GraphCache.shift();
 					} else {
-						t = new this.COL.class.TextGraph();
-						t.onoverCheck = false;
+						t = new TextGraph();
 					}
 					t.danmaku = d;
 					t.drawn = false;
 					t.text = this.options.allowLines ? d.text : d.text.replace(/\n/g, ' ');
 					t.time = d.time;
-					t.font = Object.assign({}, d.style);
-					t.font.__proto__ = this.defaultStyle;
-					t.style.opacity = t.font.opacity;
+					Object.setPrototypeOf(t.font, this.defaultStyle);
+					Object.assign(t.font, d.style);
+
+					//t.style.opacity=t.font.opacity;
 					if (d.mode > 1) t.font.textAlign = 'center';
 					t.prepare(true);
 					//find tunnel number
-					var tnum = this.tunnel.getTunnel(t, this.COL.canvas.height);
+					var tnum = this.tunnel.getTunnel(t, cHeight);
 					//calc margin
 					var margin = (tnum < 0 ? 0 : tnum) % cHeight;
 					switch (d.mode) {
@@ -2848,11 +1659,11 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 							}
 					}
 					if (d.mode > 1) {
-						t.style.x = (this.COL.canvas.width - t.style.width) / 2;
+						t.style.x = (cWidth - t.style.width) / 2;
 					} else {
 						t.style.x = cWidth;
 					}
-					this.COL_DanmakuText.push(t);
+					this.DanmakuText.push(t);
 				}
 				//calc all danmaku's position
 				this._calcDanmakuPosition();
@@ -2863,13 +1674,13 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				var F = this.frame,
 				    T = F.time;
 				if (this.danmakuMoveTime === T || this.paused) return;
-				var cWidth = this.COL.canvas.width;
+				var cWidth = this.canvas.width;
 				var R = void 0,
 				    i = void 0,
 				    t = void 0;
 				this.danmakuMoveTime = T;
-				for (i = this.COL_DanmakuText.length; i--;) {
-					t = this.COL_DanmakuText[i];
+				for (i = this.DanmakuText.length; i--;) {
+					t = this.DanmakuText[i];
 					if (t.time > T) {
 						this.removeText(t);
 						continue;
@@ -2900,14 +1711,14 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		}, {
 			key: '_cleanCache',
 			value: function _cleanCache() {
-				//clean COL text object cache
+				//clean text object cache
 				var now = Date.now();
-				if (this.COL_GraphCache.length > 30) {
+				if (this.GraphCache.length > 30) {
 					//save 20 cached danmaku
-					for (var ti = 0; ti < this.COL_GraphCache.length; ti++) {
-						if (now - this.COL_GraphCache[ti].removeTime > 10000) {
+					for (var ti = 0; ti < this.GraphCache.length; ti++) {
+						if (now - this.GraphCache[ti].removeTime > 10000) {
 							//delete cache which has live over 10s
-							this.COL_GraphCache.splice(ti, 1);
+							this.GraphCache.splice(ti, 1);
 						} else {
 							break;
 						}
@@ -2919,35 +1730,43 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			value: function draw(force) {
 				if (!this.enabled || !force && this.paused) return;
 				this._clearCanvas(force);
-				this.list.length && this.COL.draw();
+				if (this.renderMode === 2) {
+					this.text2d.draw(force);
+				} else if (this.renderMode === 3) {
+					this.text3d.draw(force);
+				}
+				//this.list.length&&this.COL.draw();
 
 				//find danmaku from indexMark to current time
-				(0, _CanvasObjLibrary.requestIdleCallback)(this._checkNewDanmaku);
+				requestIdleCallback(this._checkNewDanmaku);
 			}
 		}, {
 			key: 'removeText',
 			value: function removeText(t) {
 				//remove the danmaku from screen
-				var ind = this.COL_DanmakuText.indexOf(t);
+				var ind = this.DanmakuText.indexOf(t);
 				t._bitmap = null;
-				if (ind >= 0) this.COL_DanmakuText.splice(ind, 1);
+				if (ind >= 0) this.DanmakuText.splice(ind, 1);
 				this.tunnel.removeMark(t);
 				t.danmaku = null;
 				t.removeTime = Date.now();
-				this.COL_GraphCache.push(t);
+				this.GraphCache.push(t);
 			}
 		}, {
 			key: 'resize',
 			value: function resize() {
-				this.COL.adjustCanvas();
+				this.canvas.width = this.canvas3d.width = this.frame.container.offsetWidth;
+				this.canvas.height = this.canvas3d.height = this.frame.container.offsetHeight;
+				//this.COL.adjustCanvas();
 				this.draw(true);
 			}
 		}, {
 			key: '_evaluateIfFullClearMode',
 			value: function _evaluateIfFullClearMode() {
-				if (this.COL_DanmakuText.length > 3) return true;
-				if (this.COL.debug.switch) return true;
-				var l = this.COL_GraphCache[this.COL_GraphCache.length - 1];
+				if (this.renderMode === 3) return true;
+				if (this.DanmakuText.length > 3) return true;
+				//if(this.COL.debug.switch)return true;
+				var l = this.GraphCache[this.GraphCache.length - 1];
 				if (l && l.drawn) {
 					l.drawn = false;
 					return true;
@@ -2957,25 +1776,25 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		}, {
 			key: '_clearCanvas',
 			value: function _clearCanvas(forceFull) {
-				if (forceFull || this._evaluateIfFullClearMode()) {
-					this.COL.clear();
-					return;
-				}
-				var ctx = this.COL.context,
-				    t = void 0;
-				for (var i = this.COL_DanmakuText.length; i--;) {
-					t = this.COL_DanmakuText[i];
-					if (t.drawn) {
-						ctx.clearRect(t.style.x - t.estimatePadding, t.style.y - t.estimatePadding, t._cache.width, t._cache.height);
-					}
+				switch (this.renderMode) {
+					case 2:
+						{
+							forceFull || (forceFull = this._evaluateIfFullClearMode());
+							this.text2d.clear(forceFull);
+							break;
+						}
+					case 3:
+						{
+							this.text3d.clear();
+						}
 				}
 			}
 		}, {
 			key: 'clear',
 			value: function clear() {
 				//clear danmaku on the screen
-				for (var i = this.COL_DanmakuText.length, T; i--;) {
-					T = this.COL_DanmakuText[i];
+				for (var i = this.DanmakuText.length, T; i--;) {
+					T = this.DanmakuText[i];
 					if (T.danmaku) this.removeText(T);
 				}
 				this.tunnel.reset();
@@ -3002,16 +1821,15 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			}
 		}, {
 			key: 'resetTimeOfDanmakuOnScreen',
-			value: function resetTimeOfDanmakuOnScreen() {
-				var _this4 = this;
-
-				var cTime = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.frame.time;
+			value: function resetTimeOfDanmakuOnScreen(cTime) {
+				var _this5 = this;
 
 				//cause the position of the danmaku is based on time
 				//and if you don't want these danmaku on the screen to disappear,their time should be reset
-				this.COL_DanmakuText.forEach(function (t) {
+				if (cTime === undefined) cTime = this.frame.time;
+				this.DanmakuText.forEach(function (t) {
 					if (!t.danmaku) return;
-					t.time = cTime - (_this4.danmakuMoveTime - t.time);
+					t.time = cTime - (_this5.danmakuMoveTime - t.time);
 				});
 			}
 		}, {
@@ -3020,7 +1838,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				//return a list of danmaku which is over this position
 				var list = [];
 				if (!this.enabled) return list;
-				this.COL_DanmakuText.forEach(function (t) {
+				this.DanmakuText.forEach(function (t) {
 					if (!t.danmaku) return;
 					if (t.style.x <= x && t.style.x + t.style.width >= x && t.style.y <= y && t.style.y + t.style.height >= y) list.push(t.danmaku);
 				});
@@ -3030,18 +1848,19 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			key: 'enable',
 			value: function enable() {
 				//enable the plugin
-				this.layer.style.hidden = false;
+				this.textDanmakuContainer.hidden = false;
 			}
 		}, {
 			key: 'disable',
 			value: function disable() {
 				//disable the plugin
-				this.layer.style.hidden = true;
+				this.textDanmakuContainer.hidden = true;
+				this.pause();
 				this.clear();
 			}
 		}]);
 
-		return Text2D;
+		return TextDanmaku;
 	}(DanmakuFrameModule);
 
 	var tunnelManager = function () {
@@ -3153,7 +1972,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		return start;
 	}
 
-	DanmakuFrame.addModule('text2d', Text2D);
+	DanmakuFrame.addModule('TextDanmaku', TextDanmaku);
 };
 
 function addEvents(target) {
@@ -3176,7 +1995,116 @@ function limitIn(num, min, max) {
 
 exports.default = init;
 
-},{"../lib/CanvasObjLibrary/src/CanvasObjLibrary.js":7}],9:[function(require,module,exports){
+},{"../lib/Mat/Mat.js":4,"../lib/promise/promise.js":5,"../lib/setImmediate/setImmediate.js":6,"./text2d.js":8,"./text3d.js":9}],8:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/*
+Copyright luojia@luojia.me
+LGPL license
+*/
+var Text2d = function () {
+	function Text2d(dText) {
+		_classCallCheck(this, Text2d);
+
+		this.dText = dText;
+	}
+
+	_createClass(Text2d, [{
+		key: "draw",
+		value: function draw(force) {
+			//this.clear(force);
+			var ctx = this.dText.context2d;
+			for (var i = 0, t, dT = this.dText, l = dT.DanmakuText.length; i < l; i++) {
+				t = dT.DanmakuText[i];
+				t.drawn || (t.drawn = true);
+				ctx.drawImage(t._bitmap ? t._bitmap : t._cache, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding);
+			}
+		}
+	}, {
+		key: "clear",
+		value: function clear(force) {
+			var ctx = this.dText.context2d;
+			if (force) {
+				ctx.clearRect(0, 0, this.dText.canvas.width, this.dText.canvas.height);
+				return;
+			}
+			for (var i = this.dText.DanmakuText.length, t; i--;) {
+				t = this.dText.DanmakuText[i];
+				if (t.drawn) {
+					ctx.clearRect(t.style.x - t.estimatePadding, t.style.y - t.estimatePadding, t._cache.width, t._cache.height);
+				}
+			}
+		}
+	}]);
+
+	return Text2d;
+}();
+
+exports.default = Text2d;
+
+},{}],9:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/*
+Copyright luojia@luojia.me
+LGPL license
+*/
+var Text3d = function () {
+	function Text3d(dText) {
+		_classCallCheck(this, Text3d);
+
+		this.dText = dText;
+	}
+
+	_createClass(Text3d, [{
+		key: "draw",
+		value: function draw(force) {
+			//this.clear(force);
+			/*for(let i=0,t,l=this.DanmakuText.length;i<l;i++){
+   	t=this.DanmakuText[i];
+   	t.drawn||(t.drawn=true);
+   	ctx.drawImage(t._bitmap?t._bitmap:t._cache, t.style.x-t.estimatePadding, t.style.y-t.estimatePadding);
+   }*/
+		}
+	}, {
+		key: "clear",
+		value: function clear(force) {
+			/*let ctx=this.dText.context2d;
+   if(force){
+   	ctx.clearRect(0,0,this.dText.canvas.width,this.dText.canvas.height);
+   	return;
+   }
+   for(let i=this.DanmakuText.length,t;i--;){
+   	t=this.DanmakuText[i];
+   	if(t.drawn){
+   		ctx.clearRect(t.style.x-t.estimatePadding,t.style.y-t.estimatePadding,t._cache.width,t._cache.height);
+   	}
+   }*/
+		}
+	}]);
+
+	return Text3d;
+}();
+
+exports.default = Text3d;
+
+},{}],10:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -3358,7 +2286,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 /*
 Copyright luojia@luojia.me
 LGPL license
@@ -3372,10 +2300,6 @@ var _i18n = require('./i18n.js');
 var _Object2HTML = require('../lib/Object2HTML/Object2HTML.js');
 
 var _Object2HTML2 = _interopRequireDefault(_Object2HTML);
-
-var _ResizeSensor = require('../lib/danmaku-frame/lib/ResizeSensor.js');
-
-var _ResizeSensor2 = _interopRequireDefault(_ResizeSensor);
 
 var _NyaPCore = require('./NyaPCore.js');
 
@@ -3483,7 +2407,7 @@ var NyaP = function (_NyaPlayerCore) {
 
 		//progress
 		setTimeout(function () {
-			$.control.ResizeSensor = new _ResizeSensor2.default($.control, function () {
+			$.control.ResizeSensor = new _NyaPCore.ResizeSensor($.control, function () {
 				return _this.refreshProgress();
 			});
 			_this.refreshProgress();
@@ -3749,7 +2673,7 @@ var NyaP = function (_NyaPlayerCore) {
 			console.log('position', position);
 			if (position) {
 				//if position is defined,find out the danmaku at that position and enable danmaku oprion in menu
-				var ds = this.danmakuFrame.modules.text2d.danmakuAt(position[0], position[1]);
+				var ds = this.danmakuFrame.modules.TextDanmaku.danmakuAt(position[0], position[1]);
 				console.log(ds);
 			}
 		}
@@ -3829,7 +2753,7 @@ var NyaP = function (_NyaPlayerCore) {
 
 window.NyaP = NyaP;
 
-},{"../lib/Object2HTML/Object2HTML.js":1,"../lib/danmaku-frame/lib/ResizeSensor.js":2,"./NyaPCore.js":11,"./i18n.js":12}],11:[function(require,module,exports){
+},{"../lib/Object2HTML/Object2HTML.js":1,"./NyaPCore.js":12,"./i18n.js":13}],12:[function(require,module,exports){
 /*
 Copyright luojia@luojia.me
 LGPL license
@@ -3839,7 +2763,7 @@ LGPL license
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.toArray = exports.limitIn = exports.setAttrs = exports.padTime = exports.formatTime = exports.isFullscreen = exports.exitFullscreen = exports.requestFullscreen = exports.addEvents = exports.NyaPlayerCore = undefined;
+exports.ResizeSensor = exports.toArray = exports.limitIn = exports.setAttrs = exports.padTime = exports.formatTime = exports.isFullscreen = exports.exitFullscreen = exports.requestFullscreen = exports.addEvents = exports.NyaPlayerCore = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -3863,7 +2787,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-(0, _danmakuText2.default)(_danmakuFrame.DanmakuFrame, _danmakuFrame.DanmakuFrameModule); //init text2d mod
+(0, _danmakuText2.default)(_danmakuFrame.DanmakuFrame, _danmakuFrame.DanmakuFrameModule); //init TextDanmaku mod
 
 
 //default options
@@ -3939,7 +2863,7 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 		var video = _this2._.video = (0, _Object2HTML2.default)({ _: 'video', attr: { id: 'main_video' } });
 		_this2.danmakuFrame = new _danmakuFrame.DanmakuFrame();
 		_this2.danmakuFrame.setMedia(video);
-		_this2.danmakuFrame.enable('text2d');
+		_this2.danmakuFrame.enable('TextDanmaku');
 		_this2.setDanmakuOptions(opt.danmakuOption);
 		_this2.setDanmakuOptions(opt.textStyle);
 
@@ -4019,14 +2943,14 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 		key: 'setDefaultTextStyle',
 		value: function setDefaultTextStyle(opt) {
 			if (opt) for (var n in opt) {
-				this.text2d.defaultStyle[n] = opt[n];
+				this.TextDanmaku.defaultStyle[n] = opt[n];
 			}
 		}
 	}, {
 		key: 'setDanmakuOptions',
 		value: function setDanmakuOptions(opt) {
 			if (opt) for (var n in opt) {
-				this.text2d.options[n] = opt[n];
+				this.TextDanmaku.options[n] = opt[n];
 			}
 		}
 	}, {
@@ -4048,9 +2972,9 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 			this.video.src = s;
 		}
 	}, {
-		key: 'text2d',
+		key: 'TextDanmaku',
 		get: function get() {
-			return this.danmakuFrame.modules.text2d;
+			return this.danmakuFrame.modules.TextDanmaku;
 		}
 	}, {
 		key: 'videoSize',
@@ -4138,8 +3062,9 @@ exports.padTime = padTime;
 exports.setAttrs = setAttrs;
 exports.limitIn = limitIn;
 exports.toArray = toArray;
+exports.ResizeSensor = _danmakuFrame.ResizeSensor;
 
-},{"../lib/Object2HTML/Object2HTML.js":1,"../lib/danmaku-frame/src/danmaku-frame.js":3,"../lib/danmaku-text/src/danmaku-text.js":8}],12:[function(require,module,exports){
+},{"../lib/Object2HTML/Object2HTML.js":1,"../lib/danmaku-frame/src/danmaku-frame.js":3,"../lib/danmaku-text/src/danmaku-text.js":7}],13:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -4207,6 +3132,6 @@ console.debug('Language:' + i18n.lang);
 
 exports.i18n = i18n;
 
-},{}]},{},[10])
+},{}]},{},[11])
 
 //# sourceMappingURL=NyaP.js.map

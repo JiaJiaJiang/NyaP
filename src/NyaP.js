@@ -20,6 +20,7 @@ import {NyaPlayerCore,
 
 const _=i18n._;
 
+const colorChars='0123456789abcdef';
 
 //NyaP options
 const NyaPOptions={
@@ -223,7 +224,7 @@ class NyaP extends NyaPlayerCore{
 			danmaku_color:{
 				'input,change':e=>{
 					let i=e.target,c;
-					if(c=i.value.match(/^([\da-f]{3}){1,2}$/i)){//match valid hex color code
+					if(c=i.value.match(/^([\da-f\$]{3}){1,2}$/i)){//match valid hex color code
 						c=c[0];
 						i.style.backgroundColor=`#${c}`;
 						this._.danmakuColor=c;
@@ -356,9 +357,14 @@ class NyaP extends NyaPlayerCore{
 			text=this.eles.danmaku_input.value,
 			size=this._.danmakuSize,
 			mode=this._.danmakuMode,
-			time=this.danmakuFrame.time,
-			d={color,text,size,mode,time};
+			time=this.danmakuFrame.time;
 
+		if(color){
+			color=color.replace(/\$/g,()=>{
+				return colorChars[limitIn((16*Math.random())|0,0,15)];
+			});
+		}
+		let d={color,text,size,mode,time};
 		if(this.opt.danmakuSend){
 			this.opt.danmakuSend(d,(danmaku)=>{
 				if(danmaku&&danmaku._==='text')

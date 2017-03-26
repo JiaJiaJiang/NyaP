@@ -18,7 +18,7 @@ LGPL license
 
 .NyaP > #video_frame { height: auto; bottom: 30px; }
 
-.NyaP > #video_frame > video#main_video { cursor: pointer; background-color: #000; }
+.NyaP > #video_frame > video#main_video { cursor: pointer; background-color: #000; -webkit-touch-callout: none; -webkit-user-select: none; -o-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 
 .NyaP > #video_frame > div#danmaku_container { pointer-events: none; }
 

@@ -36,7 +36,9 @@ var NP=new NyaP({
 	danmakuSend:(d,callback)=>{
 		console.log(d);
 		let d2={_:'text',text:d.text,time:d.time,mode:d.mode,style:{fontSize:d.size},date:Date.now(),id:0}
-		if(d.color)d2.style.color=d.color;
+		if(d.color){
+			d2.style.color=d.color;
+		}
 		callback(d2);
 	}
 });

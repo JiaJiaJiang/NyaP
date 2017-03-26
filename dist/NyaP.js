@@ -1536,7 +1536,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 					this._addNewDanmaku(d);
 				}
 				//calc all danmaku's position
-				this._calcDanmakuPosition();
+				//this._calcDanmakuPosition();
 			}
 		}, {
 			key: '_addNewDanmaku',
@@ -1649,6 +1649,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			value: function draw(force) {
 				if (!this.enabled || !force && this.paused) return;
 				this._clearCanvas(force);
+				this._calcDanmakuPosition();
 				if (this.activeRenderMode.draw) this.activeRenderMode.draw(force);
 				//find danmaku from indexMark to current time
 				requestIdleCallback(this._checkNewDanmaku);
@@ -2158,8 +2159,6 @@ var Text3d = function () {
 		gl.clearColor(0, 0, 0, 0.0);
 		gl.enable(gl.BLEND);
 		gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-		//gl.blendFunc(gl.DST_ALPHA,gl.SRC_ALPHA); 
-		//gl.blendFunc(gl.ONE,gl.ZERO);
 
 		this.maxTexSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
 		console.info('MAX_TEXTURE_SIZE', this.maxTexSize);
@@ -2181,8 +2180,6 @@ var Text3d = function () {
 
 		gl.activeTexture(gl.TEXTURE0);
 		gl.uniform1i(this.uSampler, 0);
-
-		//gl.vertexAttribPointer(this.atextureCoord,2,gl.FLOAT,false,0,0);
 	}
 
 	_createClass(Text3d, [{
@@ -2249,15 +2246,6 @@ var Text3d = function () {
 			gl.bindBuffer(gl.ARRAY_BUFFER, t.verticesBuffer);
 			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, t._cache.width, 0, 0, t._cache.height, t._cache.width, t._cache.height]), gl.STATIC_DRAW);
 			gl.bindBuffer(gl.ARRAY_BUFFER, null);
-
-			/*t.textureCoordBuffer||(t.textureCoordBuffer=gl.createBuffer());
-   gl.bindBuffer(gl.ARRAY_BUFFER,t.textureCoordBuffer);
-   gl.bufferData(gl.ARRAY_BUFFER,commonTextureCoord,gl.STATIC_DRAW);
-   gl.vertexAttribPointer(this.atextureCoord,2,gl.FLOAT,false,0,0);*/
-
-			//console.log(t)
-			//gl.generateMipmap(gl.TEXTURE_2D);
-			//gl.bindTexture(gl.TEXTURE_2D, null);
 		}
 	}]);
 

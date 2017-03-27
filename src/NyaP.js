@@ -32,7 +32,6 @@ const NyaPOptions={
 	danmakuSend:(d,callback)=>{callback(false);},//the func for sending danmaku
 	danmakuSizes:[25,30,45],
 	defaultDanmakuSize:30,
-
 }
 
 //normal player
@@ -41,7 +40,7 @@ class NyaP extends NyaPlayerCore{
 		super(Object.assign({},NyaPOptions,opt));
 		opt=this.opt;
 		const NP=this;
-		const $=this.eles={};
+		const $=this.eles={document};
 		this._.playerMode='normal';
 		const video=this.video;
 		const icons={
@@ -163,6 +162,12 @@ class NyaP extends NyaPlayerCore{
 			}
 		});
 		const events={
+			document:{
+				'fullscreenchange,mozfullscreenchange,webkitfullscreenchange,msfullscreenchange':e=>{
+					if(this._.playerMode=='fullScreen' && !isFullscreen())
+						this.playerMode('normal');
+				}
+			},
 			main_video:{
 				playing:e=>{
 					$.icon_span_play.classList.add('active_icon');
@@ -331,12 +336,17 @@ class NyaP extends NyaPlayerCore{
 			case 'fullPage':{
 				this.player.style.position='fixed';
 				$.icon_span_fullPage.classList.add('active_icon');
+				this.player.setAttribute('playerMode','fullPage');
 				break;
 			}
 			case 'fullScreen':{
 				$.icon_span_fullScreen.classList.add('active_icon');
+				this.player.setAttribute('playerMode','fullScreen');
 				requestFullscreen(this.player);
 				break;
+			}
+			default:{
+				this.player.setAttribute('playerMode','normal');
 			}
 		}
 		this._.playerMode=mode;

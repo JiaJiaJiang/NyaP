@@ -30,6 +30,18 @@ LGPL license
 
 	$control_bar_height:30px;
 
+	&[playerMode="fullScreen"]{
+		#video_frame{
+			bottom: 0!important;
+		}
+		#control{
+			opacity: 0;
+			&:hover{
+				transition: opacity .2s ease-in .2s;
+			}
+		}
+	}
+
 	a{text-decoration: none;}
 	.active_icon path{fill-opacity:1!important;}
 

@@ -4,6 +4,12 @@ LGPL license
 */
 .NyaP_fullfill, .NyaP, .NyaP > #video_frame, .NyaP > #video_frame > video#main_video, .NyaP > #video_frame > div#danmaku_container, .NyaP canvas#progress, .NyaP #progress_info, .NyaP #danmaku_input_frame { top: 0; left: 0; width: 100%; height: 100%; position: absolute; }
 
+.NyaP[playerMode="fullScreen"] #video_frame { bottom: 0 !important; }
+
+.NyaP[playerMode="fullScreen"] #control { opacity: 0; }
+
+.NyaP[playerMode="fullScreen"] #control:hover { transition: opacity .2s ease-in .2s; }
+
 .NyaP a { text-decoration: none; }
 
 .NyaP .active_icon path { fill-opacity: 1 !important; }

@@ -1408,6 +1408,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 
 			_this.cacheCleanTime = 0;
 			_this.danmakuMoveTime = 0;
+			_this.danmakuCheckTime = 0;
 			_this.danmakuCheckSwitch = true;
 			_this.options = {
 				allowLines: false, //allow multi-line danmaku
@@ -1528,6 +1529,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				var d = void 0,
 				    time = this.frame.time,
 				    hidden = document.hidden;
+				if (this.danmakuCheckTime === time) return;
 				if (this.list.length) for (; this.indexMark < this.list.length && (d = this.list[this.indexMark]) && d.time <= time; this.indexMark++) {
 					//add new danmaku
 					if (this.options.screenLimit > 0 && this.DanmakuText.length >= this.options.screenLimit || hidden) {
@@ -1535,6 +1537,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 					} //continue if the number of danmaku on screen has up to limit or doc is not visible
 					this._addNewDanmaku(d);
 				}
+				this.danmakuCheckTime = time;
 				//calc all danmaku's position
 				//this._calcDanmakuPosition();
 			}
@@ -1648,8 +1651,8 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			key: 'draw',
 			value: function draw(force) {
 				if (!this.enabled || !force && this.paused) return;
-				this._clearCanvas(force);
 				this._calcDanmakuPosition();
+				this._clearCanvas(force);
 				if (this.activeRenderMode.draw) this.activeRenderMode.draw(force);
 				//find danmaku from indexMark to current time
 				requestIdleCallback(this._checkNewDanmaku);
@@ -2161,7 +2164,6 @@ var Text3d = function () {
 		gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
 		this.maxTexSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-		console.info('MAX_TEXTURE_SIZE', this.maxTexSize);
 
 		this.uSampler = gl.getUniformLocation(shaderProgram, "uSampler");
 		this.u2dCoord = gl.getUniformLocation(shaderProgram, "u2dCoordinate");
@@ -2479,7 +2481,6 @@ var NyaPOptions = {
 	}, //the func for sending danmaku
 	danmakuSizes: [25, 30, 45],
 	defaultDanmakuSize: 30
-
 };
 
 //normal player
@@ -2494,7 +2495,7 @@ var NyaP = function (_NyaPlayerCore) {
 
 		opt = _this.opt;
 		var NP = _this;
-		var $ = _this.eles = {};
+		var $ = _this.eles = { document: document };
 		_this._.playerMode = 'normal';
 		var video = _this.video;
 		var icons = {
@@ -2584,6 +2585,11 @@ var NyaP = function (_NyaPlayerCore) {
 			}
 		});
 		var events = {
+			document: {
+				'fullscreenchange,mozfullscreenchange,webkitfullscreenchange,msfullscreenchange': function fullscreenchangeMozfullscreenchangeWebkitfullscreenchangeMsfullscreenchange(e) {
+					if (_this._.playerMode == 'fullScreen' && !(0, _NyaPCore.isFullscreen)()) _this.playerMode('normal');
+				}
+			},
 			main_video: {
 				playing: function playing(e) {
 					$.icon_span_play.classList.add('active_icon');
@@ -2785,13 +2791,19 @@ var NyaP = function (_NyaPlayerCore) {
 					{
 						this.player.style.position = 'fixed';
 						$.icon_span_fullPage.classList.add('active_icon');
+						this.player.setAttribute('playerMode', 'fullPage');
 						break;
 					}
 				case 'fullScreen':
 					{
 						$.icon_span_fullScreen.classList.add('active_icon');
+						this.player.setAttribute('playerMode', 'fullScreen');
 						(0, _NyaPCore.requestFullscreen)(this.player);
 						break;
+					}
+				default:
+					{
+						this.player.setAttribute('playerMode', 'normal');
 					}
 			}
 			this._.playerMode = mode;

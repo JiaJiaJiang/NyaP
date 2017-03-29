@@ -1287,7 +1287,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"_process":11}],7:[function(require,module,exports){
+},{"_process":12}],7:[function(require,module,exports){
 /*
 Copyright luojia@luojia.me
 LGPL license
@@ -1386,7 +1386,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			};
 
 			defProp(_this, 'renderMode', { configurable: true });
-			defProp(_this, 'activeRenderMode', { configurable: true, value: {} });
+			defProp(_this, 'activeRenderMode', { configurable: true, value: null });
 			var con = _this.container = document.createElement('div');
 			con.classList.add(_this.randomText + '_fullfill');
 			frame.container.appendChild(con);
@@ -1438,7 +1438,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			value: function setRenderMode(n) {
 				if (this.renderMode === n) return;
 				if (!(n in this.modes) || !this.modes[n].supported) return;
-				this.activeRenderMode.disable && this.activeRenderMode.disable();
+				this.activeRenderMode && this.activeRenderMode.disable();
 				this.clear();
 				this.modes[n].enable();
 				defProp(this, 'activeRenderMode', { value: this.modes[n] });
@@ -1531,6 +1531,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				}
 				this.danmakuCheckTime = time;
 				//calc all danmaku's position
+				this._calcDanmakuPosition();
 			}
 		}, {
 			key: '_addNewDanmaku',
@@ -1578,7 +1579,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 					t.style.x = cWidth;
 				}
 				this.DanmakuText.push(t);
-				if (this.activeRenderMode.newDanmaku) this.activeRenderMode.newDanmaku(t);
+				this.activeRenderMode.newDanmaku(t);
 			}
 		}, {
 			key: '_calcDanmakuPosition',
@@ -1601,7 +1602,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 						case 0:case 1:
 							{
 								R = !t.danmaku.mode;
-								t.style.x = (R ? cWidth : -t.style.width) + (R ? -1 : 1) * F.rate * (t.style.width + cWidth) * (T - t.time) * this.options.speed / 60000;
+								t.style.x = (R ? cWidth : -t.style.width) + (R ? -1 : 1) * F.rate * (t.style.width + 1024) * (T - t.time) * this.options.speed / 60000;
 								if (R && t.style.x < -t.style.width || !R && t.style.x > cWidth + t.style.width) {
 									//go out the canvas
 									this.removeText(t);
@@ -1609,6 +1610,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 								} else if (t.tunnelNumber >= 0 && (R && t.style.x + t.style.width + 10 < cWidth || !R && t.style.x > 10)) {
 									this.tunnel.removeMark(t);
 								}
+								this.activeRenderMode.danmakuPosition(t);
 								break;
 							}
 						case 2:case 3:
@@ -1630,7 +1632,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 					for (var ti = 0; ti < this.GraphCache.length; ti++) {
 						if (now - this.GraphCache[ti].removeTime > 10000) {
 							//delete cache which has not used for 10s
-							if (this.activeRenderMode.deleteTextObject) this.activeRenderMode.deleteTextObject(this.GraphCache[ti]);
+							this.activeRenderMode.deleteTextObject(this.GraphCache[ti]);
 							this.GraphCache.splice(ti, 1);
 						} else {
 							break;
@@ -1642,9 +1644,9 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			key: 'draw',
 			value: function draw(force) {
 				if (!this.enabled || !force && this.paused) return;
-				this._calcDanmakuPosition();
+				//this._calcDanmakuPosition();
 				this._clearCanvas(force);
-				if (this.activeRenderMode.draw) this.activeRenderMode.draw(force);
+				this.activeRenderMode.draw(force);
 				//find danmaku from indexMark to current time
 				requestIdleCallback(this._checkNewDanmaku);
 			}
@@ -1659,7 +1661,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				t.danmaku = null;
 				t.removeTime = Date.now();
 				this.GraphCache.push(t);
-				if (this.activeRenderMode.remove) this.activeRenderMode.remove(t);
+				this.activeRenderMode.remove(t);
 			}
 		}, {
 			key: 'resize',
@@ -1671,33 +1673,9 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				this.draw(true);
 			}
 		}, {
-			key: '_evaluateIfFullClearMode',
-			value: function _evaluateIfFullClearMode() {
-				if (this.renderMode === 3) return true;
-				if (this.DanmakuText.length > 3) return true;
-				//if(this.COL.debug.switch)return true;
-				var l = this.GraphCache[this.GraphCache.length - 1];
-				if (l && l.drawn) {
-					l.drawn = false;
-					return true;
-				}
-				return false;
-			}
-		}, {
 			key: '_clearCanvas',
 			value: function _clearCanvas(forceFull) {
-				switch (this.renderMode) {
-					case 2:
-						{
-							forceFull || (forceFull = this._evaluateIfFullClearMode());
-							this.text2d.clear(forceFull);
-							break;
-						}
-					case 3:
-						{
-							this.text3d.clear();
-						}
-				}
+				this.activeRenderMode && this.activeRenderMode.clear(forceFull);
 			}
 		}, {
 			key: 'clear',
@@ -2019,7 +1997,7 @@ function limitIn(num, min, max) {
 	//limit the number in a range
 	return num < min ? min : num > max ? max : num;
 }
-
+function emptyFunc() {}
 exports.default = init;
 
 },{"../lib/promise/promise.js":5,"../lib/setImmediate/setImmediate.js":6,"./text2d.js":8,"./text3d.js":9,"./textCanvas.js":10}],8:[function(require,module,exports){
@@ -2031,18 +2009,32 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _textModuleTemplate = require('./textModuleTemplate.js');
+
+var _textModuleTemplate2 = _interopRequireDefault(_textModuleTemplate);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-/*
-Copyright luojia@luojia.me
-LGPL license
-*/
-var Text2d = function () {
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /*
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               Copyright luojia@luojia.me
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               LGPL license
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               */
+
+
+var Text2d = function (_Template) {
+	_inherits(Text2d, _Template);
+
 	function Text2d(dText) {
 		_classCallCheck(this, Text2d);
 
-		this.supported = false;
-		this.dText = dText;
+		var _this = _possibleConstructorReturn(this, (Text2d.__proto__ || Object.getPrototypeOf(Text2d)).call(this));
+
+		_this.supported = false;
+		_this.dText = dText;
 		dText.canvas = document.createElement('canvas'); //the canvas
 		dText.canvas.classList.add(dText.randomText + '_fullfill');
 		dText.canvas.id = 'text2d';
@@ -2050,9 +2042,10 @@ var Text2d = function () {
 		dText.container.appendChild(dText.canvas);
 		if (!dText.context2d) {
 			console.warn('text 2d not supported');
-			return;
+			return _possibleConstructorReturn(_this);
 		}
-		this.supported = true;
+		_this.supported = true;
+		return _this;
 	}
 
 	_createClass(Text2d, [{
@@ -2076,7 +2069,7 @@ var Text2d = function () {
 		key: 'clear',
 		value: function clear(force) {
 			var ctx = this.dText.context2d;
-			if (force) {
+			if (force || this._evaluateIfFullClearMode()) {
 				ctx.clearRect(0, 0, this.dText.canvas.width, this.dText.canvas.height);
 				return;
 			}
@@ -2088,6 +2081,17 @@ var Text2d = function () {
 			}
 		}
 	}, {
+		key: '_evaluateIfFullClearMode',
+		value: function _evaluateIfFullClearMode() {
+			if (this.dText.DanmakuText.length > 3) return true;
+			var l = this.dText.GraphCache[this.dText.GraphCache.length - 1];
+			if (l && l.drawn) {
+				l.drawn = false;
+				return true;
+			}
+			return false;
+		}
+	}, {
 		key: 'enable',
 		value: function enable() {
 			this.dText.useImageBitmap = !(this.dText.canvas.hidden = false);
@@ -2097,45 +2101,52 @@ var Text2d = function () {
 		value: function disable() {
 			this.dText.canvas.hidden = true;
 		}
-	}, {
-		key: 'resize',
-		value: function resize(w, h) {
-			//if(!this.supported)return;
-		}
 	}]);
 
 	return Text2d;
-}();
+}(_textModuleTemplate2.default);
 
 exports.default = Text2d;
 
-},{}],9:[function(require,module,exports){
+},{"./textModuleTemplate.js":11}],9:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /*
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     Copyright luojia@luojia.me
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     LGPL license
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     */
-
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _Mat = require('../lib/Mat/Mat.js');
 
 var _Mat2 = _interopRequireDefault(_Mat);
 
+var _textModuleTemplate = require('./textModuleTemplate.js');
+
+var _textModuleTemplate2 = _interopRequireDefault(_textModuleTemplate);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Text3d = function () {
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /*
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               Copyright luojia@luojia.me
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               LGPL license
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               */
+
+
+var Text3d = function (_Template) {
+	_inherits(Text3d, _Template);
+
 	function Text3d(dText) {
 		_classCallCheck(this, Text3d);
 
-		this.dText = dText;
-		this.supported = false;
+		var _this = _possibleConstructorReturn(this, (Text3d.__proto__ || Object.getPrototypeOf(Text3d)).call(this));
+
+		_this.dText = dText;
+		_this.supported = false;
 		dText.canvas3d = document.createElement('canvas'); //the canvas
 		dText.canvas3d.classList.add(dText.randomText + '_fullfill');
 		dText.canvas3d.id = 'text3d';
@@ -2145,10 +2156,10 @@ var Text3d = function () {
 
 		if (!dText.context3d) {
 			console.warn('text 3d not supported');
-			return;
+			return _possibleConstructorReturn(_this);
 		}
-		this.supported = true;
-		var gl = this.gl = dText.context3d,
+		_this.supported = true;
+		var gl = _this.gl = dText.context3d,
 		    canvas = dText.canvas3d;
 		//init webgl
 
@@ -2168,7 +2179,7 @@ var Text3d = function () {
 		}
 		var fragmentShader = shader("danmakuFrag");
 		var vertexShader = shader("danmakuVert");
-		var shaderProgram = this.shaderProgram = gl.createProgram();
+		var shaderProgram = _this.shaderProgram = gl.createProgram();
 		gl.attachShader(shaderProgram, vertexShader);
 		gl.attachShader(shaderProgram, fragmentShader);
 		gl.linkProgram(shaderProgram);
@@ -2182,25 +2193,26 @@ var Text3d = function () {
 		gl.enable(gl.BLEND);
 		gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
-		this.maxTexSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+		_this.maxTexSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
 
-		this.uSampler = gl.getUniformLocation(shaderProgram, "uSampler");
-		this.u2dCoord = gl.getUniformLocation(shaderProgram, "u2dCoordinate");
-		this.uDanmakuPos = gl.getUniformLocation(shaderProgram, "uDanmakuPos");
-		this.aVertexPosition = gl.getAttribLocation(shaderProgram, "aVertexPosition");
-		this.atextureCoord = gl.getAttribLocation(shaderProgram, "aDanmakuTexCoord");
+		_this.uSampler = gl.getUniformLocation(shaderProgram, "uSampler");
+		_this.u2dCoord = gl.getUniformLocation(shaderProgram, "u2dCoordinate");
+		_this.uDanmakuPos = gl.getUniformLocation(shaderProgram, "uDanmakuPos");
+		_this.aVertexPosition = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+		_this.atextureCoord = gl.getAttribLocation(shaderProgram, "aDanmakuTexCoord");
 
-		gl.enableVertexAttribArray(this.aVertexPosition);
-		gl.enableVertexAttribArray(this.atextureCoord);
+		gl.enableVertexAttribArray(_this.aVertexPosition);
+		gl.enableVertexAttribArray(_this.atextureCoord);
 
-		this.commonTexCoordBuffer = gl.createBuffer();
-		gl.bindBuffer(gl.ARRAY_BUFFER, this.commonTexCoordBuffer);
+		_this.commonTexCoordBuffer = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, _this.commonTexCoordBuffer);
 		gl.bufferData(gl.ARRAY_BUFFER, commonTextureCoord, gl.STATIC_DRAW);
-		gl.vertexAttribPointer(this.atextureCoord, 2, gl.FLOAT, false, 0, 0);
-		gl.vertexAttribPointer(this.aVertexPosition, 2, gl.FLOAT, false, 0, 0);
+		gl.vertexAttribPointer(_this.atextureCoord, 2, gl.FLOAT, false, 0, 0);
+		gl.vertexAttribPointer(_this.aVertexPosition, 2, gl.FLOAT, false, 0, 0);
 
 		gl.activeTexture(gl.TEXTURE0);
-		gl.uniform1i(this.uSampler, 0);
+		gl.uniform1i(_this.uSampler, 0);
+		return _this;
 	}
 
 	_createClass(Text3d, [{
@@ -2281,13 +2293,13 @@ var Text3d = function () {
 	}]);
 
 	return Text3d;
-}();
+}(_textModuleTemplate2.default);
 
 var commonTextureCoord = new Float32Array([0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0]);
 
 exports.default = Text3d;
 
-},{"../lib/Mat/Mat.js":4}],10:[function(require,module,exports){
+},{"../lib/Mat/Mat.js":4,"./textModuleTemplate.js":11}],10:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2296,19 +2308,32 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _textModuleTemplate = require('./textModuleTemplate.js');
+
+var _textModuleTemplate2 = _interopRequireDefault(_textModuleTemplate);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-/*
-Copyright luojia@luojia.me
-LGPL license
-*/
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
-var TextCanvas = function () {
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /*
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               Copyright luojia@luojia.me
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               LGPL license
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               */
+
+
+var TextCanvas = function (_Template) {
+	_inherits(TextCanvas, _Template);
+
 	function TextCanvas(dText) {
 		_classCallCheck(this, TextCanvas);
 
-		this.dText = dText;
-		this.supported = dText.text2d.supported;
+		var _this = _possibleConstructorReturn(this, (TextCanvas.__proto__ || Object.getPrototypeOf(TextCanvas)).call(this));
+
+		_this.dText = dText;
+		_this.supported = dText.text2d.supported;
 		document.styleSheets[0].insertRule('.' + dText.randomText + '_fullfill{top:0;left:0;width:100%;height:100%;position:absolute;}', 0);
 		document.styleSheets[0].insertRule('#' + dText.randomText + '_textCanvasContainer canvas{top:0;left:0;position:absolute;}', 0);
 		document.styleSheets[0].insertRule('#' + dText.randomText + '_textCanvasContainer{pointer-events:none;transform:translateZ(0);overflow:hidden;}', 0);
@@ -2317,21 +2342,14 @@ var TextCanvas = function () {
 		dText.textCanvasContainer.classList.add(dText.randomText + '_fullfill');
 		dText.textCanvasContainer.id = dText.randomText + '_textCanvasContainer';
 		dText.container.appendChild(dText.textCanvasContainer);
+		return _this;
 	}
 
 	_createClass(TextCanvas, [{
-		key: 'draw',
-		value: function draw(force) {
-			var gl = this.gl,
-			    l = this.dText.DanmakuText.length;
-			for (var i = 0, t; i < l; i++) {
-				t = this.dText.DanmakuText[i];
-				t._cache.style.transform = 'translate3d(' + ((t.style.x - t.estimatePadding) * 10 | 0) / 10 + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
-			}
+		key: 'danmakuPosition',
+		value: function danmakuPosition(t) {
+			t._cache.style.transform = 'translate3d(' + ((t.style.x - t.estimatePadding) * 10 | 0) / 10 + 'px,0,0)';
 		}
-	}, {
-		key: 'clear',
-		value: function clear() {}
 	}, {
 		key: 'remove',
 		value: function remove(t) {
@@ -2350,17 +2368,70 @@ var TextCanvas = function () {
 	}, {
 		key: 'newDanmaku',
 		value: function newDanmaku(t) {
-			t._cache.style.transform = 'translate3d(' + ((t.style.x - t.estimatePadding) * 10 | 0) / 10 + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
+			t._cache.style.top = t.style.y - t.estimatePadding + 'px';
+			t._cache.style.transform = 'translate3d(' + ((t.style.x - t.estimatePadding) * 10 | 0) / 10 + 'px,0,0)';
 			this.dText.textCanvasContainer.appendChild(t._cache);
 		}
 	}]);
 
 	return TextCanvas;
-}();
+}(_textModuleTemplate2.default);
 
 exports.default = TextCanvas;
 
-},{}],11:[function(require,module,exports){
+},{"./textModuleTemplate.js":11}],11:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/*
+Copyright luojia@luojia.me
+LGPL license
+
+*/
+var textModuleTemplate = function () {
+	function textModuleTemplate() {
+		_classCallCheck(this, textModuleTemplate);
+	}
+
+	_createClass(textModuleTemplate, [{
+		key: "draw",
+		value: function draw() {}
+	}, {
+		key: "clear",
+		value: function clear() {}
+	}, {
+		key: "resize",
+		value: function resize() {}
+	}, {
+		key: "enable",
+		value: function enable() {}
+	}, {
+		key: "disable",
+		value: function disable() {}
+	}, {
+		key: "newDanmaku",
+		value: function newDanmaku() {}
+	}, {
+		key: "danmakuPosition",
+		value: function danmakuPosition() {}
+	}, {
+		key: "deleteTextObject",
+		value: function deleteTextObject() {}
+	}]);
+
+	return textModuleTemplate;
+}();
+
+exports.default = textModuleTemplate;
+
+},{}],12:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -2542,7 +2613,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 /*
 Copyright luojia@luojia.me
 LGPL license
@@ -3040,7 +3111,7 @@ var NyaP = function (_NyaPlayerCore) {
 
 window.NyaP = NyaP;
 
-},{"../lib/Object2HTML/Object2HTML.js":1,"./NyaPCore.js":13,"./i18n.js":14}],13:[function(require,module,exports){
+},{"../lib/Object2HTML/Object2HTML.js":1,"./NyaPCore.js":14,"./i18n.js":15}],14:[function(require,module,exports){
 /*
 Copyright luojia@luojia.me
 LGPL license
@@ -3351,7 +3422,7 @@ exports.limitIn = limitIn;
 exports.toArray = toArray;
 exports.ResizeSensor = _danmakuFrame.ResizeSensor;
 
-},{"../lib/Object2HTML/Object2HTML.js":1,"../lib/danmaku-frame/src/danmaku-frame.js":3,"../lib/danmaku-text/src/danmaku-text.js":7}],14:[function(require,module,exports){
+},{"../lib/Object2HTML/Object2HTML.js":1,"../lib/danmaku-frame/src/danmaku-frame.js":3,"../lib/danmaku-text/src/danmaku-text.js":7}],15:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3419,6 +3490,6 @@ console.debug('Language:' + i18n.lang);
 
 exports.i18n = i18n;
 
-},{}]},{},[12])
+},{}]},{},[13])
 
 //# sourceMappingURL=NyaP.js.map

@@ -1644,7 +1644,6 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			key: 'draw',
 			value: function draw(force) {
 				if (!this.enabled || !force && this.paused) return;
-				//this._calcDanmakuPosition();
 				this._clearCanvas(force);
 				this.activeRenderMode.draw(force);
 				//find danmaku from indexMark to current time
@@ -2232,6 +2231,7 @@ var Text3d = function (_Template) {
 
 				gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 			}
+			gl.flush();
 		}
 	}, {
 		key: 'clear',
@@ -2409,6 +2409,9 @@ var textModuleTemplate = function () {
 	}, {
 		key: "resize",
 		value: function resize() {}
+	}, {
+		key: "remove",
+		value: function remove() {}
 	}, {
 		key: "enable",
 		value: function enable() {}

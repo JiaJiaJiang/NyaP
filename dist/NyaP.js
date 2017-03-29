@@ -1385,32 +1385,17 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				opacity: 1
 			};
 
-			document.styleSheets[0].insertRule('.' + _this.randomText + '_fullfill{top:0;left:0;width:100%;height:100%;position:absolute;}', 0);
-			document.styleSheets[0].insertRule('#' + _this.randomText + '_textCanvasContainer canvas{top:0;left:0;position:absolute;}', 0);
-			document.styleSheets[0].insertRule('#' + _this.randomText + '_textCanvasContainer{overflow:hidden;}', 0);
-
 			defProp(_this, 'renderMode', { configurable: true });
 			defProp(_this, 'activeRenderMode', { configurable: true, value: {} });
-			_this.textCanvasContainer = document.createElement('div'); //for text canvas
-			_this.textCanvasContainer.classList.add(_this.randomText + '_fullfill');
-			_this.textCanvasContainer.id = _this.randomText + '_textCanvasContainer';
-			_this.canvas = document.createElement('canvas'); //the canvas
-			_this.canvas.classList.add(_this.randomText + '_fullfill');
-			_this.canvas.id = 'text2d';
-			_this.canvas3d = document.createElement('canvas'); //the canvas
-			_this.canvas3d.classList.add(_this.randomText + '_fullfill');
-			_this.canvas3d.id = 'text3d';
-			_this.textCanvasContainer.hidden = _this.canvas.hidden = _this.canvas3d.hidden = true;
-			_this.context2d = _this.canvas.getContext('2d'); //the canvas context
-			_this.context3d = _this.canvas3d.getContext('webgl'); //the canvas3d context
-			if (!_this.context3d) _this.context3d = _this.canvas3d.getContext('expeimental-webgl');
+			var con = _this.container = document.createElement('div');
+			con.classList.add(_this.randomText + '_fullfill');
+			frame.container.appendChild(con);
 
-			frame.container.appendChild(_this.canvas);
-			frame.container.appendChild(_this.canvas3d);
-			frame.container.appendChild(_this.textCanvasContainer);
 			_this.text2d = new _text2d2.default(_this);
 			_this.text3d = new _text3d2.default(_this);
 			_this.textCanvas = new _textCanvas2.default(_this);
+
+			_this.textCanvasContainer.hidden = _this.canvas.hidden = _this.canvas3d.hidden = true;
 			_this.modes = {
 				1: _this.textCanvas,
 				2: _this.text2d,
@@ -1429,13 +1414,15 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				clearWhenTimeReset: true, //clear danmaku on screen when the time is reset
 				speed: 6.5
 			};
-			document.addEventListener('visibilitychange', function (e) {
-				if (document.hidden) {
-					_this.pause();
-				} else {
-					_this.reCheckIndexMark();
-					if (_this.frame.working) _this.start();else {
-						_this.draw(true);
+			addEvents(document, {
+				visibilitychange: function visibilitychange(e) {
+					if (document.hidden) {
+						_this.pause();
+					} else {
+						_this.reCheckIndexMark();
+						if (_this.frame.working) _this.start();else {
+							_this.draw(true);
+						}
 					}
 				}
 			});
@@ -1451,25 +1438,9 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			value: function setRenderMode(n) {
 				if (this.renderMode === n) return;
 				if (!(n in this.modes) || !this.modes[n].supported) return;
-				this.activeRenderMode.hide && this.activeRenderMode.hide();
+				this.activeRenderMode.disable && this.activeRenderMode.disable();
 				this.clear();
-				switch (n) {
-					case 1:
-						{
-							this.textCanvasContainer.hidden = false;
-							break;
-						}
-					case 2:
-						{
-							useImageBitmap = !(this.canvas.hidden = false);
-							break;
-						}
-					case 3:
-						{
-							useImageBitmap = !(this.canvas3d.hidden = false);
-							break;
-						}
-				}
+				this.modes[n].enable();
 				defProp(this, 'activeRenderMode', { value: this.modes[n] });
 				defProp(this, 'renderMode', { value: n });
 			}
@@ -1797,6 +1768,11 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				this.pause();
 				this.clear();
 			}
+		}, {
+			key: 'useImageBitmap',
+			set: function set(v) {
+				useImageBitmap = v;
+			}
 		}]);
 
 		return TextDanmaku;
@@ -2067,6 +2043,11 @@ var Text2d = function () {
 
 		this.supported = false;
 		this.dText = dText;
+		dText.canvas = document.createElement('canvas'); //the canvas
+		dText.canvas.classList.add(dText.randomText + '_fullfill');
+		dText.canvas.id = 'text2d';
+		dText.context2d = dText.canvas.getContext('2d'); //the canvas context
+		dText.container.appendChild(dText.canvas);
 		if (!dText.context2d) {
 			console.warn('text 2d not supported');
 			return;
@@ -2105,6 +2086,11 @@ var Text2d = function () {
 					ctx.clearRect(t.style.x - t.estimatePadding, t.style.y - t.estimatePadding, t._cache.width, t._cache.height);
 				}
 			}
+		}
+	}, {
+		key: 'enable',
+		value: function enable() {
+			this.dText.useImageBitmap = !(this.dText.canvas.hidden = false);
 		}
 	}, {
 		key: 'disable',
@@ -2150,6 +2136,13 @@ var Text3d = function () {
 
 		this.dText = dText;
 		this.supported = false;
+		dText.canvas3d = document.createElement('canvas'); //the canvas
+		dText.canvas3d.classList.add(dText.randomText + '_fullfill');
+		dText.canvas3d.id = 'text3d';
+		dText.context3d = dText.canvas3d.getContext('webgl'); //the canvas3d context
+		dText.container.appendChild(dText.canvas3d);
+		if (!dText.context3d) dText.context3d = dText.canvas3d.getContext('expeimental-webgl');
+
 		if (!dText.context3d) {
 			console.warn('text 3d not supported');
 			return;
@@ -2252,6 +2245,11 @@ var Text3d = function () {
 			gl.uniformMatrix4fv(this.u2dCoord, false, _Mat2.default.Identity(4).translate3d(-1, 1, 0).scale3d(2 / canvas.width, -2 / canvas.height, 0));
 		}
 	}, {
+		key: 'enable',
+		value: function enable() {
+			this.dText.useImageBitmap = this.dText.canvas3d.hidden = false;
+		}
+	}, {
 		key: 'disable',
 		value: function disable() {
 			this.dText.canvas3d.hidden = true;
@@ -2290,7 +2288,7 @@ var commonTextureCoord = new Float32Array([0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.
 exports.default = Text3d;
 
 },{"../lib/Mat/Mat.js":4}],10:[function(require,module,exports){
-"use strict";
+'use strict';
 
 Object.defineProperty(exports, "__esModule", {
 	value: true
@@ -2311,35 +2309,48 @@ var TextCanvas = function () {
 
 		this.dText = dText;
 		this.supported = dText.text2d.supported;
+		document.styleSheets[0].insertRule('.' + dText.randomText + '_fullfill{top:0;left:0;width:100%;height:100%;position:absolute;}', 0);
+		document.styleSheets[0].insertRule('#' + dText.randomText + '_textCanvasContainer canvas{top:0;left:0;position:absolute;}', 0);
+		document.styleSheets[0].insertRule('#' + dText.randomText + '_textCanvasContainer{pointer-events:none;transform:translateZ(0);overflow:hidden;}', 0);
+
+		dText.textCanvasContainer = document.createElement('div'); //for text canvas
+		dText.textCanvasContainer.classList.add(dText.randomText + '_fullfill');
+		dText.textCanvasContainer.id = dText.randomText + '_textCanvasContainer';
+		dText.container.appendChild(dText.textCanvasContainer);
 	}
 
 	_createClass(TextCanvas, [{
-		key: "draw",
+		key: 'draw',
 		value: function draw(force) {
 			var gl = this.gl,
 			    l = this.dText.DanmakuText.length;
 			for (var i = 0, t; i < l; i++) {
 				t = this.dText.DanmakuText[i];
-				t._cache.style.transform = "translate3d(" + (t.style.x - t.estimatePadding) + "px," + (t.style.y - t.estimatePadding) + "px,0)";
+				t._cache.style.transform = 'translate3d(' + ((t.style.x - t.estimatePadding) * 10 | 0) / 10 + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
 			}
 		}
 	}, {
-		key: "clear",
+		key: 'clear',
 		value: function clear() {}
 	}, {
-		key: "remove",
+		key: 'remove',
 		value: function remove(t) {
 			this.dText.textCanvasContainer.removeChild(t._cache);
 		}
 	}, {
-		key: "hide",
-		value: function hide() {
+		key: 'enable',
+		value: function enable() {
+			this.dText.textCanvasContainer.hidden = false;
+		}
+	}, {
+		key: 'disable',
+		value: function disable() {
 			this.dText.textCanvasContainer.hidden = true;
 		}
 	}, {
-		key: "newDanmaku",
+		key: 'newDanmaku',
 		value: function newDanmaku(t) {
-			t._cache.style.transform = "translate3d(" + (t.style.x - t.estimatePadding) + "px," + (t.style.y - t.estimatePadding) + "px,0)";
+			t._cache.style.transform = 'translate3d(' + ((t.style.x - t.estimatePadding) * 10 | 0) / 10 + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
 			this.dText.textCanvasContainer.appendChild(t._cache);
 		}
 	}]);
@@ -2589,6 +2600,7 @@ var NyaP = function (_NyaPlayerCore) {
 		var $ = _this.eles = { document: document };
 		_this._.playerMode = 'normal';
 		var video = _this.video;
+		video.controls = false;
 		var icons = {
 			play: [30, 30, '<path d="m10.063,8.856l9.873,6.143l-9.873,6.143v-12.287z" stroke-width="3" stroke-linejoin="round"/>'],
 			addDanmaku: [30, 30, '<path stroke-width="1.5" d="m20.514,20.120l0.551,-1.365l2.206,-0.341l-2.757,1.706h-13.787v-10.240h16.544v8.533" stroke-linejoin="round"/>' + '<path style="fill-opacity:1;stroke-width:0" d="m12.081,13.981h1.928v-1.985h1.978v1.985h1.928v2.036h-1.928v1.985h-1.978v-1.985h-1.928v-2.036z"/>'],
@@ -2617,17 +2629,17 @@ var NyaP = function (_NyaPlayerCore) {
 		}
 
 		_this._.player = (0, _Object2HTML2.default)({
-			_: 'div', attr: { 'class': 'NyaP' }, child: [{ _: 'div', attr: { id: 'video_frame' }, child: [video, _this.danmakuFrame.container] }, { _: 'div', attr: { id: 'control' }, child: [{ _: 'span', attr: { id: 'control_left' }, child: [icon('play', { click: function click(e) {
-							return _this.playToggle();
-						} }, { title: _('play') })] }, { _: 'span', attr: { id: 'control_center' }, child: [{ _: 'div', prop: { id: 'progress_info' }, child: [{ _: 'span', child: [{ _: 'canvas', prop: { id: 'progress', pad: 10 } }] }, { _: 'span', prop: { id: 'time' }, child: [{ _: 'span', prop: { id: 'current_time' }, child: ['00:00'] }, '/', { _: 'span', prop: { id: 'total_time' }, child: ['00:00'] }] }] }, { _: 'div', prop: { id: 'danmaku_input_frame' }, child: [{ _: 'span', prop: { id: 'danmaku_style' }, child: [{ _: 'div', attr: { id: 'danmaku_style_pannel' }, child: [{ _: 'div', attr: { id: 'danmaku_color_box' } }, { _: 'input', attr: { id: 'danmaku_color', placeholder: _('hex color'), maxlength: "6" } }, { _: 'span', attr: { id: 'danmaku_mode_box' } }, { _: 'span', attr: { id: 'danmaku_size_box' } }] }, icon('danmakuStyle')] }, { _: 'input', attr: { id: 'danmaku_input', placeholder: _('Input danmaku here') } }, { _: 'span', prop: { id: 'danmaku_submit', innerHTML: _('Send') } }] }] }, { _: 'span', attr: { id: 'control_right' }, child: [icon('addDanmaku', { click: function click(e) {
-							return _this.danmakuInput();
-						} }, { title: _('danmaku input') }), icon('volume', {}, { title: _('volume($0)', '100%') }), icon('loop', { click: function click(e) {
-							return _this.loop();
-						} }, { title: _('loop') }), { _: 'span', prop: { id: 'player_mode' }, child: [icon('fullPage', { click: function click(e) {
-								return _this.playerMode('fullPage');
-							} }, { title: _('full page') }), icon('fullScreen', { click: function click(e) {
-								return _this.playerMode('fullScreen');
-							} }, { title: _('full screen') })] }] }] }]
+			_: 'div', attr: { 'class': 'NyaP' }, child: [{ _: 'div', attr: { id: 'video_frame' }, child: [video, _this.danmakuFrame.container] }, { _: 'div', attr: { id: 'controls' }, child: [{ _: 'div', attr: { id: 'control' }, child: [{ _: 'span', attr: { id: 'control_left' }, child: [icon('play', { click: function click(e) {
+								return _this.playToggle();
+							} }, { title: _('play') })] }, { _: 'span', attr: { id: 'control_center' }, child: [{ _: 'div', prop: { id: 'progress_info' }, child: [{ _: 'span', child: [{ _: 'canvas', prop: { id: 'progress', pad: 10 } }] }, { _: 'span', prop: { id: 'time' }, child: [{ _: 'span', prop: { id: 'current_time' }, child: ['00:00'] }, '/', { _: 'span', prop: { id: 'total_time' }, child: ['00:00'] }] }] }, { _: 'div', prop: { id: 'danmaku_input_frame' }, child: [{ _: 'span', prop: { id: 'danmaku_style' }, child: [{ _: 'div', attr: { id: 'danmaku_style_pannel' }, child: [{ _: 'div', attr: { id: 'danmaku_color_box' } }, { _: 'input', attr: { id: 'danmaku_color', placeholder: _('hex color'), maxlength: "6" } }, { _: 'span', attr: { id: 'danmaku_mode_box' } }, { _: 'span', attr: { id: 'danmaku_size_box' } }] }, icon('danmakuStyle')] }, { _: 'input', attr: { id: 'danmaku_input', placeholder: _('Input danmaku here') } }, { _: 'span', prop: { id: 'danmaku_submit', innerHTML: _('Send') } }] }] }, { _: 'span', attr: { id: 'control_right' }, child: [icon('addDanmaku', { click: function click(e) {
+								return _this.danmakuInput();
+							} }, { title: _('danmaku input') }), icon('volume', {}, { title: _('volume($0)', '100%') }), icon('loop', { click: function click(e) {
+								return _this.loop();
+							} }, { title: _('loop') }), { _: 'span', prop: { id: 'player_mode' }, child: [icon('fullPage', { click: function click(e) {
+									return _this.playerMode('fullPage');
+								} }, { title: _('full page') }), icon('fullScreen', { click: function click(e) {
+									return _this.playerMode('fullScreen');
+								} }, { title: _('full screen') })] }] }] }] }]
 		});
 
 		//add elements with id to eles prop

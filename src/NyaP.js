@@ -43,6 +43,7 @@ class NyaP extends NyaPlayerCore{
 		const $=this.eles={document};
 		this._.playerMode='normal';
 		const video=this.video;
+		video.controls=false;
 		const icons={
 			play:[30,30,'<path d="m10.063,8.856l9.873,6.143l-9.873,6.143v-12.287z" stroke-width="3" stroke-linejoin="round"/>'],
 			addDanmaku:[30,30,'<path stroke-width="1.5" d="m20.514,20.120l0.551,-1.365l2.206,-0.341l-2.757,1.706h-13.787v-10.240h16.544v8.533" stroke-linejoin="round"/>'
@@ -77,44 +78,47 @@ class NyaP extends NyaPlayerCore{
 					video,
 					this.danmakuFrame.container
 				]},
-				{_:'div',attr:{id:'control'},child:[
-					{_:'span',attr:{id:'control_left'},child:[
-						icon('play',{click:e=>this.playToggle()},{title:_('play')}),
-					]},
-					{_:'span',attr:{id:'control_center'},child:[
-						{_:'div',prop:{id:'progress_info'},child:[
-							{_:'span',child:[
-								{_:'canvas',prop:{id:'progress',pad:10}},
-							]},
-							{_:'span',prop:{id:'time'},child:[
-								{_:'span',prop:{id:'current_time'},child:['00:00']},
-								'/',
-								{_:'span',prop:{id:'total_time'},child:['00:00']},
-							]},
+				{_:'div',attr:{id:'controls'},child:[
+					{_:'div',attr:{id:'control'},child:[
+						{_:'span',attr:{id:'control_left'},child:[
+							icon('play',{click:e=>this.playToggle()},{title:_('play')}),
 						]},
-						{_:'div',prop:{id:'danmaku_input_frame'},child:[
-							{_:'span',prop:{id:'danmaku_style'},child:[
-								{_:'div',attr:{id:'danmaku_style_pannel'},child:[
-									{_:'div',attr:{id:'danmaku_color_box'}},
-									{_:'input',attr:{id:'danmaku_color',placeholder:_('hex color'),maxlength:"6"}},
-									{_:'span',attr:{id:'danmaku_mode_box'}},
-									{_:'span',attr:{id:'danmaku_size_box'}},
+						{_:'span',attr:{id:'control_center'},child:[
+							{_:'div',prop:{id:'progress_info'},child:[
+								{_:'span',child:[
+									{_:'canvas',prop:{id:'progress',pad:10}},
 								]},
-								icon('danmakuStyle'),
+								{_:'span',prop:{id:'time'},child:[
+									{_:'span',prop:{id:'current_time'},child:['00:00']},
+									'/',
+									{_:'span',prop:{id:'total_time'},child:['00:00']},
+								]},
 							]},
-							{_:'input',attr:{id:'danmaku_input',placeholder:_('Input danmaku here')}},
-							{_:'span',prop:{id:'danmaku_submit',innerHTML:_('Send')}},
-						]}
-					]},
-					{_:'span',attr:{id:'control_right'},child:[
-						icon('addDanmaku',{click:e=>this.danmakuInput()},{title:_('danmaku input')}),
-						icon('volume',{},{title:_('volume($0)','100%')}),
-						icon('loop',{click:e=>this.loop()},{title:_('loop')}),
-						{_:'span',prop:{id:'player_mode'},child:[
-							icon('fullPage',{click:e=>this.playerMode('fullPage')},{title:_('full page')}),
-							icon('fullScreen',{click:e=>this.playerMode('fullScreen')},{title:_('full screen')})
-						]}
-					]},
+							{_:'div',prop:{id:'danmaku_input_frame'},child:[
+								{_:'span',prop:{id:'danmaku_style'},child:[
+									{_:'div',attr:{id:'danmaku_style_pannel'},child:[
+										{_:'div',attr:{id:'danmaku_color_box'}},
+										{_:'input',attr:{id:'danmaku_color',placeholder:_('hex color'),maxlength:"6"}},
+										{_:'span',attr:{id:'danmaku_mode_box'}},
+										{_:'span',attr:{id:'danmaku_size_box'}},
+									]},
+									icon('danmakuStyle'),
+								]},
+								{_:'input',attr:{id:'danmaku_input',placeholder:_('Input danmaku here')}},
+								{_:'span',prop:{id:'danmaku_submit',innerHTML:_('Send')}},
+							]}
+						]},
+						{_:'span',attr:{id:'control_right'},child:[
+							icon('addDanmaku',{click:e=>this.danmakuInput()},{title:_('danmaku input')}),
+							icon('volume',{},{title:_('volume($0)','100%')}),
+							icon('loop',{click:e=>this.loop()},{title:_('loop')}),
+							{_:'span',prop:{id:'player_mode'},child:[
+								icon('fullPage',{click:e=>this.playerMode('fullPage')},{title:_('full page')}),
+								icon('fullScreen',{click:e=>this.playerMode('fullScreen')},{title:_('full screen')})
+							]}
+						]},
+					]}
+					
 				]}
 			]
 		});

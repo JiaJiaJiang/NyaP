@@ -2,13 +2,13 @@
 Copyright luojia@luojia.me
 LGPL license
 */
-.NyaP_fullfill, .NyaP, .NyaP > #video_frame, .NyaP > #video_frame > video#main_video, .NyaP > #video_frame > div#danmaku_container, .NyaP canvas#progress, .NyaP #progress_info, .NyaP #danmaku_input_frame { top: 0; left: 0; width: 100%; height: 100%; position: absolute; }
+.NyaP_fullfill, .NyaP, .NyaP > #video_frame, .NyaP > #video_frame > video#main_video, .NyaP > #video_frame > div#danmaku_container, .NyaP > #controls, .NyaP #control, .NyaP canvas#progress, .NyaP #progress_info, .NyaP #danmaku_input_frame { top: 0; left: 0; width: 100%; height: 100%; position: absolute; transform: translateZ(0); }
 
 .NyaP[playerMode="fullScreen"] #video_frame { bottom: 0 !important; }
 
-.NyaP[playerMode="fullScreen"] #control { opacity: 0; }
+.NyaP[playerMode="fullScreen"] #controls { opacity: 0; }
 
-.NyaP[playerMode="fullScreen"] #control:hover { transition: opacity .2s ease-in .2s; }
+.NyaP[playerMode="fullScreen"] #controls:hover { transition: opacity .2s ease-in .2s; }
 
 .NyaP a { text-decoration: none; }
 
@@ -28,15 +28,17 @@ LGPL license
 
 .NyaP > #video_frame > div#danmaku_container { pointer-events: none; }
 
-.NyaP > #control { left: 0; bottom: 0; width: 100%; height: 30px; opacity: 1; display: flex; flex-wrap: nowrap; user-select: none; position: absolute; align-items: stretch; transition: opacity .2s; background-color: #f7f8f9; border-top: 0.5px solid #a7a7a7; }
+.NyaP > #controls { top: auto; bottom: 0; height: 30px; }
 
-.NyaP > #control:hover { opacity: 1; }
+.NyaP #control { opacity: 1; display: flex; flex-wrap: nowrap; user-select: none; align-items: stretch; transition: opacity .2s; background-color: #f7f8f9; border-top: 0.5px solid #a7a7a7; }
 
-.NyaP > #control span[id^="control_"] { display: flex; flex-wrap: nowrap; background-color: inherit; }
+.NyaP #control:hover { opacity: 1; }
 
-.NyaP > #control span[id^="control_"] > span { cursor: pointer; position: relative; background-color: inherit; }
+.NyaP #control span[id^="control_"] { display: flex; flex-wrap: nowrap; background-color: inherit; }
 
-.NyaP > #control > span > span { display: flex; }
+.NyaP #control span[id^="control_"] > span { cursor: pointer; position: relative; background-color: inherit; }
+
+.NyaP #control > span > span { display: flex; }
 
 .NyaP #control_left *:last-child { margin-right: 2px; }
 

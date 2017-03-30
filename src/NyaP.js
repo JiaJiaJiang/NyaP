@@ -269,7 +269,7 @@ class NyaP extends NyaPlayerCore{
 				}
 			},
 			danmaku_input:{
-				keydown:e=>{if(e.code==='Enter')this.send();}
+				keydown:e=>{if(e.key==='Enter')this.send();}
 			},
 			danmaku_submit:{
 				click:e=>{this.send();}

@@ -1384,6 +1384,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				reverse: false,
 				opacity: 1
 			};
+			document.styleSheets[0].insertRule('.' + _this.randomText + '_fullfill{transform:translateZ(0);top:0;left:0;width:100%;height:100%;position:absolute;}', 0);
 
 			defProp(_this, 'renderMode', { configurable: true });
 			defProp(_this, 'activeRenderMode', { configurable: true, value: null });
@@ -1438,8 +1439,8 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			value: function setRenderMode(n) {
 				if (this.renderMode === n) return;
 				if (!(n in this.modes) || !this.modes[n].supported) return;
-				this.activeRenderMode && this.activeRenderMode.disable();
 				this.clear();
+				this.activeRenderMode && this.activeRenderMode.disable();
 				this.modes[n].enable();
 				defProp(this, 'activeRenderMode', { value: this.modes[n] });
 				defProp(this, 'renderMode', { value: n });
@@ -1624,13 +1625,13 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			}
 		}, {
 			key: '_cleanCache',
-			value: function _cleanCache() {
+			value: function _cleanCache(force) {
 				//clean text object cache
 				var now = Date.now();
-				if (this.GraphCache.length > 30) {
+				if (this.GraphCache.length > 30 || force) {
 					//save 20 cached danmaku
 					for (var ti = 0; ti < this.GraphCache.length; ti++) {
-						if (now - this.GraphCache[ti].removeTime > 10000) {
+						if (force || now - this.GraphCache[ti].removeTime > 10000) {
 							//delete cache which has not used for 10s
 							this.activeRenderMode.deleteTextObject(this.GraphCache[ti]);
 							this.GraphCache.splice(ti, 1);
@@ -2030,10 +2031,9 @@ var Text2d = function (_Template) {
 	function Text2d(dText) {
 		_classCallCheck(this, Text2d);
 
-		var _this = _possibleConstructorReturn(this, (Text2d.__proto__ || Object.getPrototypeOf(Text2d)).call(this));
+		var _this = _possibleConstructorReturn(this, (Text2d.__proto__ || Object.getPrototypeOf(Text2d)).call(this, dText));
 
 		_this.supported = false;
-		_this.dText = dText;
 		dText.canvas = document.createElement('canvas'); //the canvas
 		dText.canvas.classList.add(dText.randomText + '_fullfill');
 		dText.canvas.id = 'text2d';
@@ -2142,15 +2142,14 @@ var Text3d = function (_Template) {
 	function Text3d(dText) {
 		_classCallCheck(this, Text3d);
 
-		var _this = _possibleConstructorReturn(this, (Text3d.__proto__ || Object.getPrototypeOf(Text3d)).call(this));
+		var _this = _possibleConstructorReturn(this, (Text3d.__proto__ || Object.getPrototypeOf(Text3d)).call(this, dText));
 
-		_this.dText = dText;
 		_this.supported = false;
 		dText.canvas3d = document.createElement('canvas'); //the canvas
 		dText.canvas3d.classList.add(dText.randomText + '_fullfill');
 		dText.canvas3d.id = 'text3d';
-		dText.context3d = dText.canvas3d.getContext('webgl'); //the canvas3d context
 		dText.container.appendChild(dText.canvas3d);
+		dText.context3d = dText.canvas3d.getContext('webgl'); //the canvas3d context
 		if (!dText.context3d) dText.context3d = dText.canvas3d.getContext('expeimental-webgl');
 
 		if (!dText.context3d) {
@@ -2217,26 +2216,32 @@ var Text3d = function (_Template) {
 	_createClass(Text3d, [{
 		key: 'draw',
 		value: function draw(force) {
+			var _this2 = this;
+
 			var gl = this.gl,
 			    l = this.dText.DanmakuText.length;
-			for (var i = 0, t; i < l; i++) {
-				t = this.dText.DanmakuText[i];
-				if (!t.glDanmaku) continue;
-				gl.uniform2f(this.uDanmakuPos, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding);
+			setImmediate(function () {
+				_this2.gl.clear(_this2.gl.COLOR_BUFFER_BIT);
 
-				gl.bindBuffer(gl.ARRAY_BUFFER, t.verticesBuffer);
-				gl.vertexAttribPointer(this.aVertexPosition, 2, gl.FLOAT, false, 0, 0);
+				for (var i = 0, t; i < l; i++) {
+					t = _this2.dText.DanmakuText[i];
+					if (!t.glDanmaku) continue;
+					gl.uniform2f(_this2.uDanmakuPos, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding);
 
-				gl.bindTexture(gl.TEXTURE_2D, t.texture);
+					gl.bindBuffer(gl.ARRAY_BUFFER, t.verticesBuffer);
+					gl.vertexAttribPointer(_this2.aVertexPosition, 2, gl.FLOAT, false, 0, 0);
 
-				gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-			}
-			gl.flush();
+					gl.bindTexture(gl.TEXTURE_2D, t.texture);
+
+					gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+				}
+				gl.flush();
+			});
 		}
 	}, {
 		key: 'clear',
 		value: function clear() {
-			this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+			//this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 		}
 	}, {
 		key: 'deleteTextObject',
@@ -2264,6 +2269,7 @@ var Text3d = function (_Template) {
 	}, {
 		key: 'disable',
 		value: function disable() {
+			this.dText._cleanCache(true);
 			this.dText.canvas3d.hidden = true;
 		}
 	}, {
@@ -2330,11 +2336,9 @@ var TextCanvas = function (_Template) {
 	function TextCanvas(dText) {
 		_classCallCheck(this, TextCanvas);
 
-		var _this = _possibleConstructorReturn(this, (TextCanvas.__proto__ || Object.getPrototypeOf(TextCanvas)).call(this));
+		var _this = _possibleConstructorReturn(this, (TextCanvas.__proto__ || Object.getPrototypeOf(TextCanvas)).call(this, dText));
 
-		_this.dText = dText;
 		_this.supported = dText.text2d.supported;
-		document.styleSheets[0].insertRule('.' + dText.randomText + '_fullfill{top:0;left:0;width:100%;height:100%;position:absolute;}', 0);
 		document.styleSheets[0].insertRule('#' + dText.randomText + '_textCanvasContainer canvas{top:0;left:0;position:absolute;}', 0);
 		document.styleSheets[0].insertRule('#' + dText.randomText + '_textCanvasContainer{pointer-events:none;transform:translateZ(0);overflow:hidden;}', 0);
 
@@ -2396,8 +2400,10 @@ LGPL license
 
 */
 var textModuleTemplate = function () {
-	function textModuleTemplate() {
+	function textModuleTemplate(dText) {
 		_classCallCheck(this, textModuleTemplate);
+
+		this.dText = dText;
 	}
 
 	_createClass(textModuleTemplate, [{
@@ -2871,7 +2877,7 @@ var NyaP = function (_NyaPlayerCore) {
 			},
 			danmaku_input: {
 				keydown: function keydown(e) {
-					if (e.code === 'Enter') _this.send();
+					if (e.key === 'Enter') _this.send();
 				}
 			},
 			danmaku_submit: {

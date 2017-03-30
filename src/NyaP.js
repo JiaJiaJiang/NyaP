@@ -30,8 +30,8 @@ const NyaPOptions={
 	defaultDanmakuColor:null,//a hex color(without #),when the color inputed is invalid,this color will be applied
 	defaultDanmakuMode:0,//right
 	danmakuSend:(d,callback)=>{callback(false);},//the func for sending danmaku
-	danmakuSizes:[25,30,45],
-	defaultDanmakuSize:30,
+	danmakuSizes:[20,24,36],
+	defaultDanmakuSize:24,
 }
 
 //normal player

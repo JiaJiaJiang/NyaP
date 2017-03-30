@@ -48,6 +48,7 @@ window.addEventListener('load',function(){
 	var danmakus=[],textDM={_:'text'};
 	for(var i=0;i<rawDanmakuList.length;i++){
 		var item=rawDanmakuList[i];
+		item.s=item.s*0.85;
 		danmakus.push(Object.assign(Object.create(textDM),{text:item.c,time:item.t,mode:item.ty,style:{fontSize:item.s,color:'#'+(item.co||'fff')},date:item.d,id:item.id}));
 	}
 	NP.loadDanmakuList(danmakus);

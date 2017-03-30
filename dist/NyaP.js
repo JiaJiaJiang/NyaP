@@ -369,7 +369,7 @@ var DanmakuFrame = function () {
 	}, {
 		key: 'load',
 		value: function load(danmakuObj) {
-			this.moduleFunction('load');
+			this.moduleFunction('load', danmakuObj);
 		}
 	}, {
 		key: 'loadList',
@@ -1371,19 +1371,16 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				fontVariant: null,
 				color: "#fff",
 				lineHeight: null, //when this style is was not a number,the number will be the same as fontSize
-				fontSize: 30,
+				fontSize: 24,
 				fontFamily: "Arial",
-				strokeWidth: 1.5, //outline width
+				strokeWidth: 1, //outline width
 				strokeColor: "#888",
 				shadowBlur: 5,
 				textAlign: 'start', //left right center start end
 				shadowColor: "#000",
 				shadowOffsetX: 0,
 				shadowOffsetY: 0,
-				fill: true, //if the text should be filled
-				reverse: false,
-				opacity: 1
-			};
+				fill: true };
 			document.styleSheets[0].insertRule('.' + _this.randomText + '_fullfill{transform:translateZ(0);top:0;left:0;width:100%;height:100%;position:absolute;}', 0);
 
 			defProp(_this, 'renderMode', { configurable: true });
@@ -1468,8 +1465,6 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			key: 'start',
 			value: function start() {
 				this.paused = false;
-				//this._clearCanvas(true);
-				//this.resetTimeOfDanmakuOnScreen();
 			}
 		}, {
 			key: 'pause',
@@ -1492,9 +1487,9 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				ind = dichotomy(arr, d.time, 0, arr.length - 1, false);
 				arr.splice(ind, 0, d);
 				if (ind < this.indexMark) this.indexMark++;
-				//round d.size to prevent Iifinity loop in tunnel
-				d.size = d.size + 0.5 | 0;
-				if (d.size === NaN || d.size === Infinity) d.size = this.defaultStyle.fontSize;
+				//round d.style.fontSize to prevent Iifinity loop in tunnel
+				d.style.fontSize = d.style.fontSize + 0.5 | 0;
+				if (d.style.fontSize === NaN || d.style.fontSize === Infinity || d.style.fontSize === 0) d.style.fontSize = this.defaultStyle.fontstyle.fontSize;
 				return d;
 			}
 		}, {
@@ -2349,10 +2344,21 @@ var TextCanvas = function (_Template) {
 	}
 
 	_createClass(TextCanvas, [{
-		key: 'danmakuPosition',
-		value: function danmakuPosition(t) {
-			t._cache.style.transform = 'translate3d(' + ((t.style.x - t.estimatePadding) * 10 | 0) / 10 + 'px,0,0)';
+		key: 'draw',
+		value: function draw() {
+			var _this2 = this;
+
+			setImmediate(function () {
+				for (var dT = _this2.dText, i = dT.DanmakuText.length, t; i--;) {
+					if ((t = dT.DanmakuText[i]).danmaku.mode >= 2) continue;
+					t._cache.style.transform = 'translate3d(' + ((t.style.x - t.estimatePadding) * 10 | 0) / 10 + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
+				}
+			});
 		}
+		/*danmakuPosition(t){
+  	t._cache.style.transform=`translate3d(${(((t.style.x-t.estimatePadding)*10)|0)/10}px,0,0)`;
+  }*/
+
 	}, {
 		key: 'remove',
 		value: function remove(t) {
@@ -2371,8 +2377,7 @@ var TextCanvas = function (_Template) {
 	}, {
 		key: 'newDanmaku',
 		value: function newDanmaku(t) {
-			t._cache.style.top = t.style.y - t.estimatePadding + 'px';
-			t._cache.style.transform = 'translate3d(' + ((t.style.x - t.estimatePadding) * 10 | 0) / 10 + 'px,0,0)';
+			t._cache.style.transform = 'translate3d(' + ((t.style.x - t.estimatePadding) * 10 | 0) / 10 + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
 			this.dText.textCanvasContainer.appendChild(t._cache);
 		}
 	}]);
@@ -2660,8 +2665,8 @@ var NyaPOptions = {
 	danmakuSend: function danmakuSend(d, callback) {
 		callback(false);
 	}, //the func for sending danmaku
-	danmakuSizes: [25, 30, 45],
-	defaultDanmakuSize: 30
+	danmakuSizes: [20, 24, 36],
+	defaultDanmakuSize: 24
 };
 
 //normal player

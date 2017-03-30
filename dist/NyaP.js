@@ -1586,7 +1586,8 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				var cWidth = this.canvas.width;
 				var R = void 0,
 				    i = void 0,
-				    t = void 0;
+				    t = void 0,
+				    style = void 0;
 				this.danmakuMoveTime = T;
 				for (i = this.DanmakuText.length; i--;) {
 					t = this.DanmakuText[i];
@@ -1594,16 +1595,18 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 						this.removeText(t);
 						continue;
 					}
+					style = t.style;
+
 					switch (t.danmaku.mode) {
 						case 0:case 1:
 							{
 								R = !t.danmaku.mode;
-								t.style.x = (R ? cWidth : -t.style.width) + (R ? -1 : 1) * F.rate * (t.style.width + 1024) * (T - t.time) * this.options.speed / 60000;
-								if (R && t.style.x < -t.style.width || !R && t.style.x > cWidth + t.style.width) {
+								style.x = (R ? cWidth : -style.width) + (R ? -1 : 1) * F.rate * (style.width + 1024) * (T - t.time) * this.options.speed / 60000;
+								if (R && style.x < -style.width || !R && style.x > cWidth + style.width) {
 									//go out the canvas
 									this.removeText(t);
 									continue;
-								} else if (t.tunnelNumber >= 0 && (R && t.style.x + t.style.width + 10 < cWidth || !R && t.style.x > 10)) {
+								} else if (t.tunnelNumber >= 0 && (R && style.x + style.width + 10 < cWidth || !R && style.x > 10)) {
 									this.tunnel.removeMark(t);
 								}
 								this.activeRenderMode.danmakuPosition(t);
@@ -2038,12 +2041,13 @@ var Text2d = function (_Template) {
 		dText.canvas = document.createElement('canvas'); //the canvas
 		dText.canvas.classList.add(dText.randomText + '_fullfill');
 		dText.canvas.id = 'text2d';
-		dText.context2d = dText.canvas.getContext('2d'); //the canvas context
-		dText.container.appendChild(dText.canvas);
+		dText.context2d = dText.canvas.getContext('2d'); //the canvas contex
 		if (!dText.context2d) {
 			console.warn('text 2d not supported');
 			return _possibleConstructorReturn(_this);
 		}
+		dText.container.appendChild(dText.canvas);
+		dText.context2d.globalCompositeOperation = 'hard-light';
 		_this.supported = true;
 		return _this;
 	}
@@ -2051,11 +2055,22 @@ var Text2d = function (_Template) {
 	_createClass(Text2d, [{
 		key: 'draw',
 		value: function draw(force) {
-			var ctx = this.dText.context2d;
-			for (var i = 0, t, dT = this.dText, l = dT.DanmakuText.length; i < l; i++) {
+			var ctx = this.dText.context2d,
+			    ca = ctx.canvas,
+			    cW = ca.width,
+			    dT = this.dText,
+			    i = dT.DanmakuText.length,
+			    t = void 0;
+			for (; i--;) {
 				t = dT.DanmakuText[i];
 				t.drawn || (t.drawn = true);
-				ctx.drawImage(t._bitmap || t._cache, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding);
+				if (cW >= t.style.width) {
+					ctx.drawImage(t._bitmap || t._cache, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding);
+				} else if (t.style.x - t.estimatePadding >= 0) {
+					ctx.drawImage(t._bitmap || t._cache, 0, 0, cW, t._cache.height, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding, cW, t._cache.height);
+				} else {
+					ctx.drawImage(t._bitmap || t._cache, t.estimatePadding - t.style.x, 0, cW, t._cache.height, 0, t.style.y - t.estimatePadding, cW, t._cache.height);
+				}
 			}
 		}
 	}, {
@@ -2142,7 +2157,6 @@ var Text3d = function (_Template) {
 		dText.canvas3d = document.createElement('canvas'); //the canvas
 		dText.canvas3d.classList.add(dText.randomText + '_fullfill');
 		dText.canvas3d.id = 'text3d';
-		dText.container.appendChild(dText.canvas3d);
 		dText.context3d = dText.canvas3d.getContext('webgl'); //the canvas3d context
 		if (!dText.context3d) dText.context3d = dText.canvas3d.getContext('expeimental-webgl');
 
@@ -2151,6 +2165,7 @@ var Text3d = function (_Template) {
 			return _possibleConstructorReturn(_this);
 		}
 		_this.supported = true;
+		dText.container.appendChild(dText.canvas3d);
 		var gl = _this.gl = dText.context3d,
 		    canvas = dText.canvas3d;
 		//init webgl
@@ -2333,6 +2348,7 @@ var TextCanvas = function (_Template) {
 		var _this = _possibleConstructorReturn(this, (TextCanvas.__proto__ || Object.getPrototypeOf(TextCanvas)).call(this, dText));
 
 		_this.supported = dText.text2d.supported;
+		if (!_this.supported) return _possibleConstructorReturn(_this);
 		document.styleSheets[0].insertRule('#' + dText.randomText + '_textCanvasContainer canvas{top:0;left:0;position:absolute;}', 0);
 		document.styleSheets[0].insertRule('#' + dText.randomText + '_textCanvasContainer{pointer-events:none;transform:translateZ(0);overflow:hidden;}', 0);
 

@@ -1830,6 +1830,12 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				//render text
 				if (!this._renderList) return;
 				ct.save();
+				if (this.danmaku.highlight) {
+					ct.fillStyle = 'rgba(255,255,255,0.3)';
+					ct.beginPath();
+					ct.rect(0, 0, this.style.width, this.style.height);
+					ct.fill();
+				}
 				ct.font = this._fontString; //set font
 				ct.textBaseline = 'top';
 				ct.lineWidth = this.font.strokeWidth;
@@ -2050,18 +2056,11 @@ var Text2d = function (_Template) {
 	_createClass(Text2d, [{
 		key: 'draw',
 		value: function draw(force) {
-			//this.clear(force);
 			var ctx = this.dText.context2d;
 			for (var i = 0, t, dT = this.dText, l = dT.DanmakuText.length; i < l; i++) {
 				t = dT.DanmakuText[i];
 				t.drawn || (t.drawn = true);
-				if (t.danmaku.highlight) {
-					ctx.fillStyle = 'rgba(255,255,255,0.3)';
-					ctx.beginPath();
-					ctx.rect(t.style.x, t.style.y, t.style.width, t.style.height);
-					ctx.fill();
-				}
-				ctx.drawImage(t._bitmap ? t._bitmap : t._cache, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding);
+				ctx.drawImage(t._bitmap || t._cache, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding);
 			}
 		}
 	}, {
@@ -2163,8 +2162,8 @@ var Text3d = function (_Template) {
 
 		//shader
 		var shaders = {
-			danmakuFrag: [gl.FRAGMENT_SHADER, '\n\t\t\tvarying lowp vec2 vDanmakuTexCoord;\n\t\t\tuniform sampler2D uSampler;\n\n\t\t\tvoid main(void) {\n\t\t\t\tgl_FragColor = texture2D(uSampler, vec2(vDanmakuTexCoord.s, vDanmakuTexCoord.t));\n\t\t\t}'],
-			danmakuVert: [gl.VERTEX_SHADER, '\n\t\t\tattribute vec2 aVertexPosition;\n\t\t\tattribute vec2 aDanmakuTexCoord;\n\n\t\t\tuniform mat4 u2dCoordinate;\n\t\t\tuniform vec2 uDanmakuPos;\n\n\t\t\tvarying lowp vec2 vDanmakuTexCoord;\n\n\t\t\tvoid main(void) {\n\t\t\t\tgl_Position = u2dCoordinate * vec4(aVertexPosition+uDanmakuPos,0,1);\n\t\t\t\tvDanmakuTexCoord = aDanmakuTexCoord;\n\t\t\t}']
+			danmakuFrag: [gl.FRAGMENT_SHADER, '\nvarying lowp vec2 vDanmakuTexCoord;\nuniform sampler2D uSampler;\n\nvoid main(void) {\n\tgl_FragColor = texture2D(uSampler,vDanmakuTexCoord);\n}'],
+			danmakuVert: [gl.VERTEX_SHADER, '\nattribute vec2 aVertexPosition;\nattribute vec2 aDanmakuTexCoord;\n\nuniform mat4 u2dCoordinate;\nuniform vec2 uDanmakuPos;\n\nvarying lowp vec2 vDanmakuTexCoord;\n\nvoid main(void) {\n\tgl_Position = u2dCoordinate * vec4(aVertexPosition+uDanmakuPos,0,1);\n\tvDanmakuTexCoord = aDanmakuTexCoord;\n}']
 		};
 		function shader(name) {
 			var s = gl.createShader(shaders[name][0]);

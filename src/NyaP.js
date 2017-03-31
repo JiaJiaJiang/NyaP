@@ -67,13 +67,14 @@ class NyaP extends NyaPlayerCore{
 				innerHTML:`<svg height=${ico[1]} width=${ico[0]} id="icon_${name}"">${ico[2]}</svg>`}});
 		}
 		function collectEles(ele){
+			if(ele.id&&!$[ele.id])$[ele.id]=ele;
 			toArray(ele.querySelectorAll('*')).forEach(e=>{
 				if(e.id&&!$[e.id])$[e.id]=e;
 			});
 		}
 
 		this._.player=O2H({
-			_:'div',attr:{'class':'NyaP'},child:[
+			_:'div',attr:{'class':'NyaP',id:'NyaP'},child:[
 				{_:'div',attr:{id:'video_frame'},child:[
 					video,
 					this.danmakuFrame.container
@@ -119,7 +120,8 @@ class NyaP extends NyaPlayerCore{
 						]},
 					]}
 					
-				]}
+				]},
+				{_:'input',attr:{style:'z-index:-99;position:absolute;bottom:0;',id:'keyEventInput'}}
 			]
 		});
 
@@ -166,6 +168,16 @@ class NyaP extends NyaPlayerCore{
 			}
 		});
 		const events={
+			NyaP:{
+				click:e=>{
+					if(e.target.tagName!=='INPUT')$.keyEventInput.focus();
+				}
+			},
+			keyEventInput:{
+				keydown:e=>{
+					console.log('input')
+				}
+			},
 			document:{
 				'fullscreenchange,mozfullscreenchange,webkitfullscreenchange,msfullscreenchange':e=>{
 					if(this._.playerMode=='fullScreen' && !isFullscreen())
@@ -187,7 +199,6 @@ class NyaP extends NyaPlayerCore{
 					this._setTimeInfo(formatTime(video.currentTime,video.duration));
 					this.drawProgress();
 					this._.lastTimeUpdate=Date.now();
-					//notevent||setTimeout(events.main_video.timeupdate,250,null,true);//for smooth progress bar
 				},
 				loadedmetadata:e=>{
 					this._setTimeInfo(null,formatTime(video.duration,video.duration));
@@ -316,9 +327,9 @@ class NyaP extends NyaPlayerCore{
 		});
 		
 	}
-	settingsBoxToggle(bool=!this.eles.settings_box.style.display){
+	/*settingsBoxToggle(bool=!this.eles.settings_box.style.display){
 		this.eles.settings_box.style.display=bool?'flex':'';
-	}
+	}*/
 	danmakuInput(bool=!this.eles.danmaku_input_frame.offsetHeight){
 		let $=this.eles;
 		$.danmaku_input_frame.style.display=bool?'flex':'';

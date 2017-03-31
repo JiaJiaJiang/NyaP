@@ -1463,11 +1463,13 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			key: 'start',
 			value: function start() {
 				this.paused = false;
+				this.activeRenderMode.start();
 			}
 		}, {
 			key: 'pause',
 			value: function pause() {
 				this.paused = true;
+				this.activeRenderMode.pause();
 			}
 		}, {
 			key: 'load',
@@ -1525,7 +1527,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				}
 				this.danmakuCheckTime = time;
 				//calc all danmaku's position
-				this._calcDanmakuPosition();
+				this._calcDanmakusPosition();
 			}
 		}, {
 			key: '_addNewDanmaku',
@@ -1566,25 +1568,43 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 							t.style.y = cHeight - margin - t.style.height - 1;
 						}
 				}
-				if (d.mode > 1) {
-					t.style.x = (cWidth - t.style.width) / 2;
-				} else {
-					t.style.x = cWidth;
+				switch (d.mode) {
+					case 0:
+						{
+							t.style.x = cWidth;break;
+						}
+					case 1:
+						{
+							t.style.x = -t.style.width;break;
+						}
+					case 2:case 3:
+						{
+							t.style.x = (cWidth - t.style.width) / 2;
+						}
 				}
 				this.DanmakuText.push(t);
 				this.activeRenderMode.newDanmaku(t);
 			}
 		}, {
-			key: '_calcDanmakuPosition',
-			value: function _calcDanmakuPosition() {
+			key: '_calcSideDanmakuPosition',
+			value: function _calcSideDanmakuPosition(t, T, cWidth) {
+				var R = !t.danmaku.mode,
+				    style = t.style;
+				return (R ? cWidth : -style.width) + (R ? -1 : 1) * this.frame.rate * (style.width + 1024) * (T - t.time) * this.options.speed / 60000;
+			}
+		}, {
+			key: '_calcDanmakusPosition',
+			value: function _calcDanmakusPosition() {
 				var F = this.frame,
 				    T = F.time;
 				if (this.danmakuMoveTime === T || this.paused) return;
-				var cWidth = this.canvas.width;
+				var cWidth = this.canvas.width,
+				    rMode = this.renderMode;
 				var R = void 0,
 				    i = void 0,
 				    t = void 0,
-				    style = void 0;
+				    style = void 0,
+				    X = void 0;
 				this.danmakuMoveTime = T;
 				for (i = this.DanmakuText.length; i--;) {
 					t = this.DanmakuText[i];
@@ -1598,10 +1618,11 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 						case 0:case 1:
 							{
 								R = !t.danmaku.mode;
-								style.x = (R ? cWidth : -style.width) + (R ? -1 : 1) * F.rate * (style.width + 1024) * (T - t.time) * this.options.speed / 60000;
-								if (t.tunnelNumber >= 0 && (R && style.x + style.width + 10 < cWidth || !R && style.x > 10)) {
+								X = this._calcSideDanmakuPosition(t, T, cWidth);
+								if (rMode !== 1) style.x = X;
+								if (t.tunnelNumber >= 0 && (R && X + style.width + 10 < cWidth || !R && X > 10)) {
 									this.tunnel.removeMark(t);
-								} else if (R && style.x < -style.width || !R && style.x > cWidth + style.width) {
+								} else if (R && X < -style.width - 10 || !R && X > cWidth + style.width + 10) {
 									//go out the canvas
 									this.removeText(t);
 									continue;
@@ -2357,6 +2378,7 @@ var TextCanvas = function (_Template) {
 		_this.supported = dText.text2d.supported;
 		if (!_this.supported) return _possibleConstructorReturn(_this);
 		document.styleSheets[0].insertRule('#' + dText.randomText + '_textCanvasContainer canvas{will-change:transform;top:0;left:0;position:absolute;}', 0);
+		document.styleSheets[0].insertRule('#' + dText.randomText + '_textCanvasContainer canvas.moving{transition:transform 100s linear;}', 0);
 		document.styleSheets[0].insertRule('#' + dText.randomText + '_textCanvasContainer{will-change:transform;pointer-events:none;overflow:hidden;}', 0);
 
 		dText.textCanvasContainer = document.createElement('div'); //for text canvas
@@ -2369,9 +2391,40 @@ var TextCanvas = function (_Template) {
 	_createClass(TextCanvas, [{
 		key: 'draw',
 		value: function draw() {
+			var _this2 = this;
+
+			setImmediate(function () {
+				var T = _this2.dText.frame.time;
+				for (var dT = _this2.dText, i = dT.DanmakuText.length, t; i--;) {
+					if ((t = dT.DanmakuText[i]).danmaku.mode >= 2) continue;
+					if (!t.running) {
+						var X = _this2.dText._calcSideDanmakuPosition(t, T + 100000, _this2.dText.canvas.width);
+						t._cache.style.transform = 'translate3d(' + ((X - t.estimatePadding) * 10 | 0) / 10 + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
+						t.running = true;
+					}
+				}
+			});
+		}
+	}, {
+		key: 'pause',
+		value: function pause() {
+			var T = this.dText.frame.time;
 			for (var dT = this.dText, i = dT.DanmakuText.length, t; i--;) {
 				if ((t = dT.DanmakuText[i]).danmaku.mode >= 2) continue;
-				t._cache.style.transform = 'translate3d(' + ((t.style.x - t.estimatePadding) * 10 | 0) / 10 + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
+				t._cache.className = 'paused';
+				var X = this.dText._calcSideDanmakuPosition(t, T, this.dText.canvas.width);
+				t._cache.style.transform = 'translate3d(' + ((X - t.estimatePadding) * 10 | 0) / 10 + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
+				t.running = false;
+			}
+		}
+	}, {
+		key: 'start',
+		value: function start() {
+			var T = this.dText.frame.time;
+			for (var dT = this.dText, i = dT.DanmakuText.length, t; i--;) {
+				if ((t = dT.DanmakuText[i]).danmaku.mode >= 2) continue;
+				t._cache.className = 'moving';
+				t.running = false;
 			}
 		}
 	}, {
@@ -2392,8 +2445,10 @@ var TextCanvas = function (_Template) {
 	}, {
 		key: 'newDanmaku',
 		value: function newDanmaku(t) {
+			t._cache.className = 'moving';
 			t._cache.style.transform = 'translate3d(' + ((t.style.x - t.estimatePadding) * 10 | 0) / 10 + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
 			this.dText.textCanvasContainer.appendChild(t._cache);
+			t.running = false;
 		}
 	}]);
 
@@ -2428,6 +2483,12 @@ var textModuleTemplate = function () {
 	_createClass(textModuleTemplate, [{
 		key: "draw",
 		value: function draw() {}
+	}, {
+		key: "pause",
+		value: function pause() {}
+	}, {
+		key: "start",
+		value: function start() {}
 	}, {
 		key: "clear",
 		value: function clear() {}
@@ -2719,13 +2780,14 @@ var NyaP = function (_NyaPlayerCore) {
 					innerHTML: '<svg height=' + ico[1] + ' width=' + ico[0] + ' id="icon_' + name + '"">' + ico[2] + '</svg>' } });
 		}
 		function collectEles(ele) {
+			if (ele.id && !$[ele.id]) $[ele.id] = ele;
 			(0, _NyaPCore.toArray)(ele.querySelectorAll('*')).forEach(function (e) {
 				if (e.id && !$[e.id]) $[e.id] = e;
 			});
 		}
 
 		_this._.player = (0, _Object2HTML2.default)({
-			_: 'div', attr: { 'class': 'NyaP' }, child: [{ _: 'div', attr: { id: 'video_frame' }, child: [video, _this.danmakuFrame.container] }, { _: 'div', attr: { id: 'controls' }, child: [{ _: 'div', attr: { id: 'control' }, child: [{ _: 'span', attr: { id: 'control_left' }, child: [icon('play', { click: function click(e) {
+			_: 'div', attr: { 'class': 'NyaP', id: 'NyaP' }, child: [{ _: 'div', attr: { id: 'video_frame' }, child: [video, _this.danmakuFrame.container] }, { _: 'div', attr: { id: 'controls' }, child: [{ _: 'div', attr: { id: 'control' }, child: [{ _: 'span', attr: { id: 'control_left' }, child: [icon('play', { click: function click(e) {
 								return _this.playToggle();
 							} }, { title: _('play') })] }, { _: 'span', attr: { id: 'control_center' }, child: [{ _: 'div', prop: { id: 'progress_info' }, child: [{ _: 'span', child: [{ _: 'canvas', prop: { id: 'progress', pad: 10 } }] }, { _: 'span', prop: { id: 'time' }, child: [{ _: 'span', prop: { id: 'current_time' }, child: ['00:00'] }, '/', { _: 'span', prop: { id: 'total_time' }, child: ['00:00'] }] }] }, { _: 'div', prop: { id: 'danmaku_input_frame' }, child: [{ _: 'span', prop: { id: 'danmaku_style' }, child: [{ _: 'div', attr: { id: 'danmaku_style_pannel' }, child: [{ _: 'div', attr: { id: 'danmaku_color_box' } }, { _: 'input', attr: { id: 'danmaku_color', placeholder: _('hex color'), maxlength: "6" } }, { _: 'span', attr: { id: 'danmaku_mode_box' } }, { _: 'span', attr: { id: 'danmaku_size_box' } }] }, icon('danmakuStyle')] }, { _: 'input', attr: { id: 'danmaku_input', placeholder: _('Input danmaku here') } }, { _: 'span', prop: { id: 'danmaku_submit', innerHTML: _('Send') } }] }] }, { _: 'span', attr: { id: 'control_right' }, child: [icon('addDanmaku', { click: function click(e) {
 								return _this.danmakuInput();
@@ -2735,7 +2797,7 @@ var NyaP = function (_NyaPlayerCore) {
 									return _this.playerMode('fullPage');
 								} }, { title: _('full page') }), icon('fullScreen', { click: function click(e) {
 									return _this.playerMode('fullScreen');
-								} }, { title: _('full screen') })] }] }] }] }]
+								} }, { title: _('full screen') })] }] }] }] }, { _: 'input', attr: { style: 'z-index:-99;position:absolute;bottom:0;', id: 'keyEventInput' } }]
 		});
 
 		//add elements with id to eles prop
@@ -2784,6 +2846,16 @@ var NyaP = function (_NyaPlayerCore) {
 			}
 		});
 		var events = {
+			NyaP: {
+				click: function click(e) {
+					if (e.target.tagName !== 'INPUT') $.keyEventInput.focus();
+				}
+			},
+			keyEventInput: {
+				keydown: function keydown(e) {
+					console.log('input');
+				}
+			},
 			document: {
 				'fullscreenchange,mozfullscreenchange,webkitfullscreenchange,msfullscreenchange': function fullscreenchangeMozfullscreenchangeWebkitfullscreenchangeMsfullscreenchange(e) {
 					if (_this._.playerMode == 'fullScreen' && !(0, _NyaPCore.isFullscreen)()) _this.playerMode('normal');
@@ -2804,7 +2876,6 @@ var NyaP = function (_NyaPlayerCore) {
 					_this._setTimeInfo((0, _NyaPCore.formatTime)(video.currentTime, video.duration));
 					_this.drawProgress();
 					_this._.lastTimeUpdate = Date.now();
-					//notevent||setTimeout(events.main_video.timeupdate,250,null,true);//for smooth progress bar
 				},
 				loadedmetadata: function loadedmetadata(e) {
 					_this._setTimeInfo(null, (0, _NyaPCore.formatTime)(video.duration, video.duration));
@@ -2953,13 +3024,10 @@ var NyaP = function (_NyaPlayerCore) {
 				}
 			});
 		}
-	}, {
-		key: 'settingsBoxToggle',
-		value: function settingsBoxToggle() {
-			var bool = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : !this.eles.settings_box.style.display;
+		/*settingsBoxToggle(bool=!this.eles.settings_box.style.display){
+  	this.eles.settings_box.style.display=bool?'flex':'';
+  }*/
 
-			this.eles.settings_box.style.display = bool ? 'flex' : '';
-		}
 	}, {
 		key: 'danmakuInput',
 		value: function danmakuInput() {

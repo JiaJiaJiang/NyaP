@@ -274,6 +274,10 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 },{}],3:[function(require,module,exports){
+/*
+Copyright luojia@luojia.me
+LGPL license
+*/
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -281,11 +285,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.ResizeSensor = exports.DanmakuFrameModule = exports.DanmakuFrame = undefined;
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /*
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     Copyright luojia@luojia.me
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     LGPL license
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     */
-
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _ResizeSensor = require('../lib/ResizeSensor.js');
 
@@ -294,8 +294,6 @@ var _ResizeSensor2 = _interopRequireDefault(_ResizeSensor);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-'use strict';
 
 var DanmakuFrame = function () {
 	function DanmakuFrame(container) {
@@ -1427,7 +1425,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			_this._checkNewDanmaku = _this._checkNewDanmaku.bind(_this);
 			_this._cleanCache = _this._cleanCache.bind(_this);
 			setInterval(_this._cleanCache, 5000); //set an interval for cache cleaning
-			_this.setRenderMode(1);
+			_this.setRenderMode(3);
 			return _this;
 		}
 
@@ -1454,10 +1452,10 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 						_this2._clearCanvas();
 					},
 					seeking: function seeking() {
-						_this2.pause();
+						return _this2.pause();
 					},
 					stalled: function stalled() {
-						_this2.pause();
+						return _this2.pause();
 					}
 				});
 			}
@@ -1552,9 +1550,8 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 					}
 				}
 
-				//t.style.opacity=t.font.opacity;
 				if (d.mode > 1) t.font.textAlign = 'center';
-				t.prepare();
+				t.prepare(this.renderMode === 3 ? false : true);
 				//find tunnel number
 				var tnum = this.tunnel.getTunnel(t, cHeight);
 				//calc margin
@@ -1602,14 +1599,13 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 							{
 								R = !t.danmaku.mode;
 								style.x = (R ? cWidth : -style.width) + (R ? -1 : 1) * F.rate * (style.width + 1024) * (T - t.time) * this.options.speed / 60000;
-								if (R && style.x < -style.width || !R && style.x > cWidth + style.width) {
+								if (t.tunnelNumber >= 0 && (R && style.x + style.width + 10 < cWidth || !R && style.x > 10)) {
+									this.tunnel.removeMark(t);
+								} else if (R && style.x < -style.width || !R && style.x > cWidth + style.width) {
 									//go out the canvas
 									this.removeText(t);
 									continue;
-								} else if (t.tunnelNumber >= 0 && (R && style.x + style.width + 10 < cWidth || !R && style.x > 10)) {
-									this.tunnel.removeMark(t);
 								}
-								this.activeRenderMode.danmakuPosition(t);
 								break;
 							}
 						case 2:case 3:
@@ -1747,7 +1743,10 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		}, {
 			key: 'useImageBitmap',
 			set: function set(v) {
-				useImageBitmap = v;
+				useImageBitmap = typeof createImageBitmap === 'function' ? v : false;
+			},
+			get: function get() {
+				return useImageBitmap;
 			}
 		}]);
 
@@ -1814,10 +1813,13 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				var _this5 = this;
 
 				this.render(this._cache.ctx2d);
-				if (useImageBitmap && typeof createImageBitmap === 'function') {
+				if (useImageBitmap) {
 					//use ImageBitmap
+					if (this._bitmap) {
+						this._bitmap.close();
+						this._bitmap = null;
+					}
 					createImageBitmap(this._cache).then(function (bitmap) {
-						if (_this5._bitmap) _this5._bitmap.close();
 						_this5._bitmap = bitmap;
 					});
 				}
@@ -2047,7 +2049,6 @@ var Text2d = function (_Template) {
 			return _possibleConstructorReturn(_this);
 		}
 		dText.container.appendChild(dText.canvas);
-		dText.context2d.globalCompositeOperation = 'hard-light';
 		_this.supported = true;
 		return _this;
 	}
@@ -2056,14 +2057,13 @@ var Text2d = function (_Template) {
 		key: 'draw',
 		value: function draw(force) {
 			var ctx = this.dText.context2d,
-			    ca = ctx.canvas,
-			    cW = ca.width,
-			    dT = this.dText,
-			    i = dT.DanmakuText.length,
+			    cW = ctx.canvas.width,
+			    dT = this.dText.DanmakuText,
+			    i = 0,
 			    t = void 0;
-			for (; i--;) {
-				t = dT.DanmakuText[i];
-				t.drawn || (t.drawn = true);
+
+			for (; i < dT.length; i++) {
+				(t = dT[i]).drawn || (t.drawn = true);
 				if (cW >= t.style.width) {
 					ctx.drawImage(t._bitmap || t._cache, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding);
 				} else if (t.style.x - t.estimatePadding >= 0) {
@@ -2215,7 +2215,7 @@ var Text3d = function (_Template) {
 		gl.bindBuffer(gl.ARRAY_BUFFER, _this.commonTexCoordBuffer);
 		gl.bufferData(gl.ARRAY_BUFFER, commonTextureCoord, gl.STATIC_DRAW);
 		gl.vertexAttribPointer(_this.atextureCoord, 2, gl.FLOAT, false, 0, 0);
-		gl.vertexAttribPointer(_this.aVertexPosition, 2, gl.FLOAT, false, 0, 0);
+		//gl.vertexAttribPointer(this.aVertexPosition,2,gl.FLOAT,false,0,0);
 
 		gl.activeTexture(gl.TEXTURE0);
 		gl.uniform1i(_this.uSampler, 0);
@@ -2225,32 +2225,30 @@ var Text3d = function (_Template) {
 	_createClass(Text3d, [{
 		key: 'draw',
 		value: function draw(force) {
-			var _this2 = this;
-
 			var gl = this.gl,
 			    l = this.dText.DanmakuText.length;
-			setImmediate(function () {
-				_this2.gl.clear(_this2.gl.COLOR_BUFFER_BIT);
+			//setImmediate(()=>{
+			//this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 
-				for (var i = 0, t; i < l; i++) {
-					t = _this2.dText.DanmakuText[i];
-					if (!t.glDanmaku) continue;
-					gl.uniform2f(_this2.uDanmakuPos, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding);
+			for (var i = 0, t; i < l; i++) {
+				t = this.dText.DanmakuText[i];
+				if (!t || !t.glDanmaku) continue;
+				gl.uniform2f(this.uDanmakuPos, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding);
 
-					gl.bindBuffer(gl.ARRAY_BUFFER, t.verticesBuffer);
-					gl.vertexAttribPointer(_this2.aVertexPosition, 2, gl.FLOAT, false, 0, 0);
+				gl.bindBuffer(gl.ARRAY_BUFFER, t.verticesBuffer);
+				gl.vertexAttribPointer(this.aVertexPosition, 2, gl.FLOAT, false, 0, 0);
 
-					gl.bindTexture(gl.TEXTURE_2D, t.texture);
+				gl.bindTexture(gl.TEXTURE_2D, t.texture);
 
-					gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-				}
-				gl.flush();
-			});
+				gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+			}
+			gl.flush();
+			//});
 		}
 	}, {
 		key: 'clear',
 		value: function clear() {
-			//this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+			this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 		}
 	}, {
 		key: 'deleteTextObject',
@@ -2303,7 +2301,7 @@ var Text3d = function (_Template) {
 			t.verticesBuffer || (t.verticesBuffer = gl.createBuffer());
 			gl.bindBuffer(gl.ARRAY_BUFFER, t.verticesBuffer);
 			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, t._cache.width, 0, 0, t._cache.height, t._cache.width, t._cache.height]), gl.STATIC_DRAW);
-			gl.bindBuffer(gl.ARRAY_BUFFER, null);
+			//gl.bindBuffer(gl.ARRAY_BUFFER,null);
 		}
 	}]);
 
@@ -2371,10 +2369,6 @@ var TextCanvas = function (_Template) {
 				}
 			});
 		}
-		/*danmakuPosition(t){
-  	t._cache.style.transform=`translate3d(${(((t.style.x-t.estimatePadding)*10)|0)/10}px,0,0)`;
-  }*/
-
 	}, {
 		key: 'remove',
 		value: function remove(t) {
@@ -2447,9 +2441,6 @@ var textModuleTemplate = function () {
 	}, {
 		key: "newDanmaku",
 		value: function newDanmaku() {}
-	}, {
-		key: "danmakuPosition",
-		value: function danmakuPosition() {}
 	}, {
 		key: "deleteTextObject",
 		value: function deleteTextObject() {}

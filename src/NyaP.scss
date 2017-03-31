@@ -33,8 +33,9 @@ LGPL license
 		}
 		#controls{
 			opacity: 0;
+			transition: opacity .2s ease-in .2s;
 			&:hover{
-				transition: opacity .2s ease-in .2s;
+				opacity:1;
 			}
 		}
 	}

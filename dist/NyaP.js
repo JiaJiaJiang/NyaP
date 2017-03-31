@@ -1685,6 +1685,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				var h = this.canvas.height = this.canvas3d.height = this.frame.container.offsetHeight;
 				this.text2d.resize(w, h);
 				this.text3d.resize(w, h);
+				this.textCanvas.resize(w, h);
 				this.draw(true);
 			}
 		}, {
@@ -2378,7 +2379,7 @@ var TextCanvas = function (_Template) {
 		_this.supported = dText.text2d.supported;
 		if (!_this.supported) return _possibleConstructorReturn(_this);
 		document.styleSheets[0].insertRule('#' + dText.randomText + '_textCanvasContainer canvas{will-change:transform;top:0;left:0;position:absolute;}', 0);
-		document.styleSheets[0].insertRule('#' + dText.randomText + '_textCanvasContainer canvas.moving{transition:transform 100s linear;}', 0);
+		document.styleSheets[0].insertRule('#' + dText.randomText + '_textCanvasContainer canvas.moving{transition:transform 500s linear;}', 0);
 		document.styleSheets[0].insertRule('#' + dText.randomText + '_textCanvasContainer{will-change:transform;pointer-events:none;overflow:hidden;}', 0);
 
 		dText.textCanvasContainer = document.createElement('div'); //for text canvas
@@ -2398,7 +2399,7 @@ var TextCanvas = function (_Template) {
 				for (var dT = _this2.dText, i = dT.DanmakuText.length, t; i--;) {
 					if ((t = dT.DanmakuText[i]).danmaku.mode >= 2) continue;
 					if (!t.running) {
-						var X = _this2.dText._calcSideDanmakuPosition(t, T + 100000, _this2.dText.canvas.width);
+						var X = _this2.dText._calcSideDanmakuPosition(t, T + 500000, _this2.dText.canvas.width);
 						t._cache.style.transform = 'translate3d(' + ((X - t.estimatePadding) * 10 | 0) / 10 + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
 						t.running = true;
 					}
@@ -2414,7 +2415,7 @@ var TextCanvas = function (_Template) {
 				t._cache.className = 'paused';
 				var X = this.dText._calcSideDanmakuPosition(t, T, this.dText.canvas.width);
 				t._cache.style.transform = 'translate3d(' + ((X - t.estimatePadding) * 10 | 0) / 10 + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
-				t.running = false;
+				t.running = true;
 			}
 		}
 	}, {
@@ -2426,6 +2427,16 @@ var TextCanvas = function (_Template) {
 				t._cache.className = 'moving';
 				t.running = false;
 			}
+		}
+	}, {
+		key: 'resize',
+		value: function resize() {
+			var _this3 = this;
+
+			this.pause();
+			if (!this.dText.paused) setImmediate(function () {
+				_this3.start();
+			});
 		}
 	}, {
 		key: 'remove',

@@ -6,7 +6,7 @@ LGPL license
 
 .NyaP[playerMode="fullScreen"] #video_frame { bottom: 0 !important; }
 
-.NyaP[playerMode="fullScreen"] #controls { opacity: 0; transition: opacity .2s ease-in .2s; }
+.NyaP[playerMode="fullScreen"] #controls { opacity: 0; will-change: opacity; transition: opacity .2s ease-in .2s; }
 
 .NyaP[playerMode="fullScreen"] #controls:hover { opacity: 1; }
 

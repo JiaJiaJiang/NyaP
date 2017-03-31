@@ -1379,7 +1379,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				shadowOffsetX: 0,
 				shadowOffsetY: 0,
 				fill: true };
-			document.styleSheets[0].insertRule('.' + _this.randomText + '_fullfill{transform:translateZ(0);top:0;left:0;width:100%;height:100%;position:absolute;}', 0);
+			document.styleSheets[0].insertRule('.' + _this.randomText + '_fullfill{top:0;left:0;width:100%;height:100%;position:absolute;}', 0);
 
 			defProp(_this, 'renderMode', { configurable: true });
 			defProp(_this, 'activeRenderMode', { configurable: true, value: null });
@@ -1425,7 +1425,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			_this._checkNewDanmaku = _this._checkNewDanmaku.bind(_this);
 			_this._cleanCache = _this._cleanCache.bind(_this);
 			setInterval(_this._cleanCache, 5000); //set an interval for cache cleaning
-			_this.setRenderMode(3);
+			_this.setRenderMode(1);
 			return _this;
 		}
 
@@ -1639,7 +1639,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			key: 'draw',
 			value: function draw(force) {
 				if (!this.enabled || !force && this.paused) return;
-				this._clearCanvas(force);
+				//this._clearCanvas(force);
 				this.activeRenderMode.draw(force);
 				//find danmaku from indexMark to current time
 				requestIdleCallback(this._checkNewDanmaku);
@@ -2062,6 +2062,7 @@ var Text2d = function (_Template) {
 			    dT = this.dText.DanmakuText,
 			    i = dT.length,
 			    t = void 0;
+			this.clear();
 			ctx.globalCompositeOperation = 'destination-over';
 			for (; i--;) {
 				(t = dT[i]).drawn || (t.drawn = true);
@@ -2244,7 +2245,7 @@ var Text3d = function (_Template) {
 	}, {
 		key: 'clear',
 		value: function clear() {
-			//this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+			this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 		}
 	}, {
 		key: 'deleteTextObject',
@@ -2343,8 +2344,8 @@ var TextCanvas = function (_Template) {
 
 		_this.supported = dText.text2d.supported;
 		if (!_this.supported) return _possibleConstructorReturn(_this);
-		document.styleSheets[0].insertRule('#' + dText.randomText + '_textCanvasContainer canvas{top:0;left:0;position:absolute;}', 0);
-		document.styleSheets[0].insertRule('#' + dText.randomText + '_textCanvasContainer{pointer-events:none;transform:translateZ(0);overflow:hidden;}', 0);
+		document.styleSheets[0].insertRule('#' + dText.randomText + '_textCanvasContainer canvas{will-change:transform;top:0;left:0;position:absolute;}', 0);
+		document.styleSheets[0].insertRule('#' + dText.randomText + '_textCanvasContainer{will-change:transform;pointer-events:none;overflow:hidden;}', 0);
 
 		dText.textCanvasContainer = document.createElement('div'); //for text canvas
 		dText.textCanvasContainer.classList.add(dText.randomText + '_fullfill');
@@ -2358,10 +2359,7 @@ var TextCanvas = function (_Template) {
 		value: function draw() {
 			for (var dT = this.dText, i = dT.DanmakuText.length, t; i--;) {
 				if ((t = dT.DanmakuText[i]).danmaku.mode >= 2) continue;
-				//setImmediate(()=>{
 				t._cache.style.transform = 'translate3d(' + ((t.style.x - t.estimatePadding) * 10 | 0) / 10 + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
-
-				//});
 			}
 		}
 	}, {

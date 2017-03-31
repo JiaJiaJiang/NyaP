@@ -1812,6 +1812,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			value: function _renderToCache() {
 				var _this5 = this;
 
+				if (!this.danmaku) return;
 				this.render(this._cache.ctx2d);
 				if (useImageBitmap) {
 					//use ImageBitmap
@@ -2227,9 +2228,6 @@ var Text3d = function (_Template) {
 		value: function draw(force) {
 			var gl = this.gl,
 			    l = this.dText.DanmakuText.length;
-			//setImmediate(()=>{
-			//this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-
 			for (var i = 0, t; i < l; i++) {
 				t = this.dText.DanmakuText[i];
 				if (!t || !t.glDanmaku) continue;
@@ -2243,7 +2241,6 @@ var Text3d = function (_Template) {
 				gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 			}
 			gl.flush();
-			//});
 		}
 	}, {
 		key: 'clear',
@@ -2360,14 +2357,13 @@ var TextCanvas = function (_Template) {
 	_createClass(TextCanvas, [{
 		key: 'draw',
 		value: function draw() {
-			var _this2 = this;
+			for (var dT = this.dText, i = dT.DanmakuText.length, t; i--;) {
+				if ((t = dT.DanmakuText[i]).danmaku.mode >= 2) continue;
+				//setImmediate(()=>{
+				t._cache.style.transform = 'translate3d(' + ((t.style.x - t.estimatePadding) * 10 | 0) / 10 + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
 
-			setImmediate(function () {
-				for (var dT = _this2.dText, i = dT.DanmakuText.length, t; i--;) {
-					if ((t = dT.DanmakuText[i]).danmaku.mode >= 2) continue;
-					t._cache.style.transform = 'translate3d(' + ((t.style.x - t.estimatePadding) * 10 | 0) / 10 + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
-				}
-			});
+				//});
+			}
 		}
 	}, {
 		key: 'remove',

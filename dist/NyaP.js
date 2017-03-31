@@ -2060,10 +2060,10 @@ var Text2d = function (_Template) {
 			var ctx = this.dText.context2d,
 			    cW = ctx.canvas.width,
 			    dT = this.dText.DanmakuText,
-			    i = 0,
+			    i = dT.length,
 			    t = void 0;
-
-			for (; i < dT.length; i++) {
+			ctx.globalCompositeOperation = 'destination-over';
+			for (; i--;) {
 				(t = dT[i]).drawn || (t.drawn = true);
 				if (cW >= t.style.width) {
 					ctx.drawImage(t._bitmap || t._cache, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding);
@@ -2216,7 +2216,6 @@ var Text3d = function (_Template) {
 		gl.bindBuffer(gl.ARRAY_BUFFER, _this.commonTexCoordBuffer);
 		gl.bufferData(gl.ARRAY_BUFFER, commonTextureCoord, gl.STATIC_DRAW);
 		gl.vertexAttribPointer(_this.atextureCoord, 2, gl.FLOAT, false, 0, 0);
-		//gl.vertexAttribPointer(this.aVertexPosition,2,gl.FLOAT,false,0,0);
 
 		gl.activeTexture(gl.TEXTURE0);
 		gl.uniform1i(_this.uSampler, 0);
@@ -2245,7 +2244,7 @@ var Text3d = function (_Template) {
 	}, {
 		key: 'clear',
 		value: function clear() {
-			this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+			//this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 		}
 	}, {
 		key: 'deleteTextObject',

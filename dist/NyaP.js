@@ -1527,7 +1527,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				}
 				this.danmakuCheckTime = time;
 				//calc all danmaku's position
-				this._calcDanmakusPosition();
+				//this._calcDanmakusPosition();
 			}
 		}, {
 			key: '_addNewDanmaku',
@@ -1618,7 +1618,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 						case 0:case 1:
 							{
 								R = !t.danmaku.mode;
-								X = this._calcSideDanmakuPosition(t, F.time, cWidth);
+								X = this._calcSideDanmakuPosition(t, T, cWidth);
 								if (rMode !== 1) style.x = X;
 								if (t.tunnelNumber >= 0 && (R && X + style.width + 10 < cWidth || !R && X > 10)) {
 									this.tunnel.removeMark(t);
@@ -1661,8 +1661,8 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			value: function draw(force) {
 				if (!this.enabled || !force && this.paused) return;
 				//this._clearCanvas(force);
+				this._calcDanmakusPosition();
 				this.activeRenderMode.draw(force);
-				//find danmaku from indexMark to current time
 				requestIdleCallback(this._checkNewDanmaku);
 			}
 		}, {

@@ -1618,7 +1618,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 						case 0:case 1:
 							{
 								R = !t.danmaku.mode;
-								X = this._calcSideDanmakuPosition(t, T, cWidth);
+								X = this._calcSideDanmakuPosition(t, F.time, cWidth);
 								if (rMode !== 1) style.x = X;
 								if (t.tunnelNumber >= 0 && (R && X + style.width + 10 < cWidth || !R && X > 10)) {
 									this.tunnel.removeMark(t);

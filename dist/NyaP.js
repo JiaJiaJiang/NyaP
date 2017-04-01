@@ -2085,7 +2085,7 @@ var Text2d = function (_Template) {
 			    i = dT.length,
 			    t = void 0;
 			ctx.globalCompositeOperation = 'destination-over';
-			this.clear();
+			this.clear(force);
 			for (; i--;) {
 				(t = dT[i]).drawn || (t.drawn = true);
 				if (cW >= t._cache.width) {
@@ -2386,6 +2386,11 @@ var TextCanvas = function (_Template) {
 		dText.textCanvasContainer.classList.add(dText.randomText + '_fullfill');
 		dText.textCanvasContainer.id = dText.randomText + '_textCanvasContainer';
 		dText.container.appendChild(dText.textCanvasContainer);
+		document.addEventListener('visibilitychange', function (e) {
+			if (dText.renderMode === 1 && !document.hidden) {
+				_this.resetPos();
+			}
+		});
 		return _this;
 	}
 
@@ -2429,14 +2434,19 @@ var TextCanvas = function (_Template) {
 			}
 		}
 	}, {
-		key: 'resize',
-		value: function resize() {
+		key: 'resetPos',
+		value: function resetPos() {
 			var _this3 = this;
 
 			this.pause();
 			if (!this.dText.paused) setImmediate(function () {
 				_this3.start();
 			});
+		}
+	}, {
+		key: 'resize',
+		value: function resize() {
+			this.resetPos();
 		}
 	}, {
 		key: 'remove',

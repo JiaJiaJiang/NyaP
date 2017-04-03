@@ -24,7 +24,7 @@ const colorChars='0123456789abcdef';
 
 //NyaP options
 const NyaPOptions={
-	autoHideDanmakuInput:true,//hide danmakuinput after danmaku sent
+	autoHideDanmakuInput:true,//hide danmakuinput after danmaku sending
 	danmakuColors:['fff','6cf','ff0','f00','0f0','00f','f0f','000'],//colors in the danmaku style pannel
 	danmakuModes:[0,3,2,1],//0:right	1:left	2:bottom	3:top
 	defaultDanmakuColor:null,//a hex color(without #),when the color inputed is invalid,this color will be applied
@@ -40,7 +40,7 @@ class NyaP extends NyaPlayerCore{
 		super(Object.assign({},NyaPOptions,opt));
 		opt=this.opt;
 		const NP=this;
-		const $=this.eles={document,window};
+		const $=this.$={document,window};
 		this._.playerMode='normal';
 		const video=this.video;
 		video.controls=false;
@@ -207,7 +207,7 @@ class NyaP extends NyaPlayerCore{
 				},
 				progress:e=>{this.drawProgress();},
 				_loopChange:e=>{
-					this.eles.icon_span_loop.classList[e.value?'add':'remove']('active_icon');
+					$.icon_span_loop.classList[e.value?'add':'remove']('active_icon');
 				},
 				click:e=>this.playToggle(),
 				mouseup:e=>{
@@ -237,6 +237,13 @@ class NyaP extends NyaPlayerCore{
 						pre=(e.offsetX-t.pad)/(t.offsetWidth-2*t.pad);
 					pre=limitIn(pre,0,1);
 					video.currentTime=pre*video.duration;
+				}
+			},
+			danmaku_style_pannel:{
+				click:e=>{
+					setImmediate(()=>{
+						this.$.danmaku_input.focus();
+					});
 				}
 			},
 			danmaku_color:{
@@ -278,7 +285,7 @@ class NyaP extends NyaPlayerCore{
 				}
 			},
 			danmaku_input:{
-				keydown:e=>{if(e.key==='Enter')this.send();}
+				keydown:e=>{if(e.key==='Enter'){this.send();}else if(e.key==='Escape'){this.danmakuInput(false);}}
 			},
 			danmaku_submit:{
 				click:e=>{this.send();}
@@ -310,23 +317,25 @@ class NyaP extends NyaPlayerCore{
 			eves&&addEvents($[eleid],eves);
 		}
 
-		$['icon_span_danmakuMode'+opt.defaultDanmakuMode].click();//init to default danmaku mode
-		toArray($.danmaku_size_box.childNodes).forEach(sp=>{if(sp.size===opt.defaultDanmakuSize)sp.click()});
+		(typeof opt.defaultDanmakuMode === 'number')
+			&&$['icon_span_danmakuMode'+opt.defaultDanmakuMode].click();//init to default danmaku mode
+		(typeof opt.defaultDanmakuSize === 'number')
+			&&toArray($.danmaku_size_box.childNodes).forEach(sp=>{if(sp.size===opt.defaultDanmakuSize)sp.click()});
 
 	}
 	_setTimeInfo(a=null,b=null){
 		requestAnimationFrame(()=>{
 			if(a!==null){
-				this.eles.current_time.innerHTML=a;
+				this.$.current_time.innerHTML=a;
 			}
 			if(b!==null){
-				this.eles.total_time.innerHTML=b;
+				this.$.total_time.innerHTML=b;
 			}
 		});
 		
 	}
-	/*settingsBoxToggle(bool=!this.eles.settings_box.style.display){
-		this.eles.settings_box.style.display=bool?'flex':'';
+	/*settingsBoxToggle(bool=!this.$.settings_box.style.display){
+		this.$.settings_box.style.display=bool?'flex':'';
 	}*/
 	_playerKeyHandle(e){//hot keys
 		console.log('input',e)
@@ -353,21 +362,21 @@ class NyaP extends NyaPlayerCore{
 			case 'f':{//volume down
 				this.playerMode('fullScreen');break;
 			}
-			case 'Enter':{
+			case 'Enter':{//danmaku input toggle
 				this.danmakuInput();break;
 			}
 		}
 
 	}
-	danmakuInput(bool=!this.eles.danmaku_input_frame.offsetHeight){
-		let $=this.eles;
+	danmakuInput(bool=!this.$.danmaku_input_frame.offsetHeight){
+		let $=this.$;
 		$.danmaku_input_frame.style.display=bool?'flex':'';
 		$.icon_span_addDanmaku.classList[bool?'add':'remove']('active_icon');
-		bool&&$.danmaku_input.focus();
+		bool?$.danmaku_input.focus():$.keyEventInput.focus();
 	}
 	playerMode(mode='normal'){
 		if(mode==='normal' && this._.playerMode===mode)return;
-		let $=this.eles;
+		let $=this.$;
 		if(this._.playerMode==='fullPage'){
 			this.player.style.position='';
 			$.icon_span_fullPage.classList.remove('active_icon');
@@ -400,7 +409,7 @@ class NyaP extends NyaPlayerCore{
 		this.video.loop=bool;
 	}
 	refreshProgress(){
-		const c=this.eles.progress;
+		const c=this.$.progress;
 		c.width=c.offsetWidth;
 		c.height=c.offsetHeight;
 		this.drawProgress();
@@ -408,7 +417,7 @@ class NyaP extends NyaPlayerCore{
 	}
 	send(){
 		let color=this._.danmakuColor||this.opt.defaultDanmakuColor,
-			text=this.eles.danmaku_input.value,
+			text=this.$.danmaku_input.value,
 			size=this._.danmakuSize,
 			mode=this._.danmakuMode,
 			time=this.danmakuFrame.time;
@@ -423,10 +432,10 @@ class NyaP extends NyaPlayerCore{
 		if(this.opt.danmakuSend){
 			this.opt.danmakuSend(d,(danmaku)=>{
 				if(danmaku&&danmaku._==='text')
-					this.eles.danmaku_input.value='';
+					this.$.danmaku_input.value='';
 					let result=this.danmakuFrame.modules.TextDanmaku.load(danmaku);
 					result.highlight=true;
-					//this.danmakuFrame.modules.TextDanmaku._addNewDanmaku(result);
+					if(this.opt.autoHideDanmakuInput){this.danmakuInput(false);}
 			});
 		}
 	}
@@ -439,7 +448,7 @@ class NyaP extends NyaPlayerCore{
 	}
 	_progressDrawer(){
 		const ctx=this._.progressContext,
-				c=this.eles.progress,
+				c=this.$.progress,
 				w=c.width,
 				h=c.height,
 				v=this.video,

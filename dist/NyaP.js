@@ -1490,6 +1490,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				//round d.style.fontSize to prevent Iifinity loop in tunnel
 				d.style.fontSize = d.style.fontSize + 0.5 | 0;
 				if (d.style.fontSize === NaN || d.style.fontSize === Infinity || d.style.fontSize === 0) d.style.fontSize = this.defaultStyle.fontstyle.fontSize;
+				if (typeof d.mode !== 'number') d.mode = 0;
 				return d;
 			}
 		}, {
@@ -2749,7 +2750,7 @@ var colorChars = '0123456789abcdef';
 
 //NyaP options
 var NyaPOptions = {
-	autoHideDanmakuInput: true, //hide danmakuinput after danmaku sent
+	autoHideDanmakuInput: true, //hide danmakuinput after danmaku sending
 	danmakuColors: ['fff', '6cf', 'ff0', 'f00', '0f0', '00f', 'f0f', '000'], //colors in the danmaku style pannel
 	danmakuModes: [0, 3, 2, 1], //0:right	1:left	2:bottom	3:top
 	defaultDanmakuColor: null, //a hex color(without #),when the color inputed is invalid,this color will be applied
@@ -2773,7 +2774,7 @@ var NyaP = function (_NyaPlayerCore) {
 
 		opt = _this.opt;
 		var NP = _this;
-		var $ = _this.eles = { document: document, window: window };
+		var $ = _this.$ = { document: document, window: window };
 		_this._.playerMode = 'normal';
 		var video = _this.video;
 		video.controls = false;
@@ -2907,7 +2908,7 @@ var NyaP = function (_NyaPlayerCore) {
 					_this.drawProgress();
 				},
 				_loopChange: function _loopChange(e) {
-					_this.eles.icon_span_loop.classList[e.value ? 'add' : 'remove']('active_icon');
+					$.icon_span_loop.classList[e.value ? 'add' : 'remove']('active_icon');
 				},
 				click: function click(e) {
 					return _this.playToggle();
@@ -2940,6 +2941,13 @@ var NyaP = function (_NyaPlayerCore) {
 					    pre = (e.offsetX - t.pad) / (t.offsetWidth - 2 * t.pad);
 					pre = (0, _NyaPCore.limitIn)(pre, 0, 1);
 					video.currentTime = pre * video.duration;
+				}
+			},
+			danmaku_style_pannel: {
+				click: function click(e) {
+					setImmediate(function () {
+						_this.$.danmaku_input.focus();
+					});
 				}
 			},
 			danmaku_color: {
@@ -2983,7 +2991,11 @@ var NyaP = function (_NyaPlayerCore) {
 			},
 			danmaku_input: {
 				keydown: function keydown(e) {
-					if (e.key === 'Enter') _this.send();
+					if (e.key === 'Enter') {
+						_this.send();
+					} else if (e.key === 'Escape') {
+						_this.danmakuInput(false);
+					}
 				}
 			},
 			danmaku_submit: {
@@ -3018,8 +3030,8 @@ var NyaP = function (_NyaPlayerCore) {
 			eves && (0, _NyaPCore.addEvents)($[eleid], eves);
 		}
 
-		$['icon_span_danmakuMode' + opt.defaultDanmakuMode].click(); //init to default danmaku mode
-		(0, _NyaPCore.toArray)($.danmaku_size_box.childNodes).forEach(function (sp) {
+		typeof opt.defaultDanmakuMode === 'number' && $['icon_span_danmakuMode' + opt.defaultDanmakuMode].click(); //init to default danmaku mode
+		typeof opt.defaultDanmakuSize === 'number' && (0, _NyaPCore.toArray)($.danmaku_size_box.childNodes).forEach(function (sp) {
 			if (sp.size === opt.defaultDanmakuSize) sp.click();
 		});
 
@@ -3036,15 +3048,15 @@ var NyaP = function (_NyaPlayerCore) {
 
 			requestAnimationFrame(function () {
 				if (a !== null) {
-					_this2.eles.current_time.innerHTML = a;
+					_this2.$.current_time.innerHTML = a;
 				}
 				if (b !== null) {
-					_this2.eles.total_time.innerHTML = b;
+					_this2.$.total_time.innerHTML = b;
 				}
 			});
 		}
-		/*settingsBoxToggle(bool=!this.eles.settings_box.style.display){
-  	this.eles.settings_box.style.display=bool?'flex':'';
+		/*settingsBoxToggle(bool=!this.$.settings_box.style.display){
+  	this.$.settings_box.style.display=bool?'flex':'';
   }*/
 
 	}, {
@@ -3091,6 +3103,7 @@ var NyaP = function (_NyaPlayerCore) {
 					}
 				case 'Enter':
 					{
+						//danmaku input toggle
 						this.danmakuInput();break;
 					}
 			}
@@ -3098,12 +3111,12 @@ var NyaP = function (_NyaPlayerCore) {
 	}, {
 		key: 'danmakuInput',
 		value: function danmakuInput() {
-			var bool = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : !this.eles.danmaku_input_frame.offsetHeight;
+			var bool = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : !this.$.danmaku_input_frame.offsetHeight;
 
-			var $ = this.eles;
+			var $ = this.$;
 			$.danmaku_input_frame.style.display = bool ? 'flex' : '';
 			$.icon_span_addDanmaku.classList[bool ? 'add' : 'remove']('active_icon');
-			bool && $.danmaku_input.focus();
+			bool ? $.danmaku_input.focus() : $.keyEventInput.focus();
 		}
 	}, {
 		key: 'playerMode',
@@ -3111,7 +3124,7 @@ var NyaP = function (_NyaPlayerCore) {
 			var mode = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'normal';
 
 			if (mode === 'normal' && this._.playerMode === mode) return;
-			var $ = this.eles;
+			var $ = this.$;
 			if (this._.playerMode === 'fullPage') {
 				this.player.style.position = '';
 				$.icon_span_fullPage.classList.remove('active_icon');
@@ -3153,7 +3166,7 @@ var NyaP = function (_NyaPlayerCore) {
 	}, {
 		key: 'refreshProgress',
 		value: function refreshProgress() {
-			var c = this.eles.progress;
+			var c = this.$.progress;
 			c.width = c.offsetWidth;
 			c.height = c.offsetHeight;
 			this.drawProgress();
@@ -3165,7 +3178,7 @@ var NyaP = function (_NyaPlayerCore) {
 			var _this3 = this;
 
 			var color = this._.danmakuColor || this.opt.defaultDanmakuColor,
-			    text = this.eles.danmaku_input.value,
+			    text = this.$.danmaku_input.value,
 			    size = this._.danmakuSize,
 			    mode = this._.danmakuMode,
 			    time = this.danmakuFrame.time;
@@ -3179,10 +3192,12 @@ var NyaP = function (_NyaPlayerCore) {
 			var d = { color: color, text: text, size: size, mode: mode, time: time };
 			if (this.opt.danmakuSend) {
 				this.opt.danmakuSend(d, function (danmaku) {
-					if (danmaku && danmaku._ === 'text') _this3.eles.danmaku_input.value = '';
+					if (danmaku && danmaku._ === 'text') _this3.$.danmaku_input.value = '';
 					var result = _this3.danmakuFrame.modules.TextDanmaku.load(danmaku);
 					result.highlight = true;
-					//this.danmakuFrame.modules.TextDanmaku._addNewDanmaku(result);
+					if (_this3.opt.autoHideDanmakuInput) {
+						_this3.danmakuInput(false);
+					}
 				});
 			}
 		}
@@ -3200,7 +3215,7 @@ var NyaP = function (_NyaPlayerCore) {
 		key: '_progressDrawer',
 		value: function _progressDrawer() {
 			var ctx = this._.progressContext,
-			    c = this.eles.progress,
+			    c = this.$.progress,
 			    w = c.width,
 			    h = c.height,
 			    v = this.video,

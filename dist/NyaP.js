@@ -1598,8 +1598,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				var F = this.frame,
 				    T = F.time;
 				if (this.danmakuMoveTime === T || this.paused) return;
-				var cWidth = this.canvas.width,
-				    rMode = this.renderMode;
+				var cWidth = this.canvas.width;
 				var R = void 0,
 				    i = void 0,
 				    t = void 0,
@@ -1618,8 +1617,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 						case 0:case 1:
 							{
 								R = !t.danmaku.mode;
-								X = this._calcSideDanmakuPosition(t, T, cWidth);
-								if (rMode !== 1) style.x = X;
+								style.x = X = this._calcSideDanmakuPosition(t, T, cWidth);
 								if (t.tunnelNumber >= 0 && (R && X + style.width + 10 < cWidth || !R && X > 10)) {
 									this.tunnel.removeMark(t);
 								} else if (R && X < -style.width - 10 || !R && X > cWidth + style.width + 10) {
@@ -2775,7 +2773,7 @@ var NyaP = function (_NyaPlayerCore) {
 
 		opt = _this.opt;
 		var NP = _this;
-		var $ = _this.eles = { document: document };
+		var $ = _this.eles = { document: document, window: window };
 		_this._.playerMode = 'normal';
 		var video = _this.video;
 		video.controls = false;
@@ -2825,19 +2823,19 @@ var NyaP = function (_NyaPlayerCore) {
 		collectEles(_this._.player);
 
 		//danmaku sizes
-		opt.danmakuSizes.forEach(function (s, ind) {
+		opt.danmakuSizes && opt.danmakuSizes.forEach(function (s, ind) {
 			var e = (0, _Object2HTML2.default)({ _: 'span', attr: { style: 'font-size:' + (12 + ind * 3) + 'px;', title: s }, prop: { size: s }, child: ['A'] });
 			$.danmaku_size_box.appendChild(e);
 		});
 
 		//danmaku colors
-		opt.danmakuColors.forEach(function (c) {
+		opt.danmakuColors && opt.danmakuColors.forEach(function (c) {
 			var e = (0, _Object2HTML2.default)({ _: 'span', attr: { style: 'background-color:#' + c + ';', title: c }, prop: { color: c } });
 			$.danmaku_color_box.appendChild(e);
 		});
 
 		//danmaku modes
-		opt.danmakuModes.forEach(function (m) {
+		opt.danmakuModes && opt.danmakuModes.forEach(function (m) {
 			$.danmaku_mode_box.appendChild(icon('danmakuMode' + m));
 		});
 		collectEles($.danmaku_mode_box);
@@ -2852,21 +2850,21 @@ var NyaP = function (_NyaPlayerCore) {
 		_this._.progressContext = $.progress.getContext('2d');
 
 		//events
-		(0, _NyaPCore.addEvents)(window, {
-			keydown: function keydown(e) {
-				switch (e.code) {
-					case 'Escape':
-						{
-							//exit full page mode
-							if (_this._.playerMode === 'fullPage') {
-								_this.playerMode('normal');
-							}
-							break;
-						}
-				}
-			}
-		});
 		var events = {
+			window: {
+				keydown: function keydown(e) {
+					switch (e.code) {
+						case 'Escape':
+							{
+								//exit full page mode
+								if (_this._.playerMode === 'fullPage') {
+									_this.playerMode('normal');
+								}
+								break;
+							}
+					}
+				}
+			},
 			NyaP: {
 				click: function click(e) {
 					if (e.target.tagName !== 'INPUT') $.keyEventInput.focus();
@@ -2874,7 +2872,7 @@ var NyaP = function (_NyaPlayerCore) {
 			},
 			keyEventInput: {
 				keydown: function keydown(e) {
-					console.log('input');
+					return _this._playerKeyHandle(e);
 				}
 			},
 			document: {
@@ -3050,6 +3048,54 @@ var NyaP = function (_NyaPlayerCore) {
   }*/
 
 	}, {
+		key: '_playerKeyHandle',
+		value: function _playerKeyHandle(e) {
+			//hot keys
+			console.log('input', e);
+			var V = this.video,
+			    _SH = e.shiftKey;
+			switch (e.key) {
+				case ' ':
+					{
+						if (!e.repeat) this.playToggle();break;
+					}
+				case 'ArrowRight':
+					{
+						//seek to after time
+						V.currentTime += 3 * (_SH ? 2 : 1);break;
+					}
+				case 'ArrowLeft':
+					{
+						//seek to before time
+						V.currentTime -= 1.5 * (_SH ? 2 : 1);break;
+					}
+				case 'ArrowUp':
+					{
+						//volume up
+						V.volume = (0, _NyaPCore.limitIn)(V.volume + 0.03 * (_SH ? 2 : 1), 0, 1);break;
+					}
+				case 'ArrowDown':
+					{
+						//volume down
+						V.volume = (0, _NyaPCore.limitIn)(V.volume - 0.03 * (_SH ? 2 : 1), 0, 1);break;
+					}
+				case 'p':
+					{
+						//volume down
+						this.playerMode('fullPage');break;
+					}
+				case 'f':
+					{
+						//volume down
+						this.playerMode('fullScreen');break;
+					}
+				case 'Enter':
+					{
+						this.danmakuInput();break;
+					}
+			}
+		}
+	}, {
 		key: 'danmakuInput',
 		value: function danmakuInput() {
 			var bool = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : !this.eles.danmaku_input_frame.offsetHeight;
@@ -3124,6 +3170,7 @@ var NyaP = function (_NyaPlayerCore) {
 			    mode = this._.danmakuMode,
 			    time = this.danmakuFrame.time;
 
+			if (text.match(/^\s+$/)) return;
 			if (color) {
 				color = color.replace(/\$/g, function () {
 					return colorChars[(0, _NyaPCore.limitIn)(16 * Math.random() | 0, 0, 15)];

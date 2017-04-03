@@ -40,7 +40,7 @@ class NyaP extends NyaPlayerCore{
 		super(Object.assign({},NyaPOptions,opt));
 		opt=this.opt;
 		const NP=this;
-		const $=this.eles={document};
+		const $=this.eles={document,window};
 		this._.playerMode='normal';
 		const video=this.video;
 		video.controls=false;
@@ -129,19 +129,19 @@ class NyaP extends NyaPlayerCore{
 		collectEles(this._.player);
 
 		//danmaku sizes
-		opt.danmakuSizes.forEach((s,ind)=>{
+		opt.danmakuSizes&&opt.danmakuSizes.forEach((s,ind)=>{
 			let e=O2H({_:'span',attr:{style:`font-size:${12+ind*3}px;`,title:s},prop:{size:s},child:['A']});
 			$.danmaku_size_box.appendChild(e);
 		});
 
 		//danmaku colors
-		opt.danmakuColors.forEach(c=>{
+		opt.danmakuColors&&opt.danmakuColors.forEach(c=>{
 			let e=O2H({_:'span',attr:{style:`background-color:#${c};`,title:c},prop:{color:c}});
 			$.danmaku_color_box.appendChild(e);
 		});
 
 		//danmaku modes
-		opt.danmakuModes.forEach(m=>{
+		opt.danmakuModes&&opt.danmakuModes.forEach(m=>{
 			$.danmaku_mode_box.appendChild(icon(`danmakuMode${m}`));
 		});
 		collectEles($.danmaku_mode_box);
@@ -155,28 +155,26 @@ class NyaP extends NyaPlayerCore{
 		this._.progressContext=$.progress.getContext('2d');
 
 		//events
-		addEvents(window,{
-			keydown:e=>{
-				switch(e.code){
-					case 'Escape':{//exit full page mode
-						if(this._.playerMode==='fullPage'){
-							this.playerMode('normal');
+		const events={
+			window:{
+				keydown:e=>{
+					switch(e.code){
+						case 'Escape':{//exit full page mode
+							if(this._.playerMode==='fullPage'){
+								this.playerMode('normal');
+							}
+							break;
 						}
-						break;
 					}
 				}
-			}
-		});
-		const events={
+			},
 			NyaP:{
 				click:e=>{
 					if(e.target.tagName!=='INPUT')$.keyEventInput.focus();
 				}
 			},
 			keyEventInput:{
-				keydown:e=>{
-					console.log('input')
-				}
+				keydown:e=>this._playerKeyHandle(e)
 			},
 			document:{
 				'fullscreenchange,mozfullscreenchange,webkitfullscreenchange,msfullscreenchange':e=>{
@@ -330,6 +328,37 @@ class NyaP extends NyaPlayerCore{
 	/*settingsBoxToggle(bool=!this.eles.settings_box.style.display){
 		this.eles.settings_box.style.display=bool?'flex':'';
 	}*/
+	_playerKeyHandle(e){//hot keys
+		console.log('input',e)
+		const V=this.video,_SH=e.shiftKey;
+		switch(e.key){
+			case ' ':{
+				if(!e.repeat)this.playToggle();break;
+			}
+			case 'ArrowRight':{//seek to after time
+				V.currentTime+=(3*(_SH?2:1));break;
+			}
+			case 'ArrowLeft':{//seek to before time
+				V.currentTime-=(1.5*(_SH?2:1));break;
+			}
+			case 'ArrowUp':{//volume up
+				V.volume=limitIn(V.volume+(0.03*(_SH?2:1)),0,1);break;
+			}
+			case 'ArrowDown':{//volume down
+				V.volume=limitIn(V.volume-(0.03*(_SH?2:1)),0,1);break;
+			}
+			case 'p':{//volume down
+				this.playerMode('fullPage');break;
+			}
+			case 'f':{//volume down
+				this.playerMode('fullScreen');break;
+			}
+			case 'Enter':{
+				this.danmakuInput();break;
+			}
+		}
+
+	}
 	danmakuInput(bool=!this.eles.danmaku_input_frame.offsetHeight){
 		let $=this.eles;
 		$.danmaku_input_frame.style.display=bool?'flex':'';
@@ -384,6 +413,7 @@ class NyaP extends NyaPlayerCore{
 			mode=this._.danmakuMode,
 			time=this.danmakuFrame.time;
 
+		if(text.match(/^\s+$/))return;
 		if(color){
 			color=color.replace(/\$/g,()=>{
 				return colorChars[limitIn((16*Math.random())|0,0,15)];

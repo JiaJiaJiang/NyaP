@@ -112,7 +112,7 @@ class NyaP extends NyaPlayerCore{
 						{_:'span',attr:{id:'control_right'},child:[
 							icon('addDanmaku',{click:e=>this.danmakuInput()},{title:_('danmaku input')}),
 							icon('volume',{},{title:_('volume($0)','100%')}),
-							icon('loop',{click:e=>this.loop()},{title:_('loop')}),
+							icon('loop',{click:e=>{video.loop=!video.loop;}},{title:_('loop')}),
 							{_:'span',prop:{id:'player_mode'},child:[
 								icon('fullPage',{click:e=>this.playerMode('fullPage')},{title:_('full page')}),
 								icon('fullScreen',{click:e=>this.playerMode('fullScreen')},{title:_('full screen')})
@@ -121,11 +121,11 @@ class NyaP extends NyaPlayerCore{
 					]}
 					
 				]},
-				{_:'input',attr:{style:'z-index:-99;position:absolute;bottom:0;',id:'keyEventInput'}}
+				{_:'input',attr:{style:'position:absolute;bottom:0;font-size:0;height:0;padding:0;border:none;width:0;',id:'keyEventInput'}}
 			]
 		});
 
-		//add elements with id to eles prop
+		//add elements with id to $ prop
 		collectEles(this._.player);
 
 		//danmaku sizes
@@ -148,7 +148,7 @@ class NyaP extends NyaPlayerCore{
 
 
 		//progress
-		setTimeout(()=>{
+		setTimeout(()=>{//ResizeSensor
 			$.control.ResizeSensor=new ResizeSensor($.control,()=>this.refreshProgress());
 			this.refreshProgress();
 		},0);
@@ -404,9 +404,6 @@ class NyaP extends NyaPlayerCore{
 		}
 		this._.playerMode=mode;
 		this.emit('playerModeChange',mode);
-	}
-	loop(bool=!this.video.loop){
-		this.video.loop=bool;
 	}
 	refreshProgress(){
 		const c=this.$.progress;

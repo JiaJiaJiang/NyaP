@@ -24,8 +24,10 @@ LGPL license
 .NyaP{
 	@extend .NyaP_fullfill;
 	
-	transform: translateZ(0);
 	$control_bar_height:30px;
+	display: flex;
+	flex-wrap:wrap;
+	z-index: 1;
 
 	&[playerMode="fullScreen"]{
 		#video_frame{
@@ -51,9 +53,9 @@ LGPL license
 		transition:fill-opacity .2s;
 	}
 	span[id^="icon_span_"]{
-		background-color: inherit;
-	    display: inline-block;
 		cursor: pointer;
+	    display: inline-block;
+		background-color: inherit;
 		&:hover{
 			background-color:#ececec!important;
 			svg>*{
@@ -66,29 +68,38 @@ LGPL license
 
 	&>#video_frame{
 		@extend .NyaP_fullfill;
-		height: auto;
+	    height: auto;
 		bottom: $control_bar_height;
-		&>video#main_video{
+		z-index: 2;
+
+		video#main_video{
 			@extend .NyaP_fullfill;
-			cursor: pointer;
-			background-color: #000;
-			-webkit-touch-callout: none;
-			-webkit-user-select: none;
-			-o-user-select: none;
-			-moz-user-select: none;
-			-ms-user-select: none;
-			user-select: none;
+		    cursor: pointer;
+		    user-select: none;
+		    background-color: #000;
+		    position: relative;
+		    -o-user-select: none;
+		    -ms-user-select: none;
+		    -moz-user-select: none;
+		    -webkit-user-select: none;
+		    -webkit-touch-callout: none;
+
+			&::-webkit-media-controls{
+				display:none;
+			}
 		}
-		&>div#danmaku_container{
+		div#danmaku_container{
 			@extend .NyaP_fullfill;
 		    pointer-events: none;
 		}
 	}
-	&>#controls{
+	#controls{
 		@extend .NyaP_fullfill;
-	    top: auto;
+	    width: 100%;
+	    top:auto;
 		bottom: 0;
 		height: $control_bar_height;
+		z-index: 3;
 	}
 	#control{
 		@extend .NyaP_fullfill;
@@ -100,7 +111,6 @@ LGPL license
 		transition: opacity .2s;
 		background-color: #f7f8f9;
 		will-change:opacity;
-	    border-top: 0.5px solid #a7a7a7;
 
 		&:hover{opacity:1;}
 
@@ -108,7 +118,6 @@ LGPL license
 			display: flex;
 			flex-wrap: nowrap;
 			background-color: inherit;
-			//height: 100%;
 			&>span{cursor: pointer;position: relative;background-color: inherit;}
 		}
 		&>span>span{display: flex;}

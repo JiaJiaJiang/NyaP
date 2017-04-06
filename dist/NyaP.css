@@ -2,9 +2,9 @@
 Copyright luojia@luojia.me
 LGPL license
 */
-.NyaP_fullfill, .NyaP, .NyaP > #video_frame, .NyaP > #video_frame > video#main_video, .NyaP > #video_frame > div#danmaku_container, .NyaP > #controls, .NyaP #control, .NyaP canvas#progress, .NyaP #progress_info, .NyaP #danmaku_input_frame, .NyaP #time { top: 0; left: 0; width: 100%; height: 100%; position: absolute; }
+.NyaP_fullfill, .NyaP, .NyaP > #video_frame, .NyaP > #video_frame video#main_video, .NyaP > #video_frame div#danmaku_container, .NyaP #controls, .NyaP #control, .NyaP canvas#progress, .NyaP #progress_info, .NyaP #danmaku_input_frame, .NyaP #time { top: 0; left: 0; width: 100%; height: 100%; position: absolute; }
 
-.NyaP { transform: translateZ(0); }
+.NyaP { display: flex; flex-wrap: wrap; z-index: 1; }
 
 .NyaP[playerMode="fullScreen"] #video_frame { bottom: 0 !important; }
 
@@ -18,21 +18,23 @@ LGPL license
 
 .NyaP svg[id^='icon'] > * { fill: #5f3c2c; fill-opacity: 0; stroke: #5f3c2c; transition: fill-opacity .2s; }
 
-.NyaP span[id^="icon_span_"] { background-color: inherit; display: inline-block; cursor: pointer; }
+.NyaP span[id^="icon_span_"] { cursor: pointer; display: inline-block; background-color: inherit; }
 
 .NyaP span[id^="icon_span_"]:hover { background-color: #ececec !important; }
 
 .NyaP span[id^="icon_span_"]:hover svg > * { fill: #24b182; stroke: #24b182; }
 
-.NyaP > #video_frame { height: auto; bottom: 30px; }
+.NyaP > #video_frame { height: auto; bottom: 30px; z-index: 2; }
 
-.NyaP > #video_frame > video#main_video { cursor: pointer; background-color: #000; -webkit-touch-callout: none; -webkit-user-select: none; -o-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+.NyaP > #video_frame video#main_video { cursor: pointer; user-select: none; background-color: #000; position: relative; -o-user-select: none; -ms-user-select: none; -moz-user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 
-.NyaP > #video_frame > div#danmaku_container { pointer-events: none; }
+.NyaP > #video_frame video#main_video::-webkit-media-controls { display: none; }
 
-.NyaP > #controls { top: auto; bottom: 0; height: 30px; }
+.NyaP > #video_frame div#danmaku_container { pointer-events: none; }
 
-.NyaP #control { opacity: 1; display: flex; flex-wrap: nowrap; user-select: none; align-items: stretch; transition: opacity .2s; background-color: #f7f8f9; will-change: opacity; border-top: 0.5px solid #a7a7a7; }
+.NyaP #controls { width: 100%; top: auto; bottom: 0; height: 30px; z-index: 3; }
+
+.NyaP #control { opacity: 1; display: flex; flex-wrap: nowrap; user-select: none; align-items: stretch; transition: opacity .2s; background-color: #f7f8f9; will-change: opacity; }
 
 .NyaP #control:hover { opacity: 1; }
 

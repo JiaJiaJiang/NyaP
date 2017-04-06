@@ -1387,7 +1387,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				shadowOffsetX: 0,
 				shadowOffsetY: 0,
 				fill: true };
-			document.styleSheets[0].insertRule('.' + _this.randomText + '_fullfill{transform: translateZ(0);top:0;left:0;width:100%;height:100%;position:absolute;}', 0);
+			document.styleSheets[0].insertRule('.' + _this.randomText + '_fullfill{top:0;left:0;width:100%;height:100%;position:absolute;}', 0);
 
 			defProp(_this, 'renderMode', { configurable: true });
 			defProp(_this, 'activeRenderMode', { configurable: true, value: null });
@@ -2072,7 +2072,7 @@ var Text2d = function (_Template) {
 		_this.supported = false;
 		dText.canvas = document.createElement('canvas'); //the canvas
 		dText.canvas.classList.add(dText.randomText + '_fullfill');
-		dText.canvas.id = 'text2d';
+		dText.canvas.id = dText.randomText + '_text2d';
 		dText.context2d = dText.canvas.getContext('2d'); //the canvas contex
 		if (!dText.context2d) {
 			console.warn('text 2d not supported');
@@ -2200,7 +2200,7 @@ var Text3d = function (_Template) {
 		_this.supported = false;
 		dText.canvas3d = document.createElement('canvas'); //the canvas
 		dText.canvas3d.classList.add(dText.randomText + '_fullfill');
-		dText.canvas3d.id = 'text3d';
+		dText.canvas3d.id = dText.randomText + '_text3d';
 		dText.context3d = dText.canvas3d.getContext('webgl'); //the canvas3d context
 		if (!dText.context3d) dText.context3d = dText.canvas3d.getContext('expeimental-webgl');
 
@@ -2416,7 +2416,7 @@ var TextCanvas = function (_Template) {
 			this.dText.textCanvasContainer.classList.remove('moving');
 			for (var dT = this.dText, i = dT.DanmakuText.length, t; i--;) {
 				if ((t = dT.DanmakuText[i]).danmaku.mode >= 2) continue;
-				var X = this.dText._calcSideDanmakuPosition(t, T, this.dText.canvas.width);
+				var X = this.dText._calcSideDanmakuPosition(t, T, this.dText.width);
 				t._cache.style.transform = 'translate3d(' + ((X - t.estimatePadding) * 10 | 0) / 10 + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
 			}
 		}
@@ -2438,7 +2438,7 @@ var TextCanvas = function (_Template) {
 
 			requestAnimationFrame(function () {
 				if (!t.danmaku) return;
-				var X = _this2.dText._calcSideDanmakuPosition(t, T + 500000, _this2.dText.canvas.width);
+				var X = _this2.dText._calcSideDanmakuPosition(t, T + 500000, _this2.dText.width);
 				t._cache.style.transform = 'translate3d(' + ((X - t.estimatePadding) * 10 | 0) / 10 + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
 			});
 		}

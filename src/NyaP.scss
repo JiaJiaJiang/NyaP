@@ -9,7 +9,6 @@ LGPL license
 	width: 100%;
 	height: 100%;	
 	position: absolute;
-    transform: translateZ(0);
 }
 .NyaP_fullfill{
 	@include NyaP_fullfill;
@@ -24,7 +23,8 @@ LGPL license
 
 .NyaP{
 	@extend .NyaP_fullfill;
-
+	
+	transform: translateZ(0);
 	$control_bar_height:30px;
 
 	&[playerMode="fullScreen"]{
@@ -99,6 +99,7 @@ LGPL license
 		align-items:stretch;
 		transition: opacity .2s;
 		background-color: #f7f8f9;
+		will-change:opacity;
 	    border-top: 0.5px solid #a7a7a7;
 
 		&:hover{opacity:1;}

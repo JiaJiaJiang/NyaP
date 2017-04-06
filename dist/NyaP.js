@@ -310,6 +310,8 @@ var DanmakuFrame = function () {
 		this.working = false;
 		this.modules = {}; //constructed module list
 		this.moduleList = [];
+		this.width = 0;
+		this.height = 0;
 		for (var m in DanmakuFrame.moduleList) {
 			//init all modules
 			this.initModule(m);
@@ -322,15 +324,7 @@ var DanmakuFrame = function () {
 			});
 			_this.resize();
 		}, 0);
-		var draw = function draw() {
-			_this.moduleFunction('draw');
-			if (_this.fps === 0) {
-				requestAnimationFrame(draw);
-			} else {
-				setTimeout(draw, 1000 / _this.fps);
-			}
-		};
-		draw();
+		this.draw = this.draw.bind(this);
 	}
 
 	_createClass(DanmakuFrame, [{
@@ -365,6 +359,17 @@ var DanmakuFrame = function () {
 			return true;
 		}
 	}, {
+		key: 'draw',
+		value: function draw(force) {
+			if (!this.working) return;
+			this.moduleFunction('draw', force);
+			if (this.fps === 0) {
+				requestAnimationFrame(this.draw);
+			} else {
+				setTimeout(this.draw, 1000 / this.fps);
+			}
+		}
+	}, {
 		key: 'load',
 		value: function load(danmakuObj) {
 			this.moduleFunction('load', danmakuObj);
@@ -385,6 +390,7 @@ var DanmakuFrame = function () {
 			if (this.working) return;
 			this.working = true;
 			this.moduleFunction('start');
+			this.draw(true);
 		}
 	}, {
 		key: 'pause',
@@ -395,6 +401,8 @@ var DanmakuFrame = function () {
 	}, {
 		key: 'resize',
 		value: function resize() {
+			this.width = this.container.offsetWidth;
+			this.height = this.container.offsetHeight;
 			this.moduleFunction('resize');
 		}
 	}, {
@@ -1379,7 +1387,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				shadowOffsetX: 0,
 				shadowOffsetY: 0,
 				fill: true };
-			document.styleSheets[0].insertRule('.' + _this.randomText + '_fullfill{top:0;left:0;width:100%;height:100%;position:absolute;}', 0);
+			document.styleSheets[0].insertRule('.' + _this.randomText + '_fullfill{transform: translateZ(0);top:0;left:0;width:100%;height:100%;position:absolute;}', 0);
 
 			defProp(_this, 'renderMode', { configurable: true });
 			defProp(_this, 'activeRenderMode', { configurable: true, value: null });
@@ -1441,6 +1449,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				this.modes[n].enable();
 				defProp(this, 'activeRenderMode', { value: this.modes[n] });
 				defProp(this, 'renderMode', { value: n });
+				this.activeRenderMode.resize();
 			}
 		}, {
 			key: 'media',
@@ -1533,14 +1542,9 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		}, {
 			key: '_addNewDanmaku',
 			value: function _addNewDanmaku(d) {
-				var cHeight = this.canvas.height,
-				    cWidth = this.canvas.width;
-				var t = void 0;
-				if (this.GraphCache.length) {
-					t = this.GraphCache.shift();
-				} else {
-					t = new TextGraph();
-				}
+				var cHeight = this.height,
+				    cWidth = this.width;
+				var t = this.GraphCache.length ? this.GraphCache.shift() : new TextGraph();
 				t.danmaku = d;
 				t.drawn = false;
 				t.text = this.options.allowLines ? d.text : d.text.replace(/\n/g, ' ');
@@ -1595,10 +1599,10 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			}
 		}, {
 			key: '_calcDanmakusPosition',
-			value: function _calcDanmakusPosition() {
+			value: function _calcDanmakusPosition(force) {
 				var T = this.frame.time;
-				if (this.danmakuMoveTime === T || this.paused) return;
-				var cWidth = this.canvas.width;
+				if (!force && (this.danmakuMoveTime === T || this.paused)) return;
+				var cWidth = this.width;
 				var R = void 0,
 				    i = void 0,
 				    t = void 0,
@@ -1658,8 +1662,8 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		}, {
 			key: 'draw',
 			value: function draw(force) {
-				if (!this.enabled || !force && this.paused) return;
-				this._calcDanmakusPosition();
+				if (!force && this.paused || !this.enabled) return;
+				this._calcDanmakusPosition(force);
 				this.activeRenderMode.draw(force);
 				requestIdleCallback(this._checkNewDanmaku);
 			}
@@ -1678,11 +1682,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		}, {
 			key: 'resize',
 			value: function resize() {
-				var w = this.canvas.width = this.canvas3d.width = this.frame.container.offsetWidth;
-				var h = this.canvas.height = this.canvas3d.height = this.frame.container.offsetHeight;
-				this.text2d.resize(w, h);
-				this.text3d.resize(w, h);
-				this.textCanvas.resize(w, h);
+				if (this.activeRenderMode) this.activeRenderMode.resize();
 				this.draw(true);
 			}
 		}, {
@@ -1766,6 +1766,16 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			},
 			get: function get() {
 				return useImageBitmap;
+			}
+		}, {
+			key: 'width',
+			get: function get() {
+				return this.frame.width;
+			}
+		}, {
+			key: 'height',
+			get: function get() {
+				return this.frame.height;
 			}
 		}]);
 
@@ -2125,6 +2135,13 @@ var Text2d = function (_Template) {
 			return false;
 		}
 	}, {
+		key: 'resize',
+		value: function resize() {
+			var C = this.dText.canvas;
+			C.width = this.dText.width;
+			C.height = this.dText.height;
+		}
+	}, {
 		key: 'enable',
 		value: function enable() {
 			this.dText.useImageBitmap = !(this.dText.canvas.hidden = false);
@@ -2283,12 +2300,13 @@ var Text3d = function (_Template) {
 	}, {
 		key: 'resize',
 		value: function resize(w, h) {
-			if (!this.supported) return;
 			var gl = this.gl,
-			    canvas = this.dText.canvas3d;
-			gl.viewport(0, 0, canvas.width, canvas.height);
+			    C = this.dText.canvas3d;
+			C.width = this.dText.width;
+			C.height = this.dText.height;
+			gl.viewport(0, 0, C.width, C.height);
 			//to 2d canvas
-			gl.uniformMatrix4fv(this.u2dCoord, false, _Mat2.default.Identity(4).translate3d(-1, 1, 0).scale3d(2 / canvas.width, -2 / canvas.height, 0));
+			gl.uniformMatrix4fv(this.u2dCoord, false, _Mat2.default.Identity(4).translate3d(-1, 1, 0).scale3d(2 / C.width, -2 / C.height, 0));
 		}
 	}, {
 		key: 'enable',
@@ -2844,20 +2862,6 @@ var NyaP = function (_NyaPlayerCore) {
 
 		//events
 		var events = {
-			window: {
-				keydown: function keydown(e) {
-					switch (e.code) {
-						case 'Escape':
-							{
-								//exit full page mode
-								if (_this._.playerMode === 'fullPage') {
-									_this.playerMode('normal');
-								}
-								break;
-							}
-					}
-				}
-			},
 			NyaP: {
 				click: function click(e) {
 					if (e.target.tagName !== 'INPUT') $.keyEventInput.focus();
@@ -3097,6 +3101,12 @@ var NyaP = function (_NyaPlayerCore) {
 					{
 						//danmaku input toggle
 						this.danmakuInput();break;
+					}
+				case 'Escape':
+					{
+						//exit full page mode
+						if (this._.playerMode === 'fullPage') this.playerMode('normal');
+						break;
 					}
 			}
 		}

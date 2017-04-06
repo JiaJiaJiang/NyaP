@@ -156,18 +156,6 @@ class NyaP extends NyaPlayerCore{
 
 		//events
 		const events={
-			window:{
-				keydown:e=>{
-					switch(e.code){
-						case 'Escape':{//exit full page mode
-							if(this._.playerMode==='fullPage'){
-								this.playerMode('normal');
-							}
-							break;
-						}
-					}
-				}
-			},
 			NyaP:{
 				click:e=>{
 					if(e.target.tagName!=='INPUT')$.keyEventInput.focus();
@@ -364,6 +352,10 @@ class NyaP extends NyaPlayerCore{
 			}
 			case 'Enter':{//danmaku input toggle
 				this.danmakuInput();break;
+			}
+			case 'Escape':{//exit full page mode
+				if(this._.playerMode==='fullPage')this.playerMode('normal');
+				break;
 			}
 		}
 

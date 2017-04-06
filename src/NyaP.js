@@ -75,10 +75,11 @@ class NyaP extends NyaPlayerCore{
 
 		this._.player=O2H({
 			_:'div',attr:{'class':'NyaP',id:'NyaP'},child:[
-				{_:'div',attr:{id:'video_frame'},child:[
+				/*{_:'div',attr:{id:'video_frame'},child:[
 					video,
 					this.danmakuFrame.container
-				]},
+				]},*/
+				this.videoFrame,
 				{_:'div',attr:{id:'controls'},child:[
 					{_:'div',attr:{id:'control'},child:[
 						{_:'span',attr:{id:'control_left'},child:[

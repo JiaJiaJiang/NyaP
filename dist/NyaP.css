@@ -2,9 +2,9 @@
 Copyright luojia@luojia.me
 LGPL license
 */
-.NyaP_fullfill, .NyaP, .NyaP > #video_frame, .NyaP > #video_frame video#main_video, .NyaP > #video_frame div#danmaku_container, .NyaP #controls, .NyaP #control, .NyaP canvas#progress, .NyaP #progress_info, .NyaP #danmaku_input_frame, .NyaP #time { top: 0; left: 0; width: 100%; height: 100%; position: absolute; }
+.NyaP_fullfill, .NyaP, .NyaP > #video_frame, .NyaP > #video_frame video#main_video, .NyaP > #video_frame div[class^=danmaku], .NyaP #controls, .NyaP #control, .NyaP canvas#progress, .NyaP #progress_info, .NyaP #danmaku_input_frame, .NyaP #time { top: 0; left: 0; width: 100%; height: 100%; position: absolute; }
 
-.NyaP { display: flex; flex-wrap: wrap; z-index: 1; }
+.NyaP { display: flex; flex-wrap: wrap; z-index: 1; background-color: #000; }
 
 .NyaP[playerMode="fullScreen"] #video_frame { bottom: 0 !important; }
 
@@ -24,13 +24,13 @@ LGPL license
 
 .NyaP span[id^="icon_span_"]:hover svg > * { fill: #24b182; stroke: #24b182; }
 
-.NyaP > #video_frame { height: auto; bottom: 30px; z-index: 2; }
+.NyaP > #video_frame { height: auto; bottom: 30px; z-index: 2; /*div#danmaku_container{ pointer-events: none; }*/ }
 
-.NyaP > #video_frame video#main_video { cursor: pointer; user-select: none; background-color: #000; position: relative; -o-user-select: none; -ms-user-select: none; -moz-user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.NyaP > #video_frame video#main_video { cursor: pointer; user-select: none; position: relative; -o-user-select: none; -ms-user-select: none; -moz-user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 
 .NyaP > #video_frame video#main_video::-webkit-media-controls { display: none; }
 
-.NyaP > #video_frame div#danmaku_container { pointer-events: none; }
+.NyaP > #video_frame div[class^=danmaku] { pointer-events: none; }
 
 .NyaP #controls { width: 100%; top: auto; bottom: 0; height: 30px; z-index: 3; }
 

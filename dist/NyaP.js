@@ -302,7 +302,6 @@ var DanmakuFrame = function () {
 		_classCallCheck(this, DanmakuFrame);
 
 		this.container = container || document.createElement('div');
-		this.container.id = 'danmaku_container';
 		this.rate = 1;
 		this.timeBase = 0;
 		this.media = null;
@@ -2816,7 +2815,12 @@ var NyaP = function (_NyaPlayerCore) {
 		}
 
 		_this._.player = (0, _Object2HTML2.default)({
-			_: 'div', attr: { 'class': 'NyaP', id: 'NyaP' }, child: [{ _: 'div', attr: { id: 'video_frame' }, child: [video, _this.danmakuFrame.container] }, { _: 'div', attr: { id: 'controls' }, child: [{ _: 'div', attr: { id: 'control' }, child: [{ _: 'span', attr: { id: 'control_left' }, child: [icon('play', { click: function click(e) {
+			_: 'div', attr: { 'class': 'NyaP', id: 'NyaP' }, child: [
+			/*{_:'div',attr:{id:'video_frame'},child:[
+   	video,
+   	this.danmakuFrame.container
+   ]},*/
+			_this.videoFrame, { _: 'div', attr: { id: 'controls' }, child: [{ _: 'div', attr: { id: 'control' }, child: [{ _: 'span', attr: { id: 'control_left' }, child: [icon('play', { click: function click(e) {
 								return _this.playToggle();
 							} }, { title: _('play') })] }, { _: 'span', attr: { id: 'control_center' }, child: [{ _: 'div', prop: { id: 'progress_info' }, child: [{ _: 'span', child: [{ _: 'canvas', prop: { id: 'progress', pad: 10 } }] }, { _: 'span', prop: { id: 'time_frame' }, child: [{ _: 'span', prop: { id: 'time' }, child: [{ _: 'span', prop: { id: 'current_time' }, child: ['00:00'] }, '/', { _: 'span', prop: { id: 'total_time' }, child: ['00:00'] }] }] }] }, { _: 'div', prop: { id: 'danmaku_input_frame' }, child: [{ _: 'span', prop: { id: 'danmaku_style' }, child: [{ _: 'div', attr: { id: 'danmaku_style_pannel' }, child: [{ _: 'div', attr: { id: 'danmaku_color_box' } }, { _: 'input', attr: { id: 'danmaku_color', placeholder: _('hex color'), maxlength: "6" } }, { _: 'span', attr: { id: 'danmaku_mode_box' } }, { _: 'span', attr: { id: 'danmaku_size_box' } }] }, icon('danmakuStyle')] }, { _: 'input', attr: { id: 'danmaku_input', placeholder: _('Input danmaku here') } }, { _: 'span', prop: { id: 'danmaku_submit', innerHTML: _('Send') } }] }] }, { _: 'span', attr: { id: 'control_right' }, child: [icon('addDanmaku', { click: function click(e) {
 								return _this.danmakuInput();
@@ -3390,7 +3394,9 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 		opt = _this2.opt = Object.assign({}, NyaPOptions, opt);
 		_this2._ = {}; //for private variables
 		var video = _this2._.video = (0, _Object2HTML2.default)({ _: 'video', attr: { id: 'main_video' } });
-		_this2.danmakuFrame = new _danmakuFrame.DanmakuFrame();
+		_this2.videoFrame = (0, _Object2HTML2.default)({ _: 'div', attr: { id: 'video_frame' }, child: [video] });
+		//this.container=O2H({_:'div',prop:{id:'danmaku_container'}});
+		_this2.danmakuFrame = new _danmakuFrame.DanmakuFrame(_this2.videoFrame);
 		_this2.danmakuFrame.setMedia(video);
 		_this2.danmakuFrame.enable('TextDanmaku');
 		_this2.setDanmakuOptions(opt.danmakuOption);

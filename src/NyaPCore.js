@@ -60,7 +60,9 @@ class NyaPlayerCore extends NyaPEventEmitter{
 		opt=this.opt=Object.assign({},NyaPOptions,opt);
 		this._={};//for private variables
 		const video=this._.video=O2H({_:'video',attr:{id:'main_video'}});
-		this.danmakuFrame=new DanmakuFrame();
+		this.videoFrame=O2H({_:'div',attr:{id:'video_frame'},child:[video]});
+		//this.container=O2H({_:'div',prop:{id:'danmaku_container'}});
+		this.danmakuFrame=new DanmakuFrame(this.videoFrame);
 		this.danmakuFrame.setMedia(video);
 		this.danmakuFrame.enable('TextDanmaku');
 		this.setDanmakuOptions(opt.danmakuOption);

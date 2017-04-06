@@ -28,6 +28,7 @@ LGPL license
 	display: flex;
 	flex-wrap:wrap;
 	z-index: 1;
+	background-color: #000;
 
 	&[playerMode="fullScreen"]{
 		#video_frame{
@@ -76,7 +77,6 @@ LGPL license
 			@extend .NyaP_fullfill;
 		    cursor: pointer;
 		    user-select: none;
-		    background-color: #000;
 		    position: relative;
 		    -o-user-select: none;
 		    -ms-user-select: none;
@@ -88,10 +88,13 @@ LGPL license
 				display:none;
 			}
 		}
-		div#danmaku_container{
-			@extend .NyaP_fullfill;
+		div[class^=danmaku]{
 		    pointer-events: none;
+			@extend .NyaP_fullfill;
 		}
+		/*div#danmaku_container{
+		    pointer-events: none;
+		}*/
 	}
 	#controls{
 		@extend .NyaP_fullfill;

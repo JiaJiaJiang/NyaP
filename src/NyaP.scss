@@ -25,8 +25,6 @@ LGPL license
 	@extend .NyaP_fullfill;
 	
 	$control_bar_height:30px;
-	display: flex;
-	flex-wrap:wrap;
 	z-index: 1;
 	background-color: #000;
 
@@ -92,9 +90,6 @@ LGPL license
 		    pointer-events: none;
 			@extend .NyaP_fullfill;
 		}
-		/*div#danmaku_container{
-		    pointer-events: none;
-		}*/
 	}
 	#controls{
 		@extend .NyaP_fullfill;
@@ -290,6 +285,15 @@ LGPL license
 		&:hover>#icon_span_fullScreen{
 			display: block;
 		}
+	}
+	.key_event_input{
+		position:absolute;
+		bottom:0;
+		font-size:0;
+		height:0;
+		padding:0;
+		border:none;
+		width:0;
 	}
 }
 

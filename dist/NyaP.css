@@ -2,7 +2,7 @@
 Copyright luojia@luojia.me
 LGPL license
 */
-.NyaP_fullfill, .NyaP, .NyaP > #video_frame, .NyaP > #video_frame > video#main_video, .NyaP > #video_frame > div#danmaku_container, .NyaP > #controls, .NyaP #control, .NyaP canvas#progress, .NyaP #progress_info, .NyaP #danmaku_input_frame { top: 0; left: 0; width: 100%; height: 100%; position: absolute; }
+.NyaP_fullfill, .NyaP, .NyaP > #video_frame, .NyaP > #video_frame > video#main_video, .NyaP > #video_frame > div#danmaku_container, .NyaP > #controls, .NyaP #control, .NyaP canvas#progress, .NyaP #progress_info, .NyaP #danmaku_input_frame, .NyaP #time { top: 0; left: 0; width: 100%; height: 100%; position: absolute; }
 
 .NyaP { transform: translateZ(0); }
 
@@ -82,9 +82,11 @@ LGPL license
 
 .NyaP #player_settings:active #settings_box { display: flex; }
 
-.NyaP #time { display: flex; padding: 0 5px; font-size: 14px; text-align: center; align-items: center; font-family: monospace; }
+.NyaP #time_frame { width: 105px; height: 100%; padding: 0 5px; position: relative; display: inline-block; }
 
-.NyaP #time > span { flex-grow: 1; }
+.NyaP #time { display: flex; font-size: 14px; text-align: center; align-items: center; font-family: monospace; }
+
+.NyaP #time > * { flex-shrink: 1; flex-grow: 1; }
 
 .NyaP #icon_span_fullScreen { left: 0; bottom: 100%; display: none; border-bottom: 0; position: absolute; border: 1px solid #ccc; border-radius: 8px 0 0; }
 

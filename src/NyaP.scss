@@ -246,15 +246,22 @@ LGPL license
 			display: flex;
 		}
 	}
-	#time{
-	    display: flex;
+	#time_frame{
+		width:105px;
+		height: 100%;
 	    padding: 0 5px;
+	    position: relative;
+		display: inline-block;
+	}
+	#time{
+		@extend .NyaP_fullfill; 
+	    display: flex;
 		font-size: 14px;
 	    text-align: center;
 	    align-items: center;
 	    font-family: monospace;
 	    
-	    &>span{flex-grow: 1;}
+	    &>*{flex-shrink:1;flex-grow: 1;}
 	}
 	#icon_span_fullScreen{
 		left: 0;

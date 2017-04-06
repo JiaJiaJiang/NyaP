@@ -89,10 +89,12 @@ class NyaP extends NyaPlayerCore{
 								{_:'span',child:[
 									{_:'canvas',prop:{id:'progress',pad:10}},
 								]},
-								{_:'span',prop:{id:'time'},child:[
-									{_:'span',prop:{id:'current_time'},child:['00:00']},
-									'/',
-									{_:'span',prop:{id:'total_time'},child:['00:00']},
+								{_:'span',prop:{id:'time_frame'},child:[
+									{_:'span',prop:{id:'time'},child:[
+										{_:'span',prop:{id:'current_time'},child:['00:00']},
+										'/',
+										{_:'span',prop:{id:'total_time'},child:['00:00']},
+									]},
 								]},
 							]},
 							{_:'div',prop:{id:'danmaku_input_frame'},child:[

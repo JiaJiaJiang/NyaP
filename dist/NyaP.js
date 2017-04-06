@@ -2815,22 +2815,17 @@ var NyaP = function (_NyaPlayerCore) {
 		}
 
 		_this._.player = (0, _Object2HTML2.default)({
-			_: 'div', attr: { 'class': 'NyaP', id: 'NyaP' }, child: [
-			/*{_:'div',attr:{id:'video_frame'},child:[
-   	video,
-   	this.danmakuFrame.container
-   ]},*/
-			_this.videoFrame, { _: 'div', attr: { id: 'controls' }, child: [{ _: 'div', attr: { id: 'control' }, child: [{ _: 'span', attr: { id: 'control_left' }, child: [icon('play', { click: function click(e) {
+			_: 'div', attr: { 'class': 'NyaP', id: 'NyaP' }, child: [_this.videoFrame, { _: 'div', attr: { id: 'controls' }, child: [{ _: 'div', attr: { id: 'control' }, child: [{ _: 'span', attr: { id: 'control_left' }, child: [icon('play', { click: function click(e) {
 								return _this.playToggle();
 							} }, { title: _('play') })] }, { _: 'span', attr: { id: 'control_center' }, child: [{ _: 'div', prop: { id: 'progress_info' }, child: [{ _: 'span', child: [{ _: 'canvas', prop: { id: 'progress', pad: 10 } }] }, { _: 'span', prop: { id: 'time_frame' }, child: [{ _: 'span', prop: { id: 'time' }, child: [{ _: 'span', prop: { id: 'current_time' }, child: ['00:00'] }, '/', { _: 'span', prop: { id: 'total_time' }, child: ['00:00'] }] }] }] }, { _: 'div', prop: { id: 'danmaku_input_frame' }, child: [{ _: 'span', prop: { id: 'danmaku_style' }, child: [{ _: 'div', attr: { id: 'danmaku_style_pannel' }, child: [{ _: 'div', attr: { id: 'danmaku_color_box' } }, { _: 'input', attr: { id: 'danmaku_color', placeholder: _('hex color'), maxlength: "6" } }, { _: 'span', attr: { id: 'danmaku_mode_box' } }, { _: 'span', attr: { id: 'danmaku_size_box' } }] }, icon('danmakuStyle')] }, { _: 'input', attr: { id: 'danmaku_input', placeholder: _('Input danmaku here') } }, { _: 'span', prop: { id: 'danmaku_submit', innerHTML: _('Send') } }] }] }, { _: 'span', attr: { id: 'control_right' }, child: [icon('addDanmaku', { click: function click(e) {
 								return _this.danmakuInput();
-							} }, { title: _('danmaku input') }), icon('volume', {}, { title: _('volume($0)', '100%') }), icon('loop', { click: function click(e) {
+							} }, { title: _('danmaku input(Enter)') }), icon('volume', {}, { title: _('volume($0)([shift]+↑↓)', '100%') }), icon('loop', { click: function click(e) {
 								video.loop = !video.loop;
 							} }, { title: _('loop') }), { _: 'span', prop: { id: 'player_mode' }, child: [icon('fullPage', { click: function click(e) {
 									return _this.playerMode('fullPage');
-								} }, { title: _('full page') }), icon('fullScreen', { click: function click(e) {
+								} }, { title: _('full page(P)') }), icon('fullScreen', { click: function click(e) {
 									return _this.playerMode('fullScreen');
-								} }, { title: _('full screen') })] }] }] }] }, { _: 'input', attr: { style: 'position:absolute;bottom:0;font-size:0;height:0;padding:0;border:none;width:0;', id: 'keyEventInput' } }]
+								} }, { title: _('full screen(F)') })] }] }] }] }, { _: 'input', attr: { style: 'position:absolute;bottom:0;font-size:0;height:0;padding:0;border:none;width:0;', id: 'keyEventInput' } }]
 		});
 
 		//add elements with id to $ prop
@@ -2902,7 +2897,7 @@ var NyaP = function (_NyaPlayerCore) {
 				},
 				volumechange: function volumechange(e) {
 					(0, _NyaPCore.setAttrs)($.volume_circle, { 'stroke-dasharray': video.volume * 10 * Math.PI + ' 90', style: 'fill-opacity:' + (video.muted ? .2 : .6) + '!important' });
-					$.icon_span_volume.setAttribute('title', _('volume($0)', video.muted ? _('muted') : (video.volume * 100 | 0) + '%'));
+					$.icon_span_volume.setAttribute('title', _('volume($0)([shift]+↑↓)', video.muted ? _('muted') : (video.volume * 100 | 0) + '%'));
 				},
 				progress: function progress(e) {
 					_this.drawProgress();
@@ -3608,6 +3603,10 @@ Object.defineProperty(exports, "__esModule", {
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
+/*
+Copyright luojia@luojia.me
+LGPL license
+*/
 var i18n = {
 	lang: null,
 	langs: {},
@@ -3631,20 +3630,20 @@ i18n.langs['zh-CN'] = {
 	'pause': '暂停',
 	'muted': '静音',
 	'settings': '设置',
-	'full page': '全页模式',
-	'full screen': '全屏模式',
-	'volume($0)': '音量（$0）',
+	'full page(P)': '全页模式(P)',
+	'full screen(F)': '全屏模式(F)',
+	'volume($0)([shift]+↑↓)': '音量($0)([shift]+↑↓)',
 	'hex color': 'Hex颜色',
-	'danmaku input': '弹幕输入框',
+	'danmaku input(Enter)': '弹幕输入框(回车)',
 	'Input danmaku here': '在这里输入弹幕',
 	'Failed to change to fullscreen mode': '无法切换到全屏模式'
 };
 
+//automatically select a language
+
 if (!navigator.languages) {
 	navigator.languages = [navigator.language];
 }
-
-navigator.languages;
 
 var _arr = [].concat(_toConsumableArray(navigator.languages));
 

@@ -75,10 +75,6 @@ class NyaP extends NyaPlayerCore{
 
 		this._.player=O2H({
 			_:'div',attr:{'class':'NyaP',id:'NyaP'},child:[
-				/*{_:'div',attr:{id:'video_frame'},child:[
-					video,
-					this.danmakuFrame.container
-				]},*/
 				this.videoFrame,
 				{_:'div',attr:{id:'controls'},child:[
 					{_:'div',attr:{id:'control'},child:[
@@ -113,12 +109,12 @@ class NyaP extends NyaPlayerCore{
 							]}
 						]},
 						{_:'span',attr:{id:'control_right'},child:[
-							icon('addDanmaku',{click:e=>this.danmakuInput()},{title:_('danmaku input')}),
-							icon('volume',{},{title:_('volume($0)','100%')}),
+							icon('addDanmaku',{click:e=>this.danmakuInput()},{title:_('danmaku input(Enter)')}),
+							icon('volume',{},{title:_('volume($0)([shift]+↑↓)','100%')}),
 							icon('loop',{click:e=>{video.loop=!video.loop;}},{title:_('loop')}),
 							{_:'span',prop:{id:'player_mode'},child:[
-								icon('fullPage',{click:e=>this.playerMode('fullPage')},{title:_('full page')}),
-								icon('fullScreen',{click:e=>this.playerMode('fullScreen')},{title:_('full screen')})
+								icon('fullPage',{click:e=>this.playerMode('fullPage')},{title:_('full page(P)')}),
+								icon('fullScreen',{click:e=>this.playerMode('fullScreen')},{title:_('full screen(F)')})
 							]}
 						]},
 					]}
@@ -194,7 +190,7 @@ class NyaP extends NyaPlayerCore{
 				},
 				volumechange:e=>{
 					setAttrs($.volume_circle,{'stroke-dasharray':`${video.volume*10*Math.PI} 90`,style:`fill-opacity:${video.muted?.2:.6}!important`});
-					$.icon_span_volume.setAttribute('title',_('volume($0)',video.muted?_('muted'):`${video.volume*100|0}%`));
+					$.icon_span_volume.setAttribute('title',_('volume($0)([shift]+↑↓)',video.muted?_('muted'):`${video.volume*100|0}%`));
 				},
 				progress:e=>{this.drawProgress();},
 				_loopChange:e=>{

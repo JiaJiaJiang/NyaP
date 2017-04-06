@@ -1,3 +1,7 @@
+/*
+Copyright luojia@luojia.me
+LGPL license
+*/
 const i18n={
 	lang:null,
 	langs:{},
@@ -16,24 +20,23 @@ i18n.langs['zh-CN']={
 	'pause':'暂停',
 	'muted':'静音',
 	'settings':'设置',
-	'full page':'全页模式',
-	'full screen':'全屏模式',
-	'volume($0)':'音量（$0）',
+	'full page(P)':'全页模式(P)',
+	'full screen(F)':'全屏模式(F)',
+	'volume($0)([shift]+↑↓)':'音量($0)([shift]+↑↓)',
 	'hex color':'Hex颜色',
-	'danmaku input':'弹幕输入框',
+	'danmaku input(Enter)':'弹幕输入框(回车)',
 	'Input danmaku here':'在这里输入弹幕',
 	'Failed to change to fullscreen mode':'无法切换到全屏模式',
 }
 
 
 
-
+//automatically select a language
 
 if(!navigator.languages){
 	navigator.languages=[navigator.language];
 }
 
-navigator.languages
 for(let lang of [...navigator.languages]){
 	if(i18n.langs[lang]){
 		i18n.lang=lang;

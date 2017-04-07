@@ -3061,6 +3061,7 @@ var NyaP = function (_NyaPlayerCore) {
 			console.log('input', e);
 			var V = this.video,
 			    _SH = e.shiftKey;
+			//to prevent default,use break.otherwise,use return.
 			switch (e.key) {
 				case ' ':
 					{
@@ -3389,7 +3390,6 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 		_this2._ = {}; //for private variables
 		var video = _this2._.video = (0, _Object2HTML2.default)({ _: 'video', attr: { id: 'main_video' } });
 		_this2.videoFrame = (0, _Object2HTML2.default)({ _: 'div', attr: { id: 'video_frame' }, child: [video] });
-		//this.container=O2H({_:'div',prop:{id:'danmaku_container'}});
 		_this2.danmakuFrame = new _danmakuFrame.DanmakuFrame(_this2.videoFrame);
 		_this2.danmakuFrame.setMedia(video);
 		_this2.danmakuFrame.enable('TextDanmaku');
@@ -3439,12 +3439,6 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 		key: 'playToggle',
 		value: function playToggle() {
 			this[this.video.paused ? 'play' : 'pause']();
-		}
-	}, {
-		key: 'seek',
-		value: function seek(time) {
-			//msec
-			this.video.currentTime = time / 1000;
 		}
 	}, {
 		key: 'loadDanmaku',
@@ -3667,4 +3661,4 @@ exports.i18n = i18n;
 
 },{}]},{},[13])
 
-//# sourceMappingURL=NyaP.js.map
+//# sourceMappingURL=NyaP.es2015.js.map

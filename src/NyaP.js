@@ -323,6 +323,7 @@ class NyaP extends NyaPlayerCore{
 	_playerKeyHandle(e){//hot keys
 		console.log('input',e)
 		const V=this.video,_SH=e.shiftKey;
+		//to prevent default,use break.otherwise,use return.
 		switch(e.key){
 			case ' ':{
 				if(!e.repeat)this.playToggle();break;

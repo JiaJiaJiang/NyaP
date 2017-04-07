@@ -61,7 +61,6 @@ class NyaPlayerCore extends NyaPEventEmitter{
 		this._={};//for private variables
 		const video=this._.video=O2H({_:'video',attr:{id:'main_video'}});
 		this.videoFrame=O2H({_:'div',attr:{id:'video_frame'},child:[video]});
-		//this.container=O2H({_:'div',prop:{id:'danmaku_container'}});
 		this.danmakuFrame=new DanmakuFrame(this.videoFrame);
 		this.danmakuFrame.setMedia(video);
 		this.danmakuFrame.enable('TextDanmaku');
@@ -101,9 +100,6 @@ class NyaPlayerCore extends NyaPEventEmitter{
 	}
 	playToggle(){
 		this[this.video.paused?'play':'pause']();
-	}
-	seek(time){//msec
-		this.video.currentTime=time/1000;
 	}
 	loadDanmaku(obj){
 		this.danmakuFrame.load(obj);

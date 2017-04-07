@@ -311,6 +311,10 @@ var DanmakuFrame = function () {
 		this.moduleList = [];
 		this.width = 0;
 		this.height = 0;
+		var style = document.createElement("style");
+		document.head.appendChild(style);
+		this.styleSheet = style.sheet;
+
 		for (var m in DanmakuFrame.moduleList) {
 			//init all modules
 			this.initModule(m);
@@ -1386,7 +1390,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				shadowOffsetX: 0,
 				shadowOffsetY: 0,
 				fill: true };
-			document.styleSheets[0].insertRule('.' + _this.randomText + '_fullfill{top:0;left:0;width:100%;height:100%;position:absolute;}', 0);
+			frame.styleSheet.insertRule('.' + _this.randomText + '_fullfill{top:0;left:0;width:100%;height:100%;position:absolute;}', 0);
 
 			defProp(_this, 'renderMode', { configurable: true });
 			defProp(_this, 'activeRenderMode', { configurable: true, value: null });
@@ -2392,9 +2396,9 @@ var TextCanvas = function (_Template) {
 
 		_this.supported = dText.text2d.supported;
 		if (!_this.supported) return _possibleConstructorReturn(_this);
-		document.styleSheets[0].insertRule('#' + dText.randomText + '_textCanvasContainer canvas{will-change:transform;top:0;left:0;position:absolute;}', 0);
-		document.styleSheets[0].insertRule('#' + dText.randomText + '_textCanvasContainer.moving canvas{transition:transform 500s linear;}', 0);
-		document.styleSheets[0].insertRule('#' + dText.randomText + '_textCanvasContainer{will-change:transform;pointer-events:none;overflow:hidden;}', 0);
+		dText.frame.styleSheet.insertRule('#' + dText.randomText + '_textCanvasContainer canvas{will-change:transform;top:0;left:0;position:absolute;}', 0);
+		dText.frame.styleSheet.insertRule('#' + dText.randomText + '_textCanvasContainer.moving canvas{transition:transform 500s linear;}', 0);
+		dText.frame.styleSheet.insertRule('#' + dText.randomText + '_textCanvasContainer{will-change:transform;pointer-events:none;overflow:hidden;}', 0);
 
 		dText.textCanvasContainer = document.createElement('div'); //for text canvas
 		dText.textCanvasContainer.classList.add(dText.randomText + '_fullfill');

@@ -6,18 +6,17 @@ var minimist = require('minimist');
 var minimistOpt = {
 	string:['es'],
 	boolean:['touch'],
-	default: {es:'2015'},
 };
 
 var options = minimist(process.argv.slice(2), minimistOpt);
 
-
-gulp.task('js', function () {
+gulp.task('_compileJS',function(){
 	var name=options.touch?'NyaPTouch.js':'NyaP.js';
 	var buffer = require('vinyl-buffer');
 	var source = require('vinyl-source-stream');
 	var babelify = require('babelify');
 	var browserify = require('browserify');
+	var es=options.es;
 
 	return browserify({
 		entries: name,
@@ -26,18 +25,37 @@ gulp.task('js', function () {
 	})
 	.transform(
 		babelify.configure({
-			presets: [`es${options.es}`],
+			presets: [`es${es}`],
 			plugins: ["transform-es2015-modules-commonjs"]
 		})
 	)
 	.bundle()
 	.pipe(source(`./${name}`))
-	.pipe(rename({extname:`.es${options.es}.js`}))
+	.pipe(rename({extname:`.es${es}.js`}))
 	.pipe(buffer())
 	.pipe(sourcemaps.init({ loadMaps: true }))
 	.pipe(sourcemaps.write('./'))
 	.pipe(gulp.dest('./dist'));
 });
+
+var esList=['2015','2016'];
+gulp.task('js',function(){
+	if(options.es){
+		gulp.start('_compileJS');
+		return;
+	}
+	var es=esList.shift();
+	options.es=es;
+	console.log('es'+es);
+	gulp.start('_compileJS',function(err){
+		options.es='';
+		if(esList.length){
+			gulp.start('js');
+		}
+	});
+	return;
+});
+
 gulp.task('css', function (){
 	var sass = require("gulp-sass");
 	var name=options.touch?'NyaPTouch.scss':'NyaP.scss';
@@ -92,6 +110,6 @@ gulp.task('build',['js','css']);
 
 gulp.task('min',['mincss','minjs']);
 
-gulp.task('default',['build'],function(){
-	gulp.start('min');
+gulp.task('default',['build'],function(cb){
+	gulp.start('min',cb);
 });

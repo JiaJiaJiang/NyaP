@@ -317,11 +317,12 @@ class NyaP extends NyaPlayerCore{
 	_playerKeyHandle(e){//hot keys
 		if(e.target.tagName==='INPUT')return;
 		console.log('input',e)
-		const V=this.video,_SH=e.shiftKey;
+		const V=this.video,_SH=e.shiftKey,_RE=e.repeat;
 		//to prevent default,use break.otherwise,use return.
 		switch(e.key){
 			case ' ':{
-				if(!e.repeat)this.playToggle();break;
+				if(!_RE)return;
+				this.playToggle();break;
 			}
 			case 'ArrowRight':{//seek to after time
 				V.currentTime+=(3*(_SH?2:1));break;
@@ -335,25 +336,29 @@ class NyaP extends NyaPlayerCore{
 			case 'ArrowDown':{//volume down
 				V.volume=limitIn(V.volume-(0.03*(_SH?2:1)),0,1);break;
 			}
-			case 'p':{//volume down
+			case 'p':{//full page
+				if(!_RE)return;
 				this.playerMode('fullPage');break;
 			}
-			case 'f':{//volume down
+			case 'f':{//fullscreen
 				this.playerMode('fullScreen');break;
 			}
 			case 'm':{//mute
+				if(!_RE)return;
 				this.video.muted=!this.video.muted;break;
 			}
 			case 'l':{//loop
 				this.video.loop=!this.video.loop;break;
 			}
 			case 'Enter':{//danmaku input toggle
+				if(!_RE)return;
 				this.danmakuInput();break;
 			}
 			case 'Escape':{//exit full page mode
 				if(this._.playerMode==='fullPage'){
 					this.playerMode('normal');break;
 				}
+				return;
 			}
 			default:return;
 		}

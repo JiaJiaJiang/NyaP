@@ -2348,12 +2348,14 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 		if (e.target.tagName === 'INPUT') return;
 		console.log('input', e);
 		const V = this.video,
-		      _SH = e.shiftKey;
+		      _SH = e.shiftKey,
+		      _RE = e.repeat;
 		//to prevent default,use break.otherwise,use return.
 		switch (e.key) {
 			case ' ':
 				{
-					if (!e.repeat) this.playToggle();break;
+					if (!_RE) return;
+					this.playToggle();break;
 				}
 			case 'ArrowRight':
 				{
@@ -2377,17 +2379,19 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 				}
 			case 'p':
 				{
-					//volume down
+					//full page
+					if (!_RE) return;
 					this.playerMode('fullPage');break;
 				}
 			case 'f':
 				{
-					//volume down
+					//fullscreen
 					this.playerMode('fullScreen');break;
 				}
 			case 'm':
 				{
 					//mute
+					if (!_RE) return;
 					this.video.muted = !this.video.muted;break;
 				}
 			case 'l':
@@ -2398,6 +2402,7 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 			case 'Enter':
 				{
 					//danmaku input toggle
+					if (!_RE) return;
 					this.danmakuInput();break;
 				}
 			case 'Escape':
@@ -2406,6 +2411,7 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 					if (this._.playerMode === 'fullPage') {
 						this.playerMode('normal');break;
 					}
+					return;
 				}
 			default:
 				return;

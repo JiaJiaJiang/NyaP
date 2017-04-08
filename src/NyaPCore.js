@@ -53,15 +53,15 @@ class NyaPEventEmitter{
 	}
 }
 
-
 class NyaPlayerCore extends NyaPEventEmitter{
 	constructor(opt){
 		super();
 		opt=this.opt=Object.assign({},NyaPOptions,opt);
 		this._={};//for private variables
 		const video=this._.video=O2H({_:'video',attr:{id:'main_video'}});
-		this.videoFrame=O2H({_:'div',attr:{id:'video_frame'},child:[video]});
-		this.danmakuFrame=new DanmakuFrame(this.videoFrame);
+		this.container=O2H({_:'div',prop:{id:'danmaku_container'}});
+		this.videoFrame=O2H({_:'div',attr:{id:'video_frame'},child:[video,this.container]});
+		this.danmakuFrame=new DanmakuFrame(this.container);
 		this.danmakuFrame.setMedia(video);
 		this.danmakuFrame.enable('TextDanmaku');
 		this.setDanmakuOptions(opt.danmakuOption);
@@ -90,7 +90,6 @@ class NyaPlayerCore extends NyaPEventEmitter{
 		}
 		
 		this.emit('coreLoad');
-		//this.danmakuFrame.container
 	}
 	play(){
 		this.video.paused&&this.video.play();
@@ -126,8 +125,6 @@ class NyaPlayerCore extends NyaPEventEmitter{
 		if(opt)for(let n in opt)this.TextDanmaku.options[n]=opt[n];
 	}
 }
-
-
 
 
 //other functions

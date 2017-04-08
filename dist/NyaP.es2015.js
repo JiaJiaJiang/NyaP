@@ -11,40 +11,31 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 Copyright luojia@luojia.me
 LGPL license
 */
+function _Obj(t) {
+	return (typeof t === 'undefined' ? 'undefined' : _typeof(t)) == 'object';
+}
 
 function Object2HTML(obj, func) {
 	var ele = void 0,
 	    o = void 0,
 	    e = void 0;
 	if (typeof obj === 'string') return document.createTextNode(obj); //text node
-	if ('_' in obj === false) return; //if it dont have a _ prop to specify a tag
-	if (typeof obj._ !== 'string' || obj._ == '') return;
+	if ('_' in obj === false || typeof obj._ !== 'string' || obj._ == '') return; //if it dont have a _ prop to specify a tag
 	ele = document.createElement(obj._);
 	//attributes
-	if (_typeof(obj.attr) === 'object') {
-		for (o in obj.attr) {
-			ele.setAttribute(o, obj.attr[o]);
-		}
-	}
-	//properties
-	if (_typeof(obj.prop) === 'object') {
-		for (o in obj.prop) {
-			ele[o] = obj.prop[o];
-		}
-	}
-	//events
-	if (_typeof(obj.event) === 'object') {
-		for (o in obj.event) {
-			ele.addEventListener(o, obj.event[o]);
-		}
-	}
-	//childNodes
-	if (_typeof(obj.child) === 'object' && obj.child.length > 0) {
-		obj.child.forEach(function (o) {
-			e = o instanceof Node ? o : Object2HTML(o, func);
-			e instanceof Node && ele.appendChild(e);
-		});
-	}
+	if (_Obj(obj.attr)) for (o in obj.attr) {
+		ele.setAttribute(o, obj.attr[o]);
+	} //properties
+	if (_Obj(obj.prop)) for (o in obj.prop) {
+		ele[o] = obj.prop[o];
+	} //events
+	if (_Obj(obj.event)) for (o in obj.event) {
+		ele.addEventListener(o, obj.event[o]);
+	} //childNodes
+	if (_Obj(obj.child) && obj.child.length > 0) obj.child.forEach(function (o) {
+		e = o instanceof Node ? o : Object2HTML(o, func);
+		e instanceof Node && ele.appendChild(e);
+	});
 	func && func(ele);
 	return ele;
 }
@@ -869,245 +860,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 });
 
 },{}],5:[function(require,module,exports){
-'use strict';
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-(function (root) {
-
-  // Store setTimeout reference so promise-polyfill will be unaffected by
-  // other code modifying setTimeout (like sinon.useFakeTimers())
-  var setTimeoutFunc = setTimeout;
-
-  function noop() {}
-
-  // Polyfill for Function.prototype.bind
-  function bind(fn, thisArg) {
-    return function () {
-      fn.apply(thisArg, arguments);
-    };
-  }
-
-  function Promise(fn) {
-    if (_typeof(this) !== 'object') throw new TypeError('Promises must be constructed via new');
-    if (typeof fn !== 'function') throw new TypeError('not a function');
-    this._state = 0;
-    this._handled = false;
-    this._value = undefined;
-    this._deferreds = [];
-
-    doResolve(fn, this);
-  }
-
-  function handle(self, deferred) {
-    while (self._state === 3) {
-      self = self._value;
-    }
-    if (self._state === 0) {
-      self._deferreds.push(deferred);
-      return;
-    }
-    self._handled = true;
-    Promise._immediateFn(function () {
-      var cb = self._state === 1 ? deferred.onFulfilled : deferred.onRejected;
-      if (cb === null) {
-        (self._state === 1 ? resolve : reject)(deferred.promise, self._value);
-        return;
-      }
-      var ret;
-      try {
-        ret = cb(self._value);
-      } catch (e) {
-        reject(deferred.promise, e);
-        return;
-      }
-      resolve(deferred.promise, ret);
-    });
-  }
-
-  function resolve(self, newValue) {
-    try {
-      // Promise Resolution Procedure: https://github.com/promises-aplus/promises-spec#the-promise-resolution-procedure
-      if (newValue === self) throw new TypeError('A promise cannot be resolved with itself.');
-      if (newValue && ((typeof newValue === 'undefined' ? 'undefined' : _typeof(newValue)) === 'object' || typeof newValue === 'function')) {
-        var then = newValue.then;
-        if (newValue instanceof Promise) {
-          self._state = 3;
-          self._value = newValue;
-          finale(self);
-          return;
-        } else if (typeof then === 'function') {
-          doResolve(bind(then, newValue), self);
-          return;
-        }
-      }
-      self._state = 1;
-      self._value = newValue;
-      finale(self);
-    } catch (e) {
-      reject(self, e);
-    }
-  }
-
-  function reject(self, newValue) {
-    self._state = 2;
-    self._value = newValue;
-    finale(self);
-  }
-
-  function finale(self) {
-    if (self._state === 2 && self._deferreds.length === 0) {
-      Promise._immediateFn(function () {
-        if (!self._handled) {
-          Promise._unhandledRejectionFn(self._value);
-        }
-      });
-    }
-
-    for (var i = 0, len = self._deferreds.length; i < len; i++) {
-      handle(self, self._deferreds[i]);
-    }
-    self._deferreds = null;
-  }
-
-  function Handler(onFulfilled, onRejected, promise) {
-    this.onFulfilled = typeof onFulfilled === 'function' ? onFulfilled : null;
-    this.onRejected = typeof onRejected === 'function' ? onRejected : null;
-    this.promise = promise;
-  }
-
-  /**
-   * Take a potentially misbehaving resolver function and make sure
-   * onFulfilled and onRejected are only called once.
-   *
-   * Makes no guarantees about asynchrony.
-   */
-  function doResolve(fn, self) {
-    var done = false;
-    try {
-      fn(function (value) {
-        if (done) return;
-        done = true;
-        resolve(self, value);
-      }, function (reason) {
-        if (done) return;
-        done = true;
-        reject(self, reason);
-      });
-    } catch (ex) {
-      if (done) return;
-      done = true;
-      reject(self, ex);
-    }
-  }
-
-  Promise.prototype['catch'] = function (onRejected) {
-    return this.then(null, onRejected);
-  };
-
-  Promise.prototype.then = function (onFulfilled, onRejected) {
-    var prom = new this.constructor(noop);
-
-    handle(this, new Handler(onFulfilled, onRejected, prom));
-    return prom;
-  };
-
-  Promise.all = function (arr) {
-    var args = Array.prototype.slice.call(arr);
-
-    return new Promise(function (resolve, reject) {
-      if (args.length === 0) return resolve([]);
-      var remaining = args.length;
-
-      function res(i, val) {
-        try {
-          if (val && ((typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object' || typeof val === 'function')) {
-            var then = val.then;
-            if (typeof then === 'function') {
-              then.call(val, function (val) {
-                res(i, val);
-              }, reject);
-              return;
-            }
-          }
-          args[i] = val;
-          if (--remaining === 0) {
-            resolve(args);
-          }
-        } catch (ex) {
-          reject(ex);
-        }
-      }
-
-      for (var i = 0; i < args.length; i++) {
-        res(i, args[i]);
-      }
-    });
-  };
-
-  Promise.resolve = function (value) {
-    if (value && (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' && value.constructor === Promise) {
-      return value;
-    }
-
-    return new Promise(function (resolve) {
-      resolve(value);
-    });
-  };
-
-  Promise.reject = function (value) {
-    return new Promise(function (resolve, reject) {
-      reject(value);
-    });
-  };
-
-  Promise.race = function (values) {
-    return new Promise(function (resolve, reject) {
-      for (var i = 0, len = values.length; i < len; i++) {
-        values[i].then(resolve, reject);
-      }
-    });
-  };
-
-  // Use polyfill for setImmediate for performance gains
-  Promise._immediateFn = typeof setImmediate === 'function' && function (fn) {
-    setImmediate(fn);
-  } || function (fn) {
-    setTimeoutFunc(fn, 0);
-  };
-
-  Promise._unhandledRejectionFn = function _unhandledRejectionFn(err) {
-    if (typeof console !== 'undefined' && console) {
-      console.warn('Possible Unhandled Promise Rejection:', err); // eslint-disable-line no-console
-    }
-  };
-
-  /**
-   * Set the immediate function to execute callbacks
-   * @param fn {function} Function to execute
-   * @deprecated
-   */
-  Promise._setImmediateFn = function _setImmediateFn(fn) {
-    Promise._immediateFn = fn;
-  };
-
-  /**
-   * Change the function to execute on unhandled rejection
-   * @param {function} fn Function to execute on unhandled rejection
-   * @deprecated
-   */
-  Promise._setUnhandledRejectionFn = function _setUnhandledRejectionFn(fn) {
-    Promise._unhandledRejectionFn = fn;
-  };
-
-  if (typeof module !== 'undefined' && module.exports) {
-    module.exports = Promise;
-  } else if (!root.Promise) {
-    root.Promise = Promise;
-  }
-})(undefined);
-
-},{}],6:[function(require,module,exports){
 (function (process,global){
 "use strict";
 
@@ -1296,7 +1048,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"_process":12}],7:[function(require,module,exports){
+},{"_process":11}],6:[function(require,module,exports){
 /*
 Copyright luojia@luojia.me
 LGPL license
@@ -1312,10 +1064,6 @@ Object.defineProperty(exports, "__esModule", {
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 require('../lib/setImmediate/setImmediate.js');
-
-var _promise = require('../lib/promise/promise.js');
-
-var _promise2 = _interopRequireDefault(_promise);
 
 var _text2d = require('./text2d.js');
 
@@ -1336,8 +1084,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-if (!window.Promise) window.Promise = _promise2.default;
 
 /*
 danmaku obj struct
@@ -1503,7 +1249,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				if (ind < this.indexMark) this.indexMark++;
 				//round d.style.fontSize to prevent Iifinity loop in tunnel
 				d.style.fontSize = d.style.fontSize + 0.5 | 0;
-				if (d.style.fontSize === NaN || d.style.fontSize === Infinity || d.style.fontSize === 0) d.style.fontSize = this.defaultStyle.fontstyle.fontSize;
+				if (isNaN(d.style.fontSize) || d.style.fontSize === Infinity || d.style.fontSize === 0) d.style.fontSize = this.defaultStyle.fontstyle.fontSize;
 				if (typeof d.mode !== 'number') d.mode = 0;
 				return d;
 			}
@@ -2039,7 +1785,7 @@ function limitIn(num, min, max) {
 function emptyFunc() {}
 exports.default = init;
 
-},{"../lib/promise/promise.js":5,"../lib/setImmediate/setImmediate.js":6,"./text2d.js":8,"./text3d.js":9,"./textCanvas.js":10}],8:[function(require,module,exports){
+},{"../lib/setImmediate/setImmediate.js":5,"./text2d.js":7,"./text3d.js":8,"./textCanvas.js":9}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2161,7 +1907,7 @@ var Text2d = function (_Template) {
 
 exports.default = Text2d;
 
-},{"./textModuleTemplate.js":11}],9:[function(require,module,exports){
+},{"./textModuleTemplate.js":10}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2361,7 +2107,7 @@ var commonTextureCoord = new Float32Array([0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.
 
 exports.default = Text3d;
 
-},{"../lib/Mat/Mat.js":4,"./textModuleTemplate.js":11}],10:[function(require,module,exports){
+},{"../lib/Mat/Mat.js":4,"./textModuleTemplate.js":10}],9:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2489,7 +2235,7 @@ var TextCanvas = function (_Template) {
 
 exports.default = TextCanvas;
 
-},{"./textModuleTemplate.js":11}],11:[function(require,module,exports){
+},{"./textModuleTemplate.js":10}],10:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2549,7 +2295,7 @@ var textModuleTemplate = function () {
 
 exports.default = textModuleTemplate;
 
-},{}],12:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -2731,7 +2477,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],13:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 /*
 Copyright luojia@luojia.me
 LGPL license
@@ -3281,7 +3027,7 @@ var NyaP = function (_NyaPlayerCore) {
 
 window.NyaP = NyaP;
 
-},{"../lib/Object2HTML/Object2HTML.js":1,"./NyaPCore.js":14,"./i18n.js":15}],14:[function(require,module,exports){
+},{"../lib/Object2HTML/Object2HTML.js":1,"./NyaPCore.js":13,"./i18n.js":14}],13:[function(require,module,exports){
 /*
 Copyright luojia@luojia.me
 LGPL license
@@ -3389,8 +3135,9 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 		opt = _this2.opt = Object.assign({}, NyaPOptions, opt);
 		_this2._ = {}; //for private variables
 		var video = _this2._.video = (0, _Object2HTML2.default)({ _: 'video', attr: { id: 'main_video' } });
-		_this2.videoFrame = (0, _Object2HTML2.default)({ _: 'div', attr: { id: 'video_frame' }, child: [video] });
-		_this2.danmakuFrame = new _danmakuFrame.DanmakuFrame(_this2.videoFrame);
+		_this2.container = (0, _Object2HTML2.default)({ _: 'div', prop: { id: 'danmaku_container' } });
+		_this2.videoFrame = (0, _Object2HTML2.default)({ _: 'div', attr: { id: 'video_frame' }, child: [video, _this2.container] });
+		_this2.danmakuFrame = new _danmakuFrame.DanmakuFrame(_this2.container);
 		_this2.danmakuFrame.setMedia(video);
 		_this2.danmakuFrame.enable('TextDanmaku');
 		_this2.setDanmakuOptions(opt.danmakuOption);
@@ -3421,7 +3168,6 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 		}
 
 		_this2.emit('coreLoad');
-		//this.danmakuFrame.container
 		return _this2;
 	}
 
@@ -3587,7 +3333,7 @@ exports.limitIn = limitIn;
 exports.toArray = toArray;
 exports.ResizeSensor = _danmakuFrame.ResizeSensor;
 
-},{"../lib/Object2HTML/Object2HTML.js":1,"../lib/danmaku-frame/src/danmaku-frame.js":3,"../lib/danmaku-text/src/danmaku-text.js":7}],15:[function(require,module,exports){
+},{"../lib/Object2HTML/Object2HTML.js":1,"../lib/danmaku-frame/src/danmaku-frame.js":3,"../lib/danmaku-text/src/danmaku-text.js":6}],14:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3659,6 +3405,6 @@ console.debug('Language:' + i18n.lang);
 
 exports.i18n = i18n;
 
-},{}]},{},[13])
+},{}]},{},[12])
 
 //# sourceMappingURL=NyaP.es2015.js.map

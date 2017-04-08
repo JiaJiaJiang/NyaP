@@ -1056,7 +1056,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			if (ind < this.indexMark) this.indexMark++;
 			//round d.style.fontSize to prevent Iifinity loop in tunnel
 			d.style.fontSize = d.style.fontSize + 0.5 | 0;
-			if (d.style.fontSize === NaN || d.style.fontSize === Infinity || d.style.fontSize === 0) d.style.fontSize = this.defaultStyle.fontstyle.fontSize;
+			if (isNaN(d.style.fontSize) || d.style.fontSize === Infinity || d.style.fontSize === 0) d.style.fontSize = this.defaultStyle.fontstyle.fontSize;
 			if (typeof d.mode !== 'number') d.mode = 0;
 			return d;
 		}
@@ -2626,8 +2626,9 @@ class NyaPlayerCore extends NyaPEventEmitter {
 		opt = this.opt = Object.assign({}, NyaPOptions, opt);
 		this._ = {}; //for private variables
 		const video = this._.video = (0, _Object2HTML2.default)({ _: 'video', attr: { id: 'main_video' } });
-		this.videoFrame = (0, _Object2HTML2.default)({ _: 'div', attr: { id: 'video_frame' }, child: [video] });
-		this.danmakuFrame = new _danmakuFrame.DanmakuFrame(this.videoFrame);
+		this.container = (0, _Object2HTML2.default)({ _: 'div', prop: { id: 'danmaku_container' } });
+		this.videoFrame = (0, _Object2HTML2.default)({ _: 'div', attr: { id: 'video_frame' }, child: [video, this.container] });
+		this.danmakuFrame = new _danmakuFrame.DanmakuFrame(this.container);
 		this.danmakuFrame.setMedia(video);
 		this.danmakuFrame.enable('TextDanmaku');
 		this.setDanmakuOptions(opt.danmakuOption);

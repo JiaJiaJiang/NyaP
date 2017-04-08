@@ -86,6 +86,10 @@ LGPL license
 				display:none;
 			}
 		}
+		#danmaku_container{
+			@extend .NyaP_fullfill;
+		    pointer-events: none;
+		}
 		div[class^=danmaku]{
 		    pointer-events: none;
 			@extend .NyaP_fullfill;

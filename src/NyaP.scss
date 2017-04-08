@@ -26,6 +26,7 @@ LGPL license
 	
 	$control_bar_height:30px;
 	z-index: 1;
+	outline: none;
 	background-color: #000;
 
 	&[playerMode="fullScreen"]{
@@ -289,15 +290,6 @@ LGPL license
 		&:hover>#icon_span_fullScreen{
 			display: block;
 		}
-	}
-	.key_event_input{
-		position:absolute;
-		bottom:0;
-		font-size:0;
-		height:0;
-		padding:0;
-		border:none;
-		width:0;
 	}
 }
 

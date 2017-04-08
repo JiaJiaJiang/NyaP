@@ -4,7 +4,7 @@ LGPL license
 */
 .NyaP_fullfill, .NyaP, .NyaP > #video_frame, .NyaP > #video_frame video#main_video, .NyaP > #video_frame #danmaku_container, .NyaP > #video_frame div[class^=danmaku], .NyaP #controls, .NyaP #control, .NyaP canvas#progress, .NyaP #progress_info, .NyaP #danmaku_input_frame, .NyaP #time { top: 0; left: 0; width: 100%; height: 100%; position: absolute; }
 
-.NyaP { z-index: 1; background-color: #000; }
+.NyaP { z-index: 1; outline: none; background-color: #000; }
 
 .NyaP[playerMode="fullScreen"] #video_frame { bottom: 0 !important; }
 
@@ -97,7 +97,5 @@ LGPL license
 .NyaP #player_mode { font-size: 0; }
 
 .NyaP #player_mode:hover > #icon_span_fullScreen { display: block; }
-
-.NyaP .key_event_input { position: absolute; bottom: 0; font-size: 0; height: 0; padding: 0; border: none; width: 0; }
 
 /*# sourceMappingURL=NyaP.css.map */

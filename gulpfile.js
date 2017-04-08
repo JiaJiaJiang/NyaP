@@ -12,7 +12,7 @@ var minimistOpt = {
 var options = minimist(process.argv.slice(2), minimistOpt);
 
 
-gulp.task('NyaP.js', function () {
+gulp.task('js', function () {
 	var name=options.touch?'NyaPTouch.js':'NyaP.js';
 	var buffer = require('vinyl-buffer');
 	var source = require('vinyl-source-stream');
@@ -38,7 +38,7 @@ gulp.task('NyaP.js', function () {
 	.pipe(sourcemaps.write('./'))
 	.pipe(gulp.dest('./dist'));
 });
-gulp.task('NyaP.css', function (){
+gulp.task('css', function (){
 	var sass = require("gulp-sass");
 	var name=options.touch?'NyaPTouch.scss':'NyaP.scss';
     gulp.src(`./src/${name}`)
@@ -52,7 +52,8 @@ gulp.task('NyaP.css', function (){
 
 
 gulp.task('minjs',function(){
-	var uglify = require('gulp-uglify');
+	var uglifyjs = require('uglify-js');
+	var uglify = require('gulp-uglify/minifier');
 	let options = {
 		mangle: true,
 		compress: {
@@ -68,7 +69,10 @@ gulp.task('minjs',function(){
 	};
 	return gulp.src('./dist/*.js')
 				.pipe(rename({extname:'.min.js'}))
-				.pipe(uglify(options))
+				.pipe(uglify(options,uglifyjs))
+				.on('error',function(e){
+					console.error(e);
+				})
 				.pipe(gulp.dest('./dist/compressed/'));
 });
 
@@ -82,5 +86,12 @@ gulp.task('mincss',function(){
 	    .pipe(gulp.dest('./dist/compressed/'));
 });
 
-gulp.task('NyaP',['NyaP.js','NyaP.css']);
 
+
+gulp.task('build',['js','css']);
+
+gulp.task('min',['mincss','minjs']);
+
+gulp.task('default',['build'],function(){
+	gulp.start('min');
+});

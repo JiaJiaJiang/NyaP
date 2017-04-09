@@ -294,14 +294,11 @@ var DanmakuFrame = function () {
 
 		this.container = container || document.createElement('div');
 		this.rate = 1;
-		this.timeBase = 0;
+		this.timeBase = this.width = this.height = this.fps = 0;
 		this.media = null;
-		this.fps = 0;
 		this.working = false;
 		this.modules = {}; //constructed module list
 		this.moduleList = [];
-		this.width = 0;
-		this.height = 0;
 		var style = document.createElement("style");
 		document.head.appendChild(style);
 		this.styleSheet = style.sheet;
@@ -415,13 +412,13 @@ var DanmakuFrame = function () {
 			this.media = media;
 			addEvents(media, {
 				playing: function playing() {
-					_this2.start();
+					return _this2.start();
 				},
 				pause: function pause() {
-					_this2.pause();
+					return _this2.pause();
 				},
 				ratechange: function ratechange() {
-					_this2.rate = _this2.media.playbackRate;
+					return _this2.rate = _this2.media.playbackRate;
 				}
 			});
 			this.moduleFunction('media', media);
@@ -1820,13 +1817,13 @@ var Text2d = function (_Template) {
 
 		_this.supported = false;
 		dText.canvas = document.createElement('canvas'); //the canvas
-		dText.canvas.classList.add(dText.randomText + '_fullfill');
-		dText.canvas.id = dText.randomText + '_text2d';
 		dText.context2d = dText.canvas.getContext('2d'); //the canvas contex
 		if (!dText.context2d) {
 			console.warn('text 2d not supported');
 			return _possibleConstructorReturn(_this);
 		}
+		dText.canvas.classList.add(dText.randomText + '_fullfill');
+		dText.canvas.id = dText.randomText + '_text2d';
 		dText.container.appendChild(dText.canvas);
 		_this.supported = true;
 		return _this;
@@ -1861,15 +1858,14 @@ var Text2d = function (_Template) {
 	}, {
 		key: 'clear',
 		value: function clear(force) {
+			var D = this.dText;
 			if (force || this._evaluateIfFullClearMode()) {
-				this.dText.context2d.clearRect(0, 0, this.dText.canvas.width, this.dText.canvas.height);
+				D.context2d.clearRect(0, 0, D.canvas.width, D.canvas.height);
 				return;
 			}
-			for (var i = this.dText.DanmakuText.length, t; i--;) {
-				t = this.dText.DanmakuText[i];
-				if (t.drawn) {
-					this.dText.context2d.clearRect(t.style.x - t.estimatePadding, t.style.y - t.estimatePadding, t._cache.width, t._cache.height);
-				}
+			for (var i = D.DanmakuText.length, t; i--;) {
+				t = D.DanmakuText[i];
+				if (t.drawn) D.context2d.clearRect(t.style.x - t.estimatePadding, t.style.y - t.estimatePadding, t._cache.width, t._cache.height);
 			}
 		}
 	}, {
@@ -1886,9 +1882,10 @@ var Text2d = function (_Template) {
 	}, {
 		key: 'resize',
 		value: function resize() {
-			var C = this.dText.canvas;
-			C.width = this.dText.width;
-			C.height = this.dText.height;
+			var D = this.dText,
+			    C = D.canvas;
+			C.width = D.width;
+			C.height = D.height;
 		}
 	}, {
 		key: 'enable',
@@ -1957,7 +1954,6 @@ var Text3d = function (_Template) {
 			console.warn('text 3d not supported');
 			return _possibleConstructorReturn(_this);
 		}
-		_this.supported = true;
 		dText.container.appendChild(dText.canvas3d);
 		var gl = _this.gl = dText.context3d,
 		    canvas = dText.canvas3d;
@@ -1965,16 +1961,14 @@ var Text3d = function (_Template) {
 
 		//shader
 		var shaders = {
-			danmakuFrag: [gl.FRAGMENT_SHADER, '\nvarying lowp vec2 vDanmakuTexCoord;\nuniform sampler2D uSampler;\n\nvoid main(void) {\n\tgl_FragColor = texture2D(uSampler,vDanmakuTexCoord);\n}'],
-			danmakuVert: [gl.VERTEX_SHADER, '\nattribute vec2 aVertexPosition;\nattribute vec2 aDanmakuTexCoord;\n\nuniform mat4 u2dCoordinate;\nuniform vec2 uDanmakuPos;\n\nvarying lowp vec2 vDanmakuTexCoord;\n\nvoid main(void) {\n\tgl_Position = u2dCoordinate * vec4(aVertexPosition+uDanmakuPos,0,1);\n\tvDanmakuTexCoord = aDanmakuTexCoord;\n}']
+			danmakuFrag: [gl.FRAGMENT_SHADER, '\n\t\t\t\tvarying lowp vec2 vDanmakuTexCoord;\n\t\t\t\tuniform sampler2D uSampler;\n\t\t\t\tvoid main(void) {\n\t\t\t\t\tgl_FragColor = texture2D(uSampler,vDanmakuTexCoord);\n\t\t\t\t}'],
+			danmakuVert: [gl.VERTEX_SHADER, '\n\t\t\t\tattribute vec2 aVertexPosition;\n\t\t\t\tattribute vec2 aDanmakuTexCoord;\n\t\t\t\tuniform mat4 u2dCoordinate;\n\t\t\t\tuniform vec2 uDanmakuPos;\n\t\t\t\tvarying lowp vec2 vDanmakuTexCoord;\n\t\t\t\tvoid main(void) {\n\t\t\t\t\tgl_Position = u2dCoordinate * vec4(aVertexPosition+uDanmakuPos,0,1);\n\t\t\t\t\tvDanmakuTexCoord = aDanmakuTexCoord;\n\t\t\t\t}']
 		};
 		function shader(name) {
 			var s = gl.createShader(shaders[name][0]);
 			gl.shaderSource(s, shaders[name][1]);
 			gl.compileShader(s);
-			if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
-				throw "An error occurred compiling the shaders: " + gl.getShaderInfoLog(s);
-			}
+			if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw "An error occurred compiling the shaders: " + gl.getShaderInfoLog(s);
 			return s;
 		}
 		var fragmentShader = shader("danmakuFrag");
@@ -1985,6 +1979,7 @@ var Text3d = function (_Template) {
 		gl.linkProgram(shaderProgram);
 		if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
 			console.error("Unable to initialize the shader program.");
+			return _possibleConstructorReturn(_this);
 		}
 		gl.useProgram(shaderProgram);
 
@@ -2012,6 +2007,8 @@ var Text3d = function (_Template) {
 
 		gl.activeTexture(gl.TEXTURE0);
 		gl.uniform1i(_this.uSampler, 0);
+
+		_this.supported = true;
 		return _this;
 	}
 
@@ -2147,10 +2144,10 @@ var TextCanvas = function (_Template) {
 		dText.frame.styleSheet.insertRule('#' + dText.randomText + '_textCanvasContainer.moving canvas{transition:transform 500s linear;}', 0);
 		dText.frame.styleSheet.insertRule('#' + dText.randomText + '_textCanvasContainer{will-change:transform;pointer-events:none;overflow:hidden;}', 0);
 
-		dText.textCanvasContainer = document.createElement('div'); //for text canvas
-		dText.textCanvasContainer.classList.add(dText.randomText + '_fullfill');
-		dText.textCanvasContainer.id = dText.randomText + '_textCanvasContainer';
-		dText.container.appendChild(dText.textCanvasContainer);
+		_this.container = dText.textCanvasContainer = document.createElement('div'); //for text canvas
+		_this.container.classList.add(dText.randomText + '_fullfill');
+		_this.container.id = dText.randomText + '_textCanvasContainer';
+		dText.container.appendChild(_this.container);
 		document.addEventListener('visibilitychange', function (e) {
 			if (dText.renderMode === 1 && !document.hidden) {
 				_this.resetPos();
@@ -2160,37 +2157,48 @@ var TextCanvas = function (_Template) {
 	}
 
 	_createClass(TextCanvas, [{
+		key: '_toggle',
+		value: function _toggle(s) {
+			var _this2 = this;
+
+			var D = this.dText,
+			    T = D.frame.time;
+			this.container.classList[s ? 'add' : 'remove']('moving');
+
+			var _loop = function _loop(i, _t) {
+				if ((_t = D.DanmakuText[i]).danmaku.mode >= 2) return 'continue';
+				if (s) {
+					requestAnimationFrame(function (a) {
+						return _this2._move(_t, T + 500000);
+					});
+				} else {
+					_this2._move(_t, T);
+				}
+				t = _t;
+			};
+
+			for (var i = D.DanmakuText.length, t; i--;) {
+				var _ret = _loop(i, t);
+
+				if (_ret === 'continue') continue;
+			}
+		}
+	}, {
 		key: 'pause',
 		value: function pause() {
-			var T = this.dText.frame.time;
-			this.dText.textCanvasContainer.classList.remove('moving');
-			for (var dT = this.dText, i = dT.DanmakuText.length, t; i--;) {
-				if ((t = dT.DanmakuText[i]).danmaku.mode >= 2) continue;
-				var X = this.dText._calcSideDanmakuPosition(t, T, this.dText.width);
-				t._cache.style.transform = 'translate3d(' + ((X - t.estimatePadding) * 10 | 0) / 10 + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
-			}
+			this._toggle(false);
 		}
 	}, {
 		key: 'start',
 		value: function start() {
-			var T = this.dText.frame.time;
-			this.dText.textCanvasContainer.classList.add('moving');
-			for (var dT = this.dText, i = dT.DanmakuText.length, t; i--;) {
-				if ((t = dT.DanmakuText[i]).danmaku.mode < 2) this._move(t, T);
-			}
+			this._toggle(true);
 		}
 	}, {
 		key: '_move',
-		value: function _move(t) {
-			var _this2 = this;
-
-			var T = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : this.dText.frame.time;
-
-			requestAnimationFrame(function () {
-				if (!t.danmaku) return;
-				var X = _this2.dText._calcSideDanmakuPosition(t, T + 500000, _this2.dText.width);
-				t._cache.style.transform = 'translate3d(' + ((X - t.estimatePadding) * 10 | 0) / 10 + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
-			});
+		value: function _move(t, T) {
+			if (!t.danmaku) return;
+			if (T === undefined) T = this.dText.frame.time + 500000;
+			t._cache.style.transform = 'translate3d(' + ((this.dText._calcSideDanmakuPosition(t, T, this.dText.width) - t.estimatePadding) * 10 | 0) / 10 + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
 		}
 	}, {
 		key: 'resetPos',
@@ -2198,8 +2206,8 @@ var TextCanvas = function (_Template) {
 			var _this3 = this;
 
 			this.pause();
-			if (!this.dText.paused) setImmediate(function () {
-				_this3.start();
+			this.dText.paused || setImmediate(function () {
+				return _this3.start();
 			});
 		}
 	}, {
@@ -2210,24 +2218,28 @@ var TextCanvas = function (_Template) {
 	}, {
 		key: 'remove',
 		value: function remove(t) {
-			this.dText.textCanvasContainer.removeChild(t._cache);
+			this.container.removeChild(t._cache);
 		}
 	}, {
 		key: 'enable',
 		value: function enable() {
-			this.dText.textCanvasContainer.hidden = false;
+			this.container.hidden = false;
 		}
 	}, {
 		key: 'disable',
 		value: function disable() {
-			this.dText.textCanvasContainer.hidden = true;
+			this.container.hidden = true;
 		}
 	}, {
 		key: 'newDanmaku',
 		value: function newDanmaku(t) {
-			t._cache.style.transform = 'translate3d(' + ((t.style.x - t.estimatePadding) * 10 | 0) / 10 + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
-			this.dText.textCanvasContainer.appendChild(t._cache);
-			if (t.danmaku.mode < 2) this._move(t);
+			var _this4 = this;
+
+			t._cache.style.transform = 'translate3d(' + (t.style.x - t.estimatePadding) + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
+			this.container.appendChild(t._cache);
+			if (t.danmaku.mode < 2) requestAnimationFrame(function (a) {
+				return _this4._move(t);
+			});
 		}
 	}]);
 
@@ -2624,12 +2636,9 @@ var NyaP = function (_NyaPlayerCore) {
 			},
 			main_video: {
 				playing: function playing(e) {
-					$.icon_span_play.classList.add('active_icon');
+					return $.icon_span_play.classList.add('active_icon');
 				},
-				pause: function pause(e) {
-					$.icon_span_play.classList.remove('active_icon');
-				},
-				stalled: function stalled(e) {
+				'pause,stalled': function pauseStalled(e) {
 					$.icon_span_play.classList.remove('active_icon');
 				},
 				timeupdate: function timeupdate(e) {
@@ -2646,48 +2655,38 @@ var NyaP = function (_NyaPlayerCore) {
 					$.icon_span_volume.setAttribute('title', _('volume($0)([shift]+↑↓)', video.muted ? _('muted') : (video.volume * 100 | 0) + '%'));
 				},
 				progress: function progress(e) {
-					_this.drawProgress();
+					return _this.drawProgress();
 				},
 				_loopChange: function _loopChange(e) {
-					$.icon_span_loop.classList[e.value ? 'add' : 'remove']('active_icon');
+					return $.icon_span_loop.classList[e.value ? 'add' : 'remove']('active_icon');
 				},
 				click: function click(e) {
 					return _this.playToggle();
 				},
-				mouseup: function mouseup(e) {
-					if (e.button === 2) {
-						//right key
-						e.preventDefault();
-						_this.menu([e.offsetX, e.offsetY]);
-					}
-				},
 				contextmenu: function contextmenu(e) {
-					e.preventDefault();
+					return e.preventDefault();
 				}
 			},
 			progress: {
-				mousemove: function mousemove(e) {
-					_this._.progressX = e.offsetX;_this.drawProgress();
+				'mousemove,click': function mousemoveClick(e) {
 					var t = e.target,
-					    pre = (e.offsetX - t.pad) / (t.offsetWidth - 2 * t.pad);
-					pre = (0, _NyaPCore.limitIn)(pre, 0, 1);
-					_this._setTimeInfo(null, (0, _NyaPCore.formatTime)(pre * video.duration, video.duration));
+					    pre = (0, _NyaPCore.limitIn)((e.offsetX - t.pad) / (t.offsetWidth - 2 * t.pad), 0, 1);
+					if (e.type === 'mousemove') {
+						_this._.progressX = e.offsetX;_this.drawProgress();
+						_this._setTimeInfo(null, (0, _NyaPCore.formatTime)(pre * video.duration, video.duration));
+					} else if (e.type === 'mousemove') {
+						video.currentTime = pre * video.duration;
+					}
 				},
 				mouseout: function mouseout(e) {
 					_this._.progressX = undefined;_this.drawProgress();
 					_this._setTimeInfo(null, (0, _NyaPCore.formatTime)(video.duration, video.duration));
-				},
-				click: function click(e) {
-					var t = e.target,
-					    pre = (e.offsetX - t.pad) / (t.offsetWidth - 2 * t.pad);
-					pre = (0, _NyaPCore.limitIn)(pre, 0, 1);
-					video.currentTime = pre * video.duration;
 				}
 			},
 			danmaku_style_pannel: {
 				click: function click(e) {
-					setImmediate(function () {
-						_this.$.danmaku_input.focus();
+					return setImmediate(function (a) {
+						return _this.$.danmaku_input.focus();
 					});
 				}
 			},
@@ -2708,7 +2707,7 @@ var NyaP = function (_NyaPlayerCore) {
 			},
 			icon_span_volume: {
 				click: function click(e) {
-					video.muted = !video.muted;
+					return video.muted = !video.muted;
 				},
 				wheel: function wheel(e) {
 					e.preventDefault();
@@ -2741,7 +2740,7 @@ var NyaP = function (_NyaPlayerCore) {
 			},
 			danmaku_submit: {
 				click: function click(e) {
-					_this.send();
+					return _this.send();
 				}
 			},
 			danmaku_size_box: {
@@ -2809,7 +2808,7 @@ var NyaP = function (_NyaPlayerCore) {
 			switch (e.key) {
 				case ' ':
 					{
-						if (!_RE) return;
+						if (_RE) return;
 						this.playToggle();break;
 					}
 				case 'ArrowRight':
@@ -2835,7 +2834,7 @@ var NyaP = function (_NyaPlayerCore) {
 				case 'p':
 					{
 						//full page
-						if (!_RE) return;
+						if (_RE) return;
 						this.playerMode('fullPage');break;
 					}
 				case 'f':
@@ -2846,7 +2845,7 @@ var NyaP = function (_NyaPlayerCore) {
 				case 'm':
 					{
 						//mute
-						if (!_RE) return;
+						if (_RE) return;
 						this.video.muted = !this.video.muted;break;
 					}
 				case 'l':
@@ -2857,7 +2856,7 @@ var NyaP = function (_NyaPlayerCore) {
 				case 'Enter':
 					{
 						//danmaku input toggle
-						if (!_RE) return;
+						if (_RE) return;
 						this.danmakuInput();break;
 					}
 				case 'Escape':
@@ -3185,19 +3184,11 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 	}
 
 	_createClass(NyaPlayerCore, [{
-		key: 'play',
-		value: function play() {
-			this.video.paused && this.video.play();
-		}
-	}, {
-		key: 'pause',
-		value: function pause() {
-			this.video.paused || this.video.pause();
-		}
-	}, {
 		key: 'playToggle',
 		value: function playToggle() {
-			this[this.video.paused ? 'play' : 'pause']();
+			var Switch = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.video.paused;
+
+			this.video[Switch ? 'play' : 'pause']();
 		}
 	}, {
 		key: 'loadDanmaku',
@@ -3219,7 +3210,7 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 		value: function danmakuToggle() {
 			var bool = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : !this.danmakuFrame.working;
 
-			this.danmakuFrame[bool ? 'strat' : 'stop']();
+			this.danmakuFrame[bool ? 'strat' : 'pause']();
 		}
 	}, {
 		key: 'setDefaultTextStyle',

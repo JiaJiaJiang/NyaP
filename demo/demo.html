@@ -25,6 +25,12 @@ var dm=document.createElement('script');
 dm.src=tests[number][0];
 document.head.appendChild(dm);
 
+if(!navigator.userAgent.match(/mobile/i)){//normal player
+
+}else{//touch player
+	
+}
+
 var NP=new NyaP({
 	src:((location.protocol==='file:'))?tests[number][2]:tests[number][1],
 	//muted:true,

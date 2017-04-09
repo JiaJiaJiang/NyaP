@@ -163,13 +163,8 @@ class NyaP extends NyaPlayerCore{
 				}
 			},
 			main_video:{
-				playing:e=>{
-					$.icon_span_play.classList.add('active_icon');
-				},
-				pause:e=>{
-					$.icon_span_play.classList.remove('active_icon');
-				},
-				stalled:e=>{
+				playing:e=>$.icon_span_play.classList.add('active_icon'),
+				'pause,stalled':e=>{
 					$.icon_span_play.classList.remove('active_icon');
 				},
 				timeupdate:(e)=>{
@@ -185,46 +180,29 @@ class NyaP extends NyaPlayerCore{
 					setAttrs($.volume_circle,{'stroke-dasharray':`${video.volume*12*Math.PI} 90`,style:`fill-opacity:${video.muted?.2:.6}!important`});
 					$.icon_span_volume.setAttribute('title',_('volume($0)([shift]+↑↓)',video.muted?_('muted'):`${video.volume*100|0}%`));
 				},
-				progress:e=>{this.drawProgress();},
-				_loopChange:e=>{
-					$.icon_span_loop.classList[e.value?'add':'remove']('active_icon');
-				},
+				progress:e=>this.drawProgress(),
+				_loopChange:e=>$.icon_span_loop.classList[e.value?'add':'remove']('active_icon'),
 				click:e=>this.playToggle(),
-				mouseup:e=>{
-					if(e.button===2){//right key
-						e.preventDefault();
-						this.menu([e.offsetX,e.offsetY]);
-					}
-				},
-				contextmenu:e=>{
-					e.preventDefault();
-				},
+				contextmenu:e=>e.preventDefault(),
 			},
 			progress:{
-				mousemove:e=>{
-					this._.progressX=e.offsetX;this.drawProgress();
+				'mousemove,click':e=>{
 					let t=e.target,
-						pre=(e.offsetX-t.pad)/(t.offsetWidth-2*t.pad);
-					pre=limitIn(pre,0,1);
-					this._setTimeInfo(null,formatTime(pre*video.duration,video.duration));
+						pre=limitIn((e.offsetX-t.pad)/(t.offsetWidth-2*t.pad),0,1);
+					if(e.type==='mousemove'){
+						this._.progressX=e.offsetX;this.drawProgress();
+						this._setTimeInfo(null,formatTime(pre*video.duration,video.duration));	
+					}else if(e.type==='mousemove'){
+						video.currentTime=pre*video.duration;
+					}
 				},
 				mouseout:e=>{
 					this._.progressX=undefined;this.drawProgress();
 					this._setTimeInfo(null,formatTime(video.duration,video.duration));
 				},
-				click:e=>{
-					let t=e.target,
-						pre=(e.offsetX-t.pad)/(t.offsetWidth-2*t.pad);
-					pre=limitIn(pre,0,1);
-					video.currentTime=pre*video.duration;
-				}
 			},
 			danmaku_style_pannel:{
-				click:e=>{
-					setImmediate(()=>{
-						this.$.danmaku_input.focus();
-					});
-				}
+				click:e=>setImmediate(a=>this.$.danmaku_input.focus()),
 			},
 			danmaku_color:{
 				'input,change':e=>{
@@ -240,9 +218,7 @@ class NyaP extends NyaPlayerCore{
 				},
 			},
 			icon_span_volume:{
-				click:e=>{
-					video.muted=!video.muted;
-				},
+				click:e=>video.muted=!video.muted,
 				wheel:e=>{
 					e.preventDefault();
 					if(e.deltaMode!==0)return;
@@ -268,7 +244,7 @@ class NyaP extends NyaPlayerCore{
 				keydown:e=>{if(e.key==='Enter'){this.send();}else if(e.key==='Escape'){this.danmakuInput(false);}}
 			},
 			danmaku_submit:{
-				click:e=>{this.send();}
+				click:e=>this.send(),
 			},
 			danmaku_size_box:{
 				click:e=>{
@@ -312,7 +288,6 @@ class NyaP extends NyaPlayerCore{
 				this.$.total_time.innerHTML=b;
 			}
 		});
-		
 	}
 	_playerKeyHandle(e){//hot keys
 		if(e.target.tagName==='INPUT')return;
@@ -321,7 +296,7 @@ class NyaP extends NyaPlayerCore{
 		//to prevent default,use break.otherwise,use return.
 		switch(e.key){
 			case ' ':{
-				if(!_RE)return;
+				if(_RE)return;
 				this.playToggle();break;
 			}
 			case 'ArrowRight':{//seek to after time
@@ -337,21 +312,21 @@ class NyaP extends NyaPlayerCore{
 				V.volume=limitIn(V.volume-(0.03*(_SH?2:1)),0,1);break;
 			}
 			case 'p':{//full page
-				if(!_RE)return;
+				if(_RE)return;
 				this.playerMode('fullPage');break;
 			}
 			case 'f':{//fullscreen
 				this.playerMode('fullScreen');break;
 			}
 			case 'm':{//mute
-				if(!_RE)return;
+				if(_RE)return;
 				this.video.muted=!this.video.muted;break;
 			}
 			case 'l':{//loop
 				this.video.loop=!this.video.loop;break;
 			}
 			case 'Enter':{//danmaku input toggle
-				if(!_RE)return;
+				if(_RE)return;
 				this.danmakuInput();break;
 			}
 			case 'Escape':{//exit full page mode

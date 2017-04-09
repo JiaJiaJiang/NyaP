@@ -91,14 +91,8 @@ class NyaPlayerCore extends NyaPEventEmitter{
 		
 		this.emit('coreLoad');
 	}
-	play(){
-		this.video.paused&&this.video.play();
-	}
-	pause(){
-		this.video.paused||this.video.pause();
-	}
-	playToggle(){
-		this[this.video.paused?'play':'pause']();
+	playToggle(Switch=this.video.paused){
+		this.video[Switch?'play':'pause']();
 	}
 	loadDanmaku(obj){
 		this.danmakuFrame.load(obj);
@@ -110,7 +104,7 @@ class NyaPlayerCore extends NyaPEventEmitter{
 		this.danmakuFrame.unload(obj);
 	}
 	danmakuToggle(bool=!this.danmakuFrame.working){
-		this.danmakuFrame[bool?'strat':'stop']();
+		this.danmakuFrame[bool?'strat':'pause']();
 	}
 	get player(){return this._.player;}
 	get video(){return this._.video;}

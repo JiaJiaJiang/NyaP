@@ -2197,7 +2197,7 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 					if (e.type === 'mousemove') {
 						this._.progressX = e.offsetX;this.drawProgress();
 						this._setTimeInfo(null, (0, _NyaPCore.formatTime)(pre * video.duration, video.duration));
-					} else if (e.type === 'mousemove') {
+					} else if (e.type === 'click') {
 						video.currentTime = pre * video.duration;
 					}
 				},

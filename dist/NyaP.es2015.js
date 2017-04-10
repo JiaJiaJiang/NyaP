@@ -2674,7 +2674,7 @@ var NyaP = function (_NyaPlayerCore) {
 					if (e.type === 'mousemove') {
 						_this._.progressX = e.offsetX;_this.drawProgress();
 						_this._setTimeInfo(null, (0, _NyaPCore.formatTime)(pre * video.duration, video.duration));
-					} else if (e.type === 'mousemove') {
+					} else if (e.type === 'click') {
 						video.currentTime = pre * video.duration;
 					}
 				},

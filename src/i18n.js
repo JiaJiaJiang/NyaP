@@ -20,12 +20,13 @@ i18n.langs['zh-CN']={
 	'pause':'暂停',
 	'muted':'静音',
 	'settings':'设置',
+	'hex color':'Hex颜色',
 	'full page(P)':'全页模式(P)',
 	'full screen(F)':'全屏模式(F)',
-	'volume($0)([shift]+↑↓)':'音量($0)([shift]+↑↓)',
-	'hex color':'Hex颜色',
-	'danmaku input(Enter)':'弹幕输入框(回车)',
+	'danmaku toggle(D)':'弹幕开关(D)',
 	'Input danmaku here':'在这里输入弹幕',
+	'danmaku input(Enter)':'弹幕输入框(回车)',
+	'volume($0)([shift]+↑↓)':'音量($0)([shift]+↑↓)',
 	'Failed to change to fullscreen mode':'无法切换到全屏模式',
 }
 

@@ -33,7 +33,7 @@ class NyaPEventEmitter{
 		if(e in this._events){
 			const hs=this._events[e];
 			try{
-				hs.forEach(h=>{h.call(this,e,arg)});
+				hs.forEach(h=>{h.call(this,arg)});
 			}catch(e){
 				console.error(e);
 			}
@@ -103,8 +103,12 @@ class NyaPlayerCore extends NyaPEventEmitter{
 	removeDanmaku(obj){
 		this.danmakuFrame.unload(obj);
 	}
-	danmakuToggle(bool=!this.danmakuFrame.working){
-		this.danmakuFrame[bool?'strat':'pause']();
+	danmakuToggle(bool=!this.danmakuFrame.modules.TextDanmaku.enabled){
+		this.danmakuFrame[bool?'enable':'disable']('TextDanmaku');
+		this.emit('danmakuToggle',bool);
+	}
+	danmakuAt(x,y){
+		return this.danmakuFrame.modules.TextDanmaku.danmakuAt(x,y);
 	}
 	get player(){return this._.player;}
 	get video(){return this._.video;}

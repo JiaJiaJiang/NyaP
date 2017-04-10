@@ -48,6 +48,7 @@ class NyaP extends NyaPlayerCore{
 			play:[30,30,'<path d="m10.063,8.856l9.873,6.143l-9.873,6.143v-12.287z" stroke-width="3" stroke-linejoin="round"/>'],
 			addDanmaku:[30,30,'<path style="fill-opacity:0!important;" stroke-width="1.4" d="m21.004,8.995c-0.513,-0.513 -1.135,-0.770 -1.864,-0.770l-8.281,0c-0.729,0 -1.350,0.256 -1.864,0.770c-0.513,0.513 -0.770,1.135 -0.770,1.864l0,8.281c0,0.721 0.256,1.341 0.770,1.858c0.513,0.517 1.135,0.776 1.864,0.776l8.281,0c0.729,0 1.350,-0.258 1.864,-0.776c0.513,-0.517 0.770,-1.136 0.770,-1.858l0,-8.281c0,-0.729 -0.257,-1.350 -0.770,-1.864z" stroke-linejoin="round"/>'
 								+'<path d="m12.142,14.031l1.888,0l0,-1.888l1.937,0l0,1.888l1.888,0l0,1.937l-1.888,0l0,1.888l-1.937,0l0,-1.888l-1.888,0l0,-1.937z" stroke-width="1"/>'],
+			danmakuToggle:[30,30,'<path d="m8.569,10.455l0,0c0,-0.767 0.659,-1.389 1.473,-1.389l0.669,0l0,0l3.215,0l6.028,0c0.390,0 0.765,0.146 1.041,0.406c0.276,0.260 0.431,0.613 0.431,0.982l0,3.473l0,0l0,2.083l0,0c0,0.767 -0.659,1.389 -1.473,1.389l-6.028,0l-4.200,3.532l0.985,-3.532l-0.669,0c-0.813,0 -1.473,-0.621 -1.473,-1.389l0,0l0,-2.083l0,0l0,-3.473z"/>'],
 			danmakuStyle:[30,30,'<path style="fill-opacity:1!important" d="m21.781,9.872l-1.500,-1.530c-0.378,-0.385 -0.997,-0.391 -1.384,-0.012l-0.959,0.941l2.870,2.926l0.960,-0.940c0.385,-0.379 0.392,-0.998 0.013,-1.383zm-12.134,7.532l2.871,2.926l7.593,-7.448l-2.872,-2.927l-7.591,7.449l0.000,0.000zm-1.158,2.571l-0.549,1.974l1.984,-0.511l1.843,-0.474l-2.769,-2.824l-0.509,1.835z" stroke-width="0"/>'],
 			fullPage:[30,30,'<path stroke-linejoin="round" d="m11.166,9.761l-5.237,5.239l5.237,5.238l1.905,-1.905l-3.333,-3.333l3.332,-3.333l-1.904,-1.906zm7.665,0l-1.903,1.905l3.332,3.333l-3.332,3.332l1.903,1.905l5.238,-5.238l-5.238,-5.237z" stroke-width="1.3" />'],
 			fullScreen:[30,30,'<rect stroke-linejoin="round" height="11.169" width="17.655" y="9.415" x="6.172" stroke-width="1.5"/>'
@@ -109,6 +110,7 @@ class NyaP extends NyaPlayerCore{
 						]},
 						{_:'span',attr:{id:'control_right'},child:[
 							icon('addDanmaku',{click:e=>this.danmakuInput()},{title:_('danmaku input(Enter)')}),
+							icon('danmakuToggle',{click:e=>this.danmakuToggle()},{title:_('danmaku toggle(D)')}),
 							icon('volume',{},{title:_('volume($0)([shift]+↑↓)','100%')}),
 							icon('loop',{click:e=>{video.loop=!video.loop;}},{title:_('loop')}),
 							{_:'span',prop:{id:'player_mode'},child:[
@@ -163,9 +165,9 @@ class NyaP extends NyaPlayerCore{
 				}
 			},
 			main_video:{
-				playing:e=>$.icon_span_play.classList.add('active_icon'),
+				playing:e=>this._iconActive('play',true),
 				'pause,stalled':e=>{
-					$.icon_span_play.classList.remove('active_icon');
+					this._iconActive('play',false);
 				},
 				timeupdate:(e)=>{
 					if(Date.now()-this._.lastTimeUpdate <30)return;
@@ -181,7 +183,7 @@ class NyaP extends NyaPlayerCore{
 					$.icon_span_volume.setAttribute('title',_('volume($0)([shift]+↑↓)',video.muted?_('muted'):`${video.volume*100|0}%`));
 				},
 				progress:e=>this.drawProgress(),
-				_loopChange:e=>$.icon_span_loop.classList[e.value?'add':'remove']('active_icon'),
+				_loopChange:e=>this._iconActive('loop',e.value),
 				click:e=>this.playToggle(),
 				contextmenu:e=>e.preventDefault(),
 			},
@@ -278,6 +280,12 @@ class NyaP extends NyaPlayerCore{
 		(typeof opt.defaultDanmakuSize === 'number')
 			&&toArray($.danmaku_size_box.childNodes).forEach(sp=>{if(sp.size===opt.defaultDanmakuSize)sp.click()});
 
+		//listen danmakuToggle event to change button style
+		this.on('danmakuToggle',bool=>this._iconActive('danmakuToggle',bool));
+		if(this.danmakuFrame.modules.TextDanmaku.enabled)this._iconActive('danmakuToggle',true);
+	}
+	_iconActive(name,bool){
+		this.$[`icon_span_${name}`].classList[bool?'add':'remove']('active_icon');
 	}
 	_setTimeInfo(a=null,b=null){
 		requestAnimationFrame(()=>{
@@ -342,7 +350,7 @@ class NyaP extends NyaPlayerCore{
 	danmakuInput(bool=!this.$.danmaku_input_frame.offsetHeight){
 		let $=this.$;
 		$.danmaku_input_frame.style.display=bool?'flex':'';
-		$.icon_span_addDanmaku.classList[bool?'add':'remove']('active_icon');
+		this._iconActive('addDanmaku',bool);
 		setImmediate(()=>{bool?$.danmaku_input.focus():$.NyaP.focus();});
 	}
 	playerMode(mode='normal'){
@@ -350,21 +358,21 @@ class NyaP extends NyaPlayerCore{
 		let $=this.$;
 		if(this._.playerMode==='fullPage'){
 			this.player.style.position='';
-			$.icon_span_fullPage.classList.remove('active_icon');
+			this._iconActive('fullPage',false);
 		}else if(this._.playerMode==='fullScreen'){
-			$.icon_span_fullScreen.classList.remove('active_icon');
+			this._iconActive('fullScreen',false);
 			exitFullscreen();
 		}
 		if(mode!=='normal' && this._.playerMode===mode)mode='normal';//back to normal mode
 		switch(mode){
 			case 'fullPage':{
 				this.player.style.position='fixed';
-				$.icon_span_fullPage.classList.add('active_icon');
+				this._iconActive('fullPage',true);
 				this.player.setAttribute('playerMode','fullPage');
 				break;
 			}
 			case 'fullScreen':{
-				$.icon_span_fullScreen.classList.add('active_icon');
+				this._iconActive('fullScreen',true);
 				this.player.setAttribute('playerMode','fullScreen');
 				requestFullscreen(this.player);
 				break;

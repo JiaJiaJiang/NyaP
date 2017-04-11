@@ -112,7 +112,7 @@ class NyaP extends NyaPlayerCore{
 							icon('addDanmaku',{click:e=>this.danmakuInput()},{title:_('danmaku input(Enter)')}),
 							icon('danmakuToggle',{click:e=>this.danmakuToggle()},{title:_('danmaku toggle(D)')}),
 							icon('volume',{},{title:_('volume($0)([shift]+↑↓)','100%')}),
-							icon('loop',{click:e=>{video.loop=!video.loop;}},{title:_('loop')}),
+							icon('loop',{click:e=>{video.loop=!video.loop;}},{title:_('loop(L)')}),
 							{_:'span',prop:{id:'player_mode'},child:[
 								icon('fullPage',{click:e=>this.playerMode('fullPage')},{title:_('full page(P)')}),
 								icon('fullScreen',{click:e=>this.playerMode('fullScreen')},{title:_('full screen(F)')})
@@ -325,6 +325,10 @@ class NyaP extends NyaPlayerCore{
 			}
 			case 'f':{//fullscreen
 				this.playerMode('fullScreen');break;
+			}
+			case 'd':{//danmaku toggle
+				if(_RE)return;
+				this.danmakuToggle();break;
 			}
 			case 'm':{//mute
 				if(_RE)return;

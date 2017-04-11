@@ -306,6 +306,11 @@ class DanmakuFrame {
 		module.enable && module.enable();
 		return true;
 	}
+	addStyle(s) {
+		if (typeof s === 'string') s = [s];
+		if (s instanceof Array === false) return;
+		s.forEach(r => this.styleSheet.insertRule(r, this.styleSheet.cssRules.length));
+	}
 	disable(name) {
 		let module = this.modules[name];
 		if (!module) return false;
@@ -952,7 +957,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				shadowOffsetX: 0,
 				shadowOffsetY: 0,
 				fill: true };
-			frame.styleSheet.insertRule(`.${this.randomText}_fullfill{top:0;left:0;width:100%;height:100%;position:absolute;}`, 0);
+			frame.addStyle(`.${this.randomText}_fullfill{top:0;left:0;width:100%;height:100%;position:absolute;}`);
 
 			defProp(this, 'renderMode', { configurable: true });
 			defProp(this, 'activeRenderMode', { configurable: true, value: null });
@@ -1777,9 +1782,7 @@ class TextCanvas extends _textModuleTemplate2.default {
 		super(dText);
 		this.supported = dText.text2d.supported;
 		if (!this.supported) return;
-		dText.frame.styleSheet.insertRule(`#${dText.randomText}_textCanvasContainer canvas{will-change:transform;top:0;left:0;position:absolute;}`, 0);
-		dText.frame.styleSheet.insertRule(`#${dText.randomText}_textCanvasContainer.moving canvas{transition:transform 500s linear;}`, 0);
-		dText.frame.styleSheet.insertRule(`#${dText.randomText}_textCanvasContainer{will-change:transform;pointer-events:none;overflow:hidden;}`, 0);
+		dText.frame.addStyle([`#${dText.randomText}_textCanvasContainer canvas{will-change:transform;top:0;left:0;position:absolute;}`, `#${dText.randomText}_textCanvasContainer.moving canvas{transition:transform 500s linear;}`, `#${dText.randomText}_textCanvasContainer{will-change:transform;pointer-events:none;overflow:hidden;}`]);
 
 		this.container = dText.textCanvasContainer = document.createElement('div'); //for text canvas
 		this.container.classList.add(`${dText.randomText}_fullfill`);
@@ -2128,7 +2131,7 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 		this._.player = (0, _Object2HTML2.default)({
 			_: 'div', attr: { 'class': 'NyaP', id: 'NyaP', tabindex: 0 }, child: [this.videoFrame, { _: 'div', attr: { id: 'controls' }, child: [{ _: 'div', attr: { id: 'control' }, child: [{ _: 'span', attr: { id: 'control_left' }, child: [icon('play', { click: e => this.playToggle() }, { title: _('play') })] }, { _: 'span', attr: { id: 'control_center' }, child: [{ _: 'div', prop: { id: 'progress_info' }, child: [{ _: 'span', child: [{ _: 'canvas', prop: { id: 'progress', pad: 10 } }] }, { _: 'span', prop: { id: 'time_frame' }, child: [{ _: 'span', prop: { id: 'time' }, child: [{ _: 'span', prop: { id: 'current_time' }, child: ['00:00'] }, '/', { _: 'span', prop: { id: 'total_time' }, child: ['00:00'] }] }] }] }, { _: 'div', prop: { id: 'danmaku_input_frame' }, child: [{ _: 'span', prop: { id: 'danmaku_style' }, child: [{ _: 'div', attr: { id: 'danmaku_style_pannel' }, child: [{ _: 'div', attr: { id: 'danmaku_color_box' } }, { _: 'input', attr: { id: 'danmaku_color', placeholder: _('hex color'), maxlength: "6" } }, { _: 'span', attr: { id: 'danmaku_mode_box' } }, { _: 'span', attr: { id: 'danmaku_size_box' } }] }, icon('danmakuStyle')] }, { _: 'input', attr: { id: 'danmaku_input', placeholder: _('Input danmaku here') } }, { _: 'span', prop: { id: 'danmaku_submit', innerHTML: _('Send') } }] }] }, { _: 'span', attr: { id: 'control_right' }, child: [icon('addDanmaku', { click: e => this.danmakuInput() }, { title: _('danmaku input(Enter)') }), icon('danmakuToggle', { click: e => this.danmakuToggle() }, { title: _('danmaku toggle(D)') }), icon('volume', {}, { title: _('volume($0)([shift]+↑↓)', '100%') }), icon('loop', { click: e => {
 								video.loop = !video.loop;
-							} }, { title: _('loop') }), { _: 'span', prop: { id: 'player_mode' }, child: [icon('fullPage', { click: e => this.playerMode('fullPage') }, { title: _('full page(P)') }), icon('fullScreen', { click: e => this.playerMode('fullScreen') }, { title: _('full screen(F)') })] }] }] }] }]
+							} }, { title: _('loop(L)') }), { _: 'span', prop: { id: 'player_mode' }, child: [icon('fullPage', { click: e => this.playerMode('fullPage') }, { title: _('full page(P)') }), icon('fullScreen', { click: e => this.playerMode('fullScreen') }, { title: _('full screen(F)') })] }] }] }] }]
 		});
 
 		//add elements with id to $ prop
@@ -2354,6 +2357,12 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 				{
 					//fullscreen
 					this.playerMode('fullScreen');break;
+				}
+			case 'd':
+				{
+					//danmaku toggle
+					if (_RE) return;
+					this.danmakuToggle();break;
 				}
 			case 'm':
 				{
@@ -2771,11 +2780,11 @@ const i18n = {
 
 i18n.langs['zh-CN'] = {
 	'play': '播放',
-	'loop': '循环',
 	'Send': '发送',
 	'pause': '暂停',
 	'muted': '静音',
 	'settings': '设置',
+	'loop(L)': '循环(L)',
 	'hex color': 'Hex颜色',
 	'full page(P)': '全页模式(P)',
 	'full screen(F)': '全屏模式(F)',

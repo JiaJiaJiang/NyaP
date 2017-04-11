@@ -15,11 +15,11 @@ const i18n={
 
 i18n.langs['zh-CN']={
 	'play':'播放',
-	'loop':'循环',
 	'Send':'发送',
 	'pause':'暂停',
 	'muted':'静音',
 	'settings':'设置',
+	'loop(L)':'循环(L)',
 	'hex color':'Hex颜色',
 	'full page(P)':'全页模式(P)',
 	'full screen(F)':'全屏模式(F)',

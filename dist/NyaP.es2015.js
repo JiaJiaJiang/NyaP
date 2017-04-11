@@ -328,6 +328,17 @@ var DanmakuFrame = function () {
 			return true;
 		}
 	}, {
+		key: 'addStyle',
+		value: function addStyle(s) {
+			var _this2 = this;
+
+			if (typeof s === 'string') s = [s];
+			if (s instanceof Array === false) return;
+			s.forEach(function (r) {
+				return _this2.styleSheet.insertRule(r, _this2.styleSheet.cssRules.length);
+			});
+		}
+	}, {
 		key: 'disable',
 		value: function disable(name) {
 			var module = this.modules[name];
@@ -407,18 +418,18 @@ var DanmakuFrame = function () {
 	}, {
 		key: 'setMedia',
 		value: function setMedia(media) {
-			var _this2 = this;
+			var _this3 = this;
 
 			this.media = media;
 			addEvents(media, {
 				playing: function playing() {
-					return _this2.start();
+					return _this3.start();
 				},
 				pause: function pause() {
-					return _this2.pause();
+					return _this3.pause();
 				},
 				ratechange: function ratechange() {
-					return _this2.rate = _this2.media.playbackRate;
+					return _this3.rate = _this3.media.playbackRate;
 				}
 			});
 			this.moduleFunction('media', media);
@@ -1133,7 +1144,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				shadowOffsetX: 0,
 				shadowOffsetY: 0,
 				fill: true };
-			frame.styleSheet.insertRule('.' + _this.randomText + '_fullfill{top:0;left:0;width:100%;height:100%;position:absolute;}', 0);
+			frame.addStyle('.' + _this.randomText + '_fullfill{top:0;left:0;width:100%;height:100%;position:absolute;}');
 
 			defProp(_this, 'renderMode', { configurable: true });
 			defProp(_this, 'activeRenderMode', { configurable: true, value: null });
@@ -2142,9 +2153,7 @@ var TextCanvas = function (_Template) {
 
 		_this.supported = dText.text2d.supported;
 		if (!_this.supported) return _possibleConstructorReturn(_this);
-		dText.frame.styleSheet.insertRule('#' + dText.randomText + '_textCanvasContainer canvas{will-change:transform;top:0;left:0;position:absolute;}', 0);
-		dText.frame.styleSheet.insertRule('#' + dText.randomText + '_textCanvasContainer.moving canvas{transition:transform 500s linear;}', 0);
-		dText.frame.styleSheet.insertRule('#' + dText.randomText + '_textCanvasContainer{will-change:transform;pointer-events:none;overflow:hidden;}', 0);
+		dText.frame.addStyle(['#' + dText.randomText + '_textCanvasContainer canvas{will-change:transform;top:0;left:0;position:absolute;}', '#' + dText.randomText + '_textCanvasContainer.moving canvas{transition:transform 500s linear;}', '#' + dText.randomText + '_textCanvasContainer{will-change:transform;pointer-events:none;overflow:hidden;}']);
 
 		_this.container = dText.textCanvasContainer = document.createElement('div'); //for text canvas
 		_this.container.classList.add(dText.randomText + '_fullfill');
@@ -2589,7 +2598,7 @@ var NyaP = function (_NyaPlayerCore) {
 								return _this.danmakuToggle();
 							} }, { title: _('danmaku toggle(D)') }), icon('volume', {}, { title: _('volume($0)([shift]+↑↓)', '100%') }), icon('loop', { click: function click(e) {
 								video.loop = !video.loop;
-							} }, { title: _('loop') }), { _: 'span', prop: { id: 'player_mode' }, child: [icon('fullPage', { click: function click(e) {
+							} }, { title: _('loop(L)') }), { _: 'span', prop: { id: 'player_mode' }, child: [icon('fullPage', { click: function click(e) {
 									return _this.playerMode('fullPage');
 								} }, { title: _('full page(P)') }), icon('fullScreen', { click: function click(e) {
 									return _this.playerMode('fullScreen');
@@ -2856,6 +2865,12 @@ var NyaP = function (_NyaPlayerCore) {
 					{
 						//fullscreen
 						this.playerMode('fullScreen');break;
+					}
+				case 'd':
+					{
+						//danmaku toggle
+						if (_RE) return;
+						this.danmakuToggle();break;
 					}
 				case 'm':
 					{
@@ -3389,11 +3404,11 @@ var i18n = {
 
 i18n.langs['zh-CN'] = {
 	'play': '播放',
-	'loop': '循环',
 	'Send': '发送',
 	'pause': '暂停',
 	'muted': '静音',
 	'settings': '设置',
+	'loop(L)': '循环(L)',
 	'hex color': 'Hex颜色',
 	'full page(P)': '全页模式(P)',
 	'full screen(F)': '全屏模式(F)',

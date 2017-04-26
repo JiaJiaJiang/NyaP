@@ -127,9 +127,14 @@ class NyaPlayerCore extends NyaPEventEmitter{
 
 //other functions
 
-function addEvents(target,events={}){
+function addEvents(target,events){
+	if(!Array.isArray(target))target=[target];
 	for(let e in events)
-		e.split(/\,/g).forEach(e2=>target.addEventListener(e2,events[e]));
+		e.split(/\,/g).forEach(function(e2){
+			target.forEach(function(t){
+				t.addEventListener(e2,events[e])
+			});
+		});
 }
 function requestFullscreen(d) {
 	try{

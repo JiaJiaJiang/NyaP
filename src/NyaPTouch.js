@@ -12,7 +12,7 @@ import ResizeSensor from '../lib/danmaku-frame/lib/ResizeSensor.js';
 const _=i18n._;
 
 //touch player
-class TouchNyaP extends NyaPlayerCore{
+class NyaP extends NyaPlayerCore{
 	constructor(opt){
 		super(opt);
 		this._player=Object2HTML({

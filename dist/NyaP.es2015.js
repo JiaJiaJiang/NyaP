@@ -19,8 +19,8 @@ function Object2HTML(obj, func) {
 	var ele = void 0,
 	    o = void 0,
 	    e = void 0;
-	if (typeof obj === 'string') return document.createTextNode(obj); //text node
-	if ('_' in obj === false || typeof obj._ !== 'string' || obj._ == '') return; //if it dont have a _ prop to specify a tag
+	if (typeof obj === 'string' || typeof obj === 'number') return document.createTextNode(obj); //text node
+	if (obj === null || (typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) !== 'object' || '_' in obj === false || typeof obj._ !== 'string' || obj._ == '') return; //if it dont have a _ prop to specify a tag
 	ele = document.createElement(obj._);
 	//attributes
 	if (_Obj(obj.attr)) for (o in obj.attr) {
@@ -2824,7 +2824,6 @@ var NyaP = function (_NyaPlayerCore) {
 		value: function _playerKeyHandle(e) {
 			//hot keys
 			if (e.target.tagName === 'INPUT') return;
-			console.log('input', e);
 			var V = this.video,
 			    _SH = e.shiftKey,
 			    _RE = e.repeat;
@@ -3126,6 +3125,7 @@ var NyaPEventEmitter = function () {
 		key: 'emit',
 		value: function emit(e, arg) {
 			this._resolve(e, arg);
+			this.globalHandle(e, arg);
 		}
 	}, {
 		key: '_resolve',
@@ -3161,6 +3161,10 @@ var NyaPEventEmitter = function () {
 			if (ind = this._events[e].indexOf(handle) >= 0) this._events[e].splice(ind, 1);
 			if (this._events[e].length === 0) delete this._events[e];
 		}
+	}, {
+		key: 'globalHandle',
+		value: function globalHandle(name, arg) {} //所有事件会触发这个函数
+
 	}]);
 
 	return NyaPEventEmitter;
@@ -3297,12 +3301,14 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 
 //other functions
 
-function addEvents(target) {
-	var events = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+function addEvents(target, events) {
+	if (!Array.isArray(target)) target = [target];
 
 	var _loop = function _loop(e) {
 		e.split(/\,/g).forEach(function (e2) {
-			return target.addEventListener(e2, events[e]);
+			target.forEach(function (t) {
+				t.addEventListener(e2, events[e]);
+			});
 		});
 	};
 

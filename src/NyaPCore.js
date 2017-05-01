@@ -28,6 +28,7 @@ class NyaPEventEmitter{
 	}
 	emit(e,arg){
 		this._resolve(e,arg);
+		this.globalHandle(e,arg);
 	}
 	_resolve(e,arg){
 		if(e in this._events){
@@ -51,6 +52,7 @@ class NyaPEventEmitter{
 		if(ind=(this._events[e].indexOf(handle))>=0)this._events[e].splice(ind,1);
 		if(this._events[e].length===0)delete this._events[e];
 	}
+	globalHandle(name,arg){}//所有事件会触发这个函数
 }
 
 class NyaPlayerCore extends NyaPEventEmitter{

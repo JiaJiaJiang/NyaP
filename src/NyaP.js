@@ -299,7 +299,6 @@ class NyaP extends NyaPlayerCore{
 	}
 	_playerKeyHandle(e){//hot keys
 		if(e.target.tagName==='INPUT')return;
-		console.log('input',e)
 		const V=this.video,_SH=e.shiftKey,_RE=e.repeat;
 		//to prevent default,use break.otherwise,use return.
 		switch(e.key){

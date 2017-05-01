@@ -14,8 +14,8 @@ function _Obj(t) {
 
 function Object2HTML(obj, func) {
 	let ele, o, e;
-	if (typeof obj === 'string') return document.createTextNode(obj); //text node
-	if ('_' in obj === false || typeof obj._ !== 'string' || obj._ == '') return; //if it dont have a _ prop to specify a tag
+	if (typeof obj === 'string' || typeof obj === 'number') return document.createTextNode(obj); //text node
+	if (obj === null || typeof obj !== 'object' || '_' in obj === false || typeof obj._ !== 'string' || obj._ == '') return; //if it dont have a _ prop to specify a tag
 	ele = document.createElement(obj._);
 	//attributes
 	if (_Obj(obj.attr)) for (o in obj.attr) ele.setAttribute(o, obj.attr[o]);
@@ -2316,7 +2316,6 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 	_playerKeyHandle(e) {
 		//hot keys
 		if (e.target.tagName === 'INPUT') return;
-		console.log('input', e);
 		const V = this.video,
 		      _SH = e.shiftKey,
 		      _RE = e.repeat;
@@ -2580,6 +2579,7 @@ class NyaPEventEmitter {
 	}
 	emit(e, arg) {
 		this._resolve(e, arg);
+		this.globalHandle(e, arg);
 	}
 	_resolve(e, arg) {
 		if (e in this._events) {
@@ -2607,6 +2607,7 @@ class NyaPEventEmitter {
 		if (ind = this._events[e].indexOf(handle) >= 0) this._events[e].splice(ind, 1);
 		if (this._events[e].length === 0) delete this._events[e];
 	}
+	globalHandle(name, arg) {} //所有事件会触发这个函数
 }
 
 class NyaPlayerCore extends NyaPEventEmitter {
@@ -2694,8 +2695,13 @@ class NyaPlayerCore extends NyaPEventEmitter {
 
 //other functions
 
-function addEvents(target, events = {}) {
-	for (let e in events) e.split(/\,/g).forEach(e2 => target.addEventListener(e2, events[e]));
+function addEvents(target, events) {
+	if (!Array.isArray(target)) target = [target];
+	for (let e in events) e.split(/\,/g).forEach(function (e2) {
+		target.forEach(function (t) {
+			t.addEventListener(e2, events[e]);
+		});
+	});
 }
 function requestFullscreen(d) {
 	try {

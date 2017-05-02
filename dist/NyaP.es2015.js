@@ -1069,6 +1069,8 @@ Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 require('../lib/setImmediate/setImmediate.js');
@@ -1144,6 +1146,9 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				shadowOffsetX: 0,
 				shadowOffsetY: 0,
 				fill: true };
+			_this.defaultStyle.__defineGetter__('lineHeight', function () {
+				return this.fontSize + 2;
+			});
 			frame.addStyle('.' + _this.randomText + '_fullfill{top:0;left:0;width:100%;height:100%;position:absolute;}');
 
 			defProp(_this, 'renderMode', { configurable: true });
@@ -1251,8 +1256,9 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				arr.splice(ind, 0, d);
 				if (ind < this.indexMark) this.indexMark++;
 				//round d.style.fontSize to prevent Iifinity loop in tunnel
-				d.style.fontSize = d.style.fontSize + 0.5 | 0;
-				if (isNaN(d.style.fontSize) || d.style.fontSize === Infinity || d.style.fontSize === 0) d.style.fontSize = this.defaultStyle.fontstyle.fontSize;
+				if (_typeof(d.style) !== 'object') d.style = {};
+				d.style.fontSize = d.style.fontSize ? d.style.fontSize + 0.5 | 0 : this.defaultStyle.fontSize;
+				if (isNaN(d.style.fontSize) || d.style.fontSize === Infinity || d.style.fontSize === 0) d.style.fontSize = this.defaultStyle.fontSize;
 				if (typeof d.mode !== 'number') d.mode = 0;
 				return d;
 			}
@@ -1573,7 +1579,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				this.estimatePadding = Math.max(this.font.shadowBlur + 5 + Math.max(Math.abs(this.font.shadowOffsetY), Math.abs(this.font.shadowOffsetX)), this.font.strokeWidth + 3);
 				var w = 0,
 				    tw = void 0,
-				    lh = typeof this.font.lineHeigh === 'number' ? this.font.lineHeigh : this.font.fontSize;
+				    lh = typeof this.font.lineHeight === 'number' ? this.font.lineHeight : this.font.fontSize;
 				for (var i = this._renderList.length; i--;) {
 					tw = ct.measureText(this._renderList[i]).width;
 					tw > w && (w = tw); //max
@@ -1619,7 +1625,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 					ct.fill();
 				}
 				ct.font = this._fontString; //set font
-				ct.textBaseline = 'top';
+				ct.textBaseline = 'middle';
 				ct.lineWidth = this.font.strokeWidth;
 				ct.fillStyle = this.font.color;
 				ct.strokeStyle = this.font.strokeColor;
@@ -1628,7 +1634,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				ct.shadowOffsetX = this.font.shadowOffsetX;
 				ct.shadowOffsetY = this.font.shadowOffsetY;
 				ct.textAlign = this.font.textAlign;
-				var lh = typeof this.font.lineHeigh === 'number' ? this.font.lineHeigh : this.font.fontSize,
+				var lh = typeof this.font.lineHeight === 'number' ? this.font.lineHeight : this.font.fontSize,
 				    x = void 0;
 				switch (this.font.textAlign) {
 					case 'left':case 'start':
@@ -1644,10 +1650,9 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 							x = this.style.width;
 						}
 				}
-
 				for (var i = this._renderList.length; i--;) {
-					this.font.strokeWidth && ct.strokeText(this._renderList[i], x, lh * i);
-					this.font.fill && ct.fillText(this._renderList[i], x, lh * i);
+					this.font.strokeWidth && ct.strokeText(this._renderList[i], x, lh * (i + 0.5));
+					this.font.fill && ct.fillText(this._renderList[i], x, lh * (i + 0.5));
 				}
 				ct.restore();
 			}

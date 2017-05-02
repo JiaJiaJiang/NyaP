@@ -957,6 +957,9 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				shadowOffsetX: 0,
 				shadowOffsetY: 0,
 				fill: true };
+			this.defaultStyle.__defineGetter__('lineHeight', function () {
+				return this.fontSize + 2;
+			});
 			frame.addStyle(`.${this.randomText}_fullfill{top:0;left:0;width:100%;height:100%;position:absolute;}`);
 
 			defProp(this, 'renderMode', { configurable: true });
@@ -1046,8 +1049,9 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			arr.splice(ind, 0, d);
 			if (ind < this.indexMark) this.indexMark++;
 			//round d.style.fontSize to prevent Iifinity loop in tunnel
-			d.style.fontSize = d.style.fontSize + 0.5 | 0;
-			if (isNaN(d.style.fontSize) || d.style.fontSize === Infinity || d.style.fontSize === 0) d.style.fontSize = this.defaultStyle.fontstyle.fontSize;
+			if (typeof d.style !== 'object') d.style = {};
+			d.style.fontSize = d.style.fontSize ? d.style.fontSize + 0.5 | 0 : this.defaultStyle.fontSize;
+			if (isNaN(d.style.fontSize) || d.style.fontSize === Infinity || d.style.fontSize === 0) d.style.fontSize = this.defaultStyle.fontSize;
 			if (typeof d.mode !== 'number') d.mode = 0;
 			return d;
 		}
@@ -1306,7 +1310,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			this.estimatePadding = Math.max(this.font.shadowBlur + 5 + Math.max(Math.abs(this.font.shadowOffsetY), Math.abs(this.font.shadowOffsetX)), this.font.strokeWidth + 3);
 			let w = 0,
 			    tw,
-			    lh = typeof this.font.lineHeigh === 'number' ? this.font.lineHeigh : this.font.fontSize;
+			    lh = typeof this.font.lineHeight === 'number' ? this.font.lineHeight : this.font.fontSize;
 			for (let i = this._renderList.length; i--;) {
 				tw = ct.measureText(this._renderList[i]).width;
 				tw > w && (w = tw); //max
@@ -1346,7 +1350,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				ct.fill();
 			}
 			ct.font = this._fontString; //set font
-			ct.textBaseline = 'top';
+			ct.textBaseline = 'middle';
 			ct.lineWidth = this.font.strokeWidth;
 			ct.fillStyle = this.font.color;
 			ct.strokeStyle = this.font.strokeColor;
@@ -1355,7 +1359,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			ct.shadowOffsetX = this.font.shadowOffsetX;
 			ct.shadowOffsetY = this.font.shadowOffsetY;
 			ct.textAlign = this.font.textAlign;
-			let lh = typeof this.font.lineHeigh === 'number' ? this.font.lineHeigh : this.font.fontSize,
+			let lh = typeof this.font.lineHeight === 'number' ? this.font.lineHeight : this.font.fontSize,
 			    x;
 			switch (this.font.textAlign) {
 				case 'left':case 'start':
@@ -1371,10 +1375,9 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 						x = this.style.width;
 					}
 			}
-
 			for (let i = this._renderList.length; i--;) {
-				this.font.strokeWidth && ct.strokeText(this._renderList[i], x, lh * i);
-				this.font.fill && ct.fillText(this._renderList[i], x, lh * i);
+				this.font.strokeWidth && ct.strokeText(this._renderList[i], x, lh * (i + 0.5));
+				this.font.fill && ct.fillText(this._renderList[i], x, lh * (i + 0.5));
 			}
 			ct.restore();
 		}

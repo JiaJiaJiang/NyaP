@@ -993,14 +993,8 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			};
 			addEvents(document, {
 				visibilitychange: e => {
-					if (document.hidden) {
-						this.pause();
-					} else {
-						this.reCheckIndexMark();
-						if (this.frame.working) this.start();else {
-							this.draw(true);
-						}
-					}
+					this.danmakuCheckSwitch = !document.hidden;
+					if (!document.hidden) this.reCheckIndexMark();
 				}
 			});
 			this._checkNewDanmaku = this._checkNewDanmaku.bind(this);
@@ -1070,12 +1064,11 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		}
 		_checkNewDanmaku() {
 			let d,
-			    time = this.frame.time,
-			    hidden = document.hidden;
-			if (this.danmakuCheckTime === time) return;
+			    time = this.frame.time;
+			if (this.danmakuCheckTime === time || !this.danmakuCheckSwitch) return;
 			if (this.list.length) for (; this.indexMark < this.list.length && (d = this.list[this.indexMark]) && d.time <= time; this.indexMark++) {
 				//add new danmaku
-				if (this.options.screenLimit > 0 && this.DanmakuText.length >= this.options.screenLimit || hidden) {
+				if (this.options.screenLimit > 0 && this.DanmakuText.length >= this.options.screenLimit) {
 					continue;
 				} //continue if the number of danmaku on screen has up to limit or doc is not visible
 				this._addNewDanmaku(d);
@@ -1788,11 +1781,6 @@ class TextCanvas extends _textModuleTemplate2.default {
 		this.container.classList.add(`${dText.randomText}_fullfill`);
 		this.container.id = `${dText.randomText}_textCanvasContainer`;
 		dText.container.appendChild(this.container);
-		document.addEventListener('visibilitychange', e => {
-			if (dText.renderMode === 1 && !document.hidden) {
-				this.resetPos();
-			}
-		});
 	}
 	_toggle(s) {
 		let D = this.dText,

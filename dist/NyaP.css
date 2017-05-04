@@ -2,7 +2,7 @@
 Copyright luojia@luojia.me
 LGPL license
 */
-.NyaP_fullfill, .NyaP, .NyaP > #video_frame, .NyaP > #video_frame video#main_video, .NyaP > #video_frame #danmaku_container, .NyaP > #video_frame div[class^=danmaku], .NyaP #controls, .NyaP #control, .NyaP canvas#progress, .NyaP #progress_info, .NyaP #danmaku_input_frame, .NyaP #time { top: 0; left: 0; width: 100%; height: 100%; position: absolute; }
+.NyaP_fullfill, .NyaP, .NyaP > #video_frame, .NyaP > #video_frame video#main_video, .NyaP > #video_frame #danmaku_container, .NyaP > #video_frame div[class^=danmaku], .NyaP #controls, .NyaP #control, .NyaP canvas#progress, .NyaP #progress_info, .NyaP #danmaku_input_frame, .NyaP #time, .NyaP #loading_frame { top: 0; left: 0; width: 100%; height: 100%; position: absolute; }
 
 .NyaP { z-index: 1; outline: none; background-color: #000; }
 
@@ -97,5 +97,9 @@ LGPL license
 .NyaP #player_mode { font-size: 0; }
 
 .NyaP #player_mode:hover > #icon_span_fullScreen { display: block; }
+
+.NyaP #loading_frame { background-color: #efefef; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; cursor: dafault; pointer-events: none; }
+
+.NyaP #loading_frame #loading_anime { display: inline-block; font-size: 5em; transition: transform 0.08s linear; will-change: transfrom; }
 
 /*# sourceMappingURL=NyaP.css.map */

@@ -2598,8 +2598,15 @@ var NyaP = function (_NyaPlayerCore) {
 								} }, { title: _('full screen(F)') })] }] }] }] }]
 		});
 
+		//loading anime
+		_this.videoFrame.appendChild((0, _Object2HTML2.default)({ _: 'div', attr: { id: 'loading_frame' }, child: [{ _: 'div', attr: { id: 'loading_anime' }, child: ['(๑•́ ω •̀๑)'] }] }));
+
 		//add elements with id to $ prop
 		collectEles(_this._.player);
+
+		_this._.loadingAnimeInterval = setInterval(function () {
+			$.loading_anime.style.transform = "translate(" + rand(-20, 20) + "px," + rand(-20, 20) + "px) rotate(" + rand(-10, 10) + "deg)";
+		}, 80);
 
 		//danmaku sizes
 		opt.danmakuSizes && opt.danmakuSizes.forEach(function (s, ind) {
@@ -2655,6 +2662,8 @@ var NyaP = function (_NyaPlayerCore) {
 					_this._.lastTimeUpdate = Date.now();
 				},
 				loadedmetadata: function loadedmetadata(e) {
+					clearInterval(_this._.loadingAnimeInterval);
+					$.loading_frame.parentNode.removeChild($.loading_frame);
 					_this._setTimeInfo(null, (0, _NyaPCore.formatTime)(video.duration, video.duration));
 				},
 				volumechange: function volumechange(e) {
@@ -2672,6 +2681,11 @@ var NyaP = function (_NyaPlayerCore) {
 				},
 				contextmenu: function contextmenu(e) {
 					return e.preventDefault();
+				},
+				error: function error(e) {
+					clearInterval(_this._.loadingAnimeInterval);
+					$.loading_anime.style.transform = "";
+					$.loading_anime.innerHTML = '(๑• . •๑)';
 				}
 			},
 			progress: {
@@ -3058,6 +3072,10 @@ var NyaP = function (_NyaPlayerCore) {
 
 	return NyaP;
 }(_NyaPCore.NyaPlayerCore);
+
+function rand(min, max) {
+	return min + Math.random() * (max - min) + 0.5 | 0;
+}
 
 window.NyaP = NyaP;
 

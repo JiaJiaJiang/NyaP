@@ -291,5 +291,24 @@ LGPL license
 			display: block;
 		}
 	}
+	#loading_frame{
+		@extend .NyaP_fullfill; 
+	    background-color: #efefef;
+	    display: flex;
+	    flex-wrap: wrap;
+	    justify-content: center;
+	    align-items: center;
+	    cursor:dafault;
+	    pointer-events: none;
+
+		#loading_anime{
+		    display: inline-block;
+		    font-size: 5em;
+		    transition: transform 0.08s linear;
+		    will-change: transfrom;
+
+		}
+	}
+
 }
 

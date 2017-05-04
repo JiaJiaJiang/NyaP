@@ -2125,8 +2125,15 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 							} }, { title: _('loop(L)') }), { _: 'span', prop: { id: 'player_mode' }, child: [icon('fullPage', { click: e => this.playerMode('fullPage') }, { title: _('full page(P)') }), icon('fullScreen', { click: e => this.playerMode('fullScreen') }, { title: _('full screen(F)') })] }] }] }] }]
 		});
 
+		//loading anime
+		this.videoFrame.appendChild((0, _Object2HTML2.default)({ _: 'div', attr: { id: 'loading_frame' }, child: [{ _: 'div', attr: { id: 'loading_anime' }, child: ['(๑•́ ω •̀๑)'] }] }));
+
 		//add elements with id to $ prop
 		collectEles(this._.player);
+
+		this._.loadingAnimeInterval = setInterval(() => {
+			$.loading_anime.style.transform = "translate(" + rand(-20, 20) + "px," + rand(-20, 20) + "px) rotate(" + rand(-10, 10) + "deg)";
+		}, 80);
 
 		//danmaku sizes
 		opt.danmakuSizes && opt.danmakuSizes.forEach((s, ind) => {
@@ -2176,6 +2183,8 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 					this._.lastTimeUpdate = Date.now();
 				},
 				loadedmetadata: e => {
+					clearInterval(this._.loadingAnimeInterval);
+					$.loading_frame.parentNode.removeChild($.loading_frame);
 					this._setTimeInfo(null, (0, _NyaPCore.formatTime)(video.duration, video.duration));
 				},
 				volumechange: e => {
@@ -2185,7 +2194,12 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 				progress: e => this.drawProgress(),
 				_loopChange: e => this._iconActive('loop', e.value),
 				click: e => this.playToggle(),
-				contextmenu: e => e.preventDefault()
+				contextmenu: e => e.preventDefault(),
+				error: e => {
+					clearInterval(this._.loadingAnimeInterval);
+					$.loading_anime.style.transform = "";
+					$.loading_anime.innerHTML = '(๑• . •๑)';
+				}
 			},
 			progress: {
 				'mousemove,click': e => {
@@ -2524,6 +2538,10 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 			this._progressDrawer();
 		});
 	}
+}
+
+function rand(min, max) {
+	return min + Math.random() * (max - min) + 0.5 | 0;
 }
 
 window.NyaP = NyaP;

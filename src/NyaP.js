@@ -124,8 +124,19 @@ class NyaP extends NyaPlayerCore{
 			]
 		});
 
+		//loading anime
+		this.videoFrame.appendChild(O2H(
+			{_:'div',attr:{id:'loading_frame'},child:[
+				{_:'div',attr:{id:'loading_anime'},child:['(๑•́ ω •̀๑)']}
+			]}
+		));
+
 		//add elements with id to $ prop
 		collectEles(this._.player);
+
+		this._.loadingAnimeInterval=setInterval(()=>{
+			$.loading_anime.style.transform="translate("+rand(-20,20)+"px,"+rand(-20,20)+"px) rotate("+rand(-10,10)+"deg)";
+		},80);
 
 		//danmaku sizes
 		opt.danmakuSizes&&opt.danmakuSizes.forEach((s,ind)=>{
@@ -176,6 +187,8 @@ class NyaP extends NyaPlayerCore{
 					this._.lastTimeUpdate=Date.now();
 				},
 				loadedmetadata:e=>{
+					clearInterval(this._.loadingAnimeInterval);
+					$.loading_frame.parentNode.removeChild($.loading_frame);
 					this._setTimeInfo(null,formatTime(video.duration,video.duration));
 				},
 				volumechange:e=>{
@@ -186,6 +199,11 @@ class NyaP extends NyaPlayerCore{
 				_loopChange:e=>this._iconActive('loop',e.value),
 				click:e=>this.playToggle(),
 				contextmenu:e=>e.preventDefault(),
+				error:e=>{
+					clearInterval(this._.loadingAnimeInterval);
+					$.loading_anime.style.transform="";
+					$.loading_anime.innerHTML='(๑• . •๑)';
+				},
 			},
 			progress:{
 				'mousemove,click':e=>{
@@ -484,6 +502,10 @@ class NyaP extends NyaPlayerCore{
 			this._progressDrawer();
 		});
 	}
+}
+
+function rand(min, max) {
+	return (min + Math.random() * (max - min)+0.5)|0;
 }
 
 window.NyaP=NyaP;

@@ -328,6 +328,15 @@ var DanmakuFrame = function () {
 			return true;
 		}
 	}, {
+		key: 'disable',
+		value: function disable(name) {
+			var module = this.modules[name];
+			if (!module) return false;
+			module.enabled = false;
+			module.disable && module.disable();
+			return true;
+		}
+	}, {
 		key: 'addStyle',
 		value: function addStyle(s) {
 			var _this2 = this;
@@ -337,15 +346,6 @@ var DanmakuFrame = function () {
 			s.forEach(function (r) {
 				return _this2.styleSheet.insertRule(r, _this2.styleSheet.cssRules.length);
 			});
-		}
-	}, {
-		key: 'disable',
-		value: function disable(name) {
-			var module = this.modules[name];
-			if (!module) return false;
-			module.enabled = false;
-			module.disable && module.disable();
-			return true;
 		}
 	}, {
 		key: 'initModule',
@@ -1135,7 +1135,6 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				fontWeight: 300,
 				fontVariant: null,
 				color: "#fff",
-				lineHeight: null, //when this style is was not a number,the number will be the same as fontSize
 				fontSize: 24,
 				fontFamily: "Arial",
 				strokeWidth: 1, //outline width
@@ -1168,7 +1167,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				2: _this.text2d,
 				3: _this.text3d
 			};
-			_this.GraphCache = []; //COL text graph cache
+			_this.GraphCache = []; //text graph cache
 			_this.DanmakuText = [];
 
 			//opt time record
@@ -1186,7 +1185,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			addEvents(document, {
 				visibilitychange: function visibilitychange(e) {
 					_this.danmakuCheckSwitch = !document.hidden;
-					if (!document.hidden) _this.reCheckIndexMark();
+					if (!document.hidden) _this.recheckIndexMark();
 				}
 			});
 			_this._checkNewDanmaku = _this._checkNewDanmaku.bind(_this);
@@ -1230,7 +1229,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			key: 'start',
 			value: function start() {
 				this.paused = false;
-				this.reCheckIndexMark();
+				this.recheckIndexMark();
 				this.activeRenderMode.start();
 			}
 		}, {
@@ -1459,8 +1458,8 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				this._clearCanvas(true);
 			}
 		}, {
-			key: 'reCheckIndexMark',
-			value: function reCheckIndexMark() {
+			key: 'recheckIndexMark',
+			value: function recheckIndexMark() {
 				var t = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.frame.time;
 
 				this.indexMark = dichotomy(this.list, t, 0, this.list.length - 1, true);
@@ -1470,7 +1469,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			value: function time() {
 				var t = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.frame.time;
 				//reset time,you should invoke it when the media has seeked to another time
-				this.reCheckIndexMark(t);
+				this.recheckIndexMark(t);
 				if (this.options.clearWhenTimeReset) {
 					this.clear();
 				} else {

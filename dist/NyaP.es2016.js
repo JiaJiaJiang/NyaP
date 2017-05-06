@@ -1134,7 +1134,13 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		}
 		_calcDanmakusPosition(force) {
 			let T = this.frame.time;
-			if (!force && (this.danmakuMoveTime === T || this.paused)) return;
+			if (!force) {
+				if (this.paused) return;
+				if (this.danmakuMoveTime === T) {
+					this.pause();
+					return;
+				}
+			}
 			const cWidth = this.width;
 			let R,
 			    i,

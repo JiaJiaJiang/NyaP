@@ -54,7 +54,7 @@ LGPL license
 	}
 	span[id^="icon_span_"]{
 		cursor: pointer;
-	    display: inline-block;
+		display: inline-block;
 		background-color: inherit;
 		&:hover{
 			background-color:#ececec!important;
@@ -68,20 +68,20 @@ LGPL license
 
 	&>#video_frame{
 		@extend .NyaP_fullfill;
-	    height: auto;
+		height: auto;
 		bottom: $control_bar_height;
 		z-index: 2;
 
 		video#main_video{
 			@extend .NyaP_fullfill;
-		    cursor: pointer;
-		    user-select: none;
-		    position: relative;
-		    -o-user-select: none;
-		    -ms-user-select: none;
-		    -moz-user-select: none;
-		    -webkit-user-select: none;
-		    -webkit-touch-callout: none;
+			cursor: pointer;
+			user-select: none;
+			position: relative;
+			-o-user-select: none;
+			-ms-user-select: none;
+			-moz-user-select: none;
+			-webkit-user-select: none;
+			-webkit-touch-callout: none;
 
 			&::-webkit-media-controls{
 				display:none;
@@ -89,17 +89,17 @@ LGPL license
 		}
 		#danmaku_container{
 			@extend .NyaP_fullfill;
-		    pointer-events: none;
+			pointer-events: none;
 		}
 		div[class^=danmaku]{
-		    pointer-events: none;
+			pointer-events: none;
 			@extend .NyaP_fullfill;
 		}
 	}
 	#controls{
 		@extend .NyaP_fullfill;
-	    width: 100%;
-	    top:auto;
+		width: 100%;
+		top:auto;
 		bottom: 0;
 		height: $control_bar_height;
 		z-index: 3;
@@ -109,7 +109,7 @@ LGPL license
 		opacity: 1;
 		display: flex;
 		flex-wrap: nowrap;
-	    user-select: none;
+		user-select: none;
 		align-items:stretch;
 		transition: opacity .2s;
 		background-color: #f7f8f9;
@@ -149,21 +149,21 @@ LGPL license
 
 		&>*:first-child{
 			flex-grow: 1;
-		    position: relative;
+			position: relative;
 		}
 	}
 	#danmaku_input_frame{
 		@extend .NyaP_fullfill;
 		display:none;
-	    font-size: 13px;
+		font-size: 13px;
 		background-color:inherit;
 		input#danmaku_input{
-		    border: 0;
-	        outline: 0;
-		    flex-grow: 1;
-		    padding: 0 7px;
-		    user-select: initial;
-	        background-color: inherit;
+			border: 0;
+			outline: 0;
+			flex-grow: 1;
+			padding: 0 7px;
+			user-select: initial;
+			background-color: inherit;
 		}
 	}
 	#danmaku_style{
@@ -177,73 +177,73 @@ LGPL license
 	}
 	#danmaku_style_pannel{
 		left: -25px;
-	    padding: 8px;
+		padding: 8px;
 		bottom: 67%;
 		display: none;
 		position: absolute;
-	    border-radius: 2px;
-        border: 1px solid #ccc;
+		border-radius: 2px;
+		border: 1px solid #ccc;
 		background-color: inherit;
 	}
 	input#danmaku_color{
-	    width: 58px;
-	    height: 28px;
-	    font-size: 14px;
-	    text-align: center;
-	    border-radius: 3px;
-        border: 1px solid #ccc;
-        font-family: monospace;
-        text-shadow: 0px 0px 2px #fff;
-        @include text_stroke(0.1px #fff);
+		width: 58px;
+		height: 28px;
+		font-size: 14px;
+		text-align: center;
+		border-radius: 3px;
+		border: 1px solid #ccc;
+		font-family: monospace;
+		text-shadow: 0px 0px 2px #fff;
+		@include text_stroke(0.1px #fff);
 	}
 	#danmaku_mode_box,#danmaku_size_box{
-        font-size: 0;
-	    height: 30px;
-	    cursor: pointer;
-        overflow: hidden;
+		font-size: 0;
+		height: 30px;
+		cursor: pointer;
+		overflow: hidden;
 		margin-left: 5px;
-	    border-radius: 3px;
-        display: inline-flex;
-	    border: 1px solid #ccc;
-	    vertical-align: bottom;
+		border-radius: 3px;
+		display: inline-flex;
+		border: 1px solid #ccc;
+		vertical-align: bottom;
 	}
 	#danmaku_size_box>span{
 		width: 34px;
 		height: 30px;
 		line-height: 30px;
 		text-align: center;
-	    display: inline-block;
+		display: inline-block;
 		font-family: monospace;
-	    vertical-align: middle;
+		vertical-align: middle;
 		background-color: inherit;
 	}
 	#danmaku_mode_box>span.active,#danmaku_size_box>span.active{
-	    background-color: #ececec!important;
+		background-color: #ececec!important;
 	}
 	#danmaku_submit{
-	    color: #fff;
-        display: flex;					//set layout of text to center
-	    cursor: pointer;
-	    padding: 0 14px;
-	    text-align: center;
-	    align-items: center;
+		color: #fff;
+		display: flex;					//set layout of text to center
+		cursor: pointer;
+		padding: 0 14px;
+		text-align: center;
+		align-items: center;
 		background-color: #616161;
 	}
 	#danmaku_color_box{
-	    width: 100%;
-        display: flex;
-        flex-wrap: wrap;
+		width: 100%;
+		display: flex;
+		flex-wrap: wrap;
 		margin-bottom: 8px;
-	    position: relative;
-	    justify-content: space-around;
+		position: relative;
+		justify-content: space-around;
 
 		&>span{
 			display: inline-block;
-		    width: 30px;
-		    height: 30px;
-		    border-radius: 6px;
-		    cursor: pointer;
-		    border: 1px solid #ddd;
+			width: 30px;
+			height: 30px;
+			border-radius: 6px;
+			cursor: pointer;
+			border: 1px solid #ddd;
 		}
 	}
 	#settings_box{
@@ -261,52 +261,71 @@ LGPL license
 	#time_frame{
 		width:105px;
 		height: 100%;
-	    padding: 0 5px;
-	    position: relative;
+		padding: 0 5px;
+		position: relative;
 		display: inline-block;
 	}
 	#time{
 		@extend .NyaP_fullfill; 
-	    display: flex;
+		display: flex;
 		font-size: 14px;
-	    text-align: center;
-	    align-items: center;
-	    font-family: monospace;
-	    
-	    &>*{flex-shrink:1;flex-grow: 1;}
+		text-align: center;
+		align-items: center;
+		font-family: monospace;
+		
+		&>*{flex-shrink:1;flex-grow: 1;}
 	}
 	#icon_span_fullScreen{
 		left: 0;
-	    bottom: 100%;
+		bottom: 100%;
 		display: none;
-	    border-bottom: 0;
+		border-bottom: 0;
 		position: absolute;
-	    border: 1px solid #ccc;
-	    border-radius: 8px 0 0;
+		border: 1px solid #ccc;
+		border-radius: 8px 0 0;
 	}
 	#player_mode{
-	    font-size: 0;
+		font-size: 0;
 
 		&:hover>#icon_span_fullScreen{
 			display: block;
 		}
 	}
-	#loading_frame{
-		@extend .NyaP_fullfill; 
-	    background-color: #efefef;
-	    display: flex;
-	    flex-wrap: wrap;
-	    justify-content: center;
-	    align-items: center;
-	    cursor:dafault;
-	    pointer-events: none;
+	#msg_box{
+		position: absolute;
+		display: flex;
+		flex-flow: column;
+		align-items: flex-end;
+		right: 0;
+		bottom: 0;
+		pointer-events: none;
 
-		#loading_anime{
-		    display: inline-block;
-		    font-size: 5em;
-		    transition: transform 0.08s linear;
-		    will-change: transfrom;
+		[class^='msg_type_']{
+			font-size: 1em;
+			max-width: 15em;
+			word-wrap: break-word;
+			padding: 4px 11px;
+			margin: 4px;
+			border: 1px solid #a5a5a5;
+			border-radius: 3px;
+			box-shadow: 0 0 3px #ccc;
+			cursor: pointer;
+			pointer-events: auto;
+			will-change:opacity;
+			transition: opacity .3s;
+		}
 
+		.msg_type_tip{
+			color: #adadad;
+			background-color: rgba(179, 179, 179, 0.62);
+		}
+		.msg_type_info{
+			color: #d8e8e3;
+			background-color: rgba(19, 16, 12, 0.38);	
+		}
+		.msg_type_error{
+			color: #eaddd8;
+			background-color: rgba(214, 123, 123, 0.67);
 		}
 	}
 

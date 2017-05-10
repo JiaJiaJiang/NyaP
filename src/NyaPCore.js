@@ -4,9 +4,12 @@ LGPL license
 */
 'use strict';
 
+import {i18n} from './i18n.js';
 import {DanmakuFrame,DanmakuFrameModule,ResizeSensor} from '../lib/danmaku-frame/src/danmaku-frame.js'
 import initTextDanmaku from '../lib/danmaku-text/src/danmaku-text.js'
 import O2H from '../lib/Object2HTML/Object2HTML.js'
+
+const _=i18n._;
 
 
 initTextDanmaku(DanmakuFrame,DanmakuFrameModule);//init TextDanmaku mod
@@ -59,16 +62,37 @@ class NyaPlayerCore extends NyaPEventEmitter{
 	constructor(opt){
 		super();
 		opt=this.opt=Object.assign({},NyaPOptions,opt);
+		const $=this.$={document,window};
 		this._={};//for private variables
 		const video=this._.video=O2H({_:'video',attr:{id:'main_video'}});
 		this.container=O2H({_:'div',prop:{id:'danmaku_container'}});
-		this.videoFrame=O2H({_:'div',attr:{id:'video_frame'},child:[video,this.container]});
+		this.videoFrame=O2H(
+			{_:'div',attr:{id:'video_frame'},child:[
+				video,
+				this.container,
+				{_:'div',attr:{id:'loading_frame'},child:[
+					{_:'div',attr:{id:'loading_anime'},child:['(๑•́ ω •̀๑)']},
+					{_:'div',attr:{id:'loading_info'}},
+				]}
+			]}
+		);
+		this.collectEles(this.videoFrame);
+
+		this.loadingInfo(_('Loading danmaku frame'));
 		this.danmakuFrame=new DanmakuFrame(this.container);
 		this.danmakuFrame.setMedia(video);
 		this.danmakuFrame.enable('TextDanmaku');
 		this.setDanmakuOptions(opt.danmakuOption);
 		this.setDanmakuOptions(opt.textStyle);
 
+		this.danmakuFrame.addStyle([
+			'#loading_frame{top:0;left:0;width:100%;height:100%;position:absolute;background-color:#efefef;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;cursor:dafault;}',
+			'#loading_frame #loading_anime{display:inline-block;font-size:5em;transition:transform 0.08s linear;will-change:transfrom;pointer-events:none;}',
+			'#loading_frame #loading_info{display:block;font-size:.9em;position:absolute;left:0;bottom:0;padding:0.4em;color:#868686;}',
+		]);
+		this._.loadingAnimeInterval=setInterval(()=>{
+			$.loading_anime.style.transform="translate("+rand(-20,20)+"px,"+rand(-20,20)+"px) rotate("+rand(-10,10)+"deg)";
+		},80);
 
 		//options
 		setTimeout(a=>{
@@ -90,7 +114,18 @@ class NyaPlayerCore extends NyaPEventEmitter{
 				}
 			});
 		}
-		
+		addEvents(video,{
+			loadedmetadata:e=>{
+				clearInterval(this._.loadingAnimeInterval);
+				$.loading_frame.parentNode.removeChild($.loading_frame);
+			},
+			error:e=>{
+				clearInterval(this._.loadingAnimeInterval);
+				loading_anime.style.transform="";
+				loading_anime.innerHTML='(๑• . •๑)';
+			},
+		});
+
 		this.emit('coreLoad');
 	}
 	playToggle(Switch=this.video.paused){
@@ -111,6 +146,16 @@ class NyaPlayerCore extends NyaPEventEmitter{
 	}
 	danmakuAt(x,y){
 		return this.danmakuFrame.modules.TextDanmaku.danmakuAt(x,y);
+	}
+	loadingInfo(text){
+		this.$.loading_info.appendChild(O2H({_:'div',child:[text]}));
+	}
+	collectEles(ele){
+		const $=this.$;
+		if(ele.id&&!$[ele.id])$[ele.id]=ele;
+		toArray(ele.querySelectorAll('*')).forEach(e=>{
+			if(e.id&&!$[e.id])$[e.id]=e;
+		});
 	}
 	get player(){return this._.player;}
 	get video(){return this._.video;}
@@ -178,10 +223,12 @@ function setAttrs(ele,obj){//set multi attrs to a Element
 function limitIn(num,min,max){//limit the number in a range
 	return num<min?min:(num>max?max:num);
 }
+function rand(min, max) {
+	return (min+Math.random()*(max-min)+0.5)|0;
+}
 function toArray(obj){
 	return [...obj];
 }
-
 
 //Polyfill from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/startsWith
 if (!String.prototype.startsWith)
@@ -197,6 +244,7 @@ export {
 	exitFullscreen,
 	isFullscreen,
 	formatTime,
+	rand,
 	padTime,
 	setAttrs,
 	limitIn,

@@ -1006,19 +1006,18 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		}
 		setRenderMode(n) {
 			if (this.renderMode === n || !(n in this.modes) || !this.modes[n].supported) return;
-			this.clear();
 			this.activeRenderMode && this.activeRenderMode.disable();
-			this.modes[n].enable();
 			defProp(this, 'activeRenderMode', { value: this.modes[n] });
 			defProp(this, 'renderMode', { value: n });
 			this.activeRenderMode.resize();
+			this.activeRenderMode.enable();
 		}
 		media(media) {
 			addEvents(media, {
 				seeked: () => {
 					this.start();
 					this.time();
-					this._clearCanvas();
+					this._clearScreen();
 				},
 				seeking: () => this.pause(),
 				stalled: () => this.pause()
@@ -1216,7 +1215,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			if (this.activeRenderMode) this.activeRenderMode.resize();
 			this.draw(true);
 		}
-		_clearCanvas(forceFull) {
+		_clearScreen(forceFull) {
 			this.activeRenderMode && this.activeRenderMode.clear(forceFull);
 		}
 		clear() {
@@ -1226,7 +1225,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				if (T.danmaku) this.removeText(T);
 			}
 			this.tunnel.reset();
-			this._clearCanvas(true);
+			this._clearScreen(true);
 		}
 		recheckIndexMark(t = this.frame.time) {
 			this.indexMark = dichotomy(this.list, t, 0, this.list.length - 1, true);
@@ -1571,6 +1570,7 @@ class Text2d extends _textModuleTemplate2.default {
 		C.height = D.height;
 	}
 	enable() {
+		this.draw();
 		this.dText.useImageBitmap = !(this.dText.canvas.hidden = false);
 	}
 	disable() {
@@ -1666,7 +1666,6 @@ class Text3d extends _textModuleTemplate2.default {
 		gl.clearColor(0, 0, 0, 0.0);
 		gl.enable(gl.BLEND);
 		gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-		gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
 
 		this.maxTexSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
 
@@ -1725,13 +1724,17 @@ class Text3d extends _textModuleTemplate2.default {
 		gl.uniformMatrix4fv(this.u2dCoord, false, _Mat2.default.Identity(4).translate3d(-1, 1, 0).scale3d(2 / C.width, -2 / C.height, 0));
 	}
 	enable() {
+		this.dText.DanmakuText.forEach(t => {
+			this.newDanmaku(t, false);
+		});
 		this.dText.useImageBitmap = this.dText.canvas3d.hidden = false;
+		requestAnimationFrame(() => this.draw());
 	}
 	disable() {
 		this.dText._cleanCache(true);
 		this.dText.canvas3d.hidden = true;
 	}
-	newDanmaku(t) {
+	newDanmaku(t, async = true) {
 		const gl = this.gl;
 		t.glDanmaku = false;
 		if (t._cache.height > this.maxTexSize || t._cache.width > this.maxTexSize) {
@@ -1747,12 +1750,17 @@ class Text3d extends _textModuleTemplate2.default {
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 		}
-
-		requestIdleCallback(() => {
+		if (async) {
+			requestIdleCallback(() => {
+				gl.bindTexture(gl.TEXTURE_2D, tex);
+				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, t._cache);
+				t.glDanmaku = true;
+			});
+		} else {
 			gl.bindTexture(gl.TEXTURE_2D, tex);
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, t._cache);
 			t.glDanmaku = true;
-		});
+		}
 
 		//vert
 		t.verticesBuffer || (t.verticesBuffer = gl.createBuffer());
@@ -1825,15 +1833,19 @@ class TextCanvas extends _textModuleTemplate2.default {
 		this.container.removeChild(t._cache);
 	}
 	enable() {
+		this.dText.DanmakuText.forEach(t => {
+			this.newDanmaku(t);
+		});
 		this.container.hidden = false;
 	}
 	disable() {
 		this.container.hidden = true;
+		this.container.innerHTML = '';
 	}
 	newDanmaku(t) {
 		t._cache.style.transform = `translate3d(${t.style.x - t.estimatePadding}px,${t.style.y - t.estimatePadding}px,0)`;
 		this.container.appendChild(t._cache);
-		if (t.danmaku.mode < 2) requestAnimationFrame(a => this._move(t));
+		if (t.danmaku.mode < 2 && !this.dText.paused) requestAnimationFrame(() => this._move(t));
 	}
 } /*
   Copyright luojia@luojia.me
@@ -2092,10 +2104,10 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 	constructor(opt) {
 		super(Object.assign({}, NyaPOptions, opt));
 		opt = this.opt;
-		const NP = this;
-		const $ = this.$ = { document, window };
+		const NP = this,
+		      $ = this.$,
+		      video = this.video;
 		this._.playerMode = 'normal';
-		const video = this.video;
 		video.controls = false;
 		const icons = {
 			play: [30, 30, '<path d="m10.063,8.856l9.873,6.143l-9.873,6.143v-12.287z" stroke-width="3" stroke-linejoin="round"/>'],
@@ -2117,12 +2129,8 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 			return (0, _Object2HTML2.default)({ _: 'span', event, attr, prop: { id: `icon_span_${name}`,
 					innerHTML: `<svg height=${ico[1]} width=${ico[0]} id="icon_${name}"">${ico[2]}</svg>` } });
 		}
-		function collectEles(ele) {
-			if (ele.id && !$[ele.id]) $[ele.id] = ele;
-			(0, _NyaPCore.toArray)(ele.querySelectorAll('*')).forEach(e => {
-				if (e.id && !$[e.id]) $[e.id] = e;
-			});
-		}
+
+		this.loadingInfo(_('Creating player'));
 
 		this._.player = (0, _Object2HTML2.default)({
 			_: 'div', attr: { 'class': 'NyaP', id: 'NyaP', tabindex: 0 }, child: [this.videoFrame, { _: 'div', attr: { id: 'controls' }, child: [{ _: 'div', attr: { id: 'control' }, child: [{ _: 'span', attr: { id: 'control_left' }, child: [icon('play', { click: e => this.playToggle() }, { title: _('play') })] }, { _: 'span', attr: { id: 'control_center' }, child: [{ _: 'div', prop: { id: 'progress_info' }, child: [{ _: 'span', child: [{ _: 'canvas', prop: { id: 'progress', pad: 10 } }] }, { _: 'span', prop: { id: 'time_frame' }, child: [{ _: 'span', prop: { id: 'time' }, child: [{ _: 'span', prop: { id: 'current_time' }, child: ['00:00'] }, '/', { _: 'span', prop: { id: 'total_time' }, child: ['00:00'] }] }] }] }, { _: 'div', prop: { id: 'danmaku_input_frame' }, child: [{ _: 'span', prop: { id: 'danmaku_style' }, child: [{ _: 'div', attr: { id: 'danmaku_style_pannel' }, child: [{ _: 'div', attr: { id: 'danmaku_color_box' } }, { _: 'input', attr: { id: 'danmaku_color', placeholder: _('hex color'), maxlength: "6" } }, { _: 'span', attr: { id: 'danmaku_mode_box' } }, { _: 'span', attr: { id: 'danmaku_size_box' } }] }, icon('danmakuStyle')] }, { _: 'input', attr: { id: 'danmaku_input', placeholder: _('Input danmaku here') } }, { _: 'span', prop: { id: 'danmaku_submit', innerHTML: _('Send') } }] }] }, { _: 'span', attr: { id: 'control_right' }, child: [icon('addDanmaku', { click: e => this.danmakuInput() }, { title: _('danmaku input(Enter)') }), icon('danmakuToggle', { click: e => this.danmakuToggle() }, { title: _('danmaku toggle(D)') }), icon('volume', {}, { title: _('volume($0)([shift]+↑↓)', '100%') }), icon('loop', { click: e => {
@@ -2130,15 +2138,14 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 							} }, { title: _('loop(L)') }), { _: 'span', prop: { id: 'player_mode' }, child: [icon('fullPage', { click: e => this.playerMode('fullPage') }, { title: _('full page(P)') }), icon('fullScreen', { click: e => this.playerMode('fullScreen') }, { title: _('full screen(F)') })] }] }] }] }]
 		});
 
-		//loading anime
-		this.videoFrame.appendChild((0, _Object2HTML2.default)({ _: 'div', attr: { id: 'loading_frame' }, child: [{ _: 'div', attr: { id: 'loading_anime' }, child: ['(๑•́ ω •̀๑)'] }] }));
+		//msg box
+		this.videoFrame.appendChild((0, _Object2HTML2.default)({
+			_: 'div',
+			attr: { id: 'msg_box' }
+		}));
 
 		//add elements with id to $ prop
-		collectEles(this._.player);
-
-		this._.loadingAnimeInterval = setInterval(() => {
-			$.loading_anime.style.transform = "translate(" + rand(-20, 20) + "px," + rand(-20, 20) + "px) rotate(" + rand(-10, 10) + "deg)";
-		}, 80);
+		this.collectEles(this._.player);
 
 		//danmaku sizes
 		opt.danmakuSizes && opt.danmakuSizes.forEach((s, ind) => {
@@ -2156,7 +2163,7 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 		opt.danmakuModes && opt.danmakuModes.forEach(m => {
 			$.danmaku_mode_box.appendChild(icon(`danmakuMode${m}`));
 		});
-		collectEles($.danmaku_mode_box);
+		this.collectEles($.danmaku_mode_box);
 
 		//progress
 		setTimeout(() => {
@@ -2188,8 +2195,6 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 					this._.lastTimeUpdate = Date.now();
 				},
 				loadedmetadata: e => {
-					clearInterval(this._.loadingAnimeInterval);
-					$.loading_frame.parentNode.removeChild($.loading_frame);
 					this._setTimeInfo(null, (0, _NyaPCore.formatTime)(video.duration, video.duration));
 				},
 				volumechange: e => {
@@ -2199,12 +2204,7 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 				progress: e => this.drawProgress(),
 				_loopChange: e => this._iconActive('loop', e.value),
 				click: e => this.playToggle(),
-				contextmenu: e => e.preventDefault(),
-				error: e => {
-					clearInterval(this._.loadingAnimeInterval);
-					$.loading_anime.style.transform = "";
-					$.loading_anime.innerHTML = '(๑• . •๑)';
-				}
+				contextmenu: e => e.preventDefault()
 			},
 			progress: {
 				'mousemove,click': e => {
@@ -2301,7 +2301,7 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 			eves && (0, _NyaPCore.addEvents)($[eleid], eves);
 		}
 
-		typeof opt.defaultDanmakuMode === 'number' && $['icon_span_danmakuMode' + opt.defaultDanmakuMode].click(); //init to default danmaku mode
+		Number.isInteger(opt.defaultDanmakuMode) && $['icon_span_danmakuMode' + opt.defaultDanmakuMode].click(); //init to default danmaku mode
 		typeof opt.defaultDanmakuSize === 'number' && (0, _NyaPCore.toArray)($.danmaku_size_box.childNodes).forEach(sp => {
 			if (sp.size === opt.defaultDanmakuSize) sp.click();
 		});
@@ -2490,6 +2490,7 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 		      cT = v.currentTime,
 		      pad = c.pad,
 		      len = w - 2 * pad;
+		let i;
 		ctx.clearRect(0, 0, w, h);
 		ctx.lineCap = "round";
 		//background
@@ -2504,7 +2505,7 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 		ctx.strokeStyle = '#C0BBBB';
 		ctx.lineWidth = 2;
 		let tr = v.buffered;
-		for (var i = tr.length; i--;) {
+		for (i = tr.length; i--;) {
 			ctx.moveTo(pad + tr.start(i) / d * len, 18);
 			ctx.lineTo(pad + tr.end(i) / d * len, 18);
 		}
@@ -2521,7 +2522,7 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 		ctx.strokeStyle = 'rgba(255,255,255,.3)';
 		ctx.lineWidth = 5;
 		tr = v.played;
-		for (var i = tr.length; i--;) {
+		for (i = tr.length; i--;) {
 			ctx.moveTo(pad + tr.start(i) / d * len, 15);
 			ctx.lineTo(pad + tr.end(i) / d * len, 15);
 		}
@@ -2543,10 +2544,42 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 			this._progressDrawer();
 		});
 	}
+	msg(text, type = 'tip') {
+		//type:tip|info|error
+		let msg = new MsgBox(text, type);
+		this.$.msg_box.appendChild(msg.msg);
+		msg.show();
+	}
 }
 
-function rand(min, max) {
-	return min + Math.random() * (max - min) + 0.5 | 0;
+class MsgBox {
+	constructor(text, type) {
+		this.using = false;
+		let msg = this.msg = (0, _Object2HTML2.default)({ _: 'div', attr: { class: `msg_type_${type}` }, child: [text] });
+		msg.addEventListener('click', () => this.remove());
+		if (text instanceof HTMLElement) text = text.textContent;
+		let texts = String(text).match(/\w+|\S/g);
+		this.timeout = setTimeout(() => this.remove(), Math.max((texts ? texts.length : 0) * 0.6 * 1000, 5000));
+	}
+	show() {
+		this.msg.style.opacity = 0;
+		setTimeout(() => {
+			this.using = true;
+			this.msg.style.opacity = 1;
+		}, 0);
+	}
+	remove() {
+		if (!this.using) return;
+		this.using = false;
+		this.msg.style.opacity = 0;
+		if (this.timeout) {
+			clearTimeout(this.timeout);
+			this.timeout = 0;
+		}
+		setTimeout(() => {
+			this.msg.parentNode.removeChild(this.msg);
+		}, 300);
+	}
 }
 
 window.NyaP = NyaP;
@@ -2561,7 +2594,9 @@ LGPL license
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.ResizeSensor = exports.toArray = exports.limitIn = exports.setAttrs = exports.padTime = exports.formatTime = exports.isFullscreen = exports.exitFullscreen = exports.requestFullscreen = exports.addEvents = exports.NyaPlayerCore = undefined;
+exports.ResizeSensor = exports.toArray = exports.limitIn = exports.setAttrs = exports.padTime = exports.rand = exports.formatTime = exports.isFullscreen = exports.exitFullscreen = exports.requestFullscreen = exports.addEvents = exports.NyaPlayerCore = undefined;
+
+var _i18n = require('./i18n.js');
 
 var _danmakuFrame = require('../lib/danmaku-frame/src/danmaku-frame.js');
 
@@ -2574,6 +2609,8 @@ var _Object2HTML = require('../lib/Object2HTML/Object2HTML.js');
 var _Object2HTML2 = _interopRequireDefault(_Object2HTML);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const _ = _i18n.i18n._;
 
 (0, _danmakuText2.default)(_danmakuFrame.DanmakuFrame, _danmakuFrame.DanmakuFrameModule); //init TextDanmaku mod
 
@@ -2628,15 +2665,24 @@ class NyaPlayerCore extends NyaPEventEmitter {
 	constructor(opt) {
 		super();
 		opt = this.opt = Object.assign({}, NyaPOptions, opt);
+		const $ = this.$ = { document, window };
 		this._ = {}; //for private variables
 		const video = this._.video = (0, _Object2HTML2.default)({ _: 'video', attr: { id: 'main_video' } });
 		this.container = (0, _Object2HTML2.default)({ _: 'div', prop: { id: 'danmaku_container' } });
-		this.videoFrame = (0, _Object2HTML2.default)({ _: 'div', attr: { id: 'video_frame' }, child: [video, this.container] });
+		this.videoFrame = (0, _Object2HTML2.default)({ _: 'div', attr: { id: 'video_frame' }, child: [video, this.container, { _: 'div', attr: { id: 'loading_frame' }, child: [{ _: 'div', attr: { id: 'loading_anime' }, child: ['(๑•́ ω •̀๑)'] }, { _: 'div', attr: { id: 'loading_info' } }] }] });
+		this.collectEles(this.videoFrame);
+
+		this.loadingInfo(_('Loading danmaku frame'));
 		this.danmakuFrame = new _danmakuFrame.DanmakuFrame(this.container);
 		this.danmakuFrame.setMedia(video);
 		this.danmakuFrame.enable('TextDanmaku');
 		this.setDanmakuOptions(opt.danmakuOption);
 		this.setDanmakuOptions(opt.textStyle);
+
+		this.danmakuFrame.addStyle(['#loading_frame{top:0;left:0;width:100%;height:100%;position:absolute;background-color:#efefef;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;cursor:dafault;}', '#loading_frame #loading_anime{display:inline-block;font-size:5em;transition:transform 0.08s linear;will-change:transfrom;pointer-events:none;}', '#loading_frame #loading_info{display:block;font-size:.9em;position:absolute;left:0;bottom:0;padding:0.4em;color:#868686;}']);
+		this._.loadingAnimeInterval = setInterval(() => {
+			$.loading_anime.style.transform = "translate(" + rand(-20, 20) + "px," + rand(-20, 20) + "px) rotate(" + rand(-10, 10) + "deg)";
+		}, 80);
 
 		//options
 		setTimeout(a => {
@@ -2659,6 +2705,17 @@ class NyaPlayerCore extends NyaPEventEmitter {
 				}
 			});
 		}
+		addEvents(video, {
+			loadedmetadata: e => {
+				clearInterval(this._.loadingAnimeInterval);
+				$.loading_frame.parentNode.removeChild($.loading_frame);
+			},
+			error: e => {
+				clearInterval(this._.loadingAnimeInterval);
+				loading_anime.style.transform = "";
+				loading_anime.innerHTML = '(๑• . •๑)';
+			}
+		});
 
 		this.emit('coreLoad');
 	}
@@ -2680,6 +2737,16 @@ class NyaPlayerCore extends NyaPEventEmitter {
 	}
 	danmakuAt(x, y) {
 		return this.danmakuFrame.modules.TextDanmaku.danmakuAt(x, y);
+	}
+	loadingInfo(text) {
+		this.$.loading_info.appendChild((0, _Object2HTML2.default)({ _: 'div', child: [text] }));
+	}
+	collectEles(ele) {
+		const $ = this.$;
+		if (ele.id && !$[ele.id]) $[ele.id] = ele;
+		toArray(ele.querySelectorAll('*')).forEach(e => {
+			if (e.id && !$[e.id]) $[e.id] = e;
+		});
 	}
 	get player() {
 		return this._.player;
@@ -2754,6 +2821,9 @@ function limitIn(num, min, max) {
 	//limit the number in a range
 	return num < min ? min : num > max ? max : num;
 }
+function rand(min, max) {
+	return min + Math.random() * (max - min) + 0.5 | 0;
+}
 function toArray(obj) {
 	return [...obj];
 }
@@ -2770,13 +2840,14 @@ exports.requestFullscreen = requestFullscreen;
 exports.exitFullscreen = exitFullscreen;
 exports.isFullscreen = isFullscreen;
 exports.formatTime = formatTime;
+exports.rand = rand;
 exports.padTime = padTime;
 exports.setAttrs = setAttrs;
 exports.limitIn = limitIn;
 exports.toArray = toArray;
 exports.ResizeSensor = _danmakuFrame.ResizeSensor;
 
-},{"../lib/Object2HTML/Object2HTML.js":1,"../lib/danmaku-frame/src/danmaku-frame.js":3,"../lib/danmaku-text/src/danmaku-text.js":6}],14:[function(require,module,exports){
+},{"../lib/Object2HTML/Object2HTML.js":1,"../lib/danmaku-frame/src/danmaku-frame.js":3,"../lib/danmaku-text/src/danmaku-text.js":6,"./i18n.js":14}],14:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2807,9 +2878,11 @@ i18n.langs['zh-CN'] = {
 	'loop(L)': '循环(L)',
 	'hex color': 'Hex颜色',
 	'full page(P)': '全页模式(P)',
+	'Creating player': '创建播放器',
 	'full screen(F)': '全屏模式(F)',
 	'danmaku toggle(D)': '弹幕开关(D)',
 	'Input danmaku here': '在这里输入弹幕',
+	'Loading danmaku frame': '加载弹幕框架',
 	'danmaku input(Enter)': '弹幕输入框(回车)',
 	'volume($0)([shift]+↑↓)': '音量($0)([shift]+↑↓)',
 	'Failed to change to fullscreen mode': '无法切换到全屏模式'

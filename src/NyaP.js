@@ -39,10 +39,10 @@ class NyaP extends NyaPlayerCore{
 	constructor(opt){
 		super(Object.assign({},NyaPOptions,opt));
 		opt=this.opt;
-		const NP=this;
-		const $=this.$={document,window};
+		const NP=this,
+			$=this.$,
+			video=this.video;
 		this._.playerMode='normal';
-		const video=this.video;
 		video.controls=false;
 		const icons={
 			play:[30,30,'<path d="m10.063,8.856l9.873,6.143l-9.873,6.143v-12.287z" stroke-width="3" stroke-linejoin="round"/>'],
@@ -66,12 +66,8 @@ class NyaP extends NyaPlayerCore{
 			return O2H({_:'span',event,attr,prop:{id:`icon_span_${name}`,
 				innerHTML:`<svg height=${ico[1]} width=${ico[0]} id="icon_${name}"">${ico[2]}</svg>`}});
 		}
-		function collectEles(ele){
-			if(ele.id&&!$[ele.id])$[ele.id]=ele;
-			toArray(ele.querySelectorAll('*')).forEach(e=>{
-				if(e.id&&!$[e.id])$[e.id]=e;
-			});
-		}
+		
+		this.loadingInfo(_('Creating player'));
 
 		this._.player=O2H({
 			_:'div',attr:{'class':'NyaP',id:'NyaP',tabindex:0},child:[
@@ -124,19 +120,14 @@ class NyaP extends NyaPlayerCore{
 			]
 		});
 
-		//loading anime
-		this.videoFrame.appendChild(O2H(
-			{_:'div',attr:{id:'loading_frame'},child:[
-				{_:'div',attr:{id:'loading_anime'},child:['(๑•́ ω •̀๑)']}
-			]}
-		));
+		//msg box
+		this.videoFrame.appendChild(O2H({
+			_:'div',
+			attr:{id:'msg_box'}
+		}));
 
 		//add elements with id to $ prop
-		collectEles(this._.player);
-
-		this._.loadingAnimeInterval=setInterval(()=>{
-			$.loading_anime.style.transform="translate("+rand(-20,20)+"px,"+rand(-20,20)+"px) rotate("+rand(-10,10)+"deg)";
-		},80);
+		this.collectEles(this._.player);
 
 		//danmaku sizes
 		opt.danmakuSizes&&opt.danmakuSizes.forEach((s,ind)=>{
@@ -154,7 +145,7 @@ class NyaP extends NyaPlayerCore{
 		opt.danmakuModes&&opt.danmakuModes.forEach(m=>{
 			$.danmaku_mode_box.appendChild(icon(`danmakuMode${m}`));
 		});
-		collectEles($.danmaku_mode_box);
+		this.collectEles($.danmaku_mode_box);
 
 
 		//progress
@@ -187,8 +178,6 @@ class NyaP extends NyaPlayerCore{
 					this._.lastTimeUpdate=Date.now();
 				},
 				loadedmetadata:e=>{
-					clearInterval(this._.loadingAnimeInterval);
-					$.loading_frame.parentNode.removeChild($.loading_frame);
 					this._setTimeInfo(null,formatTime(video.duration,video.duration));
 				},
 				volumechange:e=>{
@@ -199,11 +188,6 @@ class NyaP extends NyaPlayerCore{
 				_loopChange:e=>this._iconActive('loop',e.value),
 				click:e=>this.playToggle(),
 				contextmenu:e=>e.preventDefault(),
-				error:e=>{
-					clearInterval(this._.loadingAnimeInterval);
-					$.loading_anime.style.transform="";
-					$.loading_anime.innerHTML='(๑• . •๑)';
-				},
 			},
 			progress:{
 				'mousemove,click':e=>{
@@ -293,7 +277,7 @@ class NyaP extends NyaPlayerCore{
 			eves&&addEvents($[eleid],eves);
 		}
 
-		(typeof opt.defaultDanmakuMode === 'number')
+		Number.isInteger(opt.defaultDanmakuMode)
 			&&$['icon_span_danmakuMode'+opt.defaultDanmakuMode].click();//init to default danmaku mode
 		(typeof opt.defaultDanmakuSize === 'number')
 			&&toArray($.danmaku_size_box.childNodes).forEach(sp=>{if(sp.size===opt.defaultDanmakuSize)sp.click()});
@@ -449,6 +433,7 @@ class NyaP extends NyaPlayerCore{
 				cT=v.currentTime,
 				pad=c.pad,
 				len=w-2*pad;
+		let i;
 		ctx.clearRect(0,0,w,h);
 		ctx.lineCap = "round";
 		//background
@@ -463,7 +448,7 @@ class NyaP extends NyaPlayerCore{
 		ctx.strokeStyle = '#C0BBBB';
 		ctx.lineWidth = 2;
 		let tr = v.buffered;
-		for (var i = tr.length;i--;) {
+		for (i = tr.length;i--;) {
 			ctx.moveTo(pad+tr.start(i) / d * len, 18);
 			ctx.lineTo(pad+tr.end(i) / d * len, 18);
 		}
@@ -480,7 +465,7 @@ class NyaP extends NyaPlayerCore{
 		ctx.strokeStyle = 'rgba(255,255,255,.3)';
 		ctx.lineWidth = 5;
 		tr = v.played;
-		for (var i = tr.length;i--;) {
+		for (i = tr.length;i--;) {
 			ctx.moveTo(pad+tr.start(i) / d * len, 15);
 			ctx.lineTo(pad+tr.end(i) / d * len, 15);
 		}
@@ -502,10 +487,42 @@ class NyaP extends NyaPlayerCore{
 			this._progressDrawer();
 		});
 	}
+	msg(text,type='tip'){//type:tip|info|error
+		let msg=new MsgBox(text,type);
+		this.$.msg_box.appendChild(msg.msg);
+		msg.show();
+	}
 }
 
-function rand(min, max) {
-	return (min + Math.random() * (max - min)+0.5)|0;
+class MsgBox{
+	constructor(text,type){
+		this.using=false;
+		let msg=this.msg=O2H({_:'div',attr:{class:`msg_type_${type}`},child:[text]});
+		msg.addEventListener('click',()=>this.remove());
+		if(text instanceof HTMLElement)text=text.textContent;
+		let texts=String(text).match(/\w+|\S/g);
+		this.timeout=setTimeout(()=>this.remove(),Math.max((texts?texts.length:0)*0.6*1000,5000));
+	}
+	show(){
+		this.msg.style.opacity=0;
+		setTimeout(()=>{
+			this.using=true;
+			this.msg.style.opacity=1;
+		},0);
+	}
+	remove(){
+		if(!this.using)return;
+		this.using=false;
+		this.msg.style.opacity=0;
+		if(this.timeout){
+			clearTimeout(this.timeout);
+			this.timeout=0;
+		}
+		setTimeout(()=>{
+			this.msg.parentNode.removeChild(this.msg);
+		},300);
+	}
 }
+
 
 window.NyaP=NyaP;

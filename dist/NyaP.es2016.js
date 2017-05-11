@@ -2213,6 +2213,10 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 				click: e => this.playToggle(),
 				contextmenu: e => e.preventDefault()
 			},
+			danmaku_container: {
+				click: e => this.playToggle(),
+				contextmenu: e => e.preventDefault()
+			},
 			progress: {
 				'mousemove,click': e => {
 					let t = e.target,

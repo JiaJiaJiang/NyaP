@@ -91,6 +91,7 @@ LGPL license
 			@extend .NyaP_fullfill;
 			pointer-events: none;
 			overflow: hidden;
+			cursor: pointer;
 		}
 		div[class^=danmaku]{
 			pointer-events: none;

@@ -30,7 +30,7 @@ LGPL license
 
 .NyaP > #video_frame video#main_video::-webkit-media-controls { display: none; }
 
-.NyaP > #video_frame #danmaku_container { pointer-events: none; overflow: hidden; }
+.NyaP > #video_frame #danmaku_container { pointer-events: none; overflow: hidden; cursor: pointer; }
 
 .NyaP > #video_frame div[class^=danmaku] { pointer-events: none; }
 

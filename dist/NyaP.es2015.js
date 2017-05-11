@@ -2704,6 +2704,14 @@ var NyaP = function (_NyaPlayerCore) {
 					return e.preventDefault();
 				}
 			},
+			danmaku_container: {
+				click: function click(e) {
+					return _this.playToggle();
+				},
+				contextmenu: function contextmenu(e) {
+					return e.preventDefault();
+				}
+			},
 			progress: {
 				'mousemove,click': function mousemoveClick(e) {
 					var t = e.target,

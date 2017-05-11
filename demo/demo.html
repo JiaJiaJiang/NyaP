@@ -40,7 +40,7 @@ var NP=new NyaP({
 		allowLines:true,
 		screenLimit:0,
 	},
-	danmakuSend:(d,callback)=>{
+	danmakuSend:function(d,callback){
 		console.log(d);
 		let d2={_:'text',text:d.text,time:d.time,mode:d.mode,style:{fontSize:d.size},date:Date.now(),id:0}
 		if(d.color){

@@ -961,7 +961,9 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				shadowOffsetY: 0,
 				fill: true };
 			Object.defineProperty(this.defaultStyle, 'lineHeight', {
-				get: () => this.fontSize + 2
+				get: function () {
+					return this.fontSize + 2;
+				}
 			});
 			frame.addStyle(`.${this.randomText}_fullfill{top:0;left:0;width:100%;height:100%;position:absolute;}`);
 
@@ -1090,8 +1092,10 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			t.drawn = false;
 			t.text = this.options.allowLines ? d.text : d.text.replace(/\n/g, ' ');
 			t.time = d.time;
-			Object.setPrototypeOf(t.font, this.defaultStyle);
+			t.font = Object.create(this.defaultStyle);
 			Object.assign(t.font, d.style);
+			if (d.style.lineHeight) Object.defineProperty(t.font, 'lineHeight', { value: d.style.lineHeight, get: undefined });
+			if (!t.font.lineHeight) Object.defineProperty(t.font, 'lineHeight', { value: t.font.fontSize + 2, get: undefined });
 			if (d.style.color) {
 				if (t.font.color && t.font.color[0] !== '#') {
 					t.font.color = '#' + d.style.color;

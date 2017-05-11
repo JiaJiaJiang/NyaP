@@ -1145,8 +1145,10 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				shadowOffsetX: 0,
 				shadowOffsetY: 0,
 				fill: true };
-			_this.defaultStyle.__defineGetter__('lineHeight', function () {
-				return this.fontSize + 2;
+			Object.defineProperty(_this.defaultStyle, 'lineHeight', {
+				get: function get() {
+					return _this.fontSize + 2;
+				}
 			});
 			frame.addStyle('.' + _this.randomText + '_fullfill{top:0;left:0;width:100%;height:100%;position:absolute;}');
 

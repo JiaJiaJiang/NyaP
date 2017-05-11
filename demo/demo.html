@@ -3,14 +3,35 @@
 <head>
 	<meta charset="utf-8">
 	<title>NyaP demo</title>
-	<script src="../dist/NyaP.es2016.js"></script>
-	<link rel="stylesheet" type="text/css" href="../dist/NyaP.css">
 	<style type="text/css">
-		body{    margin: 0;display:flex;background-color: #000;align-items: center;height: 100%;justify-content: center;position: absolute;width: 100%;}
+		body{margin: 0;display:flex;background-color: #000;align-items: center;height: 100%;justify-content: center;position: absolute;width: 100%;}
 	</style>
 </head>
 <body>
 <div id="player_container" style="position:relative;width:920px;height:550px;"></div>
+
+<script>
+var touchMode=false,//(window.navigator.userAgent.match(/mobile/)?true:false);
+	scriptVer='es2016';
+try{
+	'use strict';
+	[
+		'class a{}',//class
+		'()=>{}',//lambda
+		'{window}',//concise property
+		'[...[]]',//expand array
+		'let a;const b;',//let const
+	].forEach(function(s){eval(s)});
+}catch(e){
+	scriptVer='es2015';
+}
+var playerName='NyaP'+(touchMode?"Touch":"");
+console.log('load player',playerName,scriptVer);
+document.write(
+	"<style>@import url('"+"../dist/"+playerName+".css')</style>"+
+	"<script src='../dist/"+playerName+"."+scriptVer+".js'><\/script>"
+);
+</script>
 
 <script>
 var tests={
@@ -73,7 +94,7 @@ function changeMode(n){
 	if(NP.danmakuFrame.modules.TextDanmaku.setRenderMode(n)){
 		NP.msg('mode '+n,'info');
 	}else{
-		NP.msg('the browser does not support this mode','info');
+		NP.msg('the browser does not support this mode or already on this mode.','info');
 	}
 }
 </script>

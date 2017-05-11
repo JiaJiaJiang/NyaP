@@ -490,7 +490,7 @@ class NyaP extends NyaPlayerCore{
 	msg(text,type='tip'){//type:tip|info|error
 		let msg=new MsgBox(text,type);
 		this.$.msg_box.appendChild(msg.msg);
-		msg.show();
+		requestAnimationFrame(()=>msg.show());
 	}
 }
 
@@ -520,7 +520,7 @@ class MsgBox{
 		}
 		setTimeout(()=>{
 			this.msg.parentNode.removeChild(this.msg);
-		},300);
+		},600);
 	}
 }
 

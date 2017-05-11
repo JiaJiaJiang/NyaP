@@ -30,7 +30,7 @@ LGPL license
 
 .NyaP > #video_frame video#main_video::-webkit-media-controls { display: none; }
 
-.NyaP > #video_frame #danmaku_container { pointer-events: none; }
+.NyaP > #video_frame #danmaku_container { pointer-events: none; overflow: hidden; }
 
 .NyaP > #video_frame div[class^=danmaku] { pointer-events: none; }
 
@@ -100,7 +100,7 @@ LGPL license
 
 .NyaP #msg_box { position: absolute; display: flex; flex-flow: column; align-items: flex-end; right: 0; bottom: 0; pointer-events: none; }
 
-.NyaP #msg_box [class^='msg_type_'] { font-size: 1em; max-width: 15em; word-wrap: break-word; padding: 4px 11px; margin: 4px; border: 1px solid #a5a5a5; border-radius: 3px; box-shadow: 0 0 3px #ccc; cursor: pointer; pointer-events: auto; will-change: opacity; transition: opacity .3s; }
+.NyaP #msg_box [class^='msg_type_'] { font-size: 1em; max-width: 15em; word-wrap: break-word; padding: 4px 11px; margin: 4px; border: 1px solid #a5a5a5; border-radius: 3px; box-shadow: 0 0 3px #ccc; cursor: pointer; pointer-events: auto; will-change: opacity; transition: opacity .6s; }
 
 .NyaP #msg_box .msg_type_tip { color: #adadad; background-color: rgba(179, 179, 179, 0.62); }
 

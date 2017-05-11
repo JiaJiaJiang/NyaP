@@ -90,6 +90,7 @@ LGPL license
 		#danmaku_container{
 			@extend .NyaP_fullfill;
 			pointer-events: none;
+			overflow: hidden;
 		}
 		div[class^=danmaku]{
 			pointer-events: none;
@@ -312,7 +313,7 @@ LGPL license
 			cursor: pointer;
 			pointer-events: auto;
 			will-change:opacity;
-			transition: opacity .3s;
+			transition: opacity .6s;
 		}
 
 		.msg_type_tip{

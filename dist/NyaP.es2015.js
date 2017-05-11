@@ -1961,8 +1961,7 @@ var Text3d = function (_Template) {
 		var _this = _possibleConstructorReturn(this, (Text3d.__proto__ || Object.getPrototypeOf(Text3d)).call(this, dText));
 
 		_this.supported = false;
-		var c3d = _this.c3d = dText.canvas3d;
-		c3d = document.createElement('canvas'); //the canvas
+		var c3d = _this.c3d = dText.canvas3d = document.createElement('canvas');
 		c3d.classList.add(dText.randomText + '_fullfill');
 		c3d.id = dText.randomText + '_text3d';
 		dText.context3d = c3d.getContext('webgl') || c3d.getContext('experimental-webgl'); //the canvas3d context

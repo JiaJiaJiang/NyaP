@@ -1610,8 +1610,7 @@ class Text3d extends _textModuleTemplate2.default {
 	constructor(dText) {
 		super(dText);
 		this.supported = false;
-		let c3d = this.c3d = dText.canvas3d;
-		c3d = document.createElement('canvas'); //the canvas
+		let c3d = this.c3d = dText.canvas3d = document.createElement('canvas');
 		c3d.classList.add(`${dText.randomText}_fullfill`);
 		c3d.id = `${dText.randomText}_text3d`;
 		dText.context3d = c3d.getContext('webgl') || c3d.getContext('experimental-webgl'); //the canvas3d context

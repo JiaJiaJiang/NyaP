@@ -1917,6 +1917,7 @@ var Text2d = function (_Template) {
 		key: 'disable',
 		value: function disable() {
 			this.dText.canvas.hidden = true;
+			this.clear(true);
 		}
 	}]);
 
@@ -2089,7 +2090,7 @@ var Text3d = function (_Template) {
 	}, {
 		key: 'disable',
 		value: function disable() {
-			this.dText._cleanCache(true);
+			this.clear();
 			this.c3d.hidden = true;
 		}
 	}, {

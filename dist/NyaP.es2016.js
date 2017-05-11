@@ -1584,6 +1584,7 @@ class Text2d extends _textModuleTemplate2.default {
 	}
 	disable() {
 		this.dText.canvas.hidden = true;
+		this.clear(true);
 	}
 } /*
   Copyright luojia@luojia.me
@@ -1738,7 +1739,7 @@ class Text3d extends _textModuleTemplate2.default {
 		requestAnimationFrame(() => this.draw());
 	}
 	disable() {
-		this.dText._cleanCache(true);
+		this.clear();
 		this.c3d.hidden = true;
 	}
 	newDanmaku(t, async = true) {

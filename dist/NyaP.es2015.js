@@ -867,6 +867,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 	return _createClass2(global.Float32Array ? Float32Array : Array);
 });
 
+if (!Object.setPrototypeOf) Object.setPrototypeOf = function (obj, proto) {
+	return obj.__proto__ = proto;
+};
+
 },{}],5:[function(require,module,exports){
 (function (process,global){
 "use strict";

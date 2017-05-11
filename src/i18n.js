@@ -37,7 +37,7 @@ i18n.langs['zh-CN']={
 //automatically select a language
 
 if(!navigator.languages){
-	navigator.languages=[navigator.language];
+	navigator.languages=[navigator.language||navigator.browserLanguage];
 }
 
 for(let lang of [...navigator.languages]){

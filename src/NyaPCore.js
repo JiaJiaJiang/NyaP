@@ -227,6 +227,9 @@ function rand(min, max) {
 	return (min+Math.random()*(max-min)+0.5)|0;
 }
 function toArray(obj){
+	if(obj instanceof Array)return obj.slice();
+	if(obj.length!==undefined)
+		return Array.prototype.slice.call(obj);
 	return [...obj];
 }
 
@@ -236,7 +239,7 @@ String.prototype.startsWith = function(searchString, position=0){
 	return this.substr(position, searchString.length) === searchString;
 };
 //Polyfill from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
-if (!Object.assign)
+if(!Object.assign)
 Object.assign = function(target, varArgs) {
 	'use strict';
 	if(target==null)throw new TypeError('Cannot convert undefined or null to object');
@@ -252,6 +255,19 @@ Object.assign = function(target, varArgs) {
 		}
 	}
 	return to;
+};
+//Polyfill Array.from
+if(!Array.from)
+Array.from=function(a,func){
+	if(!(a instanceof Array))a=toArray(a);
+	var r=new Array(a.length);
+	for(var i=a.length;i--;)r[i]=func?func(a[i],i):a[i];
+	return r;
+};
+//Polyfill Number.isInteger
+if(!Number.isInteger)
+Number.isInteger=function(v){
+  return (v|0)===v;
 };
 
 export default NyaPlayerCore;

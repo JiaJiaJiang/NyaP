@@ -1198,12 +1198,13 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		_createClass(TextDanmaku, [{
 			key: 'setRenderMode',
 			value: function setRenderMode(n) {
-				if (this.renderMode === n || !(n in this.modes) || !this.modes[n].supported) return;
+				if (this.renderMode === n || !(n in this.modes) || !this.modes[n].supported) return false;
 				this.activeRenderMode && this.activeRenderMode.disable();
 				defProp(this, 'activeRenderMode', { value: this.modes[n] });
 				defProp(this, 'renderMode', { value: n });
 				this.activeRenderMode.resize();
 				this.activeRenderMode.enable();
+				return true;
 			}
 		}, {
 			key: 'media',
@@ -1960,19 +1961,19 @@ var Text3d = function (_Template) {
 		var _this = _possibleConstructorReturn(this, (Text3d.__proto__ || Object.getPrototypeOf(Text3d)).call(this, dText));
 
 		_this.supported = false;
-		dText.canvas3d = document.createElement('canvas'); //the canvas
-		dText.canvas3d.classList.add(dText.randomText + '_fullfill');
-		dText.canvas3d.id = dText.randomText + '_text3d';
-		dText.context3d = dText.canvas3d.getContext('webgl'); //the canvas3d context
-		if (!dText.context3d) dText.context3d = dText.canvas3d.getContext('expeimental-webgl');
+		var c3d = _this.c3d = dText.canvas3d;
+		c3d = document.createElement('canvas'); //the canvas
+		c3d.classList.add(dText.randomText + '_fullfill');
+		c3d.id = dText.randomText + '_text3d';
+		dText.context3d = c3d.getContext('webgl') || c3d.getContext('experimental-webgl'); //the canvas3d context
 
 		if (!dText.context3d) {
 			console.warn('text 3d not supported');
 			return _possibleConstructorReturn(_this);
 		}
-		dText.container.appendChild(dText.canvas3d);
+		dText.container.appendChild(c3d);
 		var gl = _this.gl = dText.context3d,
-		    canvas = dText.canvas3d;
+		    canvas = c3d;
 		//init webgl
 
 		//shader
@@ -2063,7 +2064,7 @@ var Text3d = function (_Template) {
 		key: 'resize',
 		value: function resize(w, h) {
 			var gl = this.gl,
-			    C = this.dText.canvas3d;
+			    C = this.c3d;
 			C.width = this.dText.width;
 			C.height = this.dText.height;
 			gl.viewport(0, 0, C.width, C.height);
@@ -2078,7 +2079,7 @@ var Text3d = function (_Template) {
 			this.dText.DanmakuText.forEach(function (t) {
 				_this2.newDanmaku(t, false);
 			});
-			this.dText.useImageBitmap = this.dText.canvas3d.hidden = false;
+			this.dText.useImageBitmap = this.c3d.hidden = false;
 			requestAnimationFrame(function () {
 				return _this2.draw();
 			});
@@ -2087,7 +2088,7 @@ var Text3d = function (_Template) {
 		key: 'disable',
 		value: function disable() {
 			this.dText._cleanCache(true);
-			this.dText.canvas3d.hidden = true;
+			this.c3d.hidden = true;
 		}
 	}, {
 		key: 'newDanmaku',

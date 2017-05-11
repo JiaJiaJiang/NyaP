@@ -69,13 +69,20 @@ NP.msg('this is a tip')
 NP.msg('this is an info','info')
 NP.msg('this is an error,and these messages\' time depends on the words\' count','error')
 
+function changeMode(n){
+	if(NP.danmakuFrame.modules.TextDanmaku.setRenderMode(n)){
+		NP.msg('mode '+n,'info');
+	}else{
+		NP.msg('the browser does not support this mode','info');
+	}
+}
 </script>
 
 <div style="position:fixed;top:0;left:0;color:#fff;">本演示发送的弹幕不会提交至服务器，仅本地预览。
 <div>
-	<button onclick="NP.danmakuFrame.modules.TextDanmaku.setRenderMode(2)">Canvas2d</button>
-	<button onclick="NP.danmakuFrame.modules.TextDanmaku.setRenderMode(3)">WebGL</button>
-	<button onclick="NP.danmakuFrame.modules.TextDanmaku.setRenderMode(1)">CSS Transition</button>
+	<button onclick="changeMode(2)">Canvas2d</button>
+	<button onclick="changeMode(3)">WebGL</button>
+	<button onclick="changeMode(1)">CSS Transition</button>
 </div>
 </div>
 

@@ -829,10 +829,16 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 		Object.defineProperty(Matrix, '_instanceofTypedArray', { value: !!(TypedArray && TypedArray.isPrototypeOf(testArray)) });
 		testArray = null;
 
-		Object.setPrototypeOf(Matrix, Constructor.prototype);
+		if (Matrix.__proto__) Object.setPrototypeOf(Matrix, Constructor.prototype);
 		function Mat(l, c, fill) {
 			var M = new Constructor(l * c);
-			Object.setPrototypeOf(M, Matrix);
+			if (Matrix.__proto__) {
+				Object.setPrototypeOf(M, Matrix);
+			} else {
+				for (var n in Constructor.prototype) {
+					M[n] = Constructor.prototype[n];
+				}
+			}
 			Object.defineProperty(M, 'length', { value: l * c });
 			Object.defineProperty(M, 'row', { value: l });
 			Object.defineProperty(M, 'column', { value: c });
@@ -845,7 +851,13 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 			}
 			return M;
 		}
-		Object.setPrototypeOf(Mat, staticMethods);
+		if (Mat.__proto__) {
+			Object.setPrototypeOf(Mat, staticMethods);
+		} else {
+			for (var n in staticMethods) {
+				Mat[n] = staticMethods[n];
+			}
+		}
 		Mat.Matrixes = { //do not modify these matrixes manually and dont use them
 			I2: Mat.Identity(2),
 			I3: Mat.Identity(3),
@@ -2071,7 +2083,6 @@ var Text3d = function (_Template) {
 			C.width = this.dText.width;
 			C.height = this.dText.height;
 			gl.viewport(0, 0, C.width, C.height);
-			//to 2d canvas
 			gl.uniformMatrix4fv(this.u2dCoord, false, _Mat2.default.Identity(4).translate3d(-1, 1, 0).scale3d(2 / C.width, -2 / C.height, 0));
 		}
 	}, {

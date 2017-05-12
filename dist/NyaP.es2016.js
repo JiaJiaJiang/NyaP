@@ -274,30 +274,37 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 class DanmakuFrame {
 	constructor(container) {
-		this.container = container || document.createElement('div');
-		this.rate = 1;
-		this.timeBase = this.width = this.height = this.fps = 0;
-		this.media = null;
-		this.working = false;
-		this.modules = {}; //constructed module list
-		this.moduleList = [];
+		const F = this;
+		F.container = container || document.createElement('div');
+		F.rate = 1;
+		F.timeBase = F.width = F.height = F.fps = 0;
+		F.fpsTmp = 0;
+		F.fpsRec = F.fps || 60;
+		F.media = null;
+		F.working = false;
+		F.modules = {}; //constructed module list
+		F.moduleList = [];
 		const style = document.createElement("style");
 		document.head.appendChild(style);
-		this.styleSheet = style.sheet;
+		F.styleSheet = style.sheet;
 
 		for (let m in DanmakuFrame.moduleList) {
 			//init all modules
-			this.initModule(m);
+			F.initModule(m);
 		}
 
 		setTimeout(() => {
 			//container size sensor
-			this.container.ResizeSensor = new _ResizeSensor2.default(this.container, () => {
-				this.resize();
+			F.container.ResizeSensor = new _ResizeSensor2.default(F.container, () => {
+				F.resize();
 			});
-			this.resize();
+			F.resize();
 		}, 0);
-		this.draw = this.draw.bind(this);
+		setInterval(() => {
+			F.fpsRec = F.fpsTmp;
+			F.fpsTmp = 0;
+		}, 1000);
+		F.draw = F.draw.bind(F);
 	}
 	enable(name) {
 		let module = this.modules[name];
@@ -339,9 +346,10 @@ class DanmakuFrame {
 	}
 	draw(force) {
 		if (!this.working) return;
+		this.fpsTmp++;
 		this.moduleFunction('draw', force);
 		if (this.fps === 0) {
-			requestAnimationFrame(this.draw);
+			requestAnimationFrame(() => this.draw());
 		} else {
 			setTimeout(this.draw, 1000 / this.fps);
 		}
@@ -373,7 +381,7 @@ class DanmakuFrame {
 	moduleFunction(name, arg) {
 		for (let i = 0, m; i < this.moduleList.length; i++) {
 			m = this.modules[this.moduleList[i]];
-			if (m[name] && m.enabled) m[name](arg);
+			if (m.enabled && m[name]) m[name](arg);
 		}
 	}
 	setMedia(media) {
@@ -940,12 +948,14 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 	class TextDanmaku extends DanmakuFrameModule {
 		constructor(frame) {
 			super(frame);
-			this.list = []; //danmaku object array
-			this.indexMark = 0; //to record the index of last danmaku in the list
-			this.tunnel = new tunnelManager();
-			this.paused = true;
-			this.randomText = `danmaku_text_${Math.random() * 999999 | 0}`;
-			this.defaultStyle = { //these styles can be overwrote by the 'font' property of danmaku object
+			const D = this;
+			D.list = []; //danmaku object array
+			D.indexMark = 0; //to record the index of last danmaku in the list
+			D.tunnel = new tunnelManager();
+			D.renderingDanmakuManager = new renderingDanmakuManager(D);
+			D.paused = true;
+			D.randomText = `danmaku_text_${Math.random() * 999999 | 0}`;
+			D.defaultStyle = { //these styles can be overwrote by the 'font' property of danmaku object
 				fontStyle: null,
 				fontWeight: 300,
 				fontVariant: null,
@@ -960,84 +970,85 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				shadowOffsetX: 0,
 				shadowOffsetY: 0,
 				fill: true };
-			Object.defineProperty(this.defaultStyle, 'lineHeight', {
-				get: function () {
-					return this.fontSize + 2;
-				}
-			});
-			frame.addStyle(`.${this.randomText}_fullfill{top:0;left:0;width:100%;height:100%;position:absolute;}`);
 
-			defProp(this, 'renderMode', { configurable: true });
-			defProp(this, 'activeRenderMode', { configurable: true, value: null });
-			const con = this.container = document.createElement('div');
-			con.classList.add(`${this.randomText}_fullfill`);
+			frame.addStyle(`.${D.randomText}_fullfill{top:0;left:0;width:100%;height:100%;position:absolute;}`);
+
+			defProp(D, 'rendererMode', { configurable: true });
+			defProp(D, 'activeRendererMode', { configurable: true, value: null });
+			const con = D.container = document.createElement('div');
+			con.classList.add(`${D.randomText}_fullfill`);
 			frame.container.appendChild(con);
 
 			//init modes
-			this.text2d = new _text2d2.default(this);
-			this.text3d = new _text3d2.default(this);
-			this.textCanvas = new _textCanvas2.default(this);
+			D.text2d = new _text2d2.default(D);
+			D.text3d = new _text3d2.default(D);
+			D.textCanvas = new _textCanvas2.default(D);
 
-			this.textCanvasContainer.hidden = this.canvas.hidden = this.canvas3d.hidden = true;
-			this.modes = {
-				1: this.textCanvas,
-				2: this.text2d,
-				3: this.text3d
+			D.textCanvasContainer.hidden = D.canvas.hidden = D.canvas3d.hidden = true;
+			D.modes = {
+				1: D.textCanvas,
+				2: D.text2d,
+				3: D.text3d
 			};
-			this.GraphCache = []; //text graph cache
-			this.DanmakuText = [];
+			D.GraphCache = []; //text graph cache
+			D.DanmakuText = [];
 
 			//opt time record
-			this.cacheCleanTime = 0;
-			this.danmakuMoveTime = 0;
-			this.danmakuCheckTime = 0;
+			D.cacheCleanTime = 0;
+			D.danmakuMoveTime = 0;
+			D.danmakuCheckTime = 0;
+			D.rendererModeAutoShiftTime = 0;
 
-			this.danmakuCheckSwitch = true;
-			this.options = {
+			D.danmakuCheckSwitch = true;
+			D.options = {
 				allowLines: false, //allow multi-line danmaku
 				screenLimit: 0, //the most number of danmaku on the screen
 				clearWhenTimeReset: true, //clear danmaku on screen when the time is reset
-				speed: 6.5
-			};
+				speed: 6.5,
+				autoShiftRenderingMode: true };
 			addEvents(document, {
 				visibilitychange: e => {
-					this.danmakuCheckSwitch = !document.hidden;
-					if (!document.hidden) this.recheckIndexMark();
+					D.danmakuCheckSwitch = !document.hidden;
+					if (!document.hidden) D.recheckIndexMark();
 				}
 			});
-			this._checkNewDanmaku = this._checkNewDanmaku.bind(this);
-			this._cleanCache = this._cleanCache.bind(this);
-			setInterval(this._cleanCache, 5000); //set an interval for cache cleaning
-			this.setRenderMode(1);
+			D._checkNewDanmaku = D._checkNewDanmaku.bind(D);
+			D._cleanCache = D._cleanCache.bind(D);
+			setInterval(D._cleanCache, 5000); //set an interval for cache cleaning
+
+			D.setRendererMode(1);
 		}
-		setRenderMode(n) {
-			if (this.renderMode === n || !(n in this.modes) || !this.modes[n].supported) return false;
-			this.activeRenderMode && this.activeRenderMode.disable();
-			defProp(this, 'activeRenderMode', { value: this.modes[n] });
-			defProp(this, 'renderMode', { value: n });
-			this.activeRenderMode.resize();
-			this.activeRenderMode.enable();
+		setRendererMode(n) {
+			const D = this;
+			if (D.rendererMode === n || !(n in D.modes) || !D.modes[n].supported) return false;
+			D.activeRendererMode && D.activeRendererMode.disable();
+			defProp(D, 'activeRendererMode', { value: D.modes[n] });
+			defProp(D, 'rendererMode', { value: n });
+			D.activeRendererMode.resize();
+			D.activeRendererMode.enable();
+			console.log('rendererMode:', D.rendererMode);
 			return true;
 		}
 		media(media) {
+			const D = this;
 			addEvents(media, {
 				seeked: () => {
-					this.start();
-					this.time();
-					this._clearScreen();
+					D.start();
+					D.time();
+					D._clearScreen();
 				},
-				seeking: () => this.pause(),
-				stalled: () => this.pause()
+				seeking: () => D.pause(),
+				stalled: () => D.pause()
 			});
 		}
 		start() {
 			this.paused = false;
 			this.recheckIndexMark();
-			this.activeRenderMode.start();
+			this.activeRendererMode.start();
 		}
 		pause() {
 			this.paused = true;
-			this.activeRenderMode.pause();
+			this.activeRendererMode.pause();
 		}
 		load(d) {
 			if (!d || d._ !== 'text') {
@@ -1065,37 +1076,39 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		}
 		unload(d) {
 			if (!d || d._ !== 'text') return false;
-			const i = this.list.indexOf(d);
+			const D = this,
+			      i = D.list.indexOf(d);
 			if (i < 0) return false;
-			this.list.splice(i, 1);
-			if (i < this.indexMark) this.indexMark--;
+			D.list.splice(i, 1);
+			if (i < D.indexMark) D.indexMark--;
 			return true;
 		}
 		_checkNewDanmaku() {
-			let d,
-			    time = this.frame.time;
-			if (this.danmakuCheckTime === time || !this.danmakuCheckSwitch) return;
-			if (this.list.length) for (; this.indexMark < this.list.length && (d = this.list[this.indexMark]) && d.time <= time; this.indexMark++) {
+			let D = this,
+			    d,
+			    time = D.frame.time;
+			if (D.danmakuCheckTime === time || !D.danmakuCheckSwitch) return;
+			if (D.list.length) for (; D.indexMark < D.list.length && (d = D.list[D.indexMark]) && d.time <= time; D.indexMark++) {
 				//add new danmaku
-				if (this.options.screenLimit > 0 && this.DanmakuText.length >= this.options.screenLimit) {
+				if (D.options.screenLimit > 0 && D.DanmakuText.length >= D.options.screenLimit) {
 					continue;
 				} //continue if the number of danmaku on screen has up to limit or doc is not visible
-				this._addNewDanmaku(d);
+				D._addNewDanmaku(d);
 			}
-			this.danmakuCheckTime = time;
+			D.danmakuCheckTime = time;
 		}
 		_addNewDanmaku(d) {
-			const cHeight = this.height,
-			      cWidth = this.width;
-			let t = this.GraphCache.length ? this.GraphCache.shift() : new TextGraph();
+			const D = this,
+			      cHeight = D.height,
+			      cWidth = D.width;
+			let t = D.GraphCache.length ? D.GraphCache.shift() : new TextGraph();
 			t.danmaku = d;
 			t.drawn = false;
-			t.text = this.options.allowLines ? d.text : d.text.replace(/\n/g, ' ');
+			t.text = D.options.allowLines ? d.text : d.text.replace(/\n/g, ' ');
 			t.time = d.time;
-			t.font = Object.create(this.defaultStyle);
+			t.font = Object.create(D.defaultStyle);
 			Object.assign(t.font, d.style);
-			if (d.style.lineHeight) Object.defineProperty(t.font, 'lineHeight', { value: d.style.lineHeight, get: undefined });
-			if (!t.font.lineHeight) Object.defineProperty(t.font, 'lineHeight', { value: t.font.fontSize + 2, get: undefined });
+			if (!t.font.lineHeight) t.font.lineHeight = t.font.fontSize + 2 || 1;
 			if (d.style.color) {
 				if (t.font.color && t.font.color[0] !== '#') {
 					t.font.color = '#' + d.style.color;
@@ -1103,9 +1116,9 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			}
 
 			if (d.mode > 1) t.font.textAlign = 'center';
-			t.prepare(this.renderMode === 3 ? false : true);
+			t.prepare(D.rendererMode === 3 ? false : true);
 			//find tunnel number
-			const tnum = this.tunnel.getTunnel(t, cHeight);
+			const tnum = D.tunnel.getTunnel(t, cHeight);
 			//calc margin
 			let margin = (tnum < 0 ? 0 : tnum) % cHeight;
 			switch (d.mode) {
@@ -1132,8 +1145,8 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 						t.style.x = (cWidth - t.style.width) / 2;
 					}
 			}
-			this.DanmakuText.push(t);
-			this.activeRenderMode.newDanmaku(t);
+			D.renderingDanmakuManager.add(t);
+			D.activeRendererMode.newDanmaku(t);
 		}
 		_calcSideDanmakuPosition(t, T, cWidth) {
 			let R = !t.danmaku.mode,
@@ -1141,26 +1154,21 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			return (R ? cWidth : -style.width) + (R ? -1 : 1) * this.frame.rate * (style.width + 1024) * (T - t.time) * this.options.speed / 60000;
 		}
 		_calcDanmakusPosition(force) {
-			let T = this.frame.time;
-			if (!force) {
-				if (this.paused) return;
-				if (this.danmakuMoveTime === T) {
-					this.pause();
-					return;
-				}
-			}
-			const cWidth = this.width;
+			let D = this,
+			    T = D.frame.time;
+			if (!force && D.paused) return;
+			const cWidth = D.width;
 			let R,
 			    i,
 			    t,
 			    style,
 			    X,
-			    rate = this.frame.rate;
-			this.danmakuMoveTime = T;
-			for (i = this.DanmakuText.length; i--;) {
-				t = this.DanmakuText[i];
+			    rate = D.frame.rate;
+			D.danmakuMoveTime = T;
+			for (i = D.DanmakuText.length; i--;) {
+				t = D.DanmakuText[i];
 				if (t.time > T) {
-					this.removeText(t);
+					D.removeText(t);
 					continue;
 				}
 				style = t.style;
@@ -1169,20 +1177,20 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 					case 0:case 1:
 						{
 							R = !t.danmaku.mode;
-							style.x = X = this._calcSideDanmakuPosition(t, T, cWidth);
+							style.x = X = D._calcSideDanmakuPosition(t, T, cWidth);
 							if (t.tunnelNumber >= 0 && (R && X + style.width + 10 < cWidth || !R && X > 10)) {
-								this.tunnel.removeMark(t);
+								D.tunnel.removeMark(t);
 							} else if (R && X < -style.width - 20 || !R && X > cWidth + style.width + 20) {
 								//go out the canvas
-								this.removeText(t);
+								D.removeText(t);
 								continue;
 							}
 							break;
 						}
 					case 2:case 3:
 						{
-							if (T - t.time > this.options.speed * 1000 / rate) {
-								this.removeText(t);
+							if (T - t.time > D.options.speed * 1000 / rate) {
+								D.removeText(t);
 							}
 						}
 				}
@@ -1190,14 +1198,15 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		}
 		_cleanCache(force) {
 			//clean text object cache
-			const now = Date.now();
-			if (this.GraphCache.length > 30 || force) {
+			const D = this,
+			      now = Date.now();
+			if (D.GraphCache.length > 30 || force) {
 				//save 20 cached danmaku
-				for (let ti = 0; ti < this.GraphCache.length; ti++) {
-					if (force || now - this.GraphCache[ti].removeTime > 10000) {
+				for (let ti = 0; ti < D.GraphCache.length; ti++) {
+					if (force || now - D.GraphCache[ti].removeTime > 10000) {
 						//delete cache which has not used for 10s
-						this.activeRenderMode.deleteTextObject(this.GraphCache[ti]);
-						this.GraphCache.splice(ti, 1);
+						D.activeRendererMode.deleteTextObject(D.GraphCache[ti]);
+						D.GraphCache.splice(ti, 1);
 					} else {
 						break;
 					}
@@ -1207,25 +1216,24 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		draw(force) {
 			if (!force && this.paused || !this.enabled) return;
 			this._calcDanmakusPosition(force);
-			this.activeRenderMode.draw(force);
+			this.activeRendererMode.draw(force);
 			requestIdleCallback(this._checkNewDanmaku);
 		}
 		removeText(t) {
 			//remove the danmaku from screen
-			let ind = this.DanmakuText.indexOf(t);
-			if (ind >= 0) this.DanmakuText.splice(ind, 1);
+			this.renderingDanmakuManager.remove(t);
 			this.tunnel.removeMark(t);
 			t._bitmap = t.danmaku = null;
 			t.removeTime = Date.now();
 			this.GraphCache.push(t);
-			this.activeRenderMode.remove(t);
+			this.activeRendererMode.remove(t);
 		}
 		resize() {
-			if (this.activeRenderMode) this.activeRenderMode.resize();
+			if (this.activeRendererMode) this.activeRendererMode.resize();
 			this.draw(true);
 		}
 		_clearScreen(forceFull) {
-			this.activeRenderMode && this.activeRenderMode.clear(forceFull);
+			this.activeRendererMode && this.activeRendererMode.clear(forceFull);
 		}
 		clear() {
 			//clear danmaku on the screen
@@ -1295,102 +1303,106 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 	class TextGraph {
 		//code copied from CanvasObjLibrary
 		constructor(text = '') {
-			this._fontString = '';
-			this._renderList = null;
-			this.style = {};
-			this.font = {};
-			this.text = text;
-			this._renderToCache = this._renderToCache.bind(this);
-			defProp(this, '_cache', { configurable: true });
+			const G = this;
+			G._fontString = '';
+			G._renderList = null;
+			G.style = {};
+			G.font = {};
+			G.text = text;
+			G._renderToCache = G._renderToCache.bind(G);
+			defProp(G, '_cache', { configurable: true });
 		}
 		prepare(async = false) {
 			//prepare text details
-			if (!this._cache) {
-				defProp(this, '_cache', { value: document.createElement("canvas") });
+			const G = this;
+			if (!G._cache) {
+				defProp(G, '_cache', { value: document.createElement("canvas") });
 			}
 			let ta = [];
-			this.font.fontStyle && ta.push(this.font.fontStyle);
-			this.font.fontVariant && ta.push(this.font.fontVariant);
-			this.font.fontWeight && ta.push(this.font.fontWeight);
-			ta.push(`${this.font.fontSize}px`);
-			this.font.fontFamily && ta.push(this.font.fontFamily);
-			this._fontString = ta.join(' ');
+			G.font.fontStyle && ta.push(G.font.fontStyle);
+			G.font.fontVariant && ta.push(G.font.fontVariant);
+			G.font.fontWeight && ta.push(G.font.fontWeight);
+			ta.push(`${G.font.fontSize}px`);
+			G.font.fontFamily && ta.push(G.font.fontFamily);
+			G._fontString = ta.join(' ');
 
-			const imgobj = this._cache,
+			const imgobj = G._cache,
 			      ct = imgobj.ctx2d || (imgobj.ctx2d = imgobj.getContext("2d"));
-			ct.font = this._fontString;
-			this._renderList = this.text.split(/\n/g);
-			this.estimatePadding = Math.max(this.font.shadowBlur + 5 + Math.max(Math.abs(this.font.shadowOffsetY), Math.abs(this.font.shadowOffsetX)), this.font.strokeWidth + 3);
+			ct.font = G._fontString;
+			G._renderList = G.text.split(/\n/g);
+			G.estimatePadding = Math.max(G.font.shadowBlur + 5 + Math.max(Math.abs(G.font.shadowOffsetY), Math.abs(G.font.shadowOffsetX)), G.font.strokeWidth + 3);
 			let w = 0,
 			    tw,
-			    lh = typeof this.font.lineHeight === 'number' ? this.font.lineHeight : this.font.fontSize;
-			for (let i = this._renderList.length; i--;) {
-				tw = ct.measureText(this._renderList[i]).width;
+			    lh = typeof G.font.lineHeight === 'number' ? G.font.lineHeight : G.font.fontSize;
+			for (let i = G._renderList.length; i--;) {
+				tw = ct.measureText(G._renderList[i]).width;
 				tw > w && (w = tw); //max
 			}
-			imgobj.width = (this.style.width = w) + this.estimatePadding * 2;
-			imgobj.height = (this.style.height = this._renderList.length * lh) + (lh < this.font.fontSize ? this.font.fontSize * 2 : 0) + this.estimatePadding * 2;
+			imgobj.width = (G.style.width = w) + G.estimatePadding * 2;
+			imgobj.height = (G.style.height = G._renderList.length * lh) + (lh < G.font.fontSize ? G.font.fontSize * 2 : 0) + G.estimatePadding * 2;
 
-			ct.translate(this.estimatePadding, this.estimatePadding);
+			ct.translate(G.estimatePadding, G.estimatePadding);
 			if (async) {
-				requestIdleCallback(this._renderToCache);
+				requestIdleCallback(G._renderToCache);
 			} else {
-				this._renderToCache();
+				G._renderToCache();
 			}
 		}
 		_renderToCache() {
-			if (!this.danmaku) return;
-			this.render(this._cache.ctx2d);
+			const G = this;
+			if (!G.danmaku) return;
+			G.render(G._cache.ctx2d);
 			if (useImageBitmap) {
 				//use ImageBitmap
-				if (this._bitmap) {
-					this._bitmap.close();
-					this._bitmap = null;
+				if (G._bitmap) {
+					G._bitmap.close();
+					G._bitmap = null;
 				}
-				createImageBitmap(this._cache).then(bitmap => {
-					this._bitmap = bitmap;
+				createImageBitmap(G._cache).then(bitmap => {
+					G._bitmap = bitmap;
 				});
 			}
 		}
 		render(ct) {
 			//render text
-			if (!this._renderList) return;
+			const G = this;
+			if (!G._renderList) return;
 			ct.save();
-			if (this.danmaku.highlight) {
+			if (G.danmaku.highlight) {
 				ct.fillStyle = 'rgba(255,255,255,0.3)';
 				ct.beginPath();
-				ct.rect(0, 0, this.style.width, this.style.height);
+				ct.rect(0, 0, G.style.width, G.style.height);
 				ct.fill();
 			}
-			ct.font = this._fontString; //set font
+			ct.font = G._fontString; //set font
 			ct.textBaseline = 'middle';
-			ct.lineWidth = this.font.strokeWidth;
-			ct.fillStyle = this.font.color;
-			ct.strokeStyle = this.font.strokeColor;
-			ct.shadowBlur = this.font.shadowBlur;
-			ct.shadowColor = this.font.shadowColor;
-			ct.shadowOffsetX = this.font.shadowOffsetX;
-			ct.shadowOffsetY = this.font.shadowOffsetY;
-			ct.textAlign = this.font.textAlign;
-			let lh = typeof this.font.lineHeight === 'number' ? this.font.lineHeight : this.font.fontSize,
+			ct.lineWidth = G.font.strokeWidth;
+			ct.fillStyle = G.font.color;
+			ct.strokeStyle = G.font.strokeColor;
+			ct.shadowBlur = G.font.shadowBlur;
+			ct.shadowColor = G.font.shadowColor;
+			ct.shadowOffsetX = G.font.shadowOffsetX;
+			ct.shadowOffsetY = G.font.shadowOffsetY;
+			ct.textAlign = G.font.textAlign;
+			let lh = typeof G.font.lineHeight === 'number' ? G.font.lineHeight : G.font.fontSize,
 			    x;
-			switch (this.font.textAlign) {
+			switch (G.font.textAlign) {
 				case 'left':case 'start':
 					{
 						x = 0;break;
 					}
 				case 'center':
 					{
-						x = this.style.width / 2;break;
+						x = G.style.width / 2;break;
 					}
 				case 'right':case 'end':
 					{
-						x = this.style.width;
+						x = G.style.width;
 					}
 			}
-			for (let i = this._renderList.length; i--;) {
-				this.font.strokeWidth && ct.strokeText(this._renderList[i], x, lh * (i + 0.5));
-				this.font.fill && ct.fillText(this._renderList[i], x, lh * (i + 0.5));
+			for (let i = G._renderList.length; i--;) {
+				G.font.strokeWidth && ct.strokeText(G._renderList[i], x, lh * (i + 0.5));
+				G.font.fill && ct.fillText(G._renderList[i], x, lh * (i + 0.5));
 			}
 			ct.restore();
 		}
@@ -1460,6 +1472,31 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 	}
 
 	const tunnels = ['right', 'left', 'bottom', 'top'];
+
+	class renderingDanmakuManager {
+		constructor(dText) {
+			this.dText = dText;
+		}
+		add(t) {
+			this.dText.DanmakuText.push(t);
+			this.rendererModeCheck();
+		}
+		remove(t) {
+			let ind = this.dText.DanmakuText.indexOf(t);
+			if (ind >= 0) this.dText.DanmakuText.splice(ind, 1);
+			this.rendererModeCheck();
+		}
+		rendererModeCheck() {
+			let D = this.dText;
+			if (!this.dText.options.autoShiftRenderingMode || D.paused || Date.now() - D.rendererModeAutoShiftTime < 1000) return;
+			if (D.rendererMode == 1 && (D.DanmakuText.length > 40 || D.frame.fpsRec < (D.frame.fps || 60) * 0.93)) {
+				D.text2d.supported && D.setRendererMode(2);
+			} else if (D.rendererMode == 2 && D.DanmakuText.length < 17) {
+				D.textCanvas.supported && D.setRendererMode(1);
+			}
+			D.rendererModeAutoShiftTime = Date.now();
+		}
+	}
 
 	function dichotomy(arr, t, start, end, position = false) {
 		if (arr.length === 0) return 0;
@@ -1838,7 +1875,7 @@ class TextCanvas extends _textModuleTemplate2.default {
 		this.resetPos();
 	}
 	remove(t) {
-		this.container.removeChild(t._cache);
+		t._cache.parentNode && this.container.removeChild(t._cache);
 	}
 	enable() {
 		this.dText.DanmakuText.forEach(t => {
@@ -2552,9 +2589,7 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 	drawProgress() {
 		if (this._.drawingProgress) return;
 		this._.drawingProgress = true;
-		requestAnimationFrame(() => {
-			this._progressDrawer();
-		});
+		requestAnimationFrame(() => this._progressDrawer());
 	}
 	msg(text, type = 'tip') {
 		//type:tip|info|error

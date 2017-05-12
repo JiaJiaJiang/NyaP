@@ -487,9 +487,7 @@ class NyaP extends NyaPlayerCore{
 	drawProgress(){
 		if(this._.drawingProgress)return;
 		this._.drawingProgress=true;
-		requestAnimationFrame(()=>{
-			this._progressDrawer();
-		});
+		requestAnimationFrame(()=>this._progressDrawer());
 	}
 	msg(text,type='tip'){//type:tip|info|error
 		let msg=new MsgBox(text,type);

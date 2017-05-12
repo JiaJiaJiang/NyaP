@@ -91,7 +91,7 @@ NP.msg('this is an info','info')
 NP.msg('this is an error,and these messages\' time depends on the words\' count','error')
 
 function changeMode(n){
-	if(NP.danmakuFrame.modules.TextDanmaku.setRenderMode(n)){
+	if(NP.danmakuFrame.modules.TextDanmaku.setRendererMode(n)){
 		NP.msg('mode '+n,'info');
 	}else{
 		NP.msg('the browser does not support this mode or already on this mode.','info');

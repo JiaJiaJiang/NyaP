@@ -428,21 +428,21 @@ var DanmakuFrame = function () {
 	}, {
 		key: 'setMedia',
 		value: function setMedia(media) {
-			var _this3 = this;
-
-			this.media = media;
+			var F = this;
+			F.media = media;
 			addEvents(media, {
 				playing: function playing() {
-					return _this3.start();
+					return F.start();
 				},
 				pause: function pause() {
-					return _this3.pause();
+					return F.pause();
 				},
 				ratechange: function ratechange() {
-					return _this3.rate = _this3.media.playbackRate;
+					F.rate = F.media.playbackRate;
+					F.moduleFunction('rate', F.rate);
 				}
 			});
-			this.moduleFunction('media', media);
+			F.moduleFunction('media', media);
 		}
 	}, {
 		key: 'time',
@@ -1184,7 +1184,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			D.cacheCleanTime = 0;
 			D.danmakuMoveTime = 0;
 			D.danmakuCheckTime = 0;
-			D.rendererModeAutoShiftTime = 0;
+			//D.rendererModeAutoShiftTime=0;
 
 			D.danmakuCheckSwitch = true;
 			D.options = {
@@ -1226,9 +1226,9 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				var D = this;
 				addEvents(_media, {
 					seeked: function seeked() {
-						D.start();
 						D.time();
-						D._clearScreen();
+						D.paused && D.start();
+						D._clearScreen(true);
 					},
 					seeking: function seeking() {
 						return D.pause();
@@ -1365,24 +1365,24 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			}
 		}, {
 			key: '_calcSideDanmakuPosition',
-			value: function _calcSideDanmakuPosition(t, T, cWidth) {
+			value: function _calcSideDanmakuPosition(t, T) {
 				var R = !t.danmaku.mode,
 				    style = t.style;
-				return (R ? cWidth : -style.width) + (R ? -1 : 1) * this.frame.rate * (style.width + 1024) * (T - t.time) * this.options.speed / 60000;
+				return (R ? this.frame.width : -style.width) + (R ? -1 : 1) * this.frame.rate * (style.width + 1024) * (T - t.time) * this.options.speed / 60000;
 			}
 		}, {
 			key: '_calcDanmakusPosition',
 			value: function _calcDanmakusPosition(force) {
 				var D = this,
 				    T = D.frame.time;
-				if (!force && D.paused) return;
-				var cWidth = D.width;
+				if (D.paused && !force) return;
+				var cWidth = D.width,
+				    rate = D.frame.rate;
 				var R = void 0,
 				    i = void 0,
 				    t = void 0,
 				    style = void 0,
-				    X = void 0,
-				    rate = D.frame.rate;
+				    X = void 0;
 				D.danmakuMoveTime = T;
 				for (i = D.DanmakuText.length; i--;) {
 					t = D.DanmakuText[i];
@@ -1396,7 +1396,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 						case 0:case 1:
 							{
 								R = !t.danmaku.mode;
-								style.x = X = D._calcSideDanmakuPosition(t, T, cWidth);
+								style.x = X = D._calcSideDanmakuPosition(t, T);
 								if (t.tunnelNumber >= 0 && (R && X + style.width + 10 < cWidth || !R && X > 10)) {
 									D.tunnel.removeMark(t);
 								} else if (R && X < -style.width - 20 || !R && X > cWidth + style.width + 20) {
@@ -1462,6 +1462,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		}, {
 			key: '_clearScreen',
 			value: function _clearScreen(forceFull) {
+				console.log(this.activeRendererMode);
 				this.activeRendererMode && this.activeRendererMode.clear(forceFull);
 			}
 		}, {
@@ -1481,6 +1482,11 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				var t = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.frame.time;
 
 				this.indexMark = dichotomy(this.list, t, 0, this.list.length - 1, true);
+			}
+		}, {
+			key: 'rate',
+			value: function rate(r) {
+				if (this.activeRendererMode) this.activeRendererMode.rate(r);
 			}
 		}, {
 			key: 'time',
@@ -1763,11 +1769,16 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 
 	var renderingDanmakuManager = function () {
 		function renderingDanmakuManager(dText) {
+			var _this4 = this;
+
 			_classCallCheck(this, renderingDanmakuManager);
 
 			this.dText = dText;
 			this.totalArea = 0;
 			this.limitArea = Infinity;
+			this.timer = setInterval(function () {
+				return _this4.rendererModeCheck();
+			}, 1000);
 		}
 
 		_createClass(renderingDanmakuManager, [{
@@ -1775,7 +1786,6 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			value: function add(t) {
 				this.dText.DanmakuText.push(t);
 				this.totalArea += t._cache.width * t._cache.height;
-				this.rendererModeCheck();
 			}
 		}, {
 			key: 'remove',
@@ -1785,14 +1795,13 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 					this.dText.DanmakuText.splice(ind, 1);
 					this.totalArea -= t._cache.width * t._cache.height;
 				}
-				this.rendererModeCheck();
 			}
 		}, {
 			key: 'rendererModeCheck',
 			value: function rendererModeCheck() {
 				var D = this.dText;
-				if (!this.dText.options.autoShiftRenderingMode || D.paused || Date.now() - D.rendererModeAutoShiftTime < 1000) return;
-				if (D.frame.fpsRec < (D.frame.fps || 60) * 0.95) {
+				if (!this.dText.options.autoShiftRenderingMode || D.paused) return;
+				if (D.frame.fpsRec < (D.frame.fps || 60) * 0.965) {
 					this.limitArea > this.totalArea && (this.limitArea = this.totalArea);
 				} else {
 					this.limitArea < this.totalArea && (this.limitArea = this.totalArea);
@@ -1802,7 +1811,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				} else if (D.rendererMode == 2 && this.totalArea < this.limitArea * 0.5) {
 					D.textCanvas.supported && D.setRendererMode(1);
 				}
-				D.rendererModeAutoShiftTime = Date.now();
+				//D.rendererModeAutoShiftTime=Date.now();
 			}
 		}]);
 
@@ -2279,11 +2288,16 @@ var TextCanvas = function (_Template) {
 			this._toggle(true);
 		}
 	}, {
+		key: 'rate',
+		value: function rate(r) {
+			this.resetPos();
+		}
+	}, {
 		key: '_move',
 		value: function _move(t, T) {
 			if (!t.danmaku) return;
 			if (T === undefined) T = this.dText.frame.time + 500000;
-			t._cache.style.transform = 'translate3d(' + ((this.dText._calcSideDanmakuPosition(t, T, this.dText.width) - t.estimatePadding) * 10 | 0) / 10 + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
+			t._cache.style.transform = 'translate3d(' + ((this.dText._calcSideDanmakuPosition(t, T) - t.estimatePadding) * 10 | 0) / 10 + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
 		}
 	}, {
 		key: 'resetPos',
@@ -2365,6 +2379,9 @@ var textModuleTemplate = function () {
 	_createClass(textModuleTemplate, [{
 		key: "draw",
 		value: function draw() {}
+	}, {
+		key: "rate",
+		value: function rate() {}
 	}, {
 		key: "pause",
 		value: function pause() {}

@@ -1766,19 +1766,25 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			_classCallCheck(this, renderingDanmakuManager);
 
 			this.dText = dText;
+			this.totalArea = 0;
+			this.limitArea = Infinity;
 		}
 
 		_createClass(renderingDanmakuManager, [{
 			key: 'add',
 			value: function add(t) {
 				this.dText.DanmakuText.push(t);
+				this.totalArea += t._cache.width * t._cache.height;
 				this.rendererModeCheck();
 			}
 		}, {
 			key: 'remove',
 			value: function remove(t) {
 				var ind = this.dText.DanmakuText.indexOf(t);
-				if (ind >= 0) this.dText.DanmakuText.splice(ind, 1);
+				if (ind >= 0) {
+					this.dText.DanmakuText.splice(ind, 1);
+					this.totalArea -= t._cache.width * t._cache.height;
+				}
 				this.rendererModeCheck();
 			}
 		}, {
@@ -1786,9 +1792,14 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			value: function rendererModeCheck() {
 				var D = this.dText;
 				if (!this.dText.options.autoShiftRenderingMode || D.paused || Date.now() - D.rendererModeAutoShiftTime < 1000) return;
-				if (D.rendererMode == 1 && (D.DanmakuText.length > 40 || D.frame.fpsRec < (D.frame.fps || 60) * 0.93)) {
+				if (D.frame.fpsRec < (D.frame.fps || 60) * 0.95) {
+					this.limitArea > this.totalArea && (this.limitArea = this.totalArea);
+				} else {
+					this.limitArea < this.totalArea && (this.limitArea = this.totalArea);
+				}
+				if (D.rendererMode == 1 && this.totalArea > this.limitArea) {
 					D.text2d.supported && D.setRendererMode(2);
-				} else if (D.rendererMode == 2 && D.DanmakuText.length < 17) {
+				} else if (D.rendererMode == 2 && this.totalArea < this.limitArea * 0.5) {
 					D.textCanvas.supported && D.setRendererMode(1);
 				}
 				D.rendererModeAutoShiftTime = Date.now();

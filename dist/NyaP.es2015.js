@@ -1184,7 +1184,6 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			D.cacheCleanTime = 0;
 			D.danmakuMoveTime = 0;
 			D.danmakuCheckTime = 0;
-			//D.rendererModeAutoShiftTime=0;
 
 			D.danmakuCheckSwitch = true;
 			D.options = {
@@ -1462,7 +1461,6 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		}, {
 			key: '_clearScreen',
 			value: function _clearScreen(forceFull) {
-				console.log(this.activeRendererMode);
 				this.activeRendererMode && this.activeRendererMode.clear(forceFull);
 			}
 		}, {
@@ -1778,7 +1776,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			this.limitArea = Infinity;
 			this.timer = setInterval(function () {
 				return _this4.rendererModeCheck();
-			}, 1000);
+			}, 1500);
 		}
 
 		_createClass(renderingDanmakuManager, [{
@@ -1801,7 +1799,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			value: function rendererModeCheck() {
 				var D = this.dText;
 				if (!this.dText.options.autoShiftRenderingMode || D.paused) return;
-				if (D.frame.fpsRec < (D.frame.fps || 60) * 0.965) {
+				if (D.frame.fpsRec < (D.frame.fps || 60) * 0.95) {
 					this.limitArea > this.totalArea && (this.limitArea = this.totalArea);
 				} else {
 					this.limitArea < this.totalArea && (this.limitArea = this.totalArea);
@@ -1811,7 +1809,6 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				} else if (D.rendererMode == 2 && this.totalArea < this.limitArea * 0.5) {
 					D.textCanvas.supported && D.setRendererMode(1);
 				}
-				//D.rendererModeAutoShiftTime=Date.now();
 			}
 		}]);
 

@@ -1,0 +1,89 @@
+/*
+Copyright luojia@luojia.me
+LGPL license
+*/
+
+
+@mixin NyaP_fullfill{
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;	
+	position: absolute;
+}
+.NyaP_fullfill{
+	@include NyaP_fullfill;
+}
+
+@mixin text_stroke($value) {
+	-webkit-text-stroke: $value;
+	-moz-text-stroke: $value;
+	-ms-text-stroke: $value;
+	text-stroke: $value;
+}
+
+@mixin NyaPCoreStyles{
+	z-index: 1;
+	outline: none;
+	background-color: #000;
+	#loading_frame{
+		top:0;
+		left:0;
+		width:100%;
+		height:100%;
+		position:absolute;
+		background-color:#efefef;
+		display:flex;
+		flex-wrap:wrap;
+		justify-content:center;
+		align-items:center;
+		cursor:dafault;
+	}
+	#loading_frame #loading_anime{
+		display:inline-block;
+		font-size:5em;
+		transition:transform 0.08s linear;
+		will-change:transfrom;
+		pointer-events:none;
+	}
+	#loading_frame #loading_info{
+		display:block;
+		font-size:.9em;
+		position:absolute;
+		left:0;
+		bottom:0;
+		padding:0.4em;
+		color:#868686;
+	}
+
+	#video_frame{
+		@extend .NyaP_fullfill;
+		z-index: 2;
+
+		video#main_video{
+			@extend .NyaP_fullfill;
+			user-select: none;
+			position: relative;
+			-o-user-select: none;
+			-ms-user-select: none;
+			-moz-user-select: none;
+			-webkit-user-select: none;
+			touch-callout: none;
+			-webkit-touch-callout: none;
+
+			&::-webkit-media-controls{
+				display:none;
+			}
+		}
+		#danmaku_container{
+			@extend .NyaP_fullfill;
+			pointer-events: none;
+			overflow: hidden;
+			cursor: pointer;
+		}
+		div[class^=danmaku]{
+			pointer-events: none;
+			@extend .NyaP_fullfill;
+		}
+	}
+}

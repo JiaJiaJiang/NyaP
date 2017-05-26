@@ -11,40 +11,31 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 Copyright luojia@luojia.me
 LGPL license
 */
+function _Obj(t) {
+	return (typeof t === 'undefined' ? 'undefined' : _typeof(t)) == 'object';
+}
 
 function Object2HTML(obj, func) {
 	var ele = void 0,
 	    o = void 0,
 	    e = void 0;
-	if (typeof obj === 'string') return document.createTextNode(obj); //text node
-	if ('_' in obj === false) return; //if it dont have a _ prop to specify a tag
-	if (typeof obj._ !== 'string' || obj._ == '') return;
+	if (typeof obj === 'string' || typeof obj === 'number') return document.createTextNode(obj); //text node
+	if (obj === null || (typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) !== 'object' || '_' in obj === false || typeof obj._ !== 'string' || obj._ == '') return; //if it dont have a _ prop to specify a tag
 	ele = document.createElement(obj._);
 	//attributes
-	if (_typeof(obj.attr) === 'object') {
-		for (o in obj.attr) {
-			ele.setAttribute(o, obj.attr[o]);
-		}
-	}
-	//properties
-	if (_typeof(obj.prop) === 'object') {
-		for (o in obj.prop) {
-			ele[o] = obj.prop[o];
-		}
-	}
-	//events
-	if (_typeof(obj.event) === 'object') {
-		for (o in obj.event) {
-			ele.addEventListener(o, obj.event[o]);
-		}
-	}
-	//childNodes
-	if (_typeof(obj.child) === 'object' && obj.child.length > 0) {
-		obj.child.forEach(function (o) {
-			e = o instanceof Node ? o : Object2HTML(o, func);
-			e instanceof Node && ele.appendChild(e);
-		});
-	}
+	if (_Obj(obj.attr)) for (o in obj.attr) {
+		ele.setAttribute(o, obj.attr[o]);
+	} //properties
+	if (_Obj(obj.prop)) for (o in obj.prop) {
+		ele[o] = obj.prop[o];
+	} //events
+	if (_Obj(obj.event)) for (o in obj.event) {
+		ele.addEventListener(o, obj.event[o]);
+	} //childNodes
+	if (_Obj(obj.child) && obj.child.length > 0) obj.child.forEach(function (o) {
+		e = o instanceof Node ? o : Object2HTML(o, func);
+		e instanceof Node && ele.appendChild(e);
+	});
 	func && func(ele);
 	return ele;
 }
@@ -297,37 +288,39 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var DanmakuFrame = function () {
 	function DanmakuFrame(container) {
-		var _this = this;
-
 		_classCallCheck(this, DanmakuFrame);
 
-		this.container = container || document.createElement('div');
-		this.rate = 1;
-		this.timeBase = 0;
-		this.media = null;
-		this.fps = 0;
-		this.working = false;
-		this.modules = {}; //constructed module list
-		this.moduleList = [];
-		this.width = 0;
-		this.height = 0;
+		var F = this;
+		F.container = container || document.createElement('div');
+		F.rate = 1;
+		F.timeBase = F.width = F.height = F.fps = 0;
+		F.fpsTmp = 0;
+		F.fpsRec = F.fps || 60;
+		F.media = null;
+		F.working = false;
+		F.modules = {}; //constructed module list
+		F.moduleList = [];
 		var style = document.createElement("style");
 		document.head.appendChild(style);
-		this.styleSheet = style.sheet;
+		F.styleSheet = style.sheet;
 
 		for (var m in DanmakuFrame.moduleList) {
 			//init all modules
-			this.initModule(m);
+			F.initModule(m);
 		}
 
 		setTimeout(function () {
 			//container size sensor
-			_this.container.ResizeSensor = new _ResizeSensor2.default(_this.container, function () {
-				_this.resize();
+			F.container.ResizeSensor = new _ResizeSensor2.default(F.container, function () {
+				F.resize();
 			});
-			_this.resize();
+			F.resize();
 		}, 0);
-		this.draw = this.draw.bind(this);
+		setInterval(function () {
+			F.fpsRec = F.fpsTmp;
+			F.fpsTmp = 0;
+		}, 1000);
+		F.draw = F.draw.bind(F);
 	}
 
 	_createClass(DanmakuFrame, [{
@@ -349,6 +342,17 @@ var DanmakuFrame = function () {
 			return true;
 		}
 	}, {
+		key: 'addStyle',
+		value: function addStyle(s) {
+			var _this = this;
+
+			if (typeof s === 'string') s = [s];
+			if (s instanceof Array === false) return;
+			s.forEach(function (r) {
+				return _this.styleSheet.insertRule(r, _this.styleSheet.cssRules.length);
+			});
+		}
+	}, {
 		key: 'initModule',
 		value: function initModule(name) {
 			var mod = DanmakuFrame.moduleList[name];
@@ -364,10 +368,15 @@ var DanmakuFrame = function () {
 	}, {
 		key: 'draw',
 		value: function draw(force) {
+			var _this2 = this;
+
 			if (!this.working) return;
+			this.fpsTmp++;
 			this.moduleFunction('draw', force);
 			if (this.fps === 0) {
-				requestAnimationFrame(this.draw);
+				requestAnimationFrame(function () {
+					return _this2.draw();
+				});
 			} else {
 				setTimeout(this.draw, 1000 / this.fps);
 			}
@@ -413,27 +422,27 @@ var DanmakuFrame = function () {
 		value: function moduleFunction(name, arg) {
 			for (var i = 0, m; i < this.moduleList.length; i++) {
 				m = this.modules[this.moduleList[i]];
-				if (m[name]) m[name](arg);
+				if (m.enabled && m[name]) m[name](arg);
 			}
 		}
 	}, {
 		key: 'setMedia',
 		value: function setMedia(media) {
-			var _this2 = this;
-
-			this.media = media;
+			var F = this;
+			F.media = media;
 			addEvents(media, {
 				playing: function playing() {
-					_this2.start();
+					return F.start();
 				},
 				pause: function pause() {
-					_this2.pause();
+					return F.pause();
 				},
 				ratechange: function ratechange() {
-					_this2.rate = _this2.media.playbackRate;
+					F.rate = F.media.playbackRate;
+					F.moduleFunction('rate', F.rate);
 				}
 			});
-			this.moduleFunction('media', media);
+			F.moduleFunction('media', media);
 		}
 	}, {
 		key: 'time',
@@ -493,7 +502,7 @@ LGPL license
 */
 'use strict';
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var _createClass2 = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
@@ -511,98 +520,107 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 	var global = (0, eval)('this');
 	var TypedArray = global.Float32Array && global.Float32Array.prototype;
 
-	function _createClass2(Constructor) {
+	function _createClass(Constructor) {
 		var Matrix = function () {
-			function Matrix() {
+			function Matrix(l, c) {
+				var fill = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+
 				_classCallCheck(this, Matrix);
+
+				this.array = new Constructor(l * c);
+				Object.defineProperty(this.array, 'row', { value: l });
+				Object.defineProperty(this.array, 'column', { value: c });
+				if (arguments.length == 3) {
+					if (Matrix._instanceofTypedArray && fill === 0) {} else if (typeof fill === 'number') {
+						this.fill(fill);
+					} else if (fill.length) {
+						this.set(fill);
+					}
+				}
 			}
 
-			_createClass(Matrix, [{
-				key: "length",
-				get: function get() {
-					return this._len;
-				}
-			}], [{
+			_createClass2(Matrix, [{
 				key: "leftMultiply",
 				value: function leftMultiply(m) {
-					return this.set(Mat.multiply(m, this, Mat(m.row, this.column)));
+					return this.set(Matrix.multiply(m, this, new Matrix(m.row, this.column)));
 				}
 			}, {
 				key: "rightMultiply",
 				value: function rightMultiply(m) {
-					return this.set(Mat.multiply(this, m, Mat(this.row, m, column)));
+					return this.set(Matrix.multiply(this, m, new Matrix(this.row, m, column)));
 				}
 			}, {
 				key: "fill",
 				value: function fill(n) {
 					arguments.length || (n = 0);
 					for (var i = this.length; i--;) {
-						this[i] = n;
+						this.array[i] = n;
 					}return this;
 				}
 			}, {
 				key: "set",
 				value: function set(arr, offset) {
 					offset || (offset = 0);
+					arr instanceof Matrix && (arr = arr.array);
 					for (var i = arr.length + offset <= this.length ? arr.length : this.length - offset; i--;) {
-						this[offset + i] = arr[i];
+						this.array[offset + i] = arr[i];
 					}return this;
 				}
 			}, {
 				key: "put",
 				value: function put(m, row, column) {
-					Mat.put(this, m, row || 0, column || 0);
+					Matrix.put(this, m, row || 0, column || 0);
 					return this;
 				}
 			}, {
 				key: "rotate2d",
 				value: function rotate2d(t) {
-					return this.set(Mat.rotate2d(this, t, Mat.Matrixes.T3));
+					return this.set(Matrix.rotate2d(this, t, Matrix.Matrixes.T3));
 				}
 			}, {
 				key: "translate2d",
 				value: function translate2d(x, y) {
-					return this.set(Mat.translate2d(this, x, y, Mat.Matrixes.T3));
+					return this.set(Matrix.translate2d(this, x, y, Matrix.Matrixes.T3));
 				}
 			}, {
 				key: "scale2d",
 				value: function scale2d(x, y) {
-					return this.set(Mat.scale2d(this, x, y, Mat.Matrixes.T3));
+					return this.set(Matrix.scale2d(this, x, y, Matrix.Matrixes.T3));
 				}
 			}, {
 				key: "rotate3d",
 				value: function rotate3d(tx, ty, tz) {
-					return this.set(Mat.rotate3d(this, tx, ty, tz, Mat.Matrixes.T4));
+					return this.set(Matrix.rotate3d(this, tx, ty, tz, Matrix.Matrixes.T4));
 				}
 			}, {
 				key: "scale3d",
 				value: function scale3d(x, y, z) {
-					return this.set(Mat.scale3d(this, x, y, z, Mat.Matrixes.T4));
+					return this.set(Matrix.scale3d(this, x, y, z, Matrix.Matrixes.T4));
 				}
 			}, {
 				key: "translate3d",
 				value: function translate3d(x, y, z) {
-					return this.set(Mat.translate3d(this, x, y, z, Mat.Matrixes.T4));
+					return this.set(Matrix.translate3d(this, x, y, z, Matrix.Matrixes.T4));
 				}
 			}, {
 				key: "rotateX",
 				value: function rotateX(t) {
-					return this.set(Mat.rotateX(this, t, Mat.Matrixes.T4));
+					return this.set(Matrix.rotateX(this, t, Matrix.Matrixes.T4));
 				}
 			}, {
 				key: "rotateY",
 				value: function rotateY(t) {
-					return this.set(Mat.rotateY(this, t, Mat.Matrixes.T4));
+					return this.set(Matrix.rotateY(this, t, Matrix.Matrixes.T4));
 				}
 			}, {
 				key: "rotateZ",
 				value: function rotateZ(t) {
-					return this.set(Mat.rotateZ(this, t, Mat.Matrixes.T4));
+					return this.set(Matrix.rotateZ(this, t, Matrix.Matrixes.T4));
 				}
 			}, {
 				key: "clone",
 				value: function clone() {
-					return Mat(this.row, this.column, this);
+					return new Matrix(this.row, this.column, this);
 				}
 			}, {
 				key: "toString",
@@ -613,30 +631,36 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 							lines.push(tmp.join('\t'));
 							tmp.length = 0;
 						}
-						tmp.push(this[i] || 0);
+						tmp.push(this.array[i] || 0);
 					}
 					lines.push(tmp.join('	'));
 					return lines.join('\n');
 				}
-			}]);
-
-			return Matrix;
-		}();
-
-		var staticMethods = function () {
-			function staticMethods() {
-				_classCallCheck(this, staticMethods);
-			}
-
-			_createClass(staticMethods, null, [{
-				key: "Identity",
 
 				//static methods
+
+			}, {
+				key: "length",
+				get: function get() {
+					return this.array.length;
+				}
+			}, {
+				key: "row",
+				get: function get() {
+					return this.array.row;
+				}
+			}, {
+				key: "column",
+				get: function get() {
+					return this.array.column;
+				}
+			}], [{
+				key: "Identity",
 				value: function Identity(n) {
 					//return a new Identity Matrix
-					var m = Mat(n, n, 0);
+					var m = new Matrix(n, n, 0);
 					for (var i = n; i--;) {
-						m[i * n + i] = 1;
+						m.array[i * n + i] = 1;
 					}return m;
 				}
 			}, {
@@ -644,13 +668,15 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 				value: function Perspective(fovy, aspect, znear, zfar, result) {
 					var y1 = znear * Math.tan(fovy * Math.PI / 360.0),
 					    x1 = y1 * aspect,
-					    m = result || Mat(4, 4, 0);
-					m[0] = 2 * znear / (x1 + x1);
-					m[5] = 2 * znear / (y1 + y1);
-					m[10] = -(zfar + znear) / (zfar - znear);
-					m[14] = -2 * zfar * znear / (zfar - znear);
-					m[11] = -1;
-					if (result) m[1] = m[2] = m[3] = m[4] = m[6] = m[7] = m[8] = m[9] = m[12] = m[13] = m[15] = 0;
+					    m = result || new Matrix(4, 4, 0),
+					    arr = m.array;
+
+					arr[0] = 2 * znear / (x1 + x1);
+					arr[5] = 2 * znear / (y1 + y1);
+					arr[10] = -(zfar + znear) / (zfar - znear);
+					arr[14] = -2 * zfar * znear / (zfar - znear);
+					arr[11] = -1;
+					if (result) arr[1] = arr[2] = arr[3] = arr[4] = arr[6] = arr[7] = arr[8] = arr[9] = arr[12] = arr[13] = arr[15] = 0;
 					return m;
 				}
 			}, {
@@ -659,15 +685,15 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 					if (a.column !== b.row) throw 'wrong matrix';
 					var row = a.row,
 					    column = Math.min(a.column, b.column),
-					    r = result || Mat(row, column),
+					    r = result || new Matrix(row, column),
 					    c = void 0,
 					    i = void 0,
 					    ind = void 0;
 					for (var l = row; l--;) {
 						for (c = column; c--;) {
-							r[ind = l * r.column + c] = 0;
+							r.array[ind = l * r.column + c] = 0;
 							for (i = a.column; i--;) {
-								r[ind] += a[l * a.column + i] * b[c + i * b.column];
+								r.array[ind] += a.array[l * a.column + i] * b.array[c + i * b.column];
 							}
 						}
 					}
@@ -679,17 +705,17 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 					var ignoreZero = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
 					//work out the equation for every elements,only for debug and only works with Array matrixes
 					if (a.column !== b.row) throw 'wrong matrix';
-					var r = array || Mat(a.row, b.column),
+					var r = array || new Matrix(a.row, b.column),
 					    l,
 					    c,
 					    i,
 					    ind;
 					for (l = a.row; l--;) {
 						for (c = b.column; c--;) {
-							r[ind = l * b.column + c] = '';
+							r.array[ind = l * b.column + c] = '';
 							for (i = 0; i < a.column; i++) {
-								if (ignoreZero && (a[l * a.column + i] == 0 || b[c + i * b.column] == 0)) continue;
-								r[ind] += (i && r[ind] ? '+' : '') + '(' + a[l * a.column + i] + ')*(' + b[c + i * b.column] + ')';
+								if (ignoreZero && (a.array[l * a.column + i] == 0 || b.array[c + i * b.column] == 0)) continue;
+								r.array[ind] += (i && r.array[ind] ? '+' : '') + '(' + a.array[l * a.column + i] + ')*(' + b.array[c + i * b.column] + ')';
 							}
 						}
 					}
@@ -699,43 +725,43 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 				key: "add",
 				value: function add(a, b, result) {
 					if (a.column !== b.column || a.row !== b.row) throw 'wrong matrix';
-					var r = result || Mat(a.row, b.column);
+					var r = result || new Matrix(a.row, b.column);
 					for (var i = a.length; i--;) {
-						r[i] = a[i] + b[i];
+						r.array[i] = a.array[i] + b.array[i];
 					}return r;
 				}
 			}, {
 				key: "minus",
 				value: function minus(a, b, result) {
 					if (a.column !== b.column || a.row !== b.row) throw 'wrong matrix';
-					var r = result || Mat(a.row, b.column);
+					var r = result || new Matrix(a.row, b.column);
 					for (var i = a.length; i--;) {
-						r[i] = a[i] - b[i];
+						r.array[i] = a.array[i] - b.array[i];
 					}return r;
 				}
 			}, {
 				key: "rotate2d",
 				value: function rotate2d(m, t, result) {
-					var Mr = Mat.Matrixes.rotate2d;
-					Mr[0] = Mr[4] = Math.cos(t);
-					Mr[1] = -(Mr[3] = Math.sin(t));
-					return Mat.multiply(Mr, m, result || Mat(3, 3));
+					var Mr = Matrix.Matrixes.rotate2d;
+					Mr.array[0] = Mr.array[4] = Math.cos(t);
+					Mr.array[1] = -(Mr.array[3] = Math.sin(t));
+					return Matrix.multiply(Mr, m, result || new Matrix(3, 3));
 				}
 			}, {
 				key: "scale2d",
 				value: function scale2d(m, x, y, result) {
-					var Mr = Mat.Matrixes.scale2d;
-					Mr[0] = x;
-					Mr[4] = y;
-					return Mat.multiply(Mr, m, result || Mat(3, 3));
+					var Mr = Matrix.Matrixes.scale2d;
+					Mr.array[0] = x;
+					Mr.array[4] = y;
+					return Matrix.multiply(Mr, m, result || new Matrix(3, 3));
 				}
 			}, {
 				key: "translate2d",
 				value: function translate2d(m, x, y, result) {
-					var Mr = Mat.Matrixes.translate2d;
-					Mr[2] = x;
-					Mr[5] = y;
-					return Mat.multiply(Mr, m, result || Mat(3, 3));
+					var Mr = Matrix.Matrixes.translate2d;
+					Mr.array[2] = x;
+					Mr.array[5] = y;
+					return Matrix.multiply(Mr, m, result || new Matrix(3, 3));
 				}
 			}, {
 				key: "rotate3d",
@@ -746,59 +772,59 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 					    Ys = Math.sin(ty),
 					    Zc = Math.cos(tz),
 					    Zs = Math.sin(tz),
-					    Mr = Mat.Matrixes.rotate3d;
-					Mr[0] = Zc * Yc;
-					Mr[1] = Zc * Ys * Xs - Zs * Xc;
-					Mr[2] = Zc * Ys * Xc + Zs * Xs;
-					Mr[4] = Zs * Yc;
-					Mr[5] = Zs * Ys * Xs + Zc * Xc;
-					Mr[6] = Zs * Ys * Xc - Zc * Xs;
-					Mr[8] = -Ys;
-					Mr[9] = Yc * Xs;
-					Mr[10] = Yc * Xc;
-					return Mat.multiply(Mr, m, result || Mat(4, 4));
+					    Mr = Matrix.Matrixes.rotate3d;
+					Mr.array[0] = Zc * Yc;
+					Mr.array[1] = Zc * Ys * Xs - Zs * Xc;
+					Mr.array[2] = Zc * Ys * Xc + Zs * Xs;
+					Mr.array[4] = Zs * Yc;
+					Mr.array[5] = Zs * Ys * Xs + Zc * Xc;
+					Mr.array[6] = Zs * Ys * Xc - Zc * Xs;
+					Mr.array[8] = -Ys;
+					Mr.array[9] = Yc * Xs;
+					Mr.array[10] = Yc * Xc;
+					return Matrix.multiply(Mr, m, result || new Matrix(4, 4));
 				}
 			}, {
 				key: "rotateX",
 				value: function rotateX(m, t, result) {
-					var Mr = Mat.Matrixes.rotateX;
-					Mr[10] = Mr[5] = Math.cos(t);
-					Mr[6] = -(Mr[9] = Math.sin(t));
-					return Mat.multiply(Mr, m, result || Mat(4, 4));
+					var Mr = Matrix.Matrixes.rotateX;
+					Mr.array[10] = Mr.array[5] = Math.cos(t);
+					Mr.array[6] = -(Mr.array[9] = Math.sin(t));
+					return Matrix.multiply(Mr, m, result || new Matrix(4, 4));
 				}
 			}, {
 				key: "rotateY",
 				value: function rotateY(m, t, result) {
-					var Mr = Mat.Matrixes.rotateY;
-					Mr[10] = Mr[0] = Math.cos(t);
-					Mr[8] = -(Mr[2] = Math.sin(t));
-					return Mat.multiply(Mr, m, result || Mat(4, 4));
+					var Mr = Matrix.Matrixes.rotateY;
+					Mr.array[10] = Mr.array[0] = Math.cos(t);
+					Mr.array[8] = -(Mr.array[2] = Math.sin(t));
+					return Matrix.multiply(Mr, m, result || new Matrix(4, 4));
 				}
 			}, {
 				key: "rotateZ",
 				value: function rotateZ(m, t, result) {
-					var Mr = Mat.Matrixes.rotateZ;
-					Mr[5] = Mr[0] = Math.cos(t);
-					Mr[1] = -(Mr[4] = Math.sin(t));
-					return Mat.multiply(Mr, m, result || Mat(4, 4));
+					var Mr = Matrix.Matrixes.rotateZ;
+					Mr.array[5] = Mr.array[0] = Math.cos(t);
+					Mr.array[1] = -(Mr.array[4] = Math.sin(t));
+					return Matrix.multiply(Mr, m, result || new Matrix(4, 4));
 				}
 			}, {
 				key: "scale3d",
 				value: function scale3d(m, x, y, z, result) {
-					var Mr = Mat.Matrixes.scale3d;
-					Mr[0] = x;
-					Mr[5] = y;
-					Mr[10] = z;
-					return Mat.multiply(Mr, m, result || Mat(4, 4));
+					var Mr = Matrix.Matrixes.scale3d;
+					Mr.array[0] = x;
+					Mr.array[5] = y;
+					Mr.array[10] = z;
+					return Matrix.multiply(Mr, m, result || new Matrix(4, 4));
 				}
 			}, {
 				key: "translate3d",
 				value: function translate3d(m, x, y, z, result) {
-					var Mr = Mat.Matrixes.translate3d;
-					Mr[12] = x;
-					Mr[13] = y;
-					Mr[14] = z;
-					return Mat.multiply(Mr, m, result || Mat(4, 4));
+					var Mr = Matrix.Matrixes.translate3d;
+					Mr.array[12] = x;
+					Mr.array[13] = y;
+					Mr.array[14] = z;
+					return Matrix.multiply(Mr, m, result || new Matrix(4, 4));
 				}
 			}, {
 				key: "put",
@@ -812,302 +838,46 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 						if (l + row >= m.row) continue;
 						for (c = sub.column; c--;) {
 							if (c + column >= m.column) continue;
-							m[(l + row) * m.column + c + column] = sub[l * sub.column + c];
+							m.array[(l + row) * m.column + c + column] = sub.array[l * sub.column + c];
 						}
 					}
 				}
 			}, {
 				key: "createClass",
 				value: function createClass(Constructor) {
-					return _createClass2(Constructor);
+					return _createClass(Constructor);
 				}
 			}]);
 
-			return staticMethods;
+			return Matrix;
 		}();
 
 		var testArray = new Constructor(1);
 		Object.defineProperty(Matrix, '_instanceofTypedArray', { value: !!(TypedArray && TypedArray.isPrototypeOf(testArray)) });
 		testArray = null;
 
-		Object.setPrototypeOf(Matrix, Constructor.prototype);
-		function Mat(l, c, fill) {
-			var M = new Constructor(l * c);
-			Object.setPrototypeOf(M, Matrix);
-			Object.defineProperty(M, 'length', { value: l * c });
-			Object.defineProperty(M, 'row', { value: l });
-			Object.defineProperty(M, 'column', { value: c });
-			if (arguments.length >= 3) {
-				if (Matrix._instanceofTypedArray && fill === 0) {} else if (typeof fill === 'number') {
-					M.fill(fill);
-				} else if (fill.length) {
-					M.set(fill);
-				}
-			}
-			return M;
-		}
-		Object.setPrototypeOf(Mat, staticMethods);
-		Mat.Matrixes = { //do not modify these matrixes manually and dont use them
-			I2: Mat.Identity(2),
-			I3: Mat.Identity(3),
-			I4: Mat.Identity(4),
-			T3: Mat(3, 3, 0),
-			T4: Mat(4, 4, 0),
-			rotate2d: Mat.Identity(3),
-			translate2d: Mat.Identity(3),
-			scale2d: Mat.Identity(3),
-			translate3d: Mat.Identity(4),
-			rotate3d: Mat.Identity(4),
-			rotateX: Mat.Identity(4),
-			rotateY: Mat.Identity(4),
-			rotateZ: Mat.Identity(4),
-			scale3d: Mat.Identity(4)
+		Matrix.Matrixes = { //do not modify these matrixes manually and dont use them
+			I2: Matrix.Identity(2),
+			I3: Matrix.Identity(3),
+			I4: Matrix.Identity(4),
+			T3: new Matrix(3, 3, 0),
+			T4: new Matrix(4, 4, 0),
+			rotate2d: Matrix.Identity(3),
+			translate2d: Matrix.Identity(3),
+			scale2d: Matrix.Identity(3),
+			translate3d: Matrix.Identity(4),
+			rotate3d: Matrix.Identity(4),
+			rotateX: Matrix.Identity(4),
+			rotateY: Matrix.Identity(4),
+			rotateZ: Matrix.Identity(4),
+			scale3d: Matrix.Identity(4)
 		};
-		return Mat;
+		return Matrix;
 	}
-	return _createClass2(global.Float32Array ? Float32Array : Array);
+	return _createClass(global.Float32Array ? Float32Array : Array);
 });
 
 },{}],5:[function(require,module,exports){
-'use strict';
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-(function (root) {
-
-  // Store setTimeout reference so promise-polyfill will be unaffected by
-  // other code modifying setTimeout (like sinon.useFakeTimers())
-  var setTimeoutFunc = setTimeout;
-
-  function noop() {}
-
-  // Polyfill for Function.prototype.bind
-  function bind(fn, thisArg) {
-    return function () {
-      fn.apply(thisArg, arguments);
-    };
-  }
-
-  function Promise(fn) {
-    if (_typeof(this) !== 'object') throw new TypeError('Promises must be constructed via new');
-    if (typeof fn !== 'function') throw new TypeError('not a function');
-    this._state = 0;
-    this._handled = false;
-    this._value = undefined;
-    this._deferreds = [];
-
-    doResolve(fn, this);
-  }
-
-  function handle(self, deferred) {
-    while (self._state === 3) {
-      self = self._value;
-    }
-    if (self._state === 0) {
-      self._deferreds.push(deferred);
-      return;
-    }
-    self._handled = true;
-    Promise._immediateFn(function () {
-      var cb = self._state === 1 ? deferred.onFulfilled : deferred.onRejected;
-      if (cb === null) {
-        (self._state === 1 ? resolve : reject)(deferred.promise, self._value);
-        return;
-      }
-      var ret;
-      try {
-        ret = cb(self._value);
-      } catch (e) {
-        reject(deferred.promise, e);
-        return;
-      }
-      resolve(deferred.promise, ret);
-    });
-  }
-
-  function resolve(self, newValue) {
-    try {
-      // Promise Resolution Procedure: https://github.com/promises-aplus/promises-spec#the-promise-resolution-procedure
-      if (newValue === self) throw new TypeError('A promise cannot be resolved with itself.');
-      if (newValue && ((typeof newValue === 'undefined' ? 'undefined' : _typeof(newValue)) === 'object' || typeof newValue === 'function')) {
-        var then = newValue.then;
-        if (newValue instanceof Promise) {
-          self._state = 3;
-          self._value = newValue;
-          finale(self);
-          return;
-        } else if (typeof then === 'function') {
-          doResolve(bind(then, newValue), self);
-          return;
-        }
-      }
-      self._state = 1;
-      self._value = newValue;
-      finale(self);
-    } catch (e) {
-      reject(self, e);
-    }
-  }
-
-  function reject(self, newValue) {
-    self._state = 2;
-    self._value = newValue;
-    finale(self);
-  }
-
-  function finale(self) {
-    if (self._state === 2 && self._deferreds.length === 0) {
-      Promise._immediateFn(function () {
-        if (!self._handled) {
-          Promise._unhandledRejectionFn(self._value);
-        }
-      });
-    }
-
-    for (var i = 0, len = self._deferreds.length; i < len; i++) {
-      handle(self, self._deferreds[i]);
-    }
-    self._deferreds = null;
-  }
-
-  function Handler(onFulfilled, onRejected, promise) {
-    this.onFulfilled = typeof onFulfilled === 'function' ? onFulfilled : null;
-    this.onRejected = typeof onRejected === 'function' ? onRejected : null;
-    this.promise = promise;
-  }
-
-  /**
-   * Take a potentially misbehaving resolver function and make sure
-   * onFulfilled and onRejected are only called once.
-   *
-   * Makes no guarantees about asynchrony.
-   */
-  function doResolve(fn, self) {
-    var done = false;
-    try {
-      fn(function (value) {
-        if (done) return;
-        done = true;
-        resolve(self, value);
-      }, function (reason) {
-        if (done) return;
-        done = true;
-        reject(self, reason);
-      });
-    } catch (ex) {
-      if (done) return;
-      done = true;
-      reject(self, ex);
-    }
-  }
-
-  Promise.prototype['catch'] = function (onRejected) {
-    return this.then(null, onRejected);
-  };
-
-  Promise.prototype.then = function (onFulfilled, onRejected) {
-    var prom = new this.constructor(noop);
-
-    handle(this, new Handler(onFulfilled, onRejected, prom));
-    return prom;
-  };
-
-  Promise.all = function (arr) {
-    var args = Array.prototype.slice.call(arr);
-
-    return new Promise(function (resolve, reject) {
-      if (args.length === 0) return resolve([]);
-      var remaining = args.length;
-
-      function res(i, val) {
-        try {
-          if (val && ((typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object' || typeof val === 'function')) {
-            var then = val.then;
-            if (typeof then === 'function') {
-              then.call(val, function (val) {
-                res(i, val);
-              }, reject);
-              return;
-            }
-          }
-          args[i] = val;
-          if (--remaining === 0) {
-            resolve(args);
-          }
-        } catch (ex) {
-          reject(ex);
-        }
-      }
-
-      for (var i = 0; i < args.length; i++) {
-        res(i, args[i]);
-      }
-    });
-  };
-
-  Promise.resolve = function (value) {
-    if (value && (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' && value.constructor === Promise) {
-      return value;
-    }
-
-    return new Promise(function (resolve) {
-      resolve(value);
-    });
-  };
-
-  Promise.reject = function (value) {
-    return new Promise(function (resolve, reject) {
-      reject(value);
-    });
-  };
-
-  Promise.race = function (values) {
-    return new Promise(function (resolve, reject) {
-      for (var i = 0, len = values.length; i < len; i++) {
-        values[i].then(resolve, reject);
-      }
-    });
-  };
-
-  // Use polyfill for setImmediate for performance gains
-  Promise._immediateFn = typeof setImmediate === 'function' && function (fn) {
-    setImmediate(fn);
-  } || function (fn) {
-    setTimeoutFunc(fn, 0);
-  };
-
-  Promise._unhandledRejectionFn = function _unhandledRejectionFn(err) {
-    if (typeof console !== 'undefined' && console) {
-      console.warn('Possible Unhandled Promise Rejection:', err); // eslint-disable-line no-console
-    }
-  };
-
-  /**
-   * Set the immediate function to execute callbacks
-   * @param fn {function} Function to execute
-   * @deprecated
-   */
-  Promise._setImmediateFn = function _setImmediateFn(fn) {
-    Promise._immediateFn = fn;
-  };
-
-  /**
-   * Change the function to execute on unhandled rejection
-   * @param {function} fn Function to execute on unhandled rejection
-   * @deprecated
-   */
-  Promise._setUnhandledRejectionFn = function _setUnhandledRejectionFn(fn) {
-    Promise._unhandledRejectionFn = fn;
-  };
-
-  if (typeof module !== 'undefined' && module.exports) {
-    module.exports = Promise;
-  } else if (!root.Promise) {
-    root.Promise = Promise;
-  }
-})(undefined);
-
-},{}],6:[function(require,module,exports){
 (function (process,global){
 "use strict";
 
@@ -1296,7 +1066,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"_process":12}],7:[function(require,module,exports){
+},{"_process":11}],6:[function(require,module,exports){
 /*
 Copyright luojia@luojia.me
 LGPL license
@@ -1309,13 +1079,11 @@ Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 require('../lib/setImmediate/setImmediate.js');
-
-var _promise = require('../lib/promise/promise.js');
-
-var _promise2 = _interopRequireDefault(_promise);
 
 var _text2d = require('./text2d.js');
 
@@ -1336,8 +1104,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-if (!window.Promise) window.Promise = _promise2.default;
 
 /*
 danmaku obj struct
@@ -1369,17 +1135,17 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 
 			var _this = _possibleConstructorReturn(this, (TextDanmaku.__proto__ || Object.getPrototypeOf(TextDanmaku)).call(this, frame));
 
-			_this.list = []; //danmaku object array
-			_this.indexMark = 0; //to record the index of last danmaku in the list
-			_this.tunnel = new tunnelManager();
-			_this.paused = true;
-			_this.randomText = 'danmaku_text_' + (Math.random() * 999999 | 0);
-			_this.defaultStyle = { //these styles can be overwrote by the 'font' property of danmaku object
+			var D = _this;
+			D.list = []; //danmaku object array
+			D.indexMark = 0; //to record the index of last danmaku in the list
+			D.tunnel = new tunnelManager();
+			D.paused = true;
+			D.randomText = 'danmaku_text_' + (Math.random() * 999999 | 0);
+			D.defaultStyle = { //these styles can be overwrote by the 'font' property of danmaku object
 				fontStyle: null,
 				fontWeight: 300,
 				fontVariant: null,
 				color: "#fff",
-				lineHeight: null, //when this style is was not a number,the number will be the same as fontSize
 				fontSize: 24,
 				fontFamily: "Arial",
 				strokeWidth: 1, //outline width
@@ -1390,86 +1156,84 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				shadowOffsetX: 0,
 				shadowOffsetY: 0,
 				fill: true };
-			frame.styleSheet.insertRule('.' + _this.randomText + '_fullfill{top:0;left:0;width:100%;height:100%;position:absolute;}', 0);
 
-			defProp(_this, 'renderMode', { configurable: true });
-			defProp(_this, 'activeRenderMode', { configurable: true, value: null });
-			var con = _this.container = document.createElement('div');
-			con.classList.add(_this.randomText + '_fullfill');
+			frame.addStyle('.' + D.randomText + '_fullfill{top:0;left:0;width:100%;height:100%;position:absolute;}');
+
+			defProp(D, 'rendererMode', { configurable: true });
+			defProp(D, 'activeRendererMode', { configurable: true, value: null });
+			var con = D.container = document.createElement('div');
+			con.classList.add(D.randomText + '_fullfill');
 			frame.container.appendChild(con);
 
 			//init modes
-			_this.text2d = new _text2d2.default(_this);
-			_this.text3d = new _text3d2.default(_this);
-			_this.textCanvas = new _textCanvas2.default(_this);
+			D.text2d = new _text2d2.default(D);
+			D.text3d = new _text3d2.default(D);
+			D.textCanvas = new _textCanvas2.default(D);
 
-			_this.textCanvasContainer.hidden = _this.canvas.hidden = _this.canvas3d.hidden = true;
-			_this.modes = {
-				1: _this.textCanvas,
-				2: _this.text2d,
-				3: _this.text3d
+			D.textCanvasContainer.hidden = D.canvas.hidden = D.canvas3d.hidden = true;
+			D.modes = {
+				1: D.textCanvas,
+				2: D.text2d,
+				3: D.text3d
 			};
-			_this.GraphCache = []; //COL text graph cache
-			_this.DanmakuText = [];
+			D.GraphCache = []; //text graph cache
+			D.DanmakuText = [];
+			D.renderingDanmakuManager = new renderingDanmakuManager(D);
 
 			//opt time record
-			_this.cacheCleanTime = 0;
-			_this.danmakuMoveTime = 0;
-			_this.danmakuCheckTime = 0;
+			D.cacheCleanTime = 0;
+			D.danmakuMoveTime = 0;
+			D.danmakuCheckTime = 0;
 
-			_this.danmakuCheckSwitch = true;
-			_this.options = {
+			D.danmakuCheckSwitch = true;
+			D.options = {
 				allowLines: false, //allow multi-line danmaku
 				screenLimit: 0, //the most number of danmaku on the screen
 				clearWhenTimeReset: true, //clear danmaku on screen when the time is reset
-				speed: 6.5
-			};
+				speed: 6.5,
+				autoShiftRenderingMode: true };
 			addEvents(document, {
 				visibilitychange: function visibilitychange(e) {
-					if (document.hidden) {
-						_this.pause();
-					} else {
-						_this.reCheckIndexMark();
-						if (_this.frame.working) _this.start();else {
-							_this.draw(true);
-						}
-					}
+					D.danmakuCheckSwitch = !document.hidden;
+					if (!document.hidden) D.recheckIndexMark();
 				}
 			});
-			_this._checkNewDanmaku = _this._checkNewDanmaku.bind(_this);
-			_this._cleanCache = _this._cleanCache.bind(_this);
-			setInterval(_this._cleanCache, 5000); //set an interval for cache cleaning
-			_this.setRenderMode(1);
+			D._checkNewDanmaku = D._checkNewDanmaku.bind(D);
+			D._cleanCache = D._cleanCache.bind(D);
+			setInterval(D._cleanCache, 5000); //set an interval for cache cleaning
+
+			D.setRendererMode(1);
 			return _this;
 		}
 
 		_createClass(TextDanmaku, [{
-			key: 'setRenderMode',
-			value: function setRenderMode(n) {
-				if (this.renderMode === n || !(n in this.modes) || !this.modes[n].supported) return;
-				this.clear();
-				this.activeRenderMode && this.activeRenderMode.disable();
-				this.modes[n].enable();
-				defProp(this, 'activeRenderMode', { value: this.modes[n] });
-				defProp(this, 'renderMode', { value: n });
-				this.activeRenderMode.resize();
+			key: 'setRendererMode',
+			value: function setRendererMode(n) {
+				var D = this;
+				if (D.rendererMode === n || !(n in D.modes) || !D.modes[n].supported) return false;
+				D.activeRendererMode && D.activeRendererMode.disable();
+				defProp(D, 'activeRendererMode', { value: D.modes[n] });
+				defProp(D, 'rendererMode', { value: n });
+				D.activeRendererMode.resize();
+				D.activeRendererMode.enable();
+				console.log('rendererMode:', D.rendererMode);
+				return true;
 			}
 		}, {
 			key: 'media',
 			value: function media(_media) {
-				var _this2 = this;
-
+				var D = this;
 				addEvents(_media, {
 					seeked: function seeked() {
-						_this2.start();
-						_this2.time();
-						_this2._clearCanvas();
+						D.time();
+						D.paused && D.start();
+						D._clearScreen(true);
 					},
 					seeking: function seeking() {
-						return _this2.pause();
+						return D.pause();
 					},
 					stalled: function stalled() {
-						return _this2.pause();
+						return D.pause();
 					}
 				});
 			}
@@ -1477,13 +1241,14 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			key: 'start',
 			value: function start() {
 				this.paused = false;
-				this.activeRenderMode.start();
+				this.recheckIndexMark();
+				this.activeRendererMode.start();
 			}
 		}, {
 			key: 'pause',
 			value: function pause() {
 				this.paused = true;
-				this.activeRenderMode.pause();
+				this.activeRendererMode.pause();
 			}
 		}, {
 			key: 'load',
@@ -1502,58 +1267,62 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				arr.splice(ind, 0, d);
 				if (ind < this.indexMark) this.indexMark++;
 				//round d.style.fontSize to prevent Iifinity loop in tunnel
-				d.style.fontSize = d.style.fontSize + 0.5 | 0;
-				if (d.style.fontSize === NaN || d.style.fontSize === Infinity || d.style.fontSize === 0) d.style.fontSize = this.defaultStyle.fontstyle.fontSize;
+				if (_typeof(d.style) !== 'object') d.style = {};
+				d.style.fontSize = d.style.fontSize ? d.style.fontSize + 0.5 | 0 : this.defaultStyle.fontSize;
+				if (isNaN(d.style.fontSize) || d.style.fontSize === Infinity || d.style.fontSize === 0) d.style.fontSize = this.defaultStyle.fontSize;
 				if (typeof d.mode !== 'number') d.mode = 0;
 				return d;
 			}
 		}, {
 			key: 'loadList',
 			value: function loadList(danmakuArray) {
-				var _this3 = this;
+				var _this2 = this;
 
 				danmakuArray.forEach(function (d) {
-					return _this3.load(d);
+					return _this2.load(d);
 				});
 			}
 		}, {
 			key: 'unload',
 			value: function unload(d) {
 				if (!d || d._ !== 'text') return false;
-				var i = this.list.indexOf(d);
+				var D = this,
+				    i = D.list.indexOf(d);
 				if (i < 0) return false;
-				this.list.splice(i, 1);
-				if (i < this.indexMark) this.indexMark--;
+				D.list.splice(i, 1);
+				if (i < D.indexMark) D.indexMark--;
 				return true;
 			}
 		}, {
 			key: '_checkNewDanmaku',
 			value: function _checkNewDanmaku() {
-				var d = void 0,
-				    time = this.frame.time,
-				    hidden = document.hidden;
-				if (this.danmakuCheckTime === time) return;
-				if (this.list.length) for (; this.indexMark < this.list.length && (d = this.list[this.indexMark]) && d.time <= time; this.indexMark++) {
+				var D = this,
+				    d = void 0,
+				    time = D.frame.time;
+				if (D.danmakuCheckTime === time || !D.danmakuCheckSwitch) return;
+				if (D.list.length) for (; D.indexMark < D.list.length && (d = D.list[D.indexMark]) && d.time <= time; D.indexMark++) {
 					//add new danmaku
-					if (this.options.screenLimit > 0 && this.DanmakuText.length >= this.options.screenLimit || hidden) {
+					if (D.options.screenLimit > 0 && D.DanmakuText.length >= D.options.screenLimit) {
 						continue;
 					} //continue if the number of danmaku on screen has up to limit or doc is not visible
-					this._addNewDanmaku(d);
+					D._addNewDanmaku(d);
 				}
-				this.danmakuCheckTime = time;
+				D.danmakuCheckTime = time;
 			}
 		}, {
 			key: '_addNewDanmaku',
 			value: function _addNewDanmaku(d) {
-				var cHeight = this.height,
-				    cWidth = this.width;
-				var t = this.GraphCache.length ? this.GraphCache.shift() : new TextGraph();
+				var D = this,
+				    cHeight = D.height,
+				    cWidth = D.width;
+				var t = D.GraphCache.length ? D.GraphCache.shift() : new TextGraph();
 				t.danmaku = d;
 				t.drawn = false;
-				t.text = this.options.allowLines ? d.text : d.text.replace(/\n/g, ' ');
+				t.text = D.options.allowLines ? d.text : d.text.replace(/\n/g, ' ');
 				t.time = d.time;
-				Object.setPrototypeOf(t.font, this.defaultStyle);
+				t.font = Object.create(D.defaultStyle);
 				Object.assign(t.font, d.style);
+				if (!t.font.lineHeight) t.font.lineHeight = t.font.fontSize + 2 || 1;
 				if (d.style.color) {
 					if (t.font.color && t.font.color[0] !== '#') {
 						t.font.color = '#' + d.style.color;
@@ -1561,9 +1330,9 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				}
 
 				if (d.mode > 1) t.font.textAlign = 'center';
-				t.prepare(this.renderMode === 3 ? false : true);
+				t.prepare(D.rendererMode === 3 ? false : true);
 				//find tunnel number
-				var tnum = this.tunnel.getTunnel(t, cHeight);
+				var tnum = D.tunnel.getTunnel(t, cHeight);
 				//calc margin
 				var margin = (tnum < 0 ? 0 : tnum) % cHeight;
 				switch (d.mode) {
@@ -1590,33 +1359,36 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 							t.style.x = (cWidth - t.style.width) / 2;
 						}
 				}
-				this.DanmakuText.push(t);
-				this.activeRenderMode.newDanmaku(t);
+				D.renderingDanmakuManager.add(t);
+				D.activeRendererMode.newDanmaku(t);
 			}
 		}, {
 			key: '_calcSideDanmakuPosition',
-			value: function _calcSideDanmakuPosition(t, T, cWidth) {
+			value: function _calcSideDanmakuPosition(t) {
+				var T = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : this.frame.time;
+
 				var R = !t.danmaku.mode,
 				    style = t.style;
-				return (R ? cWidth : -style.width) + (R ? -1 : 1) * this.frame.rate * (style.width + 1024) * (T - t.time) * this.options.speed / 60000;
+				return (R ? this.frame.width : -style.width) + (R ? -1 : 1) * this.frame.rate * (style.width + 1024) * (T - t.time) * this.options.speed / 60000;
 			}
 		}, {
 			key: '_calcDanmakusPosition',
 			value: function _calcDanmakusPosition(force) {
-				var T = this.frame.time;
-				if (!force && (this.danmakuMoveTime === T || this.paused)) return;
-				var cWidth = this.width;
+				var D = this,
+				    T = D.frame.time;
+				if (D.paused && !force) return;
+				var cWidth = D.width,
+				    rate = D.frame.rate;
 				var R = void 0,
 				    i = void 0,
 				    t = void 0,
 				    style = void 0,
-				    X = void 0,
-				    rate = this.frame.rate;
-				this.danmakuMoveTime = T;
-				for (i = this.DanmakuText.length; i--;) {
-					t = this.DanmakuText[i];
+				    X = void 0;
+				D.danmakuMoveTime = T;
+				for (i = D.DanmakuText.length; i--;) {
+					t = D.DanmakuText[i];
 					if (t.time > T) {
-						this.removeText(t);
+						D.removeText(t);
 						continue;
 					}
 					style = t.style;
@@ -1625,20 +1397,20 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 						case 0:case 1:
 							{
 								R = !t.danmaku.mode;
-								style.x = X = this._calcSideDanmakuPosition(t, T, cWidth);
+								style.x = X = D._calcSideDanmakuPosition(t, T);
 								if (t.tunnelNumber >= 0 && (R && X + style.width + 10 < cWidth || !R && X > 10)) {
-									this.tunnel.removeMark(t);
-								} else if (R && X < -style.width - 10 || !R && X > cWidth + style.width + 10) {
+									D.tunnel.removeMark(t);
+								} else if (R && X < -style.width - 20 || !R && X > cWidth + style.width + 20) {
 									//go out the canvas
-									this.removeText(t);
+									D.removeText(t);
 									continue;
 								}
 								break;
 							}
 						case 2:case 3:
 							{
-								if (T - t.time > this.options.speed * 1000 / rate) {
-									this.removeText(t);
+								if (T - t.time > D.options.speed * 1000 / rate) {
+									D.removeText(t);
 								}
 							}
 					}
@@ -1648,14 +1420,15 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			key: '_cleanCache',
 			value: function _cleanCache(force) {
 				//clean text object cache
-				var now = Date.now();
-				if (this.GraphCache.length > 30 || force) {
+				var D = this,
+				    now = Date.now();
+				if (D.GraphCache.length > 30 || force) {
 					//save 20 cached danmaku
-					for (var ti = 0; ti < this.GraphCache.length; ti++) {
-						if (force || now - this.GraphCache[ti].removeTime > 10000) {
+					for (var ti = 0; ti < D.GraphCache.length; ti++) {
+						if (force || now - D.GraphCache[ti].removeTime > 10000) {
 							//delete cache which has not used for 10s
-							this.activeRenderMode.deleteTextObject(this.GraphCache[ti]);
-							this.GraphCache.splice(ti, 1);
+							D.activeRendererMode.deleteTextObject(D.GraphCache[ti]);
+							D.GraphCache.splice(ti, 1);
 						} else {
 							break;
 						}
@@ -1667,31 +1440,30 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			value: function draw(force) {
 				if (!force && this.paused || !this.enabled) return;
 				this._calcDanmakusPosition(force);
-				this.activeRenderMode.draw(force);
-				requestIdleCallback(this._checkNewDanmaku);
+				this.activeRendererMode.draw(force);
+				requestAnimationFrame(this._checkNewDanmaku);
 			}
 		}, {
 			key: 'removeText',
 			value: function removeText(t) {
 				//remove the danmaku from screen
-				var ind = this.DanmakuText.indexOf(t);
-				if (ind >= 0) this.DanmakuText.splice(ind, 1);
+				this.renderingDanmakuManager.remove(t);
 				this.tunnel.removeMark(t);
 				t._bitmap = t.danmaku = null;
 				t.removeTime = Date.now();
 				this.GraphCache.push(t);
-				this.activeRenderMode.remove(t);
+				this.activeRendererMode.remove(t);
 			}
 		}, {
 			key: 'resize',
 			value: function resize() {
-				if (this.activeRenderMode) this.activeRenderMode.resize();
+				if (this.activeRendererMode) this.activeRendererMode.resize();
 				this.draw(true);
 			}
 		}, {
-			key: '_clearCanvas',
-			value: function _clearCanvas(forceFull) {
-				this.activeRenderMode && this.activeRenderMode.clear(forceFull);
+			key: '_clearScreen',
+			value: function _clearScreen(forceFull) {
+				this.activeRendererMode && this.activeRendererMode.clear(forceFull);
 			}
 		}, {
 			key: 'clear',
@@ -1702,21 +1474,26 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 					if (T.danmaku) this.removeText(T);
 				}
 				this.tunnel.reset();
-				this._clearCanvas(true);
+				this._clearScreen(true);
 			}
 		}, {
-			key: 'reCheckIndexMark',
-			value: function reCheckIndexMark() {
+			key: 'recheckIndexMark',
+			value: function recheckIndexMark() {
 				var t = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.frame.time;
 
 				this.indexMark = dichotomy(this.list, t, 0, this.list.length - 1, true);
+			}
+		}, {
+			key: 'rate',
+			value: function rate(r) {
+				if (this.activeRendererMode) this.activeRendererMode.rate(r);
 			}
 		}, {
 			key: 'time',
 			value: function time() {
 				var t = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.frame.time;
 				//reset time,you should invoke it when the media has seeked to another time
-				this.reCheckIndexMark(t);
+				this.recheckIndexMark(t);
 				if (this.options.clearWhenTimeReset) {
 					this.clear();
 				} else {
@@ -1726,14 +1503,14 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		}, {
 			key: 'resetTimeOfDanmakuOnScreen',
 			value: function resetTimeOfDanmakuOnScreen(cTime) {
-				var _this4 = this;
+				var _this3 = this;
 
 				//cause the position of the danmaku is based on time
 				//and if you don't want these danmaku on the screen to disappear after seeking,their time should be reset
 				if (cTime === undefined) cTime = this.frame.time;
 				this.DanmakuText.forEach(function (t) {
 					if (!t.danmaku) return;
-					t.time = cTime - (_this4.danmakuMoveTime - t.time);
+					t.time = cTime - (_this3.danmakuMoveTime - t.time);
 				});
 			}
 		}, {
@@ -1753,6 +1530,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			value: function enable() {
 				//enable the plugin
 				this.textCanvasContainer.hidden = false;
+				if (this.frame.working) this.start();
 			}
 		}, {
 			key: 'disable',
@@ -1792,13 +1570,14 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 
 			_classCallCheck(this, TextGraph);
 
-			this._fontString = '';
-			this._renderList = null;
-			this.style = {};
-			this.font = {};
-			this.text = text;
-			this._renderToCache = this._renderToCache.bind(this);
-			defProp(this, '_cache', { configurable: true });
+			var G = this;
+			G._fontString = '';
+			G._renderList = null;
+			G.style = {};
+			G.font = {};
+			G.text = text;
+			G._renderToCache = G._renderToCache.bind(G);
+			defProp(G, '_cache', { configurable: true });
 		}
 
 		_createClass(TextGraph, [{
@@ -1806,54 +1585,54 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			value: function prepare() {
 				var async = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
 				//prepare text details
-				if (!this._cache) {
-					defProp(this, '_cache', { value: document.createElement("canvas") });
+				var G = this;
+				if (!G._cache) {
+					defProp(G, '_cache', { value: document.createElement("canvas") });
 				}
 				var ta = [];
-				this.font.fontStyle && ta.push(this.font.fontStyle);
-				this.font.fontVariant && ta.push(this.font.fontVariant);
-				this.font.fontWeight && ta.push(this.font.fontWeight);
-				ta.push(this.font.fontSize + 'px');
-				this.font.fontFamily && ta.push(this.font.fontFamily);
-				this._fontString = ta.join(' ');
+				G.font.fontStyle && ta.push(G.font.fontStyle);
+				G.font.fontVariant && ta.push(G.font.fontVariant);
+				G.font.fontWeight && ta.push(G.font.fontWeight);
+				ta.push(G.font.fontSize + 'px');
+				G.font.fontFamily && ta.push(G.font.fontFamily);
+				G._fontString = ta.join(' ');
 
-				var imgobj = this._cache,
+				var imgobj = G._cache,
 				    ct = imgobj.ctx2d || (imgobj.ctx2d = imgobj.getContext("2d"));
-				ct.font = this._fontString;
-				this._renderList = this.text.split(/\n/g);
-				this.estimatePadding = Math.max(this.font.shadowBlur + 5 + Math.max(Math.abs(this.font.shadowOffsetY), Math.abs(this.font.shadowOffsetX)), this.font.strokeWidth + 3);
+				ct.font = G._fontString;
+				G._renderList = G.text.split(/\n/g);
+				G.estimatePadding = Math.max(G.font.shadowBlur + 5 + Math.max(Math.abs(G.font.shadowOffsetY), Math.abs(G.font.shadowOffsetX)), G.font.strokeWidth + 3);
 				var w = 0,
 				    tw = void 0,
-				    lh = typeof this.font.lineHeigh === 'number' ? this.font.lineHeigh : this.font.fontSize;
-				for (var i = this._renderList.length; i--;) {
-					tw = ct.measureText(this._renderList[i]).width;
+				    lh = typeof G.font.lineHeight === 'number' ? G.font.lineHeight : G.font.fontSize;
+				for (var i = G._renderList.length; i--;) {
+					tw = ct.measureText(G._renderList[i]).width;
 					tw > w && (w = tw); //max
 				}
-				imgobj.width = (this.style.width = w) + this.estimatePadding * 2;
-				imgobj.height = (this.style.height = this._renderList.length * lh) + (lh < this.font.fontSize ? this.font.fontSize * 2 : 0) + this.estimatePadding * 2;
+				imgobj.width = (G.style.width = w) + G.estimatePadding * 2;
+				imgobj.height = (G.style.height = G._renderList.length * lh) + (lh < G.font.fontSize ? G.font.fontSize * 2 : 0) + G.estimatePadding * 2;
 
-				ct.translate(this.estimatePadding, this.estimatePadding);
+				ct.translate(G.estimatePadding, G.estimatePadding);
 				if (async) {
-					requestIdleCallback(this._renderToCache);
+					requestIdleCallback(G._renderToCache);
 				} else {
-					this._renderToCache();
+					G._renderToCache();
 				}
 			}
 		}, {
 			key: '_renderToCache',
 			value: function _renderToCache() {
-				var _this5 = this;
-
-				if (!this.danmaku) return;
-				this.render(this._cache.ctx2d);
+				var G = this;
+				if (!G.danmaku) return;
+				G.render(G._cache.ctx2d);
 				if (useImageBitmap) {
 					//use ImageBitmap
-					if (this._bitmap) {
-						this._bitmap.close();
-						this._bitmap = null;
+					if (G._bitmap) {
+						G._bitmap.close();
+						G._bitmap = null;
 					}
-					createImageBitmap(this._cache).then(function (bitmap) {
-						_this5._bitmap = bitmap;
+					createImageBitmap(G._cache).then(function (bitmap) {
+						G._bitmap = bitmap;
 					});
 				}
 			}
@@ -1861,44 +1640,44 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			key: 'render',
 			value: function render(ct) {
 				//render text
-				if (!this._renderList) return;
+				var G = this;
+				if (!G._renderList) return;
 				ct.save();
-				if (this.danmaku.highlight) {
+				if (G.danmaku.highlight) {
 					ct.fillStyle = 'rgba(255,255,255,0.3)';
 					ct.beginPath();
-					ct.rect(0, 0, this.style.width, this.style.height);
+					ct.rect(0, 0, G.style.width, G.style.height);
 					ct.fill();
 				}
-				ct.font = this._fontString; //set font
-				ct.textBaseline = 'top';
-				ct.lineWidth = this.font.strokeWidth;
-				ct.fillStyle = this.font.color;
-				ct.strokeStyle = this.font.strokeColor;
-				ct.shadowBlur = this.font.shadowBlur;
-				ct.shadowColor = this.font.shadowColor;
-				ct.shadowOffsetX = this.font.shadowOffsetX;
-				ct.shadowOffsetY = this.font.shadowOffsetY;
-				ct.textAlign = this.font.textAlign;
-				var lh = typeof this.font.lineHeigh === 'number' ? this.font.lineHeigh : this.font.fontSize,
+				ct.font = G._fontString; //set font
+				ct.textBaseline = 'middle';
+				ct.lineWidth = G.font.strokeWidth;
+				ct.fillStyle = G.font.color;
+				ct.strokeStyle = G.font.strokeColor;
+				ct.shadowBlur = G.font.shadowBlur;
+				ct.shadowColor = G.font.shadowColor;
+				ct.shadowOffsetX = G.font.shadowOffsetX;
+				ct.shadowOffsetY = G.font.shadowOffsetY;
+				ct.textAlign = G.font.textAlign;
+				var lh = typeof G.font.lineHeight === 'number' ? G.font.lineHeight : G.font.fontSize,
 				    x = void 0;
-				switch (this.font.textAlign) {
+				switch (G.font.textAlign) {
 					case 'left':case 'start':
 						{
 							x = 0;break;
 						}
 					case 'center':
 						{
-							x = this.style.width / 2;break;
+							x = G.style.width / 2;break;
 						}
 					case 'right':case 'end':
 						{
-							x = this.style.width;
+							x = G.style.width;
 						}
 				}
-
-				for (var i = this._renderList.length; i--;) {
-					this.font.strokeWidth && ct.strokeText(this._renderList[i], x, lh * i);
-					this.font.fill && ct.fillText(this._renderList[i], x, lh * i);
+				for (var i = G._renderList.length; i--;) {
+					G.font.strokeWidth && ct.strokeText(G._renderList[i], x, lh * (i + 0.5));
+					G.font.fill && ct.fillText(G._renderList[i], x, lh * (i + 0.5));
 				}
 				ct.restore();
 			}
@@ -1988,6 +1767,56 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 
 	var tunnels = ['right', 'left', 'bottom', 'top'];
 
+	var renderingDanmakuManager = function () {
+		function renderingDanmakuManager(dText) {
+			var _this4 = this;
+
+			_classCallCheck(this, renderingDanmakuManager);
+
+			this.dText = dText;
+			this.totalArea = 0;
+			this.limitArea = Infinity;
+			if (dText.text2d.supported) this.timer = setInterval(function () {
+				return _this4.rendererModeCheck();
+			}, 1500);
+		}
+
+		_createClass(renderingDanmakuManager, [{
+			key: 'add',
+			value: function add(t) {
+				this.dText.DanmakuText.push(t);
+				this.totalArea += t._cache.width * t._cache.height;
+			}
+		}, {
+			key: 'remove',
+			value: function remove(t) {
+				var ind = this.dText.DanmakuText.indexOf(t);
+				if (ind >= 0) {
+					this.dText.DanmakuText.splice(ind, 1);
+					this.totalArea -= t._cache.width * t._cache.height;
+				}
+			}
+		}, {
+			key: 'rendererModeCheck',
+			value: function rendererModeCheck() {
+				var D = this.dText;
+				if (!this.dText.options.autoShiftRenderingMode || D.paused) return;
+				if (D.frame.fpsRec < (D.frame.fps || 60) * 0.95) {
+					this.limitArea > this.totalArea && (this.limitArea = this.totalArea);
+				} else {
+					this.limitArea < this.totalArea && (this.limitArea = this.totalArea);
+				}
+				if (D.rendererMode == 1 && this.totalArea > this.limitArea) {
+					D.text2d.supported && D.setRendererMode(2);
+				} else if (D.rendererMode == 2 && this.totalArea < this.limitArea * 0.5) {
+					D.textCanvas.supported && D.setRendererMode(1);
+				}
+			}
+		}]);
+
+		return renderingDanmakuManager;
+	}();
+
 	function dichotomy(arr, t, start, end) {
 		var position = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
 
@@ -2039,7 +1868,7 @@ function limitIn(num, min, max) {
 function emptyFunc() {}
 exports.default = init;
 
-},{"../lib/promise/promise.js":5,"../lib/setImmediate/setImmediate.js":6,"./text2d.js":8,"./text3d.js":9,"./textCanvas.js":10}],8:[function(require,module,exports){
+},{"../lib/setImmediate/setImmediate.js":5,"./text2d.js":7,"./text3d.js":8,"./textCanvas.js":9}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2074,13 +1903,13 @@ var Text2d = function (_Template) {
 
 		_this.supported = false;
 		dText.canvas = document.createElement('canvas'); //the canvas
-		dText.canvas.classList.add(dText.randomText + '_fullfill');
-		dText.canvas.id = dText.randomText + '_text2d';
 		dText.context2d = dText.canvas.getContext('2d'); //the canvas contex
 		if (!dText.context2d) {
 			console.warn('text 2d not supported');
 			return _possibleConstructorReturn(_this);
 		}
+		dText.canvas.classList.add(dText.randomText + '_fullfill');
+		dText.canvas.id = dText.randomText + '_text2d';
 		dText.container.appendChild(dText.canvas);
 		_this.supported = true;
 		return _this;
@@ -2099,6 +1928,7 @@ var Text2d = function (_Template) {
 			for (; i--;) {
 				(t = dT[i]).drawn || (t.drawn = true);
 				if (cW >= t._cache.width) {
+					//danmaku that smaller than canvas width
 					ctx.drawImage(t._bitmap || t._cache, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding);
 				} else if (t.style.x - t.estimatePadding >= 0) {
 					ctx.drawImage(t._bitmap || t._cache, 0, 0, cW, t._cache.height, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding, cW, t._cache.height);
@@ -2114,16 +1944,14 @@ var Text2d = function (_Template) {
 	}, {
 		key: 'clear',
 		value: function clear(force) {
-			var ctx = this.dText.context2d;
+			var D = this.dText;
 			if (force || this._evaluateIfFullClearMode()) {
-				ctx.clearRect(0, 0, this.dText.canvas.width, this.dText.canvas.height);
+				D.context2d.clearRect(0, 0, D.canvas.width, D.canvas.height);
 				return;
 			}
-			for (var i = this.dText.DanmakuText.length, t; i--;) {
-				t = this.dText.DanmakuText[i];
-				if (t.drawn) {
-					ctx.clearRect(t.style.x - t.estimatePadding, t.style.y - t.estimatePadding, t._cache.width, t._cache.height);
-				}
+			for (var i = D.DanmakuText.length, t; i--;) {
+				t = D.DanmakuText[i];
+				if (t.drawn) D.context2d.clearRect(t.style.x - t.estimatePadding, t.style.y - t.estimatePadding, t._cache.width, t._cache.height);
 			}
 		}
 	}, {
@@ -2140,19 +1968,22 @@ var Text2d = function (_Template) {
 	}, {
 		key: 'resize',
 		value: function resize() {
-			var C = this.dText.canvas;
-			C.width = this.dText.width;
-			C.height = this.dText.height;
+			var D = this.dText,
+			    C = D.canvas;
+			C.width = D.width;
+			C.height = D.height;
 		}
 	}, {
 		key: 'enable',
 		value: function enable() {
+			this.draw();
 			this.dText.useImageBitmap = !(this.dText.canvas.hidden = false);
 		}
 	}, {
 		key: 'disable',
 		value: function disable() {
 			this.dText.canvas.hidden = true;
+			this.clear(true);
 		}
 	}]);
 
@@ -2161,7 +1992,7 @@ var Text2d = function (_Template) {
 
 exports.default = Text2d;
 
-},{"./textModuleTemplate.js":11}],9:[function(require,module,exports){
+},{"./textModuleTemplate.js":10}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2201,34 +2032,30 @@ var Text3d = function (_Template) {
 		var _this = _possibleConstructorReturn(this, (Text3d.__proto__ || Object.getPrototypeOf(Text3d)).call(this, dText));
 
 		_this.supported = false;
-		dText.canvas3d = document.createElement('canvas'); //the canvas
-		dText.canvas3d.classList.add(dText.randomText + '_fullfill');
-		dText.canvas3d.id = dText.randomText + '_text3d';
-		dText.context3d = dText.canvas3d.getContext('webgl'); //the canvas3d context
-		if (!dText.context3d) dText.context3d = dText.canvas3d.getContext('expeimental-webgl');
+		var c3d = _this.c3d = dText.canvas3d = document.createElement('canvas');
+		c3d.classList.add(dText.randomText + '_fullfill');
+		c3d.id = dText.randomText + '_text3d';
+		dText.context3d = c3d.getContext('webgl') || c3d.getContext('experimental-webgl'); //the canvas3d context
 
 		if (!dText.context3d) {
 			console.warn('text 3d not supported');
 			return _possibleConstructorReturn(_this);
 		}
-		_this.supported = true;
-		dText.container.appendChild(dText.canvas3d);
+		dText.container.appendChild(c3d);
 		var gl = _this.gl = dText.context3d,
-		    canvas = dText.canvas3d;
+		    canvas = c3d;
 		//init webgl
 
 		//shader
 		var shaders = {
-			danmakuFrag: [gl.FRAGMENT_SHADER, '\nvarying lowp vec2 vDanmakuTexCoord;\nuniform sampler2D uSampler;\n\nvoid main(void) {\n\tgl_FragColor = texture2D(uSampler,vDanmakuTexCoord);\n}'],
-			danmakuVert: [gl.VERTEX_SHADER, '\nattribute vec2 aVertexPosition;\nattribute vec2 aDanmakuTexCoord;\n\nuniform mat4 u2dCoordinate;\nuniform vec2 uDanmakuPos;\n\nvarying lowp vec2 vDanmakuTexCoord;\n\nvoid main(void) {\n\tgl_Position = u2dCoordinate * vec4(aVertexPosition+uDanmakuPos,0,1);\n\tvDanmakuTexCoord = aDanmakuTexCoord;\n}']
+			danmakuFrag: [gl.FRAGMENT_SHADER, '\n\t\t\t\tvarying lowp vec2 vDanmakuTexCoord;\n\t\t\t\tuniform sampler2D uSampler;\n\t\t\t\tvoid main(void) {\n\t\t\t\t\tgl_FragColor = texture2D(uSampler,vDanmakuTexCoord);\n\t\t\t\t}'],
+			danmakuVert: [gl.VERTEX_SHADER, '\n\t\t\t\tattribute vec2 aVertexPosition;\n\t\t\t\tattribute vec2 aDanmakuTexCoord;\n\t\t\t\tuniform mat4 u2dCoordinate;\n\t\t\t\tuniform vec2 uDanmakuPos;\n\t\t\t\tvarying lowp vec2 vDanmakuTexCoord;\n\t\t\t\tvoid main(void) {\n\t\t\t\t\tgl_Position = u2dCoordinate * vec4(aVertexPosition+uDanmakuPos,0,1);\n\t\t\t\t\tvDanmakuTexCoord = aDanmakuTexCoord;\n\t\t\t\t}']
 		};
 		function shader(name) {
 			var s = gl.createShader(shaders[name][0]);
 			gl.shaderSource(s, shaders[name][1]);
 			gl.compileShader(s);
-			if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
-				throw "An error occurred compiling the shaders: " + gl.getShaderInfoLog(s);
-			}
+			if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw "An error occurred compiling the shaders: " + gl.getShaderInfoLog(s);
 			return s;
 		}
 		var fragmentShader = shader("danmakuFrag");
@@ -2239,6 +2066,7 @@ var Text3d = function (_Template) {
 		gl.linkProgram(shaderProgram);
 		if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
 			console.error("Unable to initialize the shader program.");
+			return _possibleConstructorReturn(_this);
 		}
 		gl.useProgram(shaderProgram);
 
@@ -2265,6 +2093,8 @@ var Text3d = function (_Template) {
 
 		gl.activeTexture(gl.TEXTURE0);
 		gl.uniform1i(_this.uSampler, 0);
+
+		_this.supported = true;
 		return _this;
 	}
 
@@ -2304,27 +2134,36 @@ var Text3d = function (_Template) {
 		key: 'resize',
 		value: function resize(w, h) {
 			var gl = this.gl,
-			    C = this.dText.canvas3d;
+			    C = this.c3d;
 			C.width = this.dText.width;
 			C.height = this.dText.height;
 			gl.viewport(0, 0, C.width, C.height);
-			//to 2d canvas
-			gl.uniformMatrix4fv(this.u2dCoord, false, _Mat2.default.Identity(4).translate3d(-1, 1, 0).scale3d(2 / C.width, -2 / C.height, 0));
+			gl.uniformMatrix4fv(this.u2dCoord, false, _Mat2.default.Identity(4).translate3d(-1, 1, 0).scale3d(2 / C.width, -2 / C.height, 0).array);
 		}
 	}, {
 		key: 'enable',
 		value: function enable() {
-			this.dText.useImageBitmap = this.dText.canvas3d.hidden = false;
+			var _this2 = this;
+
+			this.dText.DanmakuText.forEach(function (t) {
+				_this2.newDanmaku(t, false);
+			});
+			this.dText.useImageBitmap = this.c3d.hidden = false;
+			requestAnimationFrame(function () {
+				return _this2.draw();
+			});
 		}
 	}, {
 		key: 'disable',
 		value: function disable() {
-			this.dText._cleanCache(true);
-			this.dText.canvas3d.hidden = true;
+			this.clear();
+			this.c3d.hidden = true;
 		}
 	}, {
 		key: 'newDanmaku',
 		value: function newDanmaku(t) {
+			var async = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+
 			var gl = this.gl;
 			t.glDanmaku = false;
 			if (t._cache.height > this.maxTexSize || t._cache.width > this.maxTexSize) {
@@ -2340,12 +2179,17 @@ var Text3d = function (_Template) {
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 			}
-
-			requestIdleCallback(function () {
+			if (async) {
+				requestIdleCallback(function () {
+					gl.bindTexture(gl.TEXTURE_2D, tex);
+					gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, t._cache);
+					t.glDanmaku = true;
+				});
+			} else {
 				gl.bindTexture(gl.TEXTURE_2D, tex);
 				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, t._cache);
 				t.glDanmaku = true;
-			});
+			}
 
 			//vert
 			t.verticesBuffer || (t.verticesBuffer = gl.createBuffer());
@@ -2361,7 +2205,7 @@ var commonTextureCoord = new Float32Array([0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.
 
 exports.default = Text3d;
 
-},{"../lib/Mat/Mat.js":4,"./textModuleTemplate.js":11}],10:[function(require,module,exports){
+},{"../lib/Mat/Mat.js":4,"./textModuleTemplate.js":10}],9:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2396,54 +2240,63 @@ var TextCanvas = function (_Template) {
 
 		_this.supported = dText.text2d.supported;
 		if (!_this.supported) return _possibleConstructorReturn(_this);
-		dText.frame.styleSheet.insertRule('#' + dText.randomText + '_textCanvasContainer canvas{will-change:transform;top:0;left:0;position:absolute;}', 0);
-		dText.frame.styleSheet.insertRule('#' + dText.randomText + '_textCanvasContainer.moving canvas{transition:transform 500s linear;}', 0);
-		dText.frame.styleSheet.insertRule('#' + dText.randomText + '_textCanvasContainer{will-change:transform;pointer-events:none;overflow:hidden;}', 0);
+		dText.frame.addStyle(['#' + dText.randomText + '_textCanvasContainer canvas{will-change:transform;top:0;left:0;position:absolute;}', '#' + dText.randomText + '_textCanvasContainer.moving canvas{transition:transform 500s linear;}', '#' + dText.randomText + '_textCanvasContainer{will-change:transform;pointer-events:none;overflow:hidden;}']);
 
-		dText.textCanvasContainer = document.createElement('div'); //for text canvas
-		dText.textCanvasContainer.classList.add(dText.randomText + '_fullfill');
-		dText.textCanvasContainer.id = dText.randomText + '_textCanvasContainer';
-		dText.container.appendChild(dText.textCanvasContainer);
-		document.addEventListener('visibilitychange', function (e) {
-			if (dText.renderMode === 1 && !document.hidden) {
-				_this.resetPos();
-			}
-		});
+		_this.container = dText.textCanvasContainer = document.createElement('div'); //for text canvas
+		_this.container.classList.add(dText.randomText + '_fullfill');
+		_this.container.id = dText.randomText + '_textCanvasContainer';
+		dText.container.appendChild(_this.container);
 		return _this;
 	}
 
 	_createClass(TextCanvas, [{
+		key: '_toggle',
+		value: function _toggle(s) {
+			var _this2 = this;
+
+			var D = this.dText,
+			    T = D.frame.time;
+			this.container.classList[s ? 'add' : 'remove']('moving');
+
+			var _loop = function _loop(i, _t) {
+				if ((_t = D.DanmakuText[i]).danmaku.mode >= 2) return 'continue';
+				if (s) {
+					requestAnimationFrame(function () {
+						return _this2._move(_t);
+					});
+				} else {
+					_this2._move(_t, T);
+				}
+				t = _t;
+			};
+
+			for (var i = D.DanmakuText.length, t; i--;) {
+				var _ret = _loop(i, t);
+
+				if (_ret === 'continue') continue;
+			}
+		}
+	}, {
 		key: 'pause',
 		value: function pause() {
-			var T = this.dText.frame.time;
-			this.dText.textCanvasContainer.classList.remove('moving');
-			for (var dT = this.dText, i = dT.DanmakuText.length, t; i--;) {
-				if ((t = dT.DanmakuText[i]).danmaku.mode >= 2) continue;
-				var X = this.dText._calcSideDanmakuPosition(t, T, this.dText.width);
-				t._cache.style.transform = 'translate3d(' + ((X - t.estimatePadding) * 10 | 0) / 10 + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
-			}
+			this._toggle(false);
 		}
 	}, {
 		key: 'start',
 		value: function start() {
-			var T = this.dText.frame.time;
-			this.dText.textCanvasContainer.classList.add('moving');
-			for (var dT = this.dText, i = dT.DanmakuText.length, t; i--;) {
-				if ((t = dT.DanmakuText[i]).danmaku.mode < 2) this._move(t, T);
-			}
+			this._toggle(true);
+		}
+	}, {
+		key: 'rate',
+		value: function rate() {
+			this.resetPos();
 		}
 	}, {
 		key: '_move',
-		value: function _move(t) {
-			var _this2 = this;
-
-			var T = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : this.dText.frame.time;
-
-			requestAnimationFrame(function () {
-				if (!t.danmaku) return;
-				var X = _this2.dText._calcSideDanmakuPosition(t, T + 500000, _this2.dText.width);
-				t._cache.style.transform = 'translate3d(' + ((X - t.estimatePadding) * 10 | 0) / 10 + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
-			});
+		value: function _move(t, T) {
+			if (!t.danmaku) return;
+			if (T === undefined) T = this.dText.frame.time + 500000;
+			t._cache.style.transform = 'translate3d(' + ((this.dText._calcSideDanmakuPosition(t, T) - t.estimatePadding) * 10 | 0) / 10 + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
 		}
 	}, {
 		key: 'resetPos',
@@ -2451,8 +2304,8 @@ var TextCanvas = function (_Template) {
 			var _this3 = this;
 
 			this.pause();
-			if (!this.dText.paused) setImmediate(function () {
-				_this3.start();
+			this.dText.paused || requestAnimationFrame(function () {
+				return _this3.start();
 			});
 		}
 	}, {
@@ -2463,24 +2316,34 @@ var TextCanvas = function (_Template) {
 	}, {
 		key: 'remove',
 		value: function remove(t) {
-			this.dText.textCanvasContainer.removeChild(t._cache);
+			t._cache.parentNode && this.container.removeChild(t._cache);
 		}
 	}, {
 		key: 'enable',
 		value: function enable() {
-			this.dText.textCanvasContainer.hidden = false;
+			var _this4 = this;
+
+			this.dText.DanmakuText.forEach(function (t) {
+				return _this4.newDanmaku(t);
+			});
+			this.container.hidden = false;
 		}
 	}, {
 		key: 'disable',
 		value: function disable() {
-			this.dText.textCanvasContainer.hidden = true;
+			this.container.hidden = true;
+			this.container.innerHTML = '';
 		}
 	}, {
 		key: 'newDanmaku',
 		value: function newDanmaku(t) {
-			t._cache.style.transform = 'translate3d(' + ((t.style.x - t.estimatePadding) * 10 | 0) / 10 + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
-			this.dText.textCanvasContainer.appendChild(t._cache);
-			if (t.danmaku.mode < 2) this._move(t);
+			var _this5 = this;
+
+			t._cache.style.transform = 'translate3d(' + (this.dText._calcSideDanmakuPosition(t) - t.estimatePadding) + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
+			this.container.appendChild(t._cache);
+			t.danmaku.mode < 2 && !this.dText.paused && requestAnimationFrame(function () {
+				return _this5._move(t);
+			});
 		}
 	}]);
 
@@ -2489,7 +2352,7 @@ var TextCanvas = function (_Template) {
 
 exports.default = TextCanvas;
 
-},{"./textModuleTemplate.js":11}],11:[function(require,module,exports){
+},{"./textModuleTemplate.js":10}],10:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2515,6 +2378,9 @@ var textModuleTemplate = function () {
 	_createClass(textModuleTemplate, [{
 		key: "draw",
 		value: function draw() {}
+	}, {
+		key: "rate",
+		value: function rate() {}
 	}, {
 		key: "pause",
 		value: function pause() {}
@@ -2549,7 +2415,7 @@ var textModuleTemplate = function () {
 
 exports.default = textModuleTemplate;
 
-},{}],12:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -2731,7 +2597,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],13:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 /*
 Copyright luojia@luojia.me
 LGPL license
@@ -2741,15 +2607,15 @@ LGPL license
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.ResizeSensor = exports.toArray = exports.limitIn = exports.setAttrs = exports.padTime = exports.formatTime = exports.isFullscreen = exports.exitFullscreen = exports.requestFullscreen = exports.addEvents = exports.NyaPlayerCore = undefined;
+exports.toArray = exports.limitIn = exports.setAttrs = exports.padTime = exports.rand = exports.formatTime = exports.isFullscreen = exports.exitFullscreen = exports.requestFullscreen = exports.addEvents = exports.NyaPlayerCore = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _danmakuFrame = require('../lib/danmaku-frame/src/danmaku-frame.js');
+var _i18n = require('./i18n.js');
 
-var _danmakuText = require('../lib/danmaku-text/src/danmaku-text.js');
+var _danmaku = require('./danmaku.js');
 
-var _danmakuText2 = _interopRequireDefault(_danmakuText);
+var _danmaku2 = _interopRequireDefault(_danmaku);
 
 var _Object2HTML = require('../lib/Object2HTML/Object2HTML.js');
 
@@ -2765,14 +2631,20 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-(0, _danmakuText2.default)(_danmakuFrame.DanmakuFrame, _danmakuFrame.DanmakuFrameModule); //init TextDanmaku mod
-
+var _ = _i18n.i18n._;
+window.Object2HTML = _Object2HTML2.default;
 
 //default options
-var NyaPOptions = {
+var NyaPCoreOptions = {
 	muted: false,
 	volume: 1,
 	loop: false,
+	defaultDanmakuColor: null, //a hex color(without #),when the color inputed is invalid,this color will be applied
+	defaultDanmakuMode: 0, //right
+	defaultDanmakuSize: 24,
+	danmakuSend: function danmakuSend(d, callback) {
+		callback(false);
+	}, //the func for sending danmaku
 	textStyle: {},
 	danmakuOption: {}
 };
@@ -2786,19 +2658,28 @@ var NyaPEventEmitter = function () {
 
 	_createClass(NyaPEventEmitter, [{
 		key: 'emit',
-		value: function emit(e, arg) {
-			this._resolve(e, arg);
+		value: function emit(e) {
+			for (var _len = arguments.length, arg = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+				arg[_key - 1] = arguments[_key];
+			}
+
+			this._resolve.apply(this, [e].concat(arg));
+			this.globalHandle.apply(this, [e].concat(arg));
 		}
 	}, {
 		key: '_resolve',
-		value: function _resolve(e, arg) {
+		value: function _resolve(e) {
 			var _this = this;
+
+			for (var _len2 = arguments.length, arg = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+				arg[_key2 - 1] = arguments[_key2];
+			}
 
 			if (e in this._events) {
 				var hs = this._events[e];
 				try {
 					hs.forEach(function (h) {
-						h.call(_this, e, arg);
+						h.apply(_this, arg);
 					});
 				} catch (e) {
 					console.error(e);
@@ -2823,6 +2704,10 @@ var NyaPEventEmitter = function () {
 			if (ind = this._events[e].indexOf(handle) >= 0) this._events[e].splice(ind, 1);
 			if (this._events[e].length === 0) delete this._events[e];
 		}
+	}, {
+		key: 'globalHandle',
+		value: function globalHandle(name) {} //所有事件会触发这个函数
+
 	}]);
 
 	return NyaPEventEmitter;
@@ -2836,15 +2721,20 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 
 		var _this2 = _possibleConstructorReturn(this, (NyaPlayerCore.__proto__ || Object.getPrototypeOf(NyaPlayerCore)).call(this));
 
-		opt = _this2.opt = Object.assign({}, NyaPOptions, opt);
+		opt = _this2.opt = Object.assign({}, NyaPCoreOptions, opt);
+		var $ = _this2.$ = { document: document, window: window };
 		_this2._ = {}; //for private variables
-		var video = _this2._.video = (0, _Object2HTML2.default)({ _: 'video', attr: { id: 'main_video' } });
-		_this2.videoFrame = (0, _Object2HTML2.default)({ _: 'div', attr: { id: 'video_frame' }, child: [video] });
-		_this2.danmakuFrame = new _danmakuFrame.DanmakuFrame(_this2.videoFrame);
-		_this2.danmakuFrame.setMedia(video);
-		_this2.danmakuFrame.enable('TextDanmaku');
-		_this2.setDanmakuOptions(opt.danmakuOption);
-		_this2.setDanmakuOptions(opt.textStyle);
+		_this2._.video = (0, _Object2HTML2.default)({ _: 'video', attr: { id: 'main_video' } });
+		_this2.container = (0, _Object2HTML2.default)({ _: 'div', prop: { id: 'danmaku_container' } });
+		_this2.videoFrame = (0, _Object2HTML2.default)({ _: 'div', attr: { id: 'video_frame' }, child: [_this2.video, _this2.container, { _: 'div', attr: { id: 'loading_frame' }, child: [{ _: 'div', attr: { id: 'loading_anime' }, child: ['(๑•́ ω •̀๑)'] }, { _: 'div', attr: { id: 'loading_info' } }] }] });
+		_this2.collectEles(_this2.videoFrame);
+
+		_this2.loadingInfo(_('Loading danmaku frame'));
+		_this2.Danmaku = new _danmaku2.default(_this2);
+
+		_this2._.loadingAnimeInterval = setInterval(function () {
+			$.loading_anime.style.transform = "translate(" + rand(-20, 20) + "px," + rand(-20, 20) + "px) rotate(" + rand(-10, 10) + "deg)";
+		}, 80);
 
 		//options
 		setTimeout(function (a) {
@@ -2859,7 +2749,7 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 			(function () {
 				//video:_loopChange
 				var LoopDesc = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'loop');
-				Object.defineProperty(video, 'loop', {
+				Object.defineProperty(_this2.video, 'loop', {
 					get: LoopDesc.get,
 					set: function set(bool) {
 						if (bool === this.loop) return;
@@ -2869,62 +2759,47 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 				});
 			})();
 		}
+		addEvents(_this2.video, {
+			loadedmetadata: function loadedmetadata(e) {
+				clearInterval(_this2._.loadingAnimeInterval);
+				$.loading_frame.parentNode.removeChild($.loading_frame);
+			},
+			error: function error(e) {
+				clearInterval(_this2._.loadingAnimeInterval);
+				loading_anime.style.transform = "";
+				loading_anime.innerHTML = '(๑• . •๑)';
+			}
+		});
 
 		_this2.emit('coreLoad');
-		//this.danmakuFrame.container
 		return _this2;
 	}
 
 	_createClass(NyaPlayerCore, [{
-		key: 'play',
-		value: function play() {
-			this.video.paused && this.video.play();
-		}
-	}, {
-		key: 'pause',
-		value: function pause() {
-			this.video.paused || this.video.pause();
-		}
-	}, {
 		key: 'playToggle',
 		value: function playToggle() {
-			this[this.video.paused ? 'play' : 'pause']();
-		}
-	}, {
-		key: 'loadDanmaku',
-		value: function loadDanmaku(obj) {
-			this.danmakuFrame.load(obj);
-		}
-	}, {
-		key: 'loadDanmakuList',
-		value: function loadDanmakuList(obj) {
-			this.danmakuFrame.loadList(obj);
-		}
-	}, {
-		key: 'removeDanmaku',
-		value: function removeDanmaku(obj) {
-			this.danmakuFrame.unload(obj);
-		}
-	}, {
-		key: 'danmakuToggle',
-		value: function danmakuToggle() {
-			var bool = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : !this.danmakuFrame.working;
+			var Switch = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.video.paused;
 
-			this.danmakuFrame[bool ? 'strat' : 'stop']();
+			this.video[Switch ? 'play' : 'pause']();
 		}
 	}, {
-		key: 'setDefaultTextStyle',
-		value: function setDefaultTextStyle(opt) {
-			if (opt) for (var n in opt) {
-				this.TextDanmaku.defaultStyle[n] = opt[n];
-			}
+		key: 'loadingInfo',
+		value: function loadingInfo(text) {
+			this.$.loading_info.appendChild((0, _Object2HTML2.default)({ _: 'div', child: [text] }));
 		}
 	}, {
-		key: 'setDanmakuOptions',
-		value: function setDanmakuOptions(opt) {
-			if (opt) for (var n in opt) {
-				this.TextDanmaku.options[n] = opt[n];
-			}
+		key: 'collectEles',
+		value: function collectEles(ele) {
+			var $ = this.$;
+			if (ele.id && !$[ele.id]) $[ele.id] = ele;
+			toArray(ele.querySelectorAll('*')).forEach(function (e) {
+				if (e.id && !$[e.id]) $[e.id] = e;
+			});
+		}
+	}, {
+		key: 'danmakuFrame',
+		get: function get() {
+			return this.Danmaku.danmakuFrame;
 		}
 	}, {
 		key: 'player',
@@ -2961,12 +2836,14 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 
 //other functions
 
-function addEvents(target) {
-	var events = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+function addEvents(target, events) {
+	if (!Array.isArray(target)) target = [target];
 
 	var _loop = function _loop(e) {
 		e.split(/\,/g).forEach(function (e2) {
-			return target.addEventListener(e2, events[e]);
+			target.forEach(function (t) {
+				t.addEventListener(e2, events[e]);
+			});
 		});
 	};
 
@@ -3013,7 +2890,12 @@ function limitIn(num, min, max) {
 	//limit the number in a range
 	return num < min ? min : num > max ? max : num;
 }
+function rand(min, max) {
+	return min + Math.random() * (max - min) + 0.5 | 0;
+}
 function toArray(obj) {
+	if (obj instanceof Array) return obj.slice();
+	if (obj.length !== undefined) return Array.prototype.slice.call(obj);
 	return [].concat(_toConsumableArray(obj));
 }
 
@@ -3023,6 +2905,36 @@ if (!String.prototype.startsWith) String.prototype.startsWith = function (search
 
 	return this.substr(position, searchString.length) === searchString;
 };
+//Polyfill from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
+if (!Object.assign) Object.assign = function (target, varArgs) {
+	'use strict';
+
+	if (target == null) throw new TypeError('Cannot convert undefined or null to object');
+	var to = Object(target);
+	for (var index = 1; index < arguments.length; index++) {
+		var nextSource = arguments[index];
+		if (nextSource != null) {
+			for (var nextKey in nextSource) {
+				if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+					to[nextKey] = nextSource[nextKey];
+				}
+			}
+		}
+	}
+	return to;
+};
+//Polyfill Array.from
+if (!Array.from) Array.from = function (a, func) {
+	if (!(a instanceof Array)) a = toArray(a);
+	var r = new Array(a.length);
+	for (var i = a.length; i--;) {
+		r[i] = func ? func(a[i], i) : a[i];
+	}return r;
+};
+//Polyfill Number.isInteger
+if (!Number.isInteger) Number.isInteger = function (v) {
+	return (v | 0) === v;
+};
 
 exports.default = NyaPlayerCore;
 exports.NyaPlayerCore = NyaPlayerCore;
@@ -3031,28 +2943,28 @@ exports.requestFullscreen = requestFullscreen;
 exports.exitFullscreen = exitFullscreen;
 exports.isFullscreen = isFullscreen;
 exports.formatTime = formatTime;
+exports.rand = rand;
 exports.padTime = padTime;
 exports.setAttrs = setAttrs;
 exports.limitIn = limitIn;
 exports.toArray = toArray;
-exports.ResizeSensor = _danmakuFrame.ResizeSensor;
 
-},{"../lib/Object2HTML/Object2HTML.js":1,"../lib/danmaku-frame/src/danmaku-frame.js":3,"../lib/danmaku-text/src/danmaku-text.js":7}],14:[function(require,module,exports){
+},{"../lib/Object2HTML/Object2HTML.js":1,"./danmaku.js":14,"./i18n.js":15}],13:[function(require,module,exports){
 /*
 Copyright luojia@luojia.me
 LGPL license
 */
 'use strict';
 
-var _i18n = require('./i18n.js');
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _NyaPCore = require('./NyaPCore.js');
+var _i18n = require('./i18n.js');
 
 var _Object2HTML = require('../lib/Object2HTML/Object2HTML.js');
 
-var _ResizeSensor = require('../lib/danmaku-frame/lib/ResizeSensor.js');
+var _Object2HTML2 = _interopRequireDefault(_Object2HTML);
 
-var _ResizeSensor2 = _interopRequireDefault(_ResizeSensor);
+var _NyaPCore = require('./NyaPCore.js');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3064,28 +2976,441 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var _ = _i18n.i18n._;
 
+//NyaPTouch options
+var NyaPTouchOptions = {
+	//autoHideDanmakuInput:true,//hide danmakuinput after danmaku sending
+	danmakuColors: ['fff', '6cf', 'ff0', 'f00', '0f0', '00f', 'f0f', '000'], //colors in the danmaku style pannel
+	danmakuModes: [0, 3, 2, 1], //0:right	1:left	2:bottom	3:top
+	danmakuSizes: [20, 24, 36],
+	dragToSeek: true,
+	dragToChangeVolume: true
+};
+
 //touch player
 
-var TouchNyaP = function (_NyaPlayerCore) {
-	_inherits(TouchNyaP, _NyaPlayerCore);
+var NyaPTouch = function (_NyaPlayerCore) {
+	_inherits(NyaPTouch, _NyaPlayerCore);
 
-	function TouchNyaP(opt) {
-		_classCallCheck(this, TouchNyaP);
+	function NyaPTouch(opt) {
+		_classCallCheck(this, NyaPTouch);
 
-		var _this = _possibleConstructorReturn(this, (TouchNyaP.__proto__ || Object.getPrototypeOf(TouchNyaP)).call(this, opt));
+		var _this = _possibleConstructorReturn(this, (NyaPTouch.__proto__ || Object.getPrototypeOf(NyaPTouch)).call(this, Object.assign({}, NyaPTouchOptions, opt)));
 
-		_this._player = (0, _Object2HTML.Object2HTML)({
-			_: 'div', attr: { 'class': 'NyaP_Mini' }
+		opt = _this.opt;
+		var NP = _this,
+		    $ = NP.$,
+		    video = NP.video;
+
+		var icons = {};
+		function icon(name, event) {
+			var attr = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+			var ico = icons[name];
+			return (0, _Object2HTML2.default)({ _: 'span', event: event, attr: attr, prop: { id: 'icon_span_' + name,
+					innerHTML: '<svg height=' + ico[1] + ' width=' + ico[0] + ' id="icon_' + name + '"">' + ico[2] + '</svg>' } });
+		}
+		NP.loadingInfo(_('Creating player'));
+
+		NP._.player = (0, _Object2HTML.Object2HTML)({
+			_: 'div', attr: { class: 'NyaPTouch', id: 'NyaPTouch' }, child: [NP.videoFrame, { _: 'div', attr: { id: 'controls' }, child: [] }, { _: 'div', attr: { id: 'msg_box' } }]
 		});
+
+		NP.collectEles(NP._.player);
+
+		Object.assign(NP._, {
+			currentDragMode: null,
+			touchStartPoint: [0, 0]
+		});
+
+		//add touch drag event to video
+		extendEvent.touchdrag($.main_video, { allowMultiTouch: false, preventDefaultX: true });
+
+		//events
+		//todo:上下滑变音量
+		//左右滑拖进度条，拖进度条时和初始纵向位置越远就跨度越大
+		//双击播放暂停
+		//单击显隐控制界面
+		var events = {
+			main_video: {
+				click: function click(e) {
+					e.preventDefault();
+					NP.playToggle();
+				},
+				touchstart: function touchstart(e) {
+					var T = e.changedTouches[0];
+					if (NP._.currentDragMode) return;
+					NP._.touchStartPoint = [T.clientX, T.clientY];
+				},
+				touchdrag: function touchdrag(e) {
+					if (!NP._.currentDragMode) {
+						//make sure the drag mode:seek,volume
+						if (opt.dragToSeek && Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+							//seek
+							NP._.currentDragMode = 'seek';
+							NP._.seekTo = video.currentTime;
+						}
+					}
+					switch (NP._.currentDragMode) {
+						case 'volume':
+							{
+								video.volume = (0, _NyaPCore.limitIn)(video.volume - e.deltaY / 200, 0, 1);
+								break;
+							}
+						case 'seek':
+							{
+								var mu = Math.pow(1.016, Math.abs(e.touches[0].clientY - NP._.touchStartPoint[1]));
+								NP._.seekTo = (0, _NyaPCore.limitIn)(NP._.seekTo + e.deltaX / 200 * mu, 0, video.duration);
+								NP.emit('seekMark', NP._.seekTo);
+								break;
+							}
+					}
+				},
+				touchend: function touchend(e) {
+					if (NP._.currentDragMode === 'seek') {
+						video.currentTime = NP._.seekTo;
+					}
+					NP._.currentDragMode = null;
+				},
+				contextmenu: function contextmenu(e) {
+					e.preventDefault();
+					if (!opt.dragToChangeVolume) return;
+					NP._.currentDragMode = 'volume';
+				}
+			}
+		};
+
+		for (var eleid in $) {
+			//add events to elements
+			var eves = events[eleid];
+			eves && (0, _NyaPCore.addEvents)($[eleid], eves);
+		}
+
+		if (opt.playerFrame instanceof HTMLElement) opt.playerFrame.appendChild(NP.player);
 		return _this;
 	}
 
-	return TouchNyaP;
+	_createClass(NyaPTouch, [{
+		key: 'danmakuInput',
+		value: function danmakuInput() {}
+	}, {
+		key: 'playerMode',
+		value: function playerMode() {
+			var mode = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'normal';
+		}
+	}, {
+		key: 'send',
+		value: function send() {}
+	}, {
+		key: 'msg',
+		value: function msg(text) {
+			var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'tip';
+			//type:tip|info|error
+			var msg = new MsgBox(text, type);
+			this.$.msg_box.appendChild(msg.msg);
+			requestAnimationFrame(function () {
+				return msg.show();
+			});
+		}
+	}]);
+
+	return NyaPTouch;
 }(_NyaPCore.NyaPlayerCore);
 
-window.TouchNyaP = TouchNyaP;
+var MsgBox = function () {
+	function MsgBox(text, type) {
+		var _this2 = this;
 
-},{"../lib/Object2HTML/Object2HTML.js":1,"../lib/danmaku-frame/lib/ResizeSensor.js":2,"./NyaPCore.js":13,"./i18n.js":15}],15:[function(require,module,exports){
+		_classCallCheck(this, MsgBox);
+
+		this.using = false;
+		var msg = this.msg = (0, _Object2HTML2.default)({ _: 'div', attr: { class: 'msg_type_' + type }, child: [text] });
+		msg.addEventListener('click', function () {
+			return _this2.remove();
+		});
+		if (text instanceof HTMLElement) text = text.textContent;
+		var texts = String(text).match(/\w+|\S/g);
+		this.timeout = setTimeout(function () {
+			return _this2.remove();
+		}, Math.max((texts ? texts.length : 0) * 0.6 * 1000, 5000));
+	}
+
+	_createClass(MsgBox, [{
+		key: 'show',
+		value: function show() {
+			var _this3 = this;
+
+			this.msg.style.opacity = 0;
+			setTimeout(function () {
+				_this3.using = true;
+				_this3.msg.style.opacity = 1;
+			}, 0);
+		}
+	}, {
+		key: 'remove',
+		value: function remove() {
+			var _this4 = this;
+
+			if (!this.using) return;
+			this.using = false;
+			this.msg.style.opacity = 0;
+			if (this.timeout) {
+				clearTimeout(this.timeout);
+				this.timeout = 0;
+			}
+			setTimeout(function () {
+				_this4.msg.parentNode.removeChild(_this4.msg);
+			}, 600);
+		}
+	}]);
+
+	return MsgBox;
+}();
+
+var extendEventDefaultOpt = {
+	touchdrag: {
+		preventDefault: false,
+		preventDefaultX: false,
+		preventDefaultY: false,
+		allowMultiTouch: false
+	},
+	doubletouch: {
+		preventDefault: true
+	}
+};
+var extendEvent = { //扩展事件
+	touchdrag: function touchdrag(element, opt) {
+		var stats = {};
+		opt = Object.assign({}, extendEventDefaultOpt.touchdrag, opt);
+		element.addEventListener('touchstart', function (e) {
+			if (!opt.allowMultiTouch && e.changedTouches.length > 1) {
+				stats = {};return;
+			}
+			var ct = e.changedTouches;
+			for (var t = ct.length; t--;) {
+				stats[ct[t].identifier] = [ct[t].clientX, ct[t].clientY];
+			}
+		});
+		element.addEventListener('touchmove', function (e) {
+			if (!opt.allowMultiTouch && e.touches.length > 1) {
+				return;
+			}
+			var ct = e.changedTouches;
+			for (var t = ct.length; t--;) {
+				var id = ct[t].identifier;
+				if (!id in stats) continue; //不属于这个元素的事件
+				var event = new TouchEvent('touchdrag', e);
+				event.deltaX = ct[t].clientX - stats[id][0];
+				event.deltaY = ct[t].clientY - stats[id][1];
+				stats[id] = [ct[t].clientX, ct[t].clientY];
+				if (opt.preventDefault || opt.preventDefaultX && Math.abs(event.deltaX) > Math.abs(event.deltaY) || opt.preventDefaultY && Math.abs(event.deltaX) < Math.abs(event.deltaY)) {
+					e.preventDefault();
+				}
+				element.dispatchEvent(event);
+			}
+		});
+	},
+	doubletouch: function doubletouch(element, opt) {
+		var lastTouches = [],
+		    lastStartTime = 0,
+		    fired = false,
+		    checking = false,
+		    started = false;
+		opt = Object.assign({}, extendEventDefaultOpt.doubletouch, opt);
+		element.addEventListener('touchstart', function (e) {
+			var Ts = e.touches.length > 1 ? (0, _NyaPCore.toArray)(e.touches) : [e.touches[0]],
+			    lT = lastTouches;
+			lastTouches = Ts;
+			if (!started) {
+				lastStartTime = e.timeStamp;
+				started = true;
+			} else if (e.timeStamp - lastStartTime > 400) {
+				started = false;
+				return;
+			}
+			if (Ts.length !== lT.length || !checking) return;
+			var lP = [];
+			for (var i = Ts.length; i--;) {
+				lP.push([lT[i].clientX, lT[i].clientY]);
+			}for (var _i = Ts.length; _i--;) {
+				for (var i2 = lP.length; i2--;) {
+					if (lineLength(Ts[_i].clientX, Ts[_i].clientY, lP[i2][0], lP[i2][1]) <= 6) {
+						lP.splice(i2, 1);
+					}
+				}
+			}
+			if (lP.length !== 0) return;
+			if (opt.preventDefault) e.preventDefault();
+			var event = new TouchEvent('doubletouch', e);
+			event.points = Ts.length;
+			element.dispatchEvent(event);
+			started = checking = false;
+			fired = true;
+		});
+		element.addEventListener('touchend', function (e) {
+			if (e.touches.length === 0 && !fired) {
+				checking = true;
+			}
+			fired = false;
+		});
+		return listeners;
+	}
+};
+
+function lineLength(ax, ay, bx, by) {
+	return Math.sqrt((ax - bx) * (ax - bx) + (ay - by) * (ay - by));
+}
+
+window.NyaPTouch = NyaPTouch;
+
+},{"../lib/Object2HTML/Object2HTML.js":1,"./NyaPCore.js":12,"./i18n.js":15}],14:[function(require,module,exports){
+/*
+Copyright luojia@luojia.me
+LGPL license
+*/
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _danmakuFrame = require('../lib/danmaku-frame/src/danmaku-frame.js');
+
+var _danmakuText = require('../lib/danmaku-text/src/danmaku-text.js');
+
+var _danmakuText2 = _interopRequireDefault(_danmakuText);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+(0, _danmakuText2.default)(_danmakuFrame.DanmakuFrame, _danmakuFrame.DanmakuFrameModule); //init TextDanmaku mod
+
+var colorChars = '0123456789abcdef';
+var danmakuProp = ['color', 'text', 'size', 'mode', 'time'];
+
+var Danmaku = function () {
+	function Danmaku(core) {
+		_classCallCheck(this, Danmaku);
+
+		this.core = core;
+		this.danmakuFrame = new _danmakuFrame.DanmakuFrame(core.container);
+		this.danmakuFrame.setMedia(core.video);
+		this.danmakuFrame.enable('TextDanmaku');
+
+		this.setTextDanmakuOptions(core.opt.danmakuOption);
+		this.setDefaultTextStyle(core.opt.textStyle);
+	}
+
+	_createClass(Danmaku, [{
+		key: 'load',
+		value: function load(obj) {
+			return this.danmakuFrame.load(obj);
+		}
+	}, {
+		key: 'loadList',
+		value: function loadList(list) {
+			this.danmakuFrame.loadList(list);
+		}
+	}, {
+		key: 'remove',
+		value: function remove(obj) {
+			this.danmakuFrame.unload(obj);
+		}
+	}, {
+		key: 'toggle',
+		value: function toggle(name, bool) {
+			try {
+				if (bool == undefined) bool = !this.module(name).enabled;
+				this.danmakuFrame[bool ? 'enable' : 'disable'](name);
+				this.emit('danmakuToggle', name, this.module(name).enabled);
+			} catch (e) {
+				return false;
+			}
+			return true;
+		}
+	}, {
+		key: 'at',
+		value: function at(x, y) {
+			return this.module('TextDanmaku').danmakuAt(x, y);
+		}
+	}, {
+		key: 'module',
+		value: function module(name) {
+			return this.danmakuFrame.modules[name];
+		}
+	}, {
+		key: 'send',
+		value: function send(obj, callback) {
+			var _iteratorNormalCompletion = true;
+			var _didIteratorError = false;
+			var _iteratorError = undefined;
+
+			try {
+				for (var _iterator = danmakuProp[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+					var i = _step.value;
+
+					if (i in obj === false) return false;
+				}
+			} catch (err) {
+				_didIteratorError = true;
+				_iteratorError = err;
+			} finally {
+				try {
+					if (!_iteratorNormalCompletion && _iterator.return) {
+						_iterator.return();
+					}
+				} finally {
+					if (_didIteratorError) {
+						throw _iteratorError;
+					}
+				}
+			}
+
+			if ((obj.text || '').match(/^\s*$/)) return false;
+			obj.color = this.isVaildColor(obj.color);
+			if (obj.color) {
+				obj.color = obj.color.replace(/\$/g, function () {
+					return colorChars[limitIn(16 * Math.random() | 0, 0, 15)];
+				});
+			} else {
+				obj.color = null;
+			}
+			if (this.core.opt.danmakuSend instanceof Function) {
+				this.core.opt.danmakuSend(obj, callback || function () {});
+				return true;
+			}
+			return false;
+		}
+	}, {
+		key: 'isVaildColor',
+		value: function isVaildColor(co) {
+			if (typeof co !== 'string') return false;
+			return co = co.match(/^#?(([\da-f\$]{3}){1,2})$/i) ? co[1] : false;
+		}
+	}, {
+		key: 'setDefaultTextStyle',
+		value: function setDefaultTextStyle(opt) {
+			if (opt) for (var n in opt) {
+				this.module('TextDanmaku').defaultStyle[n] = opt[n];
+			}
+		}
+	}, {
+		key: 'setTextDanmakuOptions',
+		value: function setTextDanmakuOptions(opt) {
+			if (opt) for (var n in opt) {
+				this.module('TextDanmaku').options[n] = opt[n];
+			}
+		}
+	}]);
+
+	return Danmaku;
+}();
+
+exports.default = Danmaku;
+
+},{"../lib/danmaku-frame/src/danmaku-frame.js":3,"../lib/danmaku-text/src/danmaku-text.js":6}],15:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3116,24 +3441,27 @@ var i18n = {
 
 i18n.langs['zh-CN'] = {
 	'play': '播放',
-	'loop': '循环',
 	'Send': '发送',
 	'pause': '暂停',
 	'muted': '静音',
 	'settings': '设置',
-	'full page(P)': '全页模式(P)',
-	'full screen(F)': '全屏模式(F)',
-	'volume($0)([shift]+↑↓)': '音量($0)([shift]+↑↓)',
+	'loop(L)': '循环(L)',
 	'hex color': 'Hex颜色',
-	'danmaku input(Enter)': '弹幕输入框(回车)',
+	'full page(P)': '全页模式(P)',
+	'Creating player': '创建播放器',
+	'full screen(F)': '全屏模式(F)',
+	'danmaku toggle(D)': '弹幕开关(D)',
 	'Input danmaku here': '在这里输入弹幕',
+	'Loading danmaku frame': '加载弹幕框架',
+	'danmaku input(Enter)': '弹幕输入框(回车)',
+	'volume($0)([shift]+↑↓)': '音量($0)([shift]+↑↓)',
 	'Failed to change to fullscreen mode': '无法切换到全屏模式'
 };
 
 //automatically select a language
 
 if (!navigator.languages) {
-	navigator.languages = [navigator.language];
+	navigator.languages = [navigator.language || navigator.browserLanguage];
 }
 
 var _arr = [].concat(_toConsumableArray(navigator.languages));
@@ -3157,6 +3485,6 @@ console.debug('Language:' + i18n.lang);
 
 exports.i18n = i18n;
 
-},{}]},{},[14])
+},{}]},{},[13])
 
 //# sourceMappingURL=NyaPTouch.es2015.js.map

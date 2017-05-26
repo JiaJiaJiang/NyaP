@@ -15,23 +15,18 @@ import {NyaPlayerCore,
 		setAttrs,
 		padTime,
 		limitIn,
-		toArray,
-		ResizeSensor} from './NyaPCore.js';
+		toArray} from './NyaPCore.js';
+import ResizeSensor from '../lib/danmaku-frame/lib/ResizeSensor.js';
 
 const _=i18n._;
 
-const colorChars='0123456789abcdef';
 
 //NyaP options
 const NyaPOptions={
 	autoHideDanmakuInput:true,//hide danmakuinput after danmaku sending
 	danmakuColors:['fff','6cf','ff0','f00','0f0','00f','f0f','000'],//colors in the danmaku style pannel
 	danmakuModes:[0,3,2,1],//0:right	1:left	2:bottom	3:top
-	defaultDanmakuColor:null,//a hex color(without #),when the color inputed is invalid,this color will be applied
-	defaultDanmakuMode:0,//right
-	danmakuSend:(d,callback)=>{callback(false);},//the func for sending danmaku
 	danmakuSizes:[20,24,36],
-	defaultDanmakuSize:24,
 }
 
 //normal player
@@ -43,7 +38,7 @@ class NyaP extends NyaPlayerCore{
 			$=this.$,
 			video=this.video;
 		this._.playerMode='normal';
-		video.controls=false;
+		//video.controls=false;
 		const icons={
 			play:[30,30,'<path d="m10.063,8.856l9.873,6.143l-9.873,6.143v-12.287z" stroke-width="3" stroke-linejoin="round"/>'],
 			addDanmaku:[30,30,'<path style="fill-opacity:0!important;" stroke-width="1.4" d="m21.004,8.995c-0.513,-0.513 -1.135,-0.770 -1.864,-0.770l-8.281,0c-0.729,0 -1.350,0.256 -1.864,0.770c-0.513,0.513 -0.770,1.135 -0.770,1.864l0,8.281c0,0.721 0.256,1.341 0.770,1.858c0.513,0.517 1.135,0.776 1.864,0.776l8.281,0c0.729,0 1.350,-0.258 1.864,-0.776c0.513,-0.517 0.770,-1.136 0.770,-1.858l0,-8.281c0,-0.729 -0.257,-1.350 -0.770,-1.864z" stroke-linejoin="round"/>'
@@ -70,7 +65,7 @@ class NyaP extends NyaPlayerCore{
 		this.loadingInfo(_('Creating player'));
 
 		this._.player=O2H({
-			_:'div',attr:{'class':'NyaP',id:'NyaP',tabindex:0},child:[
+			_:'div',attr:{class:'NyaP',id:'NyaP',tabindex:0},child:[
 				this.videoFrame,
 				{_:'div',attr:{id:'controls'},child:[
 					{_:'div',attr:{id:'control'},child:[
@@ -106,7 +101,7 @@ class NyaP extends NyaPlayerCore{
 						]},
 						{_:'span',attr:{id:'control_right'},child:[
 							icon('addDanmaku',{click:e=>this.danmakuInput()},{title:_('danmaku input(Enter)')}),
-							icon('danmakuToggle',{click:e=>this.danmakuToggle()},{title:_('danmaku toggle(D)')}),
+							icon('danmakuToggle',{click:e=>this.Danmaku.toggle('TextDanmaku')},{title:_('danmaku toggle(D)')}),
 							icon('volume',{},{title:_('volume($0)([shift]+↑↓)','100%')}),
 							icon('loop',{click:e=>{video.loop=!video.loop;}},{title:_('loop(L)')}),
 							{_:'span',prop:{id:'player_mode'},child:[
@@ -214,14 +209,14 @@ class NyaP extends NyaPlayerCore{
 			},
 			danmaku_color:{
 				'input,change':e=>{
-					let i=e.target,c;
-					if(c=i.value.match(/^([\da-f\$]{3}){1,2}$/i)){//match valid hex color code
-						c=c[0];
+					let i=e.target,c=this.Danmaku.isVaildColor(i.value);
+					if(c){//match valid hex color code
 						i.style.backgroundColor=`#${c}`;
 						this._.danmakuColor=c;
 					}else{
 						this._.danmakuColor=undefined;
-						i.style.backgroundColor='';
+						c=this.Danmaku.isVaildColor(this.opt.defaultDanmakuColor);
+						i.style.backgroundColor=c?`#${c}`:'';
 					}
 				},
 			},
@@ -289,6 +284,9 @@ class NyaP extends NyaPlayerCore{
 		//listen danmakuToggle event to change button style
 		this.on('danmakuToggle',bool=>this._iconActive('danmakuToggle',bool));
 		if(this.danmakuFrame.modules.TextDanmaku.enabled)this._iconActive('danmakuToggle',true);
+
+		if(opt.playerFrame instanceof HTMLElement)
+			opt.playerFrame.appendChild(this.player);
 	}
 	_iconActive(name,bool){
 		this.$[`icon_span_${name}`].classList[bool?'add':'remove']('active_icon');
@@ -405,26 +403,20 @@ class NyaP extends NyaPlayerCore{
 			text=this.$.danmaku_input.value,
 			size=this._.danmakuSize,
 			mode=this._.danmakuMode,
-			time=this.danmakuFrame.time;
+			time=this.danmakuFrame.time,
+			d={color,text,size,mode,time};
 
-		if(text.match(/^\s*$/)){
+		let S=this.Danmaku.send(d,(danmaku)=>{
+			if(danmaku&&danmaku._==='text')
+				this.$.danmaku_input.value='';
+				let result=this.danmakuFrame.modules.TextDanmaku.load(danmaku);
+				result.highlight=true;
+				if(this.opt.autoHideDanmakuInput){this.danmakuInput(false);}
+		});
+
+		if(!S){
 			this.danmakuInput(false);
 			return;
-		}
-		if(color){
-			color=color.replace(/\$/g,()=>{
-				return colorChars[limitIn((16*Math.random())|0,0,15)];
-			});
-		}
-		let d={color,text,size,mode,time};
-		if(this.opt.danmakuSend){
-			this.opt.danmakuSend(d,(danmaku)=>{
-				if(danmaku&&danmaku._==='text')
-					this.$.danmaku_input.value='';
-					let result=this.danmakuFrame.modules.TextDanmaku.load(danmaku);
-					result.highlight=true;
-					if(this.opt.autoHideDanmakuInput){this.danmakuInput(false);}
-			});
 		}
 	}
 	_progressDrawer(){

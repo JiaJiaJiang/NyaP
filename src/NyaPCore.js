@@ -5,21 +5,21 @@ LGPL license
 'use strict';
 
 import {i18n} from './i18n.js';
-import {DanmakuFrame,DanmakuFrameModule,ResizeSensor} from '../lib/danmaku-frame/src/danmaku-frame.js'
-import initTextDanmaku from '../lib/danmaku-text/src/danmaku-text.js'
+import Danmaku from './danmaku.js';
 import O2H from '../lib/Object2HTML/Object2HTML.js'
 
 const _=i18n._;
-
-
-initTextDanmaku(DanmakuFrame,DanmakuFrameModule);//init TextDanmaku mod
-
+window.Object2HTML=O2H;
 
 //default options
-const NyaPOptions={
+const NyaPCoreOptions={
 	muted:false,
 	volume:1,
 	loop:false,
+	defaultDanmakuColor:null,//a hex color(without #),when the color inputed is invalid,this color will be applied
+	defaultDanmakuMode:0,//right
+	defaultDanmakuSize:24,
+	danmakuSend:(d,callback)=>{callback(false);},//the func for sending danmaku
 	textStyle:{},
 	danmakuOption:{},
 }
@@ -29,15 +29,15 @@ class NyaPEventEmitter{
 	constructor(){
 		this._events={};
 	}
-	emit(e,arg){
-		this._resolve(e,arg);
-		this.globalHandle(e,arg);
+	emit(e,...arg){
+		this._resolve(e,...arg);
+		this.globalHandle(e,...arg);
 	}
-	_resolve(e,arg){
+	_resolve(e,...arg){
 		if(e in this._events){
 			const hs=this._events[e];
 			try{
-				hs.forEach(h=>{h.call(this,arg)});
+				hs.forEach(h=>{h.apply(this,arg)});
 			}catch(e){
 				console.error(e);
 			}
@@ -55,20 +55,20 @@ class NyaPEventEmitter{
 		if(ind=(this._events[e].indexOf(handle))>=0)this._events[e].splice(ind,1);
 		if(this._events[e].length===0)delete this._events[e];
 	}
-	globalHandle(name,arg){}//所有事件会触发这个函数
+	globalHandle(name,...arg){}//所有事件会触发这个函数
 }
 
 class NyaPlayerCore extends NyaPEventEmitter{
 	constructor(opt){
 		super();
-		opt=this.opt=Object.assign({},NyaPOptions,opt);
+		opt=this.opt=Object.assign({},NyaPCoreOptions,opt);
 		const $=this.$={document,window};
 		this._={};//for private variables
-		const video=this._.video=O2H({_:'video',attr:{id:'main_video'}});
+		this._.video=O2H({_:'video',attr:{id:'main_video'}});
 		this.container=O2H({_:'div',prop:{id:'danmaku_container'}});
 		this.videoFrame=O2H(
 			{_:'div',attr:{id:'video_frame'},child:[
-				video,
+				this.video,
 				this.container,
 				{_:'div',attr:{id:'loading_frame'},child:[
 					{_:'div',attr:{id:'loading_anime'},child:['(๑•́ ω •̀๑)']},
@@ -79,17 +79,8 @@ class NyaPlayerCore extends NyaPEventEmitter{
 		this.collectEles(this.videoFrame);
 
 		this.loadingInfo(_('Loading danmaku frame'));
-		this.danmakuFrame=new DanmakuFrame(this.container);
-		this.danmakuFrame.setMedia(video);
-		this.danmakuFrame.enable('TextDanmaku');
-		this.setDanmakuOptions(opt.danmakuOption);
-		this.setDanmakuOptions(opt.textStyle);
+		this.Danmaku=new Danmaku(this);
 
-		this.danmakuFrame.addStyle([
-			'#loading_frame{top:0;left:0;width:100%;height:100%;position:absolute;background-color:#efefef;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;cursor:dafault;}',
-			'#loading_frame #loading_anime{display:inline-block;font-size:5em;transition:transform 0.08s linear;will-change:transfrom;pointer-events:none;}',
-			'#loading_frame #loading_info{display:block;font-size:.9em;position:absolute;left:0;bottom:0;padding:0.4em;color:#868686;}',
-		]);
 		this._.loadingAnimeInterval=setInterval(()=>{
 			$.loading_anime.style.transform="translate("+rand(-20,20)+"px,"+rand(-20,20)+"px) rotate("+rand(-10,10)+"deg)";
 		},80);
@@ -105,7 +96,7 @@ class NyaPlayerCore extends NyaPEventEmitter{
 		{
 			//video:_loopChange
 			let LoopDesc=Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype,'loop');
-			Object.defineProperty(video,'loop',{
+			Object.defineProperty(this.video,'loop',{
 				get:LoopDesc.get,
 				set:function(bool){
 					if(bool===this.loop)return;
@@ -114,7 +105,7 @@ class NyaPlayerCore extends NyaPEventEmitter{
 				}
 			});
 		}
-		addEvents(video,{
+		addEvents(this.video,{
 			loadedmetadata:e=>{
 				clearInterval(this._.loadingAnimeInterval);
 				$.loading_frame.parentNode.removeChild($.loading_frame);
@@ -126,26 +117,11 @@ class NyaPlayerCore extends NyaPEventEmitter{
 			},
 		});
 
+
 		this.emit('coreLoad');
 	}
 	playToggle(Switch=this.video.paused){
 		this.video[Switch?'play':'pause']();
-	}
-	loadDanmaku(obj){
-		this.danmakuFrame.load(obj);
-	}
-	loadDanmakuList(obj){
-		this.danmakuFrame.loadList(obj);
-	}
-	removeDanmaku(obj){
-		this.danmakuFrame.unload(obj);
-	}
-	danmakuToggle(bool=!this.danmakuFrame.modules.TextDanmaku.enabled){
-		this.danmakuFrame[bool?'enable':'disable']('TextDanmaku');
-		this.emit('danmakuToggle',bool);
-	}
-	danmakuAt(x,y){
-		return this.danmakuFrame.modules.TextDanmaku.danmakuAt(x,y);
 	}
 	loadingInfo(text){
 		this.$.loading_info.appendChild(O2H({_:'div',child:[text]}));
@@ -157,18 +133,13 @@ class NyaPlayerCore extends NyaPEventEmitter{
 			if(e.id&&!$[e.id])$[e.id]=e;
 		});
 	}
+	get danmakuFrame(){return this.Danmaku.danmakuFrame;}
 	get player(){return this._.player;}
 	get video(){return this._.video;}
 	get src(){return this.video.src;}
 	set src(s){this.video.src=s;}
 	get TextDanmaku(){return this.danmakuFrame.modules.TextDanmaku;}
 	get videoSize(){return [this.video.videoWidth,this.video.videoHeight];}
-	setDefaultTextStyle(opt){
-		if(opt)for(let n in opt)this.TextDanmaku.defaultStyle[n]=opt[n];
-	}
-	setDanmakuOptions(opt){
-		if(opt)for(let n in opt)this.TextDanmaku.options[n]=opt[n];
-	}
 }
 
 
@@ -283,5 +254,4 @@ export {
 	setAttrs,
 	limitIn,
 	toArray,
-	ResizeSensor,
 }

@@ -1139,7 +1139,6 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			D.list = []; //danmaku object array
 			D.indexMark = 0; //to record the index of last danmaku in the list
 			D.tunnel = new tunnelManager();
-			D.renderingDanmakuManager = new renderingDanmakuManager(D);
 			D.paused = true;
 			D.randomText = 'danmaku_text_' + (Math.random() * 999999 | 0);
 			D.defaultStyle = { //these styles can be overwrote by the 'font' property of danmaku object
@@ -1179,6 +1178,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			};
 			D.GraphCache = []; //text graph cache
 			D.DanmakuText = [];
+			D.renderingDanmakuManager = new renderingDanmakuManager(D);
 
 			//opt time record
 			D.cacheCleanTime = 0;
@@ -1364,7 +1364,9 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			}
 		}, {
 			key: '_calcSideDanmakuPosition',
-			value: function _calcSideDanmakuPosition(t, T) {
+			value: function _calcSideDanmakuPosition(t) {
+				var T = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : this.frame.time;
+
 				var R = !t.danmaku.mode,
 				    style = t.style;
 				return (R ? this.frame.width : -style.width) + (R ? -1 : 1) * this.frame.rate * (style.width + 1024) * (T - t.time) * this.options.speed / 60000;
@@ -1439,7 +1441,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				if (!force && this.paused || !this.enabled) return;
 				this._calcDanmakusPosition(force);
 				this.activeRendererMode.draw(force);
-				requestIdleCallback(this._checkNewDanmaku);
+				requestAnimationFrame(this._checkNewDanmaku);
 			}
 		}, {
 			key: 'removeText',
@@ -1774,7 +1776,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			this.dText = dText;
 			this.totalArea = 0;
 			this.limitArea = Infinity;
-			this.timer = setInterval(function () {
+			if (dText.text2d.supported) this.timer = setInterval(function () {
 				return _this4.rendererModeCheck();
 			}, 1500);
 		}
@@ -1920,23 +1922,18 @@ var Text2d = function (_Template) {
 			    cW = ctx.canvas.width,
 			    dT = this.dText.DanmakuText,
 			    i = dT.length,
-			    t = void 0;
+			    t = void 0,
+			    left = void 0,
+			    right = void 0,
+			    vW = void 0;
 			ctx.globalCompositeOperation = 'destination-over';
 			this.clear(force);
 			for (; i--;) {
 				(t = dT[i]).drawn || (t.drawn = true);
-				if (cW >= t._cache.width) {
-					//danmaku that smaller than canvas width
-					ctx.drawImage(t._bitmap || t._cache, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding);
-				} else if (t.style.x - t.estimatePadding >= 0) {
-					ctx.drawImage(t._bitmap || t._cache, 0, 0, cW, t._cache.height, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding, cW, t._cache.height);
-				} else {
-					if (t.style.x - t.estimatePadding + t._cache.width <= cW) {
-						ctx.drawImage(t._bitmap || t._cache, t.estimatePadding - t.style.x, 0, t.style.x - t.estimatePadding + t._cache.width, t._cache.height, 0, t.style.y - t.estimatePadding, t.style.x - t.estimatePadding + t._cache.width, t._cache.height);
-					} else {
-						ctx.drawImage(t._bitmap || t._cache, t.estimatePadding - t.style.x, 0, cW, t._cache.height, 0, t.style.y - t.estimatePadding, cW, t._cache.height);
-					}
-				}
+				left = t.style.x - t.estimatePadding;
+				right = left + t._cache.width, vW = t._cache.width + (left < 0 ? left : 0) - (right > cW ? right - cW : 0);
+				if (left > cW || right < 0) continue;
+				ctx.drawImage(t._bitmap || t._cache, left < 0 ? -left : 0, 0, vW, t._cache.height, left < 0 ? 0 : left, t.style.y - t.estimatePadding, vW, t._cache.height);
 			}
 		}
 	}, {
@@ -2046,8 +2043,8 @@ var Text3d = function (_Template) {
 
 		//shader
 		var shaders = {
-			danmakuFrag: [gl.FRAGMENT_SHADER, '\n\t\t\t\tvarying lowp vec2 vDanmakuTexCoord;\n\t\t\t\tuniform sampler2D uSampler;\n\t\t\t\tvoid main(void) {\n\t\t\t\t\tgl_FragColor = texture2D(uSampler,vDanmakuTexCoord);\n\t\t\t\t}'],
-			danmakuVert: [gl.VERTEX_SHADER, '\n\t\t\t\tattribute vec2 aVertexPosition;\n\t\t\t\tattribute vec2 aDanmakuTexCoord;\n\t\t\t\tuniform mat4 u2dCoordinate;\n\t\t\t\tuniform vec2 uDanmakuPos;\n\t\t\t\tvarying lowp vec2 vDanmakuTexCoord;\n\t\t\t\tvoid main(void) {\n\t\t\t\t\tgl_Position = u2dCoordinate * vec4(aVertexPosition+uDanmakuPos,0,1);\n\t\t\t\t\tvDanmakuTexCoord = aDanmakuTexCoord;\n\t\t\t\t}']
+			danmakuFrag: [gl.FRAGMENT_SHADER, '\n\t\t\t\t#pragma optimize(on)\n\t\t\t\tvarying lowp vec2 vDanmakuTexCoord;\n\t\t\t\tuniform sampler2D uSampler;\n\t\t\t\tvoid main(void) {\n\t\t\t\t\tgl_FragColor = texture2D(uSampler,vDanmakuTexCoord);\n\t\t\t\t}'],
+			danmakuVert: [gl.VERTEX_SHADER, '\n\t\t\t\t#pragma optimize(on)\n\t\t\t\tattribute vec2 aVertexPosition;\n\t\t\t\tattribute vec2 aDanmakuTexCoord;\n\t\t\t\tuniform mat4 u2dCoordinate;\n\t\t\t\tvarying lowp vec2 vDanmakuTexCoord;\n\t\t\t\tvoid main(void) {\n\t\t\t\t\tgl_Position = u2dCoordinate * vec4(aVertexPosition,0,1);\n\t\t\t\t\tvDanmakuTexCoord = aDanmakuTexCoord;\n\t\t\t\t}']
 		};
 		function shader(name) {
 			var s = gl.createShader(shaders[name][0]);
@@ -2077,7 +2074,6 @@ var Text3d = function (_Template) {
 
 		_this.uSampler = gl.getUniformLocation(shaderProgram, "uSampler");
 		_this.u2dCoord = gl.getUniformLocation(shaderProgram, "u2dCoordinate");
-		_this.uDanmakuPos = gl.getUniformLocation(shaderProgram, "uDanmakuPos");
 		_this.aVertexPosition = gl.getAttribLocation(shaderProgram, "aVertexPosition");
 		_this.atextureCoord = gl.getAttribLocation(shaderProgram, "aDanmakuTexCoord");
 
@@ -2085,9 +2081,7 @@ var Text3d = function (_Template) {
 		gl.enableVertexAttribArray(_this.atextureCoord);
 
 		_this.commonTexCoordBuffer = gl.createBuffer();
-		gl.bindBuffer(gl.ARRAY_BUFFER, _this.commonTexCoordBuffer);
-		gl.bufferData(gl.ARRAY_BUFFER, commonTextureCoord, gl.STATIC_DRAW);
-		gl.vertexAttribPointer(_this.atextureCoord, 2, gl.FLOAT, false, 0, 0);
+		_this.commonVertCoordBuffer = gl.createBuffer();
 
 		gl.activeTexture(gl.TEXTURE0);
 		gl.uniform1i(_this.uSampler, 0);
@@ -2101,13 +2095,30 @@ var Text3d = function (_Template) {
 		value: function draw(force) {
 			var gl = this.gl,
 			    l = this.dText.DanmakuText.length;
+			var cW = this.c3d.width,
+			    left = void 0,
+			    right = void 0,
+			    vW = void 0;
 			for (var i = 0, t; i < l; i++) {
 				t = this.dText.DanmakuText[i];
 				if (!t || !t.glDanmaku) continue;
-				gl.uniform2f(this.uDanmakuPos, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding);
+				left = t.style.x - t.estimatePadding;
+				right = left + t._cache.width, vW = t._cache.width + (left < 0 ? left : 0) - (right > cW ? right - cW : 0);
+				if (left > cW || right < 0) continue;
 
-				gl.bindBuffer(gl.ARRAY_BUFFER, t.verticesBuffer);
+				//vert
+				t.vertCoord[0] = t.vertCoord[4] = left < 0 ? 0 : left;
+				t.vertCoord[2] = t.vertCoord[6] = t.vertCoord[0] + vW;
+				gl.bindBuffer(gl.ARRAY_BUFFER, this.commonVertCoordBuffer);
+				gl.bufferData(gl.ARRAY_BUFFER, t.vertCoord, gl.DYNAMIC_DRAW);
 				gl.vertexAttribPointer(this.aVertexPosition, 2, gl.FLOAT, false, 0, 0);
+
+				//tex
+				commonTextureCoord[0] = commonTextureCoord[4] = left < 0 ? -left / t._cache.width : 0;
+				commonTextureCoord[2] = commonTextureCoord[6] = commonTextureCoord[0] + vW / t._cache.width;
+				gl.bindBuffer(gl.ARRAY_BUFFER, this.commonTexCoordBuffer);
+				gl.bufferData(gl.ARRAY_BUFFER, commonTextureCoord, gl.DYNAMIC_DRAW);
+				gl.vertexAttribPointer(this.atextureCoord, 2, gl.FLOAT, false, 0, 0);
 
 				gl.bindTexture(gl.TEXTURE_2D, t.texture);
 
@@ -2136,7 +2147,7 @@ var Text3d = function (_Template) {
 			C.width = this.dText.width;
 			C.height = this.dText.height;
 			gl.viewport(0, 0, C.width, C.height);
-			gl.uniformMatrix4fv(this.u2dCoord, false, new _Mat2.default.Identity(4).translate3d(-1, 1, 0).scale3d(2 / C.width, -2 / C.height, 0).array);
+			gl.uniformMatrix4fv(this.u2dCoord, false, _Mat2.default.Identity(4).translate3d(-1, 1, 0).scale3d(2 / C.width, -2 / C.height, 0).array);
 		}
 	}, {
 		key: 'enable',
@@ -2191,15 +2202,18 @@ var Text3d = function (_Template) {
 
 			//vert
 			t.verticesBuffer || (t.verticesBuffer = gl.createBuffer());
-			gl.bindBuffer(gl.ARRAY_BUFFER, t.verticesBuffer);
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, t._cache.width, 0, 0, t._cache.height, t._cache.width, t._cache.height]), gl.STATIC_DRAW);
+			var y = t.style.y - t.estimatePadding;
+			t.vertCoord = new Float32Array([0, y, 0, y, 0, y + t._cache.height, 0, y + t._cache.height]);
 		}
 	}]);
 
 	return Text3d;
 }(_textModuleTemplate2.default);
 
-var commonTextureCoord = new Float32Array([0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0]);
+var commonTextureCoord = new Float32Array([0.0, 0.0, //↖
+1.0, 0.0, //↗
+0.0, 1.0, //↙
+1.0, 1.0]);
 
 exports.default = Text3d;
 
@@ -2259,8 +2273,8 @@ var TextCanvas = function (_Template) {
 			var _loop = function _loop(i, _t) {
 				if ((_t = D.DanmakuText[i]).danmaku.mode >= 2) return 'continue';
 				if (s) {
-					requestAnimationFrame(function (a) {
-						return _this2._move(_t, T + 500000);
+					requestAnimationFrame(function () {
+						return _this2._move(_t);
 					});
 				} else {
 					_this2._move(_t, T);
@@ -2286,7 +2300,7 @@ var TextCanvas = function (_Template) {
 		}
 	}, {
 		key: 'rate',
-		value: function rate(r) {
+		value: function rate() {
 			this.resetPos();
 		}
 	}, {
@@ -2302,7 +2316,7 @@ var TextCanvas = function (_Template) {
 			var _this3 = this;
 
 			this.pause();
-			this.dText.paused || setImmediate(function () {
+			this.dText.paused || requestAnimationFrame(function () {
 				return _this3.start();
 			});
 		}
@@ -2322,7 +2336,7 @@ var TextCanvas = function (_Template) {
 			var _this4 = this;
 
 			this.dText.DanmakuText.forEach(function (t) {
-				_this4.newDanmaku(t);
+				return _this4.newDanmaku(t);
 			});
 			this.container.hidden = false;
 		}
@@ -2337,9 +2351,9 @@ var TextCanvas = function (_Template) {
 		value: function newDanmaku(t) {
 			var _this5 = this;
 
-			t._cache.style.transform = 'translate3d(' + (t.style.x - t.estimatePadding) + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
+			t._cache.style.transform = 'translate3d(' + (this.dText._calcSideDanmakuPosition(t) - t.estimatePadding) + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
 			this.container.appendChild(t._cache);
-			if (t.danmaku.mode < 2 && !this.dText.paused) requestAnimationFrame(function () {
+			t.danmaku.mode < 2 && !this.dText.paused && requestAnimationFrame(function () {
 				return _this5._move(t);
 			});
 		}
@@ -2612,6 +2626,10 @@ var _Object2HTML2 = _interopRequireDefault(_Object2HTML);
 
 var _NyaPCore = require('./NyaPCore.js');
 
+var _ResizeSensor = require('../lib/danmaku-frame/lib/ResizeSensor.js');
+
+var _ResizeSensor2 = _interopRequireDefault(_ResizeSensor);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -2622,20 +2640,12 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var _ = _i18n.i18n._;
 
-var colorChars = '0123456789abcdef';
-
 //NyaP options
 var NyaPOptions = {
 	autoHideDanmakuInput: true, //hide danmakuinput after danmaku sending
 	danmakuColors: ['fff', '6cf', 'ff0', 'f00', '0f0', '00f', 'f0f', '000'], //colors in the danmaku style pannel
 	danmakuModes: [0, 3, 2, 1], //0:right	1:left	2:bottom	3:top
-	defaultDanmakuColor: null, //a hex color(without #),when the color inputed is invalid,this color will be applied
-	defaultDanmakuMode: 0, //right
-	danmakuSend: function danmakuSend(d, callback) {
-		callback(false);
-	}, //the func for sending danmaku
-	danmakuSizes: [20, 24, 36],
-	defaultDanmakuSize: 24
+	danmakuSizes: [20, 24, 36]
 };
 
 //normal player
@@ -2653,7 +2663,7 @@ var NyaP = function (_NyaPlayerCore) {
 		    $ = _this.$,
 		    video = _this.video;
 		_this._.playerMode = 'normal';
-		video.controls = false;
+		//video.controls=false;
 		var icons = {
 			play: [30, 30, '<path d="m10.063,8.856l9.873,6.143l-9.873,6.143v-12.287z" stroke-width="3" stroke-linejoin="round"/>'],
 			addDanmaku: [30, 30, '<path style="fill-opacity:0!important;" stroke-width="1.4" d="m21.004,8.995c-0.513,-0.513 -1.135,-0.770 -1.864,-0.770l-8.281,0c-0.729,0 -1.350,0.256 -1.864,0.770c-0.513,0.513 -0.770,1.135 -0.770,1.864l0,8.281c0,0.721 0.256,1.341 0.770,1.858c0.513,0.517 1.135,0.776 1.864,0.776l8.281,0c0.729,0 1.350,-0.258 1.864,-0.776c0.513,-0.517 0.770,-1.136 0.770,-1.858l0,-8.281c0,-0.729 -0.257,-1.350 -0.770,-1.864z" stroke-linejoin="round"/>' + '<path d="m12.142,14.031l1.888,0l0,-1.888l1.937,0l0,1.888l1.888,0l0,1.937l-1.888,0l0,1.888l-1.937,0l0,-1.888l-1.888,0l0,-1.937z" stroke-width="1"/>'],
@@ -2680,12 +2690,12 @@ var NyaP = function (_NyaPlayerCore) {
 		_this.loadingInfo(_('Creating player'));
 
 		_this._.player = (0, _Object2HTML2.default)({
-			_: 'div', attr: { 'class': 'NyaP', id: 'NyaP', tabindex: 0 }, child: [_this.videoFrame, { _: 'div', attr: { id: 'controls' }, child: [{ _: 'div', attr: { id: 'control' }, child: [{ _: 'span', attr: { id: 'control_left' }, child: [icon('play', { click: function click(e) {
+			_: 'div', attr: { class: 'NyaP', id: 'NyaP', tabindex: 0 }, child: [_this.videoFrame, { _: 'div', attr: { id: 'controls' }, child: [{ _: 'div', attr: { id: 'control' }, child: [{ _: 'span', attr: { id: 'control_left' }, child: [icon('play', { click: function click(e) {
 								return _this.playToggle();
 							} }, { title: _('play') })] }, { _: 'span', attr: { id: 'control_center' }, child: [{ _: 'div', prop: { id: 'progress_info' }, child: [{ _: 'span', child: [{ _: 'canvas', prop: { id: 'progress', pad: 10 } }] }, { _: 'span', prop: { id: 'time_frame' }, child: [{ _: 'span', prop: { id: 'time' }, child: [{ _: 'span', prop: { id: 'current_time' }, child: ['00:00'] }, '/', { _: 'span', prop: { id: 'total_time' }, child: ['00:00'] }] }] }] }, { _: 'div', prop: { id: 'danmaku_input_frame' }, child: [{ _: 'span', prop: { id: 'danmaku_style' }, child: [{ _: 'div', attr: { id: 'danmaku_style_pannel' }, child: [{ _: 'div', attr: { id: 'danmaku_color_box' } }, { _: 'input', attr: { id: 'danmaku_color', placeholder: _('hex color'), maxlength: "6" } }, { _: 'span', attr: { id: 'danmaku_mode_box' } }, { _: 'span', attr: { id: 'danmaku_size_box' } }] }, icon('danmakuStyle')] }, { _: 'input', attr: { id: 'danmaku_input', placeholder: _('Input danmaku here') } }, { _: 'span', prop: { id: 'danmaku_submit', innerHTML: _('Send') } }] }] }, { _: 'span', attr: { id: 'control_right' }, child: [icon('addDanmaku', { click: function click(e) {
 								return _this.danmakuInput();
 							} }, { title: _('danmaku input(Enter)') }), icon('danmakuToggle', { click: function click(e) {
-								return _this.danmakuToggle();
+								return _this.Danmaku.toggle('TextDanmaku');
 							} }, { title: _('danmaku toggle(D)') }), icon('volume', {}, { title: _('volume($0)([shift]+↑↓)', '100%') }), icon('loop', { click: function click(e) {
 								video.loop = !video.loop;
 							} }, { title: _('loop(L)') }), { _: 'span', prop: { id: 'player_mode' }, child: [icon('fullPage', { click: function click(e) {
@@ -2725,7 +2735,7 @@ var NyaP = function (_NyaPlayerCore) {
 		//progress
 		setTimeout(function () {
 			//ResizeSensor
-			$.control.ResizeSensor = new _NyaPCore.ResizeSensor($.control, function () {
+			$.control.ResizeSensor = new _ResizeSensor2.default($.control, function () {
 				return _this.refreshProgress();
 			});
 			_this.refreshProgress();
@@ -2811,15 +2821,15 @@ var NyaP = function (_NyaPlayerCore) {
 			danmaku_color: {
 				'input,change': function inputChange(e) {
 					var i = e.target,
-					    c = void 0;
-					if (c = i.value.match(/^([\da-f\$]{3}){1,2}$/i)) {
+					    c = _this.Danmaku.isVaildColor(i.value);
+					if (c) {
 						//match valid hex color code
-						c = c[0];
 						i.style.backgroundColor = '#' + c;
 						_this._.danmakuColor = c;
 					} else {
 						_this._.danmakuColor = undefined;
-						i.style.backgroundColor = '';
+						c = _this.Danmaku.isVaildColor(_this.opt.defaultDanmakuColor);
+						i.style.backgroundColor = c ? '#' + c : '';
 					}
 				}
 			},
@@ -2898,6 +2908,8 @@ var NyaP = function (_NyaPlayerCore) {
 			return _this._iconActive('danmakuToggle', bool);
 		});
 		if (_this.danmakuFrame.modules.TextDanmaku.enabled) _this._iconActive('danmakuToggle', true);
+
+		if (opt.playerFrame instanceof HTMLElement) opt.playerFrame.appendChild(_this.player);
 		return _this;
 	}
 
@@ -3073,27 +3085,21 @@ var NyaP = function (_NyaPlayerCore) {
 			    text = this.$.danmaku_input.value,
 			    size = this._.danmakuSize,
 			    mode = this._.danmakuMode,
-			    time = this.danmakuFrame.time;
+			    time = this.danmakuFrame.time,
+			    d = { color: color, text: text, size: size, mode: mode, time: time };
 
-			if (text.match(/^\s*$/)) {
+			var S = this.Danmaku.send(d, function (danmaku) {
+				if (danmaku && danmaku._ === 'text') _this3.$.danmaku_input.value = '';
+				var result = _this3.danmakuFrame.modules.TextDanmaku.load(danmaku);
+				result.highlight = true;
+				if (_this3.opt.autoHideDanmakuInput) {
+					_this3.danmakuInput(false);
+				}
+			});
+
+			if (!S) {
 				this.danmakuInput(false);
 				return;
-			}
-			if (color) {
-				color = color.replace(/\$/g, function () {
-					return colorChars[(0, _NyaPCore.limitIn)(16 * Math.random() | 0, 0, 15)];
-				});
-			}
-			var d = { color: color, text: text, size: size, mode: mode, time: time };
-			if (this.opt.danmakuSend) {
-				this.opt.danmakuSend(d, function (danmaku) {
-					if (danmaku && danmaku._ === 'text') _this3.$.danmaku_input.value = '';
-					var result = _this3.danmakuFrame.modules.TextDanmaku.load(danmaku);
-					result.highlight = true;
-					if (_this3.opt.autoHideDanmakuInput) {
-						_this3.danmakuInput(false);
-					}
-				});
 			}
 		}
 	}, {
@@ -3234,7 +3240,7 @@ var MsgBox = function () {
 
 window.NyaP = NyaP;
 
-},{"../lib/Object2HTML/Object2HTML.js":1,"./NyaPCore.js":13,"./i18n.js":14}],13:[function(require,module,exports){
+},{"../lib/Object2HTML/Object2HTML.js":1,"../lib/danmaku-frame/lib/ResizeSensor.js":2,"./NyaPCore.js":13,"./i18n.js":15}],13:[function(require,module,exports){
 /*
 Copyright luojia@luojia.me
 LGPL license
@@ -3244,17 +3250,15 @@ LGPL license
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.ResizeSensor = exports.toArray = exports.limitIn = exports.setAttrs = exports.padTime = exports.rand = exports.formatTime = exports.isFullscreen = exports.exitFullscreen = exports.requestFullscreen = exports.addEvents = exports.NyaPlayerCore = undefined;
+exports.toArray = exports.limitIn = exports.setAttrs = exports.padTime = exports.rand = exports.formatTime = exports.isFullscreen = exports.exitFullscreen = exports.requestFullscreen = exports.addEvents = exports.NyaPlayerCore = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _i18n = require('./i18n.js');
 
-var _danmakuFrame = require('../lib/danmaku-frame/src/danmaku-frame.js');
+var _danmaku = require('./danmaku.js');
 
-var _danmakuText = require('../lib/danmaku-text/src/danmaku-text.js');
-
-var _danmakuText2 = _interopRequireDefault(_danmakuText);
+var _danmaku2 = _interopRequireDefault(_danmaku);
 
 var _Object2HTML = require('../lib/Object2HTML/Object2HTML.js');
 
@@ -3271,15 +3275,19 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var _ = _i18n.i18n._;
-
-(0, _danmakuText2.default)(_danmakuFrame.DanmakuFrame, _danmakuFrame.DanmakuFrameModule); //init TextDanmaku mod
-
+window.Object2HTML = _Object2HTML2.default;
 
 //default options
-var NyaPOptions = {
+var NyaPCoreOptions = {
 	muted: false,
 	volume: 1,
 	loop: false,
+	defaultDanmakuColor: null, //a hex color(without #),when the color inputed is invalid,this color will be applied
+	defaultDanmakuMode: 0, //right
+	defaultDanmakuSize: 24,
+	danmakuSend: function danmakuSend(d, callback) {
+		callback(false);
+	}, //the func for sending danmaku
 	textStyle: {},
 	danmakuOption: {}
 };
@@ -3293,20 +3301,28 @@ var NyaPEventEmitter = function () {
 
 	_createClass(NyaPEventEmitter, [{
 		key: 'emit',
-		value: function emit(e, arg) {
-			this._resolve(e, arg);
-			this.globalHandle(e, arg);
+		value: function emit(e) {
+			for (var _len = arguments.length, arg = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+				arg[_key - 1] = arguments[_key];
+			}
+
+			this._resolve.apply(this, [e].concat(arg));
+			this.globalHandle.apply(this, [e].concat(arg));
 		}
 	}, {
 		key: '_resolve',
-		value: function _resolve(e, arg) {
+		value: function _resolve(e) {
 			var _this = this;
+
+			for (var _len2 = arguments.length, arg = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+				arg[_key2 - 1] = arguments[_key2];
+			}
 
 			if (e in this._events) {
 				var hs = this._events[e];
 				try {
 					hs.forEach(function (h) {
-						h.call(_this, arg);
+						h.apply(_this, arg);
 					});
 				} catch (e) {
 					console.error(e);
@@ -3333,7 +3349,7 @@ var NyaPEventEmitter = function () {
 		}
 	}, {
 		key: 'globalHandle',
-		value: function globalHandle(name, arg) {} //所有事件会触发这个函数
+		value: function globalHandle(name) {} //所有事件会触发这个函数
 
 	}]);
 
@@ -3348,22 +3364,17 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 
 		var _this2 = _possibleConstructorReturn(this, (NyaPlayerCore.__proto__ || Object.getPrototypeOf(NyaPlayerCore)).call(this));
 
-		opt = _this2.opt = Object.assign({}, NyaPOptions, opt);
+		opt = _this2.opt = Object.assign({}, NyaPCoreOptions, opt);
 		var $ = _this2.$ = { document: document, window: window };
 		_this2._ = {}; //for private variables
-		var video = _this2._.video = (0, _Object2HTML2.default)({ _: 'video', attr: { id: 'main_video' } });
+		_this2._.video = (0, _Object2HTML2.default)({ _: 'video', attr: { id: 'main_video' } });
 		_this2.container = (0, _Object2HTML2.default)({ _: 'div', prop: { id: 'danmaku_container' } });
-		_this2.videoFrame = (0, _Object2HTML2.default)({ _: 'div', attr: { id: 'video_frame' }, child: [video, _this2.container, { _: 'div', attr: { id: 'loading_frame' }, child: [{ _: 'div', attr: { id: 'loading_anime' }, child: ['(๑•́ ω •̀๑)'] }, { _: 'div', attr: { id: 'loading_info' } }] }] });
+		_this2.videoFrame = (0, _Object2HTML2.default)({ _: 'div', attr: { id: 'video_frame' }, child: [_this2.video, _this2.container, { _: 'div', attr: { id: 'loading_frame' }, child: [{ _: 'div', attr: { id: 'loading_anime' }, child: ['(๑•́ ω •̀๑)'] }, { _: 'div', attr: { id: 'loading_info' } }] }] });
 		_this2.collectEles(_this2.videoFrame);
 
 		_this2.loadingInfo(_('Loading danmaku frame'));
-		_this2.danmakuFrame = new _danmakuFrame.DanmakuFrame(_this2.container);
-		_this2.danmakuFrame.setMedia(video);
-		_this2.danmakuFrame.enable('TextDanmaku');
-		_this2.setDanmakuOptions(opt.danmakuOption);
-		_this2.setDanmakuOptions(opt.textStyle);
+		_this2.Danmaku = new _danmaku2.default(_this2);
 
-		_this2.danmakuFrame.addStyle(['#loading_frame{top:0;left:0;width:100%;height:100%;position:absolute;background-color:#efefef;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;cursor:dafault;}', '#loading_frame #loading_anime{display:inline-block;font-size:5em;transition:transform 0.08s linear;will-change:transfrom;pointer-events:none;}', '#loading_frame #loading_info{display:block;font-size:.9em;position:absolute;left:0;bottom:0;padding:0.4em;color:#868686;}']);
 		_this2._.loadingAnimeInterval = setInterval(function () {
 			$.loading_anime.style.transform = "translate(" + rand(-20, 20) + "px," + rand(-20, 20) + "px) rotate(" + rand(-10, 10) + "deg)";
 		}, 80);
@@ -3381,7 +3392,7 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 			(function () {
 				//video:_loopChange
 				var LoopDesc = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'loop');
-				Object.defineProperty(video, 'loop', {
+				Object.defineProperty(_this2.video, 'loop', {
 					get: LoopDesc.get,
 					set: function set(bool) {
 						if (bool === this.loop) return;
@@ -3391,7 +3402,7 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 				});
 			})();
 		}
-		addEvents(video, {
+		addEvents(_this2.video, {
 			loadedmetadata: function loadedmetadata(e) {
 				clearInterval(_this2._.loadingAnimeInterval);
 				$.loading_frame.parentNode.removeChild($.loading_frame);
@@ -3415,34 +3426,6 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 			this.video[Switch ? 'play' : 'pause']();
 		}
 	}, {
-		key: 'loadDanmaku',
-		value: function loadDanmaku(obj) {
-			this.danmakuFrame.load(obj);
-		}
-	}, {
-		key: 'loadDanmakuList',
-		value: function loadDanmakuList(obj) {
-			this.danmakuFrame.loadList(obj);
-		}
-	}, {
-		key: 'removeDanmaku',
-		value: function removeDanmaku(obj) {
-			this.danmakuFrame.unload(obj);
-		}
-	}, {
-		key: 'danmakuToggle',
-		value: function danmakuToggle() {
-			var bool = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : !this.danmakuFrame.modules.TextDanmaku.enabled;
-
-			this.danmakuFrame[bool ? 'enable' : 'disable']('TextDanmaku');
-			this.emit('danmakuToggle', bool);
-		}
-	}, {
-		key: 'danmakuAt',
-		value: function danmakuAt(x, y) {
-			return this.danmakuFrame.modules.TextDanmaku.danmakuAt(x, y);
-		}
-	}, {
 		key: 'loadingInfo',
 		value: function loadingInfo(text) {
 			this.$.loading_info.appendChild((0, _Object2HTML2.default)({ _: 'div', child: [text] }));
@@ -3457,18 +3440,9 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 			});
 		}
 	}, {
-		key: 'setDefaultTextStyle',
-		value: function setDefaultTextStyle(opt) {
-			if (opt) for (var n in opt) {
-				this.TextDanmaku.defaultStyle[n] = opt[n];
-			}
-		}
-	}, {
-		key: 'setDanmakuOptions',
-		value: function setDanmakuOptions(opt) {
-			if (opt) for (var n in opt) {
-				this.TextDanmaku.options[n] = opt[n];
-			}
+		key: 'danmakuFrame',
+		get: function get() {
+			return this.Danmaku.danmakuFrame;
 		}
 	}, {
 		key: 'player',
@@ -3617,9 +3591,156 @@ exports.padTime = padTime;
 exports.setAttrs = setAttrs;
 exports.limitIn = limitIn;
 exports.toArray = toArray;
-exports.ResizeSensor = _danmakuFrame.ResizeSensor;
 
-},{"../lib/Object2HTML/Object2HTML.js":1,"../lib/danmaku-frame/src/danmaku-frame.js":3,"../lib/danmaku-text/src/danmaku-text.js":6,"./i18n.js":14}],14:[function(require,module,exports){
+},{"../lib/Object2HTML/Object2HTML.js":1,"./danmaku.js":14,"./i18n.js":15}],14:[function(require,module,exports){
+/*
+Copyright luojia@luojia.me
+LGPL license
+*/
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _danmakuFrame = require('../lib/danmaku-frame/src/danmaku-frame.js');
+
+var _danmakuText = require('../lib/danmaku-text/src/danmaku-text.js');
+
+var _danmakuText2 = _interopRequireDefault(_danmakuText);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+(0, _danmakuText2.default)(_danmakuFrame.DanmakuFrame, _danmakuFrame.DanmakuFrameModule); //init TextDanmaku mod
+
+var colorChars = '0123456789abcdef';
+var danmakuProp = ['color', 'text', 'size', 'mode', 'time'];
+
+var Danmaku = function () {
+	function Danmaku(core) {
+		_classCallCheck(this, Danmaku);
+
+		this.core = core;
+		this.danmakuFrame = new _danmakuFrame.DanmakuFrame(core.container);
+		this.danmakuFrame.setMedia(core.video);
+		this.danmakuFrame.enable('TextDanmaku');
+
+		this.setTextDanmakuOptions(core.opt.danmakuOption);
+		this.setDefaultTextStyle(core.opt.textStyle);
+	}
+
+	_createClass(Danmaku, [{
+		key: 'load',
+		value: function load(obj) {
+			return this.danmakuFrame.load(obj);
+		}
+	}, {
+		key: 'loadList',
+		value: function loadList(list) {
+			this.danmakuFrame.loadList(list);
+		}
+	}, {
+		key: 'remove',
+		value: function remove(obj) {
+			this.danmakuFrame.unload(obj);
+		}
+	}, {
+		key: 'toggle',
+		value: function toggle(name, bool) {
+			try {
+				if (bool == undefined) bool = !this.module(name).enabled;
+				this.danmakuFrame[bool ? 'enable' : 'disable'](name);
+				this.emit('danmakuToggle', name, this.module(name).enabled);
+			} catch (e) {
+				return false;
+			}
+			return true;
+		}
+	}, {
+		key: 'at',
+		value: function at(x, y) {
+			return this.module('TextDanmaku').danmakuAt(x, y);
+		}
+	}, {
+		key: 'module',
+		value: function module(name) {
+			return this.danmakuFrame.modules[name];
+		}
+	}, {
+		key: 'send',
+		value: function send(obj, callback) {
+			var _iteratorNormalCompletion = true;
+			var _didIteratorError = false;
+			var _iteratorError = undefined;
+
+			try {
+				for (var _iterator = danmakuProp[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+					var i = _step.value;
+
+					if (i in obj === false) return false;
+				}
+			} catch (err) {
+				_didIteratorError = true;
+				_iteratorError = err;
+			} finally {
+				try {
+					if (!_iteratorNormalCompletion && _iterator.return) {
+						_iterator.return();
+					}
+				} finally {
+					if (_didIteratorError) {
+						throw _iteratorError;
+					}
+				}
+			}
+
+			if ((obj.text || '').match(/^\s*$/)) return false;
+			obj.color = this.isVaildColor(obj.color);
+			if (obj.color) {
+				obj.color = obj.color.replace(/\$/g, function () {
+					return colorChars[limitIn(16 * Math.random() | 0, 0, 15)];
+				});
+			} else {
+				obj.color = null;
+			}
+			if (this.core.opt.danmakuSend instanceof Function) {
+				this.core.opt.danmakuSend(obj, callback || function () {});
+				return true;
+			}
+			return false;
+		}
+	}, {
+		key: 'isVaildColor',
+		value: function isVaildColor(co) {
+			if (typeof co !== 'string') return false;
+			return co = co.match(/^#?(([\da-f\$]{3}){1,2})$/i) ? co[1] : false;
+		}
+	}, {
+		key: 'setDefaultTextStyle',
+		value: function setDefaultTextStyle(opt) {
+			if (opt) for (var n in opt) {
+				this.module('TextDanmaku').defaultStyle[n] = opt[n];
+			}
+		}
+	}, {
+		key: 'setTextDanmakuOptions',
+		value: function setTextDanmakuOptions(opt) {
+			if (opt) for (var n in opt) {
+				this.module('TextDanmaku').options[n] = opt[n];
+			}
+		}
+	}]);
+
+	return Danmaku;
+}();
+
+exports.default = Danmaku;
+
+},{"../lib/danmaku-frame/src/danmaku-frame.js":3,"../lib/danmaku-text/src/danmaku-text.js":6}],15:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {

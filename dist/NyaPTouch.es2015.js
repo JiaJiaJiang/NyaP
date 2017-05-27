@@ -1922,22 +1922,24 @@ var Text2d = function (_Template) {
 			    cW = ctx.canvas.width,
 			    dT = this.dText.DanmakuText,
 			    i = dT.length,
-			    t = void 0;
+			    t = void 0,
+			    left = void 0,
+			    right = void 0,
+			    vW = void 0;
+			var bitmap = this.dText.useImageBitmap;
 			ctx.globalCompositeOperation = 'destination-over';
 			this.clear(force);
 			for (; i--;) {
 				(t = dT[i]).drawn || (t.drawn = true);
-				if (cW >= t._cache.width) {
+				left = t.style.x - t.estimatePadding;
+				right = left + t._cache.width;
+				if (left > cW || right < 0) continue;
+				if (!bitmap && cW >= t._cache.width) {
 					//danmaku that smaller than canvas width
-					ctx.drawImage(t._bitmap || t._cache, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding);
-				} else if (t.style.x - t.estimatePadding >= 0) {
-					ctx.drawImage(t._bitmap || t._cache, 0, 0, cW, t._cache.height, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding, cW, t._cache.height);
+					ctx.drawImage(t._bitmap || t._cache, left, t.style.y - t.estimatePadding);
 				} else {
-					if (t.style.x - t.estimatePadding + t._cache.width <= cW) {
-						ctx.drawImage(t._bitmap || t._cache, t.estimatePadding - t.style.x, 0, t.style.x - t.estimatePadding + t._cache.width, t._cache.height, 0, t.style.y - t.estimatePadding, t.style.x - t.estimatePadding + t._cache.width, t._cache.height);
-					} else {
-						ctx.drawImage(t._bitmap || t._cache, t.estimatePadding - t.style.x, 0, cW, t._cache.height, 0, t.style.y - t.estimatePadding, cW, t._cache.height);
-					}
+					vW = t._cache.width + (left < 0 ? left : 0) - (right > cW ? right - cW : 0);
+					ctx.drawImage(t._bitmap || t._cache, left < 0 ? -left : 0, 0, vW, t._cache.height, left < 0 ? 0 : left, t.style.y - t.estimatePadding, vW, t._cache.height);
 				}
 			}
 		}
@@ -2048,8 +2050,8 @@ var Text3d = function (_Template) {
 
 		//shader
 		var shaders = {
-			danmakuFrag: [gl.FRAGMENT_SHADER, '\n\t\t\t\tvarying lowp vec2 vDanmakuTexCoord;\n\t\t\t\tuniform sampler2D uSampler;\n\t\t\t\tvoid main(void) {\n\t\t\t\t\tgl_FragColor = texture2D(uSampler,vDanmakuTexCoord);\n\t\t\t\t}'],
-			danmakuVert: [gl.VERTEX_SHADER, '\n\t\t\t\tattribute vec2 aVertexPosition;\n\t\t\t\tattribute vec2 aDanmakuTexCoord;\n\t\t\t\tuniform mat4 u2dCoordinate;\n\t\t\t\tuniform vec2 uDanmakuPos;\n\t\t\t\tvarying lowp vec2 vDanmakuTexCoord;\n\t\t\t\tvoid main(void) {\n\t\t\t\t\tgl_Position = u2dCoordinate * vec4(aVertexPosition+uDanmakuPos,0,1);\n\t\t\t\t\tvDanmakuTexCoord = aDanmakuTexCoord;\n\t\t\t\t}']
+			danmakuFrag: [gl.FRAGMENT_SHADER, '\n\t\t\t\t#pragma optimize(on)\n\t\t\t\tprecision lowp float;\n\t\t\t\tvarying lowp vec2 vDanmakuTexCoord;\n\t\t\t\tuniform sampler2D uSampler;\n\t\t\t\tvoid main(void) {\n\t\t\t\t\tvec4 co=texture2D(uSampler,vDanmakuTexCoord);\n\t\t\t\t\tif(co.a == 0.0)discard;\n\t\t\t\t\tgl_FragColor = co;\n\t\t\t\t}'],
+			danmakuVert: [gl.VERTEX_SHADER, '\n\t\t\t\t#pragma optimize(on)\n\t\t\t\tattribute vec2 aVertexPosition;\n\t\t\t\tattribute vec2 aDanmakuTexCoord;\n\t\t\t\tuniform mat4 u2dCoordinate;\n\t\t\t\tvarying lowp vec2 vDanmakuTexCoord;\n\t\t\t\tvoid main(void) {\n\t\t\t\t\tgl_Position = u2dCoordinate * vec4(aVertexPosition,0,1);\n\t\t\t\t\tvDanmakuTexCoord = aDanmakuTexCoord;\n\t\t\t\t}']
 		};
 		function shader(name) {
 			var s = gl.createShader(shaders[name][0]);
@@ -2079,7 +2081,6 @@ var Text3d = function (_Template) {
 
 		_this.uSampler = gl.getUniformLocation(shaderProgram, "uSampler");
 		_this.u2dCoord = gl.getUniformLocation(shaderProgram, "u2dCoordinate");
-		_this.uDanmakuPos = gl.getUniformLocation(shaderProgram, "uDanmakuPos");
 		_this.aVertexPosition = gl.getAttribLocation(shaderProgram, "aVertexPosition");
 		_this.atextureCoord = gl.getAttribLocation(shaderProgram, "aDanmakuTexCoord");
 
@@ -2087,9 +2088,7 @@ var Text3d = function (_Template) {
 		gl.enableVertexAttribArray(_this.atextureCoord);
 
 		_this.commonTexCoordBuffer = gl.createBuffer();
-		gl.bindBuffer(gl.ARRAY_BUFFER, _this.commonTexCoordBuffer);
-		gl.bufferData(gl.ARRAY_BUFFER, commonTextureCoord, gl.STATIC_DRAW);
-		gl.vertexAttribPointer(_this.atextureCoord, 2, gl.FLOAT, false, 0, 0);
+		_this.commonVertCoordBuffer = gl.createBuffer();
 
 		gl.activeTexture(gl.TEXTURE0);
 		gl.uniform1i(_this.uSampler, 0);
@@ -2103,13 +2102,30 @@ var Text3d = function (_Template) {
 		value: function draw(force) {
 			var gl = this.gl,
 			    l = this.dText.DanmakuText.length;
+			var cW = this.c3d.width,
+			    left = void 0,
+			    right = void 0,
+			    vW = void 0;
 			for (var i = 0, t; i < l; i++) {
 				t = this.dText.DanmakuText[i];
 				if (!t || !t.glDanmaku) continue;
-				gl.uniform2f(this.uDanmakuPos, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding);
+				left = t.style.x - t.estimatePadding;
+				right = left + t._cache.width, vW = t._cache.width + (left < 0 ? left : 0) - (right > cW ? right - cW : 0);
+				if (left > cW || right < 0) continue;
 
-				gl.bindBuffer(gl.ARRAY_BUFFER, t.verticesBuffer);
+				//vert
+				t.vertCoord[0] = t.vertCoord[4] = left < 0 ? 0 : left;
+				t.vertCoord[2] = t.vertCoord[6] = t.vertCoord[0] + vW;
+				gl.bindBuffer(gl.ARRAY_BUFFER, this.commonVertCoordBuffer);
+				gl.bufferData(gl.ARRAY_BUFFER, t.vertCoord, gl.DYNAMIC_DRAW);
 				gl.vertexAttribPointer(this.aVertexPosition, 2, gl.FLOAT, false, 0, 0);
+
+				//tex
+				commonTextureCoord[0] = commonTextureCoord[4] = left < 0 ? -left / t._cache.width : 0;
+				commonTextureCoord[2] = commonTextureCoord[6] = commonTextureCoord[0] + vW / t._cache.width;
+				gl.bindBuffer(gl.ARRAY_BUFFER, this.commonTexCoordBuffer);
+				gl.bufferData(gl.ARRAY_BUFFER, commonTextureCoord, gl.DYNAMIC_DRAW);
+				gl.vertexAttribPointer(this.atextureCoord, 2, gl.FLOAT, false, 0, 0);
 
 				gl.bindTexture(gl.TEXTURE_2D, t.texture);
 
@@ -2127,8 +2143,6 @@ var Text3d = function (_Template) {
 		value: function deleteTextObject(t) {
 			var gl = this.gl;
 			if (t.texture) gl.deleteTexture(t.texture);
-			if (t.verticesBuffer) gl.deleteBuffer(t.verticesBuffer);
-			if (t.textureCoordBuffer) gl.deleteBuffer(t.textureCoordBuffer);
 		}
 	}, {
 		key: 'resize',
@@ -2186,22 +2200,23 @@ var Text3d = function (_Template) {
 					t.glDanmaku = true;
 				});
 			} else {
-				gl.bindTexture(gl.TEXTURE_2D, tex);
 				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, t._cache);
 				t.glDanmaku = true;
 			}
 
 			//vert
-			t.verticesBuffer || (t.verticesBuffer = gl.createBuffer());
-			gl.bindBuffer(gl.ARRAY_BUFFER, t.verticesBuffer);
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, t._cache.width, 0, 0, t._cache.height, t._cache.width, t._cache.height]), gl.STATIC_DRAW);
+			var y = t.style.y - t.estimatePadding;
+			t.vertCoord = new Float32Array([0, y, 0, y, 0, y + t._cache.height, 0, y + t._cache.height]);
 		}
 	}]);
 
 	return Text3d;
 }(_textModuleTemplate2.default);
 
-var commonTextureCoord = new Float32Array([0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0]);
+var commonTextureCoord = new Float32Array([0.0, 0.0, //↖
+1.0, 0.0, //↗
+0.0, 1.0, //↙
+1.0, 1.0]);
 
 exports.default = Text3d;
 

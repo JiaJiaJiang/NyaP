@@ -1581,22 +1581,24 @@ class Text2d extends _textModuleTemplate2.default {
 		    cW = ctx.canvas.width,
 		    dT = this.dText.DanmakuText,
 		    i = dT.length,
-		    t;
+		    t,
+		    left,
+		    right,
+		    vW;
+		const bitmap = this.dText.useImageBitmap;
 		ctx.globalCompositeOperation = 'destination-over';
 		this.clear(force);
 		for (; i--;) {
 			(t = dT[i]).drawn || (t.drawn = true);
-			if (cW >= t._cache.width) {
+			left = t.style.x - t.estimatePadding;
+			right = left + t._cache.width;
+			if (left > cW || right < 0) continue;
+			if (!bitmap && cW >= t._cache.width) {
 				//danmaku that smaller than canvas width
-				ctx.drawImage(t._bitmap || t._cache, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding);
-			} else if (t.style.x - t.estimatePadding >= 0) {
-				ctx.drawImage(t._bitmap || t._cache, 0, 0, cW, t._cache.height, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding, cW, t._cache.height);
+				ctx.drawImage(t._bitmap || t._cache, left, t.style.y - t.estimatePadding);
 			} else {
-				if (t.style.x - t.estimatePadding + t._cache.width <= cW) {
-					ctx.drawImage(t._bitmap || t._cache, t.estimatePadding - t.style.x, 0, t.style.x - t.estimatePadding + t._cache.width, t._cache.height, 0, t.style.y - t.estimatePadding, t.style.x - t.estimatePadding + t._cache.width, t._cache.height);
-				} else {
-					ctx.drawImage(t._bitmap || t._cache, t.estimatePadding - t.style.x, 0, cW, t._cache.height, 0, t.style.y - t.estimatePadding, cW, t._cache.height);
-				}
+				vW = t._cache.width + (left < 0 ? left : 0) - (right > cW ? right - cW : 0);
+				ctx.drawImage(t._bitmap || t._cache, left < 0 ? -left : 0, 0, vW, t._cache.height, left < 0 ? 0 : left, t.style.y - t.estimatePadding, vW, t._cache.height);
 			}
 		}
 	}
@@ -1684,19 +1686,23 @@ class Text3d extends _textModuleTemplate2.default {
 		//shader
 		var shaders = {
 			danmakuFrag: [gl.FRAGMENT_SHADER, `
+				#pragma optimize(on)
+				precision lowp float;
 				varying lowp vec2 vDanmakuTexCoord;
 				uniform sampler2D uSampler;
 				void main(void) {
-					gl_FragColor = texture2D(uSampler,vDanmakuTexCoord);
+					vec4 co=texture2D(uSampler,vDanmakuTexCoord);
+					if(co.a == 0.0)discard;
+					gl_FragColor = co;
 				}`],
 			danmakuVert: [gl.VERTEX_SHADER, `
+				#pragma optimize(on)
 				attribute vec2 aVertexPosition;
 				attribute vec2 aDanmakuTexCoord;
 				uniform mat4 u2dCoordinate;
-				uniform vec2 uDanmakuPos;
 				varying lowp vec2 vDanmakuTexCoord;
 				void main(void) {
-					gl_Position = u2dCoordinate * vec4(aVertexPosition+uDanmakuPos,0,1);
+					gl_Position = u2dCoordinate * vec4(aVertexPosition,0,1);
 					vDanmakuTexCoord = aDanmakuTexCoord;
 				}`]
 		};
@@ -1728,7 +1734,6 @@ class Text3d extends _textModuleTemplate2.default {
 
 		this.uSampler = gl.getUniformLocation(shaderProgram, "uSampler");
 		this.u2dCoord = gl.getUniformLocation(shaderProgram, "u2dCoordinate");
-		this.uDanmakuPos = gl.getUniformLocation(shaderProgram, "uDanmakuPos");
 		this.aVertexPosition = gl.getAttribLocation(shaderProgram, "aVertexPosition");
 		this.atextureCoord = gl.getAttribLocation(shaderProgram, "aDanmakuTexCoord");
 
@@ -1736,9 +1741,7 @@ class Text3d extends _textModuleTemplate2.default {
 		gl.enableVertexAttribArray(this.atextureCoord);
 
 		this.commonTexCoordBuffer = gl.createBuffer();
-		gl.bindBuffer(gl.ARRAY_BUFFER, this.commonTexCoordBuffer);
-		gl.bufferData(gl.ARRAY_BUFFER, commonTextureCoord, gl.STATIC_DRAW);
-		gl.vertexAttribPointer(this.atextureCoord, 2, gl.FLOAT, false, 0, 0);
+		this.commonVertCoordBuffer = gl.createBuffer();
 
 		gl.activeTexture(gl.TEXTURE0);
 		gl.uniform1i(this.uSampler, 0);
@@ -1748,13 +1751,30 @@ class Text3d extends _textModuleTemplate2.default {
 	draw(force) {
 		const gl = this.gl,
 		      l = this.dText.DanmakuText.length;
+		let cW = this.c3d.width,
+		    left,
+		    right,
+		    vW;
 		for (let i = 0, t; i < l; i++) {
 			t = this.dText.DanmakuText[i];
 			if (!t || !t.glDanmaku) continue;
-			gl.uniform2f(this.uDanmakuPos, t.style.x - t.estimatePadding, t.style.y - t.estimatePadding);
+			left = t.style.x - t.estimatePadding;
+			right = left + t._cache.width, vW = t._cache.width + (left < 0 ? left : 0) - (right > cW ? right - cW : 0);
+			if (left > cW || right < 0) continue;
 
-			gl.bindBuffer(gl.ARRAY_BUFFER, t.verticesBuffer);
+			//vert
+			t.vertCoord[0] = t.vertCoord[4] = left < 0 ? 0 : left;
+			t.vertCoord[2] = t.vertCoord[6] = t.vertCoord[0] + vW;
+			gl.bindBuffer(gl.ARRAY_BUFFER, this.commonVertCoordBuffer);
+			gl.bufferData(gl.ARRAY_BUFFER, t.vertCoord, gl.DYNAMIC_DRAW);
 			gl.vertexAttribPointer(this.aVertexPosition, 2, gl.FLOAT, false, 0, 0);
+
+			//tex
+			commonTextureCoord[0] = commonTextureCoord[4] = left < 0 ? -left / t._cache.width : 0;
+			commonTextureCoord[2] = commonTextureCoord[6] = commonTextureCoord[0] + vW / t._cache.width;
+			gl.bindBuffer(gl.ARRAY_BUFFER, this.commonTexCoordBuffer);
+			gl.bufferData(gl.ARRAY_BUFFER, commonTextureCoord, gl.DYNAMIC_DRAW);
+			gl.vertexAttribPointer(this.atextureCoord, 2, gl.FLOAT, false, 0, 0);
 
 			gl.bindTexture(gl.TEXTURE_2D, t.texture);
 
@@ -1768,8 +1788,6 @@ class Text3d extends _textModuleTemplate2.default {
 	deleteTextObject(t) {
 		const gl = this.gl;
 		if (t.texture) gl.deleteTexture(t.texture);
-		if (t.verticesBuffer) gl.deleteBuffer(t.verticesBuffer);
-		if (t.textureCoordBuffer) gl.deleteBuffer(t.textureCoordBuffer);
 	}
 	resize(w, h) {
 		const gl = this.gl,
@@ -1813,19 +1831,20 @@ class Text3d extends _textModuleTemplate2.default {
 				t.glDanmaku = true;
 			});
 		} else {
-			gl.bindTexture(gl.TEXTURE_2D, tex);
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, t._cache);
 			t.glDanmaku = true;
 		}
 
 		//vert
-		t.verticesBuffer || (t.verticesBuffer = gl.createBuffer());
-		gl.bindBuffer(gl.ARRAY_BUFFER, t.verticesBuffer);
-		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, t._cache.width, 0, 0, t._cache.height, t._cache.width, t._cache.height]), gl.STATIC_DRAW);
+		let y = t.style.y - t.estimatePadding;
+		t.vertCoord = new Float32Array([0, y, 0, y, 0, y + t._cache.height, 0, y + t._cache.height]);
 	}
 }
 
-const commonTextureCoord = new Float32Array([0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0]);
+const commonTextureCoord = new Float32Array([0.0, 0.0, //↖
+1.0, 0.0, //↗
+0.0, 1.0, //↙
+1.0, 1.0]);
 
 exports.default = Text3d;
 

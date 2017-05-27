@@ -2354,7 +2354,7 @@ var TextCanvas = function (_Template) {
 		value: function newDanmaku(t) {
 			var _this5 = this;
 
-			t._cache.style.transform = 'translate3d(' + (this.dText._calcSideDanmakuPosition(t) - t.estimatePadding) + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
+			t._cache.style.transform = 'translate3d(' + (t.style.x - t.estimatePadding) + 'px,' + (t.style.y - t.estimatePadding) + 'px,0)';
 			this.container.appendChild(t._cache);
 			t.danmaku.mode < 2 && !this.dText.paused && requestAnimationFrame(function () {
 				return _this5._move(t);

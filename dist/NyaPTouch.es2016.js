@@ -1571,7 +1571,6 @@ class Text2d extends _textModuleTemplate2.default {
 			console.warn('text 2d not supported');
 			return;
 		}
-		dText.context2d.globalCompositeOperation = 'destination-over';
 		dText.canvas.classList.add(`${dText.randomText}_fullfill`);
 		dText.canvas.id = `${dText.randomText}_text2d`;
 		dText.container.appendChild(dText.canvas);
@@ -1587,7 +1586,7 @@ class Text2d extends _textModuleTemplate2.default {
 		    right,
 		    vW;
 		const bitmap = this.dText.useImageBitmap;
-		// ctx.globalCompositeOperation='destination-over';
+		ctx.globalCompositeOperation = 'destination-over';
 		this.clear(force);
 		for (; i--;) {
 			(t = dT[i]).drawn || (t.drawn = true);
@@ -1920,7 +1919,7 @@ class TextCanvas extends _textModuleTemplate2.default {
 		this.container.innerHTML = '';
 	}
 	newDanmaku(t) {
-		t._cache.style.transform = `translate3d(${this.dText._calcSideDanmakuPosition(t) - t.estimatePadding}px,${t.style.y - t.estimatePadding}px,0)`;
+		t._cache.style.transform = `translate3d(${t.style.x - t.estimatePadding}px,${t.style.y - t.estimatePadding}px,0)`;
 		this.container.appendChild(t._cache);
 		t.danmaku.mode < 2 && !this.dText.paused && requestAnimationFrame(() => this._move(t));
 	}

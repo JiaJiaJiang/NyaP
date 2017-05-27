@@ -1919,7 +1919,7 @@ class TextCanvas extends _textModuleTemplate2.default {
 		this.container.innerHTML = '';
 	}
 	newDanmaku(t) {
-		t._cache.style.transform = `translate3d(${this.dText._calcSideDanmakuPosition(t) - t.estimatePadding}px,${t.style.y - t.estimatePadding}px,0)`;
+		t._cache.style.transform = `translate3d(${t.style.x - t.estimatePadding}px,${t.style.y - t.estimatePadding}px,0)`;
 		this.container.appendChild(t._cache);
 		t.danmaku.mode < 2 && !this.dText.paused && requestAnimationFrame(() => this._move(t));
 	}

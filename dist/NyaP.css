@@ -18,7 +18,7 @@ LGPL license
 
 .NyaP #video_frame { z-index: 2; }
 
-.NyaP #video_frame video#main_video { user-select: none; position: relative; -o-user-select: none; -ms-user-select: none; -moz-user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.NyaP #video_frame video#main_video { user-select: none; position: relative; -o-user-select: none; -ms-user-select: none; -moz-user-select: none; -webkit-user-select: none; touch-callout: none; -webkit-touch-callout: none; }
 
 .NyaP #video_frame video#main_video::-webkit-media-controls { display: none; }
 

@@ -2844,11 +2844,10 @@ var NyaP = function (_NyaPlayerCore) {
 					e.preventDefault();
 					if (e.deltaMode !== 0) return;
 					var delta = void 0;
-					if (e.shiftKey) {
-						delta = e.deltaY > 0 ? 10 : -10;
-					} else if (e.deltaY > 10 || e.deltaY < -10) delta = e.deltaY / 10;else {
+					if (e.deltaY > 10 || e.deltaY < -10) delta = -e.deltaY / 10;else {
 						delta = e.deltaY;
 					}
+					if (e.shiftKey) delta = delta > 0 ? 10 : -10;
 					video.volume = (0, _NyaPCore.limitIn)(video.volume + delta / 100, 0, 1);
 				}
 			},

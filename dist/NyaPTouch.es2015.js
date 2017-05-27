@@ -1908,6 +1908,7 @@ var Text2d = function (_Template) {
 			console.warn('text 2d not supported');
 			return _possibleConstructorReturn(_this);
 		}
+		dText.context2d.globalCompositeOperation = 'destination-over';
 		dText.canvas.classList.add(dText.randomText + '_fullfill');
 		dText.canvas.id = dText.randomText + '_text2d';
 		dText.container.appendChild(dText.canvas);
@@ -1927,7 +1928,7 @@ var Text2d = function (_Template) {
 			    right = void 0,
 			    vW = void 0;
 			var bitmap = this.dText.useImageBitmap;
-			ctx.globalCompositeOperation = 'destination-over';
+			// ctx.globalCompositeOperation='destination-over';
 			this.clear(force);
 			for (; i--;) {
 				(t = dT[i]).drawn || (t.drawn = true);

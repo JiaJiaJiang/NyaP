@@ -19,23 +19,22 @@ gulp.task('_compileJS',function(){
 	var es=options.es;
 
 	return browserify({
-		entries: name,
-		basedir:'./src',
-		debug: true,
-	})
-	.transform(
-		babelify.configure({
-			presets: [`es${es}`],
-			plugins: ["transform-es2015-modules-commonjs"]
-		})
-	)
-	.bundle()
-	.pipe(source(`./${name}`))
-	.pipe(rename({extname:`.es${es}.js`}))
-	.pipe(buffer())
-	.pipe(sourcemaps.init({ loadMaps: true }))
-	.pipe(sourcemaps.write('./'))
-	.pipe(gulp.dest('./dist'));
+			entries: name,
+			basedir:'./src',
+			debug: true,
+		}).transform(
+			babelify.configure({
+				presets: [`es${es}`],
+				plugins: ["transform-es2015-modules-commonjs"]
+			})
+		)
+		.bundle()
+		.pipe(source(`./${name}`))
+		.pipe(rename({extname:`.es${es}.js`}))
+		.pipe(buffer())
+		.pipe(sourcemaps.init({ loadMaps: true }))
+		.pipe(sourcemaps.write('./'))
+		.pipe(gulp.dest('./dist'));
 });
 
 var esList=['2015','2016'];
@@ -47,19 +46,19 @@ gulp.task('js',function(){
 	var es=esList.shift();
 	options.es=es;
 	console.log('es'+es);
-	gulp.start('_compileJS',function(err){
+	return gulp.start('_compileJS',function(err){
 		options.es='';
 		if(esList.length){
 			gulp.start('js');
 		}
 	});
-	return;
+	//return;
 });
 
 gulp.task('css', function (){
 	var sass = require("gulp-sass");
 	var name=options.touch?'NyaPTouch.scss':'NyaP.scss';
-    gulp.src(`./src/${name}`)
+    return gulp.src(`./src/${name}`)
 		.pipe(sourcemaps.init({ loadMaps: true }))
         .pipe(sass({
             outputStyle: 'compact'
@@ -94,16 +93,19 @@ gulp.task('minjs',function(){
 				.pipe(gulp.dest('./dist/compressed/'));
 });
 
-gulp.task('mincss',function(){
+gulp.task('minAllScss',function(){
 	var sass = require("gulp-sass");
-	 gulp.src('./src/*.scss')
-	    .pipe(sass({
-	        outputStyle: 'compressed'
-	    }).on('error', sass.logError))
-		.pipe(rename({extname:'.min.css'}))
-	    .pipe(gulp.dest('./dist/compressed/'));
+	return gulp.src('./src/*.scss')
+			    .pipe(sass({
+			        outputStyle: 'compressed'
+			    }).on('error', sass.logError))
+				.pipe(rename({extname:'.min.css'}))
+			    .pipe(gulp.dest('./dist/compressed/'));
 });
 
+gulp.task('mincss',['minAllScss'],function(){
+	require('fs').unlinkSync('./dist/compressed/NyapCore.min.css');
+});
 
 
 gulp.task('build',['js','css']);

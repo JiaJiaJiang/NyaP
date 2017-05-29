@@ -115,3 +115,4 @@ gulp.task('min',['mincss','minjs']);
 gulp.task('default',['build'],function(cb){
 	gulp.start('min',cb);
 });
+

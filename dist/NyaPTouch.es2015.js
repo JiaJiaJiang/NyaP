@@ -2702,6 +2702,11 @@ var NyaPEventEmitter = function () {
 			}
 		}
 	}, {
+		key: 'addEventListener',
+		value: function addEventListener(e, handle) {
+			this.on(e, handle);
+		}
+	}, {
 		key: 'on',
 		value: function on(e, handle) {
 			if (!(handle instanceof Function)) return;
@@ -2737,9 +2742,11 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 		var _this2 = _possibleConstructorReturn(this, (NyaPlayerCore.__proto__ || Object.getPrototypeOf(NyaPlayerCore)).call(this));
 
 		opt = _this2.opt = Object.assign({}, NyaPCoreOptions, opt);
-		var $ = _this2.$ = { document: document, window: window };
-		_this2._ = {}; //for private variables
-		_this2._.video = (0, _Object2HTML2.default)({ _: 'video', attr: { id: 'main_video' } });
+		var $ = _this2.$ = { document: document, window: window, NP: _this2 };
+		_this2._ = {
+			video: (0, _Object2HTML2.default)({ _: 'video', attr: { id: 'main_video' } }),
+			playerMode: 'normal'
+		}; //for private variables
 		_this2.container = (0, _Object2HTML2.default)({ _: 'div', prop: { id: 'danmaku_container' } });
 		_this2.videoFrame = (0, _Object2HTML2.default)({ _: 'div', attr: { id: 'video_frame' }, child: [_this2.video, _this2.container, { _: 'div', attr: { id: 'loading_frame' }, child: [{ _: 'div', attr: { id: 'loading_anime' }, child: ['(๑•́ ω •̀๑)'] }, { _: 'div', attr: { id: 'loading_info' } }] }] });
 		_this2.collectEles(_this2.videoFrame);
@@ -2810,6 +2817,40 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 			toArray(ele.querySelectorAll('*')).forEach(function (e) {
 				if (e.id && !$[e.id]) $[e.id] = e;
 			});
+		}
+	}, {
+		key: 'playerMode',
+		value: function playerMode() {
+			var mode = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'normal';
+
+			if (mode === 'normal' && this._.playerMode === mode) return;
+			var $ = this.$;
+			if (this._.playerMode === 'fullPage') {
+				this.player.style.position = '';
+			} else if (this._.playerMode === 'fullScreen') {
+				exitFullscreen();
+			}
+			if (mode !== 'normal' && this._.playerMode === mode) mode = 'normal'; //back to normal mode
+			switch (mode) {
+				case 'fullPage':
+					{
+						this.player.style.position = 'fixed';
+						this.player.setAttribute('playerMode', 'fullPage');
+						break;
+					}
+				case 'fullScreen':
+					{
+						this.player.setAttribute('playerMode', 'fullScreen');
+						requestFullscreen(this.player);
+						break;
+					}
+				default:
+					{
+						this.player.setAttribute('playerMode', 'normal');
+					}
+			}
+			this._.playerMode = mode;
+			this.emit('playerModeChange', mode);
 		}
 	}, {
 		key: 'danmakuFrame',
@@ -2998,7 +3039,10 @@ var NyaPTouchOptions = {
 	danmakuModes: [0, 3, 2, 1], //0:right	1:left	2:bottom	3:top
 	danmakuSizes: [20, 24, 36],
 	dragToSeek: true,
-	dragToChangeVolume: true
+	dragToChangeVolume: true,
+	bottomControlHeight: 50,
+	progressBarHeight: 14,
+	progressPad: 10
 };
 
 //touch player
@@ -3016,40 +3060,99 @@ var NyaPTouch = function (_NyaPlayerCore) {
 		    $ = NP.$,
 		    video = NP.video;
 
-		var icons = {};
+		var icons = {
+			play: [30, 30, '<path d="m10.063,8.856l9.873,6.143l-9.873,6.143v-12.287z" stroke-width="3" stroke-linejoin="round"/>'],
+			fullScreen: [30, 30, '<rect stroke-linejoin="round" height="11.169" width="17.655" y="9.415" x="6.172" stroke-width="1.5"/>' + '<path stroke-linejoin="round" d="m12.361,11.394l-3.604,3.605l3.605,3.605l1.311,-1.311l-2.294,-2.294l2.293,-2.294l-1.311,-1.311zm5.275,0l-1.310,1.311l2.293,2.294l-2.293,2.293l1.310,1.311l3.605,-3.605l-3.605,-3.605z"/>'],
+			loop: [30, 30, '<path stroke-linejoin="round" stroke-width="1" d="m20.945,15.282c-0.204,-0.245 -0.504,-0.387 -0.823,-0.387c-0.583,0 -1.079,0.398 -1.205,0.969c-0.400,1.799 -2.027,3.106 -3.870,3.106c-2.188,0 -3.969,-1.780 -3.969,-3.969c0,-2.189 1.781,-3.969 3.969,-3.969c0.720,0 1.412,0.192 2.024,0.561l-0.334,0.338c-0.098,0.100 -0.127,0.250 -0.073,0.380c0.055,0.130 0.183,0.213 0.324,0.212l2.176,0.001c0.255,-0.002 0.467,-0.231 0.466,-0.482l-0.008,-2.183c-0.000,-0.144 -0.085,-0.272 -0.217,-0.325c-0.131,-0.052 -0.280,-0.022 -0.379,0.077l-0.329,0.334c-1.058,-0.765 -2.340,-1.182 -3.649,-1.182c-3.438,0 -6.236,2.797 -6.236,6.236c0,3.438 2.797,6.236 6.236,6.236c2.993,0 5.569,-2.133 6.126,-5.072c0.059,-0.314 -0.022,-0.635 -0.227,-0.882z"/>'],
+			danmakuStyle: [30, 30, '<path style="fill-opacity:1!important" d="m21.781,9.872l-1.500,-1.530c-0.378,-0.385 -0.997,-0.391 -1.384,-0.012l-0.959,0.941l2.870,2.926l0.960,-0.940c0.385,-0.379 0.392,-0.998 0.013,-1.383zm-12.134,7.532l2.871,2.926l7.593,-7.448l-2.872,-2.927l-7.591,7.449l0.000,0.000zm-1.158,2.571l-0.549,1.974l1.984,-0.511l1.843,-0.474l-2.769,-2.824l-0.509,1.835z" stroke-width="0"/>'],
+			danmakuToggle: [30, 30, '<path d="m8.569,10.455l0,0c0,-0.767 0.659,-1.389 1.473,-1.389l0.669,0l0,0l3.215,0l6.028,0c0.390,0 0.765,0.146 1.041,0.406c0.276,0.260 0.431,0.613 0.431,0.982l0,3.473l0,0l0,2.083l0,0c0,0.767 -0.659,1.389 -1.473,1.389l-6.028,0l-4.200,3.532l0.985,-3.532l-0.669,0c-0.813,0 -1.473,-0.621 -1.473,-1.389l0,0l0,-2.083l0,0l0,-3.473z"/>'],
+			volume: [30, 30, '<ellipse id="volume_circle" style="fill-opacity:.6!important" ry="6" rx="6" cy="15" cx="15" stroke-dasharray="38 90" stroke-width="1.8"/>']
+
+		};
 		function icon(name, event) {
 			var attr = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
 			var ico = icons[name];
 			return (0, _Object2HTML2.default)({ _: 'span', event: event, attr: attr, prop: { id: 'icon_span_' + name,
-					innerHTML: '<svg height=' + ico[1] + ' width=' + ico[0] + ' id="icon_' + name + '"">' + ico[2] + '</svg>' } });
+					innerHTML: '<svg height="' + NP.opt.bottomControlHeight + '" width="' + NP.opt.bottomControlHeight / ico[1] * ico[0] + '" viewBox="0,0,' + ico[0] + ',' + ico[1] + '" id="icon_' + name + '"">' + ico[2] + '</svg>' } });
 		}
-		NP.loadingInfo(_('Creating player'));
+		NP.loadingInfo(_('Creating touch player'));
 
 		NP._.player = (0, _Object2HTML.Object2HTML)({
-			_: 'div', attr: { class: 'NyaPTouch', id: 'NyaPTouch' }, child: [NP.videoFrame, { _: 'div', attr: { id: 'controls' }, child: [] }, { _: 'div', attr: { id: 'msg_box' } }]
+			_: 'div', attr: { class: 'NyaPTouch', id: 'NyaPTouch' }, child: [NP.videoFrame, { _: 'div', prop: { id: 'controls' }, child: [{ _: 'div', prop: { id: 'control_bottom' }, child: [{ _: 'div', attr: { id: 'control_bottom_first' }, child: [{ _: 'div', attr: { id: 'progress_leftside_button' }, child: [icon('play', { click: function click(e) {
+									return NP.playToggle();
+								} })] }, { _: 'div', prop: { id: 'progress_info' }, child: [{ _: 'span', attr: { id: 'progress_frame' }, child: [{ _: 'div', prop: { id: 'progress_wrap' }, child: [{ _: 'div', prop: { id: 'buffed_bar' } }, { _: 'div', prop: { id: 'progress_bar' } }, { _: 'div', prop: { id: 'seekTo_bar', hidden: true } }] }] }, { _: 'span', prop: { id: 'time' }, child: [{ _: 'span', prop: { id: 'current_time' }, child: ['00:00'] }, '/', { _: 'span', prop: { id: 'total_time' }, child: ['00:00'] }] }] }, { _: 'span', prop: { id: 'progress_rightside_button' }, child: [icon('fullScreen', { click: function click(e) {
+									return NP.playerMode('fullScreen');
+								} })] }] }, { _: 'div', attr: { id: 'control_bottom_second' }, child: [icon('danmakuStyle'), { _: 'input', attr: { id: 'danmaku_input', placeholder: _('Input danmaku here') } }, icon('danmakuToggle', { click: function click(e) {
+								return _this.Danmaku.toggle('TextDanmaku');
+							} }), icon('loop', { click: function click(e) {
+								return video.loop = !video.loop;
+							} }), icon('volume', { click: function click(e) {
+								return video.muted = !video.muted;
+							} })] }] }] }]
 		});
+
+		//msg box
+		NP.videoFrame.appendChild((0, _Object2HTML2.default)({ _: 'div', attr: { id: 'msg_box' } }));
 
 		NP.collectEles(NP._.player);
 
 		Object.assign(NP._, {
 			currentDragMode: null,
-			touchStartPoint: [0, 0]
+			touchStartPoint: [0, 0],
+			bottomControlDraging: false,
+			bottomControlTransformY: 0
 		});
+
+		Object.assign($.progress_wrap.style, {
+			left: NP.opt.progressPad + 'px',
+			right: NP.opt.progressPad + 'px',
+			height: NP.opt.progressBarHeight + 'px',
+			marginTop: -NP.opt.progressBarHeight / 2 + 1 + 'px'
+		});
+
+		$.control_bottom.style.marginTop = '-' + NP.opt.bottomControlHeight + 'px';
 
 		//add touch drag event to video
 		extendEvent.touchdrag($.main_video, { allowMultiTouch: false, preventDefaultX: true });
+		extendEvent.touchdrag($.control_bottom, { allowMultiTouch: false, preventDefaultY: true });
 
 		//events
-		//todo:上下滑变音量
-		//左右滑拖进度条，拖进度条时和初始纵向位置越远就跨度越大
-		//双击播放暂停
-		//单击显隐控制界面
 		var events = {
+			document: {
+				'fullscreenchange,mozfullscreenchange,webkitfullscreenchange,msfullscreenchange': function fullscreenchangeMozfullscreenchangeWebkitfullscreenchangeMsfullscreenchange(e) {
+					if (NP._.playerMode == 'fullScreen' && !(0, _NyaPCore.isFullscreen)()) NP.playerMode('normal');
+				}
+			},
 			main_video: {
+				playing: function playing(e) {
+					return NP._iconActive('play', true);
+				},
+				'pause,stalled': function pauseStalled(e) {
+					NP._iconActive('play', false);
+				},
+				loadedmetadata: function loadedmetadata(e) {
+					NP._setTimeInfo(null, (0, _NyaPCore.formatTime)(video.duration, video.duration));
+				},
+				_loopChange: function _loopChange(e) {
+					return NP._iconActive('loop', e.value);
+				},
+				volumechange: function volumechange(e) {
+					(0, _NyaPCore.setAttrs)($.volume_circle, { 'stroke-dasharray': video.volume * 12 * Math.PI + ' 90', style: 'fill-opacity:' + (video.muted ? .2 : .6) + '!important' });
+				},
+				progress: function progress(e) {
+					return NP.drawProgress();
+				},
 				click: function click(e) {
 					e.preventDefault();
-					NP.playToggle();
+					NP.controlsToggle();
+					//NP.playToggle();
+				},
+				timeupdate: function timeupdate(e) {
+					if (Date.now() - NP._.lastTimeUpdate < 30) return;
+					NP._setTimeInfo((0, _NyaPCore.formatTime)(video.currentTime, video.duration));
+					NP.drawProgress();
+					NP._.lastTimeUpdate = Date.now();
 				},
 				touchstart: function touchstart(e) {
 					var T = e.changedTouches[0];
@@ -3073,8 +3176,8 @@ var NyaPTouch = function (_NyaPlayerCore) {
 							}
 						case 'seek':
 							{
-								var mu = Math.pow(1.016, Math.abs(e.touches[0].clientY - NP._.touchStartPoint[1]));
-								NP._.seekTo = (0, _NyaPCore.limitIn)(NP._.seekTo + e.deltaX / 200 * mu, 0, video.duration);
+								var mu = 1 + Math.abs(e.touches[0].clientY - NP._.touchStartPoint[1]) / 5;
+								NP._.seekTo = (0, _NyaPCore.limitIn)(NP._.seekTo + e.deltaX / 100 * mu, 0, video.duration);
 								NP.emit('seekMark', NP._.seekTo);
 								break;
 							}
@@ -3083,6 +3186,9 @@ var NyaPTouch = function (_NyaPlayerCore) {
 				touchend: function touchend(e) {
 					if (NP._.currentDragMode === 'seek') {
 						video.currentTime = NP._.seekTo;
+						$.progress_bar.style.width = (NP._.seekTo / video.duration * 100).toFixed(2) + '%';
+						NP.$.seekTo_bar.hidden = true;
+						NP._setTimeInfo(null, (0, _NyaPCore.formatTime)(video.duration, video.duration));
 					}
 					NP._.currentDragMode = null;
 				},
@@ -3090,6 +3196,42 @@ var NyaPTouch = function (_NyaPlayerCore) {
 					e.preventDefault();
 					if (!opt.dragToChangeVolume) return;
 					NP._.currentDragMode = 'volume';
+				}
+			},
+			control_bottom: {
+				touchdrag: function touchdrag(e) {
+					NP._.bottomControlDraging = true;
+					NP._.bottomControlTransformY = (0, _NyaPCore.limitIn)(NP._.bottomControlTransformY - e.deltaY, 0, $.control_bottom.offsetHeight - NP.opt.bottomControlHeight);
+					$.control_bottom.style.transform = 'translate3d(0,-' + NP._.bottomControlTransformY + 'px,0)';
+				},
+				touchend: function touchend(e) {
+					if (!NP._.bottomControlDraging) return;
+					var R = $.control_bottom.offsetHeight - NP.opt.bottomControlHeight;
+					NP._.bottomControlTransformY = NP._.bottomControlTransformY < R / 2 ? 0 : R;
+					$.control_bottom.style.transform = 'translate3d(0,-' + NP._.bottomControlTransformY + 'px,0)';
+				}
+			},
+			progress_frame: {
+				click: function click(e) {
+					var t = e.target,
+					    pad = NP.opt.progressPad,
+					    pre = (0, _NyaPCore.limitIn)((e.offsetX - pad) / (t.offsetWidth - 2 * pad), 0, 1);
+					video.currentTime = pre * video.duration;
+				}
+			},
+			NP: {
+				danmakuToggle: function danmakuToggle(bool) {
+					return _this._iconActive('danmakuToggle', bool);
+				}, //listen danmakuToggle event to change button style
+				seekMark: function seekMark(t) {
+					if ($.seekTo_bar.hidden) $.seekTo_bar.hidden = false;
+					$.seekTo_bar.style.width = (t / video.duration * 100).toFixed(2) + '%';
+					NP._setTimeInfo(null, (0, _NyaPCore.formatTime)(t, video.duration));
+				},
+				playerModeChange: function playerModeChange(mode) {
+					['fullScreen'].forEach(function (m) {
+						NP._iconActive(m, mode === m);
+					});
 				}
 			}
 		};
@@ -3108,13 +3250,52 @@ var NyaPTouch = function (_NyaPlayerCore) {
 		key: 'danmakuInput',
 		value: function danmakuInput() {}
 	}, {
-		key: 'playerMode',
-		value: function playerMode() {
-			var mode = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'normal';
-		}
-	}, {
 		key: 'send',
 		value: function send() {}
+	}, {
+		key: 'controlsToggle',
+		value: function controlsToggle() {
+			var bool = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.$.controls.hidden;
+
+			this.$.controls.hidden = !bool;
+		}
+	}, {
+		key: 'drawProgress',
+		value: function drawProgress() {
+			var _this2 = this;
+
+			requestAnimationFrame(function () {
+				var V = _this2.video,
+				    B = V.buffered,
+				    D = V.duration;
+				var lastBuffered = 0;
+				if (B.length) lastBuffered = B.end(B.length - 1);
+				_this2.$.buffed_bar.style.width = (lastBuffered / D * 100).toFixed(2) + '%';
+				_this2.$.progress_bar.style.width = (V.currentTime / D * 100).toFixed(2) + '%';
+			});
+		}
+	}, {
+		key: '_iconActive',
+		value: function _iconActive(name, bool) {
+			this.$['icon_span_' + name].classList[bool ? 'add' : 'remove']('active_icon');
+		}
+	}, {
+		key: '_setTimeInfo',
+		value: function _setTimeInfo() {
+			var _this3 = this;
+
+			var a = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+			var b = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+
+			requestAnimationFrame(function () {
+				if (a !== null) {
+					_this3.$.current_time.innerHTML = a;
+				}
+				if (b !== null) {
+					_this3.$.total_time.innerHTML = b;
+				}
+			});
+		}
 	}, {
 		key: 'msg',
 		value: function msg(text) {
@@ -3133,37 +3314,37 @@ var NyaPTouch = function (_NyaPlayerCore) {
 
 var MsgBox = function () {
 	function MsgBox(text, type) {
-		var _this2 = this;
+		var _this4 = this;
 
 		_classCallCheck(this, MsgBox);
 
 		this.using = false;
 		var msg = this.msg = (0, _Object2HTML2.default)({ _: 'div', attr: { class: 'msg_type_' + type }, child: [text] });
 		msg.addEventListener('click', function () {
-			return _this2.remove();
+			return _this4.remove();
 		});
 		if (text instanceof HTMLElement) text = text.textContent;
 		var texts = String(text).match(/\w+|\S/g);
 		this.timeout = setTimeout(function () {
-			return _this2.remove();
+			return _this4.remove();
 		}, Math.max((texts ? texts.length : 0) * 0.6 * 1000, 5000));
 	}
 
 	_createClass(MsgBox, [{
 		key: 'show',
 		value: function show() {
-			var _this3 = this;
+			var _this5 = this;
 
 			this.msg.style.opacity = 0;
 			setTimeout(function () {
-				_this3.using = true;
-				_this3.msg.style.opacity = 1;
+				_this5.using = true;
+				_this5.msg.style.opacity = 1;
 			}, 0);
 		}
 	}, {
 		key: 'remove',
 		value: function remove() {
-			var _this4 = this;
+			var _this6 = this;
 
 			if (!this.using) return;
 			this.using = false;
@@ -3173,7 +3354,7 @@ var MsgBox = function () {
 				this.timeout = 0;
 			}
 			setTimeout(function () {
-				_this4.msg.parentNode.removeChild(_this4.msg);
+				_this6.msg.parentNode.removeChild(_this6.msg);
 			}, 600);
 		}
 	}]);

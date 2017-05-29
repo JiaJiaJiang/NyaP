@@ -37,7 +37,6 @@ class NyaP extends NyaPlayerCore{
 		const NP=this,
 			$=this.$,
 			video=this.video;
-		this._.playerMode='normal';
 		//video.controls=false;
 		const icons={
 			play:[30,30,'<path d="m10.063,8.856l9.873,6.143l-9.873,6.143v-12.287z" stroke-width="3" stroke-linejoin="round"/>'],
@@ -77,12 +76,10 @@ class NyaP extends NyaPlayerCore{
 								{_:'span',child:[
 									{_:'canvas',prop:{id:'progress',pad:10}},
 								]},
-								{_:'span',prop:{id:'time_frame'},child:[
-									{_:'span',prop:{id:'time'},child:[
-										{_:'span',prop:{id:'current_time'},child:['00:00']},
-										'/',
-										{_:'span',prop:{id:'total_time'},child:['00:00']},
-									]},
+								{_:'span',prop:{id:'time'},child:[
+									{_:'span',prop:{id:'current_time'},child:['00:00']},
+									'/',
+									{_:'span',prop:{id:'total_time'},child:['00:00']},
 								]},
 							]},
 							{_:'div',prop:{id:'danmaku_input_frame'},child:[
@@ -110,15 +107,13 @@ class NyaP extends NyaPlayerCore{
 							]}
 						]},
 					]}
-					
 				]},
 			]
 		});
 
 		//msg box
 		this.videoFrame.appendChild(O2H({
-			_:'div',
-			attr:{id:'msg_box'}
+			_:'div',attr:{id:'msg_box'}
 		}));
 
 		//add elements with id to $ prop
@@ -266,6 +261,14 @@ class NyaP extends NyaPlayerCore{
 					}
 				}
 			},
+			NP:{
+				danmakuToggle:bool=>this._iconActive('danmakuToggle',bool),//listen danmakuToggle event to change button style
+				playerModeChange:mode=>{
+					['fullPage','fullScreen'].forEach(m=>{
+						this._iconActive(m,mode===m);
+					});
+				}
+			},
 		}
 		for(let eleid in $){//add events to elements
 			let eves=events[eleid];
@@ -279,9 +282,9 @@ class NyaP extends NyaPlayerCore{
 		(typeof opt.defaultDanmakuSize === 'number')
 			&&toArray($.danmaku_size_box.childNodes).forEach(sp=>{if(sp.size===opt.defaultDanmakuSize)sp.click()});
 
-		//listen danmakuToggle event to change button style
-		this.on('danmakuToggle',bool=>this._iconActive('danmakuToggle',bool));
+		
 		if(this.danmakuFrame.modules.TextDanmaku.enabled)this._iconActive('danmakuToggle',true);
+
 
 		if(opt.playerFrame instanceof HTMLElement)
 			opt.playerFrame.appendChild(this.player);
@@ -358,37 +361,6 @@ class NyaP extends NyaPlayerCore{
 		this._iconActive('addDanmaku',bool);
 		setImmediate(()=>{bool?$.danmaku_input.focus():$.NyaP.focus();});
 	}
-	playerMode(mode='normal'){
-		if(mode==='normal' && this._.playerMode===mode)return;
-		let $=this.$;
-		if(this._.playerMode==='fullPage'){
-			this.player.style.position='';
-			this._iconActive('fullPage',false);
-		}else if(this._.playerMode==='fullScreen'){
-			this._iconActive('fullScreen',false);
-			exitFullscreen();
-		}
-		if(mode!=='normal' && this._.playerMode===mode)mode='normal';//back to normal mode
-		switch(mode){
-			case 'fullPage':{
-				this.player.style.position='fixed';
-				this._iconActive('fullPage',true);
-				this.player.setAttribute('playerMode','fullPage');
-				break;
-			}
-			case 'fullScreen':{
-				this._iconActive('fullScreen',true);
-				this.player.setAttribute('playerMode','fullScreen');
-				requestFullscreen(this.player);
-				break;
-			}
-			default:{
-				this.player.setAttribute('playerMode','normal');
-			}
-		}
-		this._.playerMode=mode;
-		this.emit('playerModeChange',mode);
-	}
 	refreshProgress(){
 		const c=this.$.progress;
 		c.width=c.offsetWidth;
@@ -407,9 +379,9 @@ class NyaP extends NyaPlayerCore{
 		let S=this.Danmaku.send(d,(danmaku)=>{
 			if(danmaku&&danmaku._==='text')
 				this.$.danmaku_input.value='';
-				let result=this.danmakuFrame.modules.TextDanmaku.load(danmaku);
-				result.highlight=true;
-				if(this.opt.autoHideDanmakuInput){this.danmakuInput(false);}
+			let result=this.danmakuFrame.modules.TextDanmaku.load(danmaku);
+			result.highlight=true;
+			if(this.opt.autoHideDanmakuInput){this.danmakuInput(false);}
 		});
 
 		if(!S){
@@ -478,6 +450,7 @@ class NyaP extends NyaPlayerCore{
 		if(this._.drawingProgress)return;
 		this._.drawingProgress=true;
 		requestAnimationFrame(()=>this._progressDrawer());
+		//this.emit('progressDrawn');
 	}
 	msg(text,type='tip'){//type:tip|info|error
 		let msg=new MsgBox(text,type);

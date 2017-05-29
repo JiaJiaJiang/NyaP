@@ -36,6 +36,7 @@ LGPL license
 		cursor: pointer;
 		display: inline-block;
 		background-color: inherit;
+
 		&:hover{
 			background-color:#ececec!important;
 			svg>*{
@@ -55,11 +56,10 @@ LGPL license
 
 	#controls{
 		@extend .NyaP_fullfill;
-		width: 100%;
 		top:auto;
 		bottom: 0;
+		width: 100%;
 		height: $control_bar_height;
-		z-index: 3;
 	}
 	#control{
 		@extend .NyaP_fullfill;
@@ -68,9 +68,9 @@ LGPL license
 		flex-wrap: nowrap;
 		user-select: none;
 		align-items:stretch;
+		will-change:opacity;
 		transition: opacity .2s;
 		background-color: #f7f8f9;
-		will-change:opacity;
 
 		&:hover{opacity:1;}
 
@@ -93,7 +93,6 @@ LGPL license
 	#control_center{
 		flex-grow: 1;
 		position: relative;
-		
 	}
 	canvas#progress{
 		@extend .NyaP_fullfill;
@@ -114,6 +113,7 @@ LGPL license
 		display:none;
 		font-size: 13px;
 		background-color:inherit;
+		
 		input#danmaku_input{
 			border: 0;
 			outline: 0;
@@ -134,8 +134,8 @@ LGPL license
 	}
 	#danmaku_style_pannel{
 		left: -25px;
-		padding: 8px;
 		bottom: 67%;
+		padding: 8px;
 		display: none;
 		position: absolute;
 		border-radius: 2px;
@@ -195,39 +195,32 @@ LGPL license
 		justify-content: space-around;
 
 		&>span{
-			display: inline-block;
 			width: 30px;
 			height: 30px;
-			border-radius: 6px;
 			cursor: pointer;
+			border-radius: 6px;
+			display: inline-block;
 			border: 1px solid #ddd;
 		}
 	}
 	#settings_box{
-		position: absolute;
-		display: none;
-		bottom: $control_bar_height;
-		background-color:#ccc;
 		right: -10px;
+		display: none;
+		position: absolute;
+		background-color:#ccc;
+		bottom: $control_bar_height;
 	}
 	#player_settings:active{
 		#settings_box{
 			display: flex;
 		}
 	}
-	#time_frame{
-		width:105px;
-		height: 100%;
-		padding: 0 5px;
-		position: relative;
-		display: inline-block;
-	}
 	#time{
-		@extend .NyaP_fullfill; 
-		display: flex;
+		padding: 0 5px;
 		font-size: 14px;
 		text-align: center;
 		align-items: center;
+		display: inline-flex;
 		font-family: monospace;
 		
 		&>*{flex-shrink:1;flex-grow: 1;}
@@ -249,27 +242,27 @@ LGPL license
 		}
 	}
 	#msg_box{
-		position: absolute;
-		display: flex;
-		flex-flow: column;
-		align-items: flex-end;
 		right: 0;
 		bottom: 0;
+		display: flex;
+		flex-flow: column;
+		position: absolute;
 		pointer-events: none;
+		align-items: flex-end;
 
 		[class^='msg_type_']{
+			margin: 4px;
 			font-size: 1em;
 			max-width: 15em;
-			word-wrap: break-word;
-			padding: 4px 11px;
-			margin: 4px;
-			border: 1px solid #a5a5a5;
-			border-radius: 3px;
-			box-shadow: 0 0 3px #ccc;
 			cursor: pointer;
-			pointer-events: auto;
+			padding: 4px 11px;
+			border-radius: 3px;
 			will-change:opacity;
+			pointer-events: auto;
+			word-wrap: break-word;
 			transition: opacity .6s;
+			box-shadow: 0 0 3px #ccc;
+			border: 1px solid #a5a5a5;
 		}
 
 		.msg_type_tip{

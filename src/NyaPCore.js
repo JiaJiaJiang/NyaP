@@ -43,6 +43,9 @@ class NyaPEventEmitter{
 			}
 		}
 	}
+	addEventListener(e,handle){
+		this.on(e,handle);
+	}
 	on(e,handle){
 		if(!(handle instanceof Function))return;
 		if(!(e in this._events))this._events[e]=[];
@@ -62,9 +65,11 @@ class NyaPlayerCore extends NyaPEventEmitter{
 	constructor(opt){
 		super();
 		opt=this.opt=Object.assign({},NyaPCoreOptions,opt);
-		const $=this.$={document,window};
-		this._={};//for private variables
-		this._.video=O2H({_:'video',attr:{id:'main_video'}});
+		const $=this.$={document,window,NP:this};
+		this._={
+			video:O2H({_:'video',attr:{id:'main_video'}}),
+			playerMode:'normal',
+		};//for private variables
 		this.container=O2H({_:'div',prop:{id:'danmaku_container'}});
 		this.videoFrame=O2H(
 			{_:'div',attr:{id:'video_frame'},child:[
@@ -132,6 +137,33 @@ class NyaPlayerCore extends NyaPEventEmitter{
 		toArray(ele.querySelectorAll('*')).forEach(e=>{
 			if(e.id&&!$[e.id])$[e.id]=e;
 		});
+	}
+	playerMode(mode='normal'){
+		if(mode==='normal' && this._.playerMode===mode)return;
+		let $=this.$;
+		if(this._.playerMode==='fullPage'){
+			this.player.style.position='';
+		}else if(this._.playerMode==='fullScreen'){
+			exitFullscreen();
+		}
+		if(mode!=='normal' && this._.playerMode===mode)mode='normal';//back to normal mode
+		switch(mode){
+			case 'fullPage':{
+				this.player.style.position='fixed';
+				this.player.setAttribute('playerMode','fullPage');
+				break;
+			}
+			case 'fullScreen':{
+				this.player.setAttribute('playerMode','fullScreen');
+				requestFullscreen(this.player);
+				break;
+			}
+			default:{
+				this.player.setAttribute('playerMode','normal');
+			}
+		}
+		this._.playerMode=mode;
+		this.emit('playerModeChange',mode);
 	}
 	get danmakuFrame(){return this.Danmaku.danmakuFrame;}
 	get player(){return this._.player;}

@@ -2180,7 +2180,6 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 		const NP = this,
 		      $ = this.$,
 		      video = this.video;
-		this._.playerMode = 'normal';
 		//video.controls=false;
 		const icons = {
 			play: [30, 30, '<path d="m10.063,8.856l9.873,6.143l-9.873,6.143v-12.287z" stroke-width="3" stroke-linejoin="round"/>'],
@@ -2206,15 +2205,14 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 		this.loadingInfo(_('Creating player'));
 
 		this._.player = (0, _Object2HTML2.default)({
-			_: 'div', attr: { class: 'NyaP', id: 'NyaP', tabindex: 0 }, child: [this.videoFrame, { _: 'div', attr: { id: 'controls' }, child: [{ _: 'div', attr: { id: 'control' }, child: [{ _: 'span', attr: { id: 'control_left' }, child: [icon('play', { click: e => this.playToggle() }, { title: _('play') })] }, { _: 'span', attr: { id: 'control_center' }, child: [{ _: 'div', prop: { id: 'progress_info' }, child: [{ _: 'span', child: [{ _: 'canvas', prop: { id: 'progress', pad: 10 } }] }, { _: 'span', prop: { id: 'time_frame' }, child: [{ _: 'span', prop: { id: 'time' }, child: [{ _: 'span', prop: { id: 'current_time' }, child: ['00:00'] }, '/', { _: 'span', prop: { id: 'total_time' }, child: ['00:00'] }] }] }] }, { _: 'div', prop: { id: 'danmaku_input_frame' }, child: [{ _: 'span', prop: { id: 'danmaku_style' }, child: [{ _: 'div', attr: { id: 'danmaku_style_pannel' }, child: [{ _: 'div', attr: { id: 'danmaku_color_box' } }, { _: 'input', attr: { id: 'danmaku_color', placeholder: _('hex color'), maxlength: "6" } }, { _: 'span', attr: { id: 'danmaku_mode_box' } }, { _: 'span', attr: { id: 'danmaku_size_box' } }] }, icon('danmakuStyle')] }, { _: 'input', attr: { id: 'danmaku_input', placeholder: _('Input danmaku here') } }, { _: 'span', prop: { id: 'danmaku_submit', innerHTML: _('Send') } }] }] }, { _: 'span', attr: { id: 'control_right' }, child: [icon('addDanmaku', { click: e => this.danmakuInput() }, { title: _('danmaku input(Enter)') }), icon('danmakuToggle', { click: e => this.Danmaku.toggle('TextDanmaku') }, { title: _('danmaku toggle(D)') }), icon('volume', {}, { title: _('volume($0)([shift]+↑↓)', '100%') }), icon('loop', { click: e => {
+			_: 'div', attr: { class: 'NyaP', id: 'NyaP', tabindex: 0 }, child: [this.videoFrame, { _: 'div', attr: { id: 'controls' }, child: [{ _: 'div', attr: { id: 'control' }, child: [{ _: 'span', attr: { id: 'control_left' }, child: [icon('play', { click: e => this.playToggle() }, { title: _('play') })] }, { _: 'span', attr: { id: 'control_center' }, child: [{ _: 'div', prop: { id: 'progress_info' }, child: [{ _: 'span', child: [{ _: 'canvas', prop: { id: 'progress', pad: 10 } }] }, { _: 'span', prop: { id: 'time' }, child: [{ _: 'span', prop: { id: 'current_time' }, child: ['00:00'] }, '/', { _: 'span', prop: { id: 'total_time' }, child: ['00:00'] }] }] }, { _: 'div', prop: { id: 'danmaku_input_frame' }, child: [{ _: 'span', prop: { id: 'danmaku_style' }, child: [{ _: 'div', attr: { id: 'danmaku_style_pannel' }, child: [{ _: 'div', attr: { id: 'danmaku_color_box' } }, { _: 'input', attr: { id: 'danmaku_color', placeholder: _('hex color'), maxlength: "6" } }, { _: 'span', attr: { id: 'danmaku_mode_box' } }, { _: 'span', attr: { id: 'danmaku_size_box' } }] }, icon('danmakuStyle')] }, { _: 'input', attr: { id: 'danmaku_input', placeholder: _('Input danmaku here') } }, { _: 'span', prop: { id: 'danmaku_submit', innerHTML: _('Send') } }] }] }, { _: 'span', attr: { id: 'control_right' }, child: [icon('addDanmaku', { click: e => this.danmakuInput() }, { title: _('danmaku input(Enter)') }), icon('danmakuToggle', { click: e => this.Danmaku.toggle('TextDanmaku') }, { title: _('danmaku toggle(D)') }), icon('volume', {}, { title: _('volume($0)([shift]+↑↓)', '100%') }), icon('loop', { click: e => {
 								video.loop = !video.loop;
 							} }, { title: _('loop(L)') }), { _: 'span', prop: { id: 'player_mode' }, child: [icon('fullPage', { click: e => this.playerMode('fullPage') }, { title: _('full page(P)') }), icon('fullScreen', { click: e => this.playerMode('fullScreen') }, { title: _('full screen(F)') })] }] }] }] }]
 		});
 
 		//msg box
 		this.videoFrame.appendChild((0, _Object2HTML2.default)({
-			_: 'div',
-			attr: { id: 'msg_box' }
+			_: 'div', attr: { id: 'msg_box' }
 		}));
 
 		//add elements with id to $ prop
@@ -2368,6 +2366,14 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 						$.danmaku_color.dispatchEvent(new Event('change'));
 					}
 				}
+			},
+			NP: {
+				danmakuToggle: bool => this._iconActive('danmakuToggle', bool), //listen danmakuToggle event to change button style
+				playerModeChange: mode => {
+					['fullPage', 'fullScreen'].forEach(m => {
+						this._iconActive(m, mode === m);
+					});
+				}
 			}
 		};
 		for (let eleid in $) {
@@ -2382,8 +2388,6 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 			if (sp.size === opt.defaultDanmakuSize) sp.click();
 		});
 
-		//listen danmakuToggle event to change button style
-		this.on('danmakuToggle', bool => this._iconActive('danmakuToggle', bool));
 		if (this.danmakuFrame.modules.TextDanmaku.enabled) this._iconActive('danmakuToggle', true);
 
 		if (opt.playerFrame instanceof HTMLElement) opt.playerFrame.appendChild(this.player);
@@ -2488,41 +2492,38 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 		setImmediate(() => {
 			bool ? $.danmaku_input.focus() : $.NyaP.focus();
 		});
-	}
-	playerMode(mode = 'normal') {
-		if (mode === 'normal' && this._.playerMode === mode) return;
-		let $ = this.$;
-		if (this._.playerMode === 'fullPage') {
-			this.player.style.position = '';
-			this._iconActive('fullPage', false);
-		} else if (this._.playerMode === 'fullScreen') {
-			this._iconActive('fullScreen', false);
-			(0, _NyaPCore.exitFullscreen)();
-		}
-		if (mode !== 'normal' && this._.playerMode === mode) mode = 'normal'; //back to normal mode
-		switch (mode) {
-			case 'fullPage':
-				{
-					this.player.style.position = 'fixed';
-					this._iconActive('fullPage', true);
-					this.player.setAttribute('playerMode', 'fullPage');
-					break;
-				}
-			case 'fullScreen':
-				{
-					this._iconActive('fullScreen', true);
-					this.player.setAttribute('playerMode', 'fullScreen');
-					(0, _NyaPCore.requestFullscreen)(this.player);
-					break;
-				}
-			default:
-				{
-					this.player.setAttribute('playerMode', 'normal');
-				}
-		}
-		this._.playerMode = mode;
-		this.emit('playerModeChange', mode);
-	}
+	} /*
+   playerMode(mode='normal'){
+   if(mode==='normal' && this._.playerMode===mode)return;
+   let $=this.$;
+   if(this._.playerMode==='fullPage'){
+   	this.player.style.position='';
+   	this._iconActive('fullPage',false);
+   }else if(this._.playerMode==='fullScreen'){
+   	this._iconActive('fullScreen',false);
+   	exitFullscreen();
+   }
+   if(mode!=='normal' && this._.playerMode===mode)mode='normal';//back to normal mode
+   switch(mode){
+   	case 'fullPage':{
+   		this.player.style.position='fixed';
+   		this._iconActive('fullPage',true);
+   		this.player.setAttribute('playerMode','fullPage');
+   		break;
+   	}
+   	case 'fullScreen':{
+   		this._iconActive('fullScreen',true);
+   		this.player.setAttribute('playerMode','fullScreen');
+   		requestFullscreen(this.player);
+   		break;
+   	}
+   	default:{
+   		this.player.setAttribute('playerMode','normal');
+   	}
+   }
+   this._.playerMode=mode;
+   this.emit('playerModeChange',mode);
+   }*/
 	refreshProgress() {
 		const c = this.$.progress;
 		c.width = c.offsetWidth;
@@ -2613,6 +2614,7 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 		if (this._.drawingProgress) return;
 		this._.drawingProgress = true;
 		requestAnimationFrame(() => this._progressDrawer());
+		//this.emit('progressDrawn');
 	}
 	msg(text, type = 'tip') {
 		//type:tip|info|error
@@ -2716,6 +2718,9 @@ class NyaPEventEmitter {
 			}
 		}
 	}
+	addEventListener(e, handle) {
+		this.on(e, handle);
+	}
 	on(e, handle) {
 		if (!(handle instanceof Function)) return;
 		if (!(e in this._events)) this._events[e] = [];
@@ -2737,9 +2742,11 @@ class NyaPlayerCore extends NyaPEventEmitter {
 	constructor(opt) {
 		super();
 		opt = this.opt = Object.assign({}, NyaPCoreOptions, opt);
-		const $ = this.$ = { document, window };
-		this._ = {}; //for private variables
-		this._.video = (0, _Object2HTML2.default)({ _: 'video', attr: { id: 'main_video' } });
+		const $ = this.$ = { document, window, NP: this };
+		this._ = {
+			video: (0, _Object2HTML2.default)({ _: 'video', attr: { id: 'main_video' } }),
+			playerMode: 'normal'
+		}; //for private variables
 		this.container = (0, _Object2HTML2.default)({ _: 'div', prop: { id: 'danmaku_container' } });
 		this.videoFrame = (0, _Object2HTML2.default)({ _: 'div', attr: { id: 'video_frame' }, child: [this.video, this.container, { _: 'div', attr: { id: 'loading_frame' }, child: [{ _: 'div', attr: { id: 'loading_anime' }, child: ['(๑•́ ω •̀๑)'] }, { _: 'div', attr: { id: 'loading_info' } }] }] });
 		this.collectEles(this.videoFrame);
@@ -2798,6 +2805,36 @@ class NyaPlayerCore extends NyaPEventEmitter {
 		toArray(ele.querySelectorAll('*')).forEach(e => {
 			if (e.id && !$[e.id]) $[e.id] = e;
 		});
+	}
+	playerMode(mode = 'normal') {
+		if (mode === 'normal' && this._.playerMode === mode) return;
+		let $ = this.$;
+		if (this._.playerMode === 'fullPage') {
+			this.player.style.position = '';
+		} else if (this._.playerMode === 'fullScreen') {
+			exitFullscreen();
+		}
+		if (mode !== 'normal' && this._.playerMode === mode) mode = 'normal'; //back to normal mode
+		switch (mode) {
+			case 'fullPage':
+				{
+					this.player.style.position = 'fixed';
+					this.player.setAttribute('playerMode', 'fullPage');
+					break;
+				}
+			case 'fullScreen':
+				{
+					this.player.setAttribute('playerMode', 'fullScreen');
+					requestFullscreen(this.player);
+					break;
+				}
+			default:
+				{
+					this.player.setAttribute('playerMode', 'normal');
+				}
+		}
+		this._.playerMode = mode;
+		this.emit('playerModeChange', mode);
 	}
 	get danmakuFrame() {
 		return this.Danmaku.danmakuFrame;

@@ -14,11 +14,11 @@
 var touchMode=false,//(window.navigator.userAgent.match(/mobile/)?true:false);
 	scriptVer='es2016';
 
-if(navigator.userAgent.match(/mobile/i))//touch player
+if(navigator.userAgent.match(/mobile/i) && ('ontouchstart' in window))//touch player
 	touchMode=true;
 
 
-try{
+try{//es2016 version feature test
 	'use strict';
 	[
 		'class a{}',//class
@@ -73,8 +73,6 @@ var NP=new NyaP({
 	playerFrame:document.querySelector('#player_container'),
 });
 // NP.TextDanmaku.options.autoShiftRenderingMode=false;
-
-NP.on('seekMark',function(t){console.log(t)});
 
 window.addEventListener('load',function(){
 	var danmakus=[],textDM={_:'text'};

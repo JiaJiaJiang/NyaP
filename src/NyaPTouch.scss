@@ -8,29 +8,133 @@ LGPL license
 	@extend .NyaP_fullfill;
 	@include NyaPCoreStyles;
 
-	#msg_box{
+	overflow: hidden;
+
+	.active_icon path{fill-opacity:1!important;}
+	svg[id^='icon']>*{
+		fill:#5f3c2c;
+		fill-opacity:0;
+		stroke: #5f3c2c;
+		transition:fill-opacity .2s;
+	}
+	span[id^="icon_span_"]{
+		cursor: pointer;
+		display: inline-block;
+		background-color: inherit;
+		&:hover{
+			background-color:#ececec!important;
+			svg>*{
+				fill:#24b182;
+				stroke: #24b182;
+			}
+		}
+	}
+
+	#controls{
+		will-change:display;
+	}
+
+	&[playerMode="fullScreen"]{
+		#control_bottom{
+			position: fixed;
+		}
+	}
+
+	#control_bottom{
+		top: 100%;
+		width: 100%;
+		font-size: 0;
 		position: absolute;
+		will-change:transform;
+		transition: transform .05s linear;
+		background-color: #fff;
+
+		div[id^='control_bottom_']{
+			width: 100%;
+			display: flex;
+			position: relative;
+			&>div{
+				display: inline-block;
+			}
+		}
+		&>div[id^='progress_']{
+			position: relative;
+		}
+		#danmaku_input{
+		    outline: 0;
+		    flex-grow: 1;
+		    padding: 0 7px;
+		    border: 1px solid #ccc;
+		    box-sizing: border-box;
+		    user-select: initial;
+		    font-size: 15px;
+		    background-color: inherit;
+		}
+		#progress_info{
+			flex-grow: 1;
+			align-items:stretch;
+			display: inline-flex;
+
+			&>*:first-child{
+				flex-grow: 1;
+				position: relative;
+			}
+			#progress_wrap{
+			    top: 50%;
+				overflow: hidden;
+				position: absolute;
+				pointer-events: none;
+			    box-sizing: border-box;
+				border: 1px solid #ccc;
+
+				div{
+					@extend .NyaP_fullfill;
+					width: 0;
+					height: 100%;
+					will-change:width;
+					transition:width .2s linear;
+				}
+				#buffed_bar{background-color: #ccc;}
+				#progress_bar{background-color: #6cf;}
+				#seekTo_bar{background-color: #85acbf;transition:none;}
+			}
+			#time{
+				padding: 0 5px;
+				font-size: 16px;
+				text-align: center;
+				align-items: center;
+				display: inline-flex;
+				font-family: monospace;
+				
+				&>*{flex-shrink:1;flex-grow: 1;}
+			}
+		}
+		
+	}
+
+	#msg_box{
+		right: 0;
+		bottom: 60px;
 		display: flex;
 		flex-flow: column;
-		align-items: flex-end;
-		right: 0;
-		bottom: 0;
+		position: absolute;
 		pointer-events: none;
+		align-items: flex-end;
 
 		[class^='msg_type_']{
-			font-size: 1em;
-			max-width: 15em;
-			word-wrap: break-word;
-			padding: 4px 11px;
-			margin: 4px;
-			border: 1px solid #a5a5a5;
-			border-radius: 3px;
-			box-shadow: 0 0 3px #ccc;
-			cursor: pointer;
-			pointer-events: auto;
-			will-change:opacity;
-			transition: opacity .6s;
+		    margin: 4px;
+		    max-width: 15em;
+		    font-size: 1.1em;
+		    padding: 6px 10px;
+		    border-radius: 13px;
+		    will-change: opacity;
+		    pointer-events: auto;
+		    word-wrap: break-word;
+		    transition: opacity .6s;
+		    border: 1px solid #fbfbfb;
 		}
+
+
 
 		.msg_type_tip{
 			color: #adadad;

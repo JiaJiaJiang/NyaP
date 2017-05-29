@@ -97,7 +97,7 @@ class NyaP extends NyaPlayerCore{
 						]},
 						{_:'span',attr:{id:'control_right'},child:[
 							icon('addDanmaku',{click:e=>NP.danmakuInput()},{title:_('danmaku input(Enter)')}),
-							icon('danmakuToggle',{click:e=>NP.Danmaku.toggle('TextDanmaku')},{title:_('danmaku toggle(D)')}),
+							icon('danmakuToggle',{click:e=>NP.Danmaku.toggle()},{title:_('danmaku toggle(D)')}),
 							icon('volume',{},{title:_('volume($0)([shift]+↑↓)','100%')}),
 							icon('loop',{click:e=>{video.loop=!video.loop;}},{title:_('loop(L)')}),
 							{_:'span',prop:{id:'player_mode'},child:[
@@ -261,7 +261,7 @@ class NyaP extends NyaPlayerCore{
 				}
 			},
 			NP:{
-				danmakuToggle:bool=>NP._iconActive('danmakuToggle',bool),//listen danmakuToggle event to change button style
+				danmakuFrameToggle:bool=>NP._iconActive('danmakuToggle',bool),//listen danmakuToggle event to change button style
 				playerModeChange:mode=>{
 					['fullPage','fullScreen'].forEach(m=>{
 						NP._iconActive(m,mode===m);

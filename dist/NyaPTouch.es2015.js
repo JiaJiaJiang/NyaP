@@ -298,6 +298,7 @@ var DanmakuFrame = function () {
 		F.fpsRec = F.fps || 60;
 		F.media = null;
 		F.working = false;
+		F.enabled = true;
 		F.modules = {}; //constructed module list
 		F.moduleList = [];
 		var style = document.createElement("style");
@@ -326,6 +327,16 @@ var DanmakuFrame = function () {
 	_createClass(DanmakuFrame, [{
 		key: 'enable',
 		value: function enable(name) {
+			if (!name) {
+				this.enabled = true;
+				if (this.media) {
+					this.media.paused || this.start();
+				} else {
+					this.start();
+				}
+				this.container.hidden = false;
+				return;
+			}
 			var module = this.modules[name];
 			if (!module) return this.initModule(name);
 			module.enabled = true;
@@ -335,6 +346,13 @@ var DanmakuFrame = function () {
 	}, {
 		key: 'disable',
 		value: function disable(name) {
+			if (!name) {
+				this.pause();
+				this.moduleFunction('clear');
+				this.enabled = false;
+				this.container.hidden = true;
+				return;
+			}
 			var module = this.modules[name];
 			if (!module) return false;
 			module.enabled = false;
@@ -399,7 +417,7 @@ var DanmakuFrame = function () {
 	}, {
 		key: 'start',
 		value: function start() {
-			if (this.working) return;
+			if (this.working || !this.enabled) return;
 			this.working = true;
 			this.moduleFunction('start');
 			this.draw(true);
@@ -407,6 +425,7 @@ var DanmakuFrame = function () {
 	}, {
 		key: 'pause',
 		value: function pause() {
+			if (!this.enabled) return;
 			this.working = false;
 			this.moduleFunction('pause');
 		}
@@ -3090,7 +3109,7 @@ var NyaPTouch = function (_NyaPlayerCore) {
 								} })] }, { _: 'div', prop: { id: 'progress_info' }, child: [{ _: 'span', attr: { id: 'progress_frame' }, child: [{ _: 'div', prop: { id: 'progress_wrap' }, child: [{ _: 'div', prop: { id: 'buffed_bar' } }, { _: 'div', prop: { id: 'progress_bar' } }, { _: 'div', prop: { id: 'seekTo_bar', hidden: true } }] }] }, { _: 'span', prop: { id: 'time' }, child: [{ _: 'span', prop: { id: 'current_time' }, child: ['00:00'] }, '/', { _: 'span', prop: { id: 'total_time' }, child: ['00:00'] }] }] }, { _: 'span', prop: { id: 'progress_rightside_button' }, child: [icon('fullScreen', { click: function click(e) {
 									return NP.playerMode('fullScreen');
 								} })] }] }, { _: 'div', attr: { id: 'control_bottom_second' }, child: [icon('danmakuStyle'), { _: 'input', attr: { id: 'danmaku_input', placeholder: _('Input danmaku here') } }, icon('danmakuToggle', { click: function click(e) {
-								return _this.Danmaku.toggle('TextDanmaku');
+								return _this.Danmaku.toggle();
 							} }), icon('loop', { click: function click(e) {
 								return video.loop = !video.loop;
 							} }), icon('volume', { click: function click(e) {
@@ -3107,7 +3126,8 @@ var NyaPTouch = function (_NyaPlayerCore) {
 			currentDragMode: null,
 			touchStartPoint: [0, 0],
 			bottomControlDraging: false,
-			bottomControlTransformY: 0
+			bottomControlTransformY: 0,
+			preVideoStat: false
 		});
 
 		Object.assign($.progress_wrap.style, {
@@ -3225,18 +3245,21 @@ var NyaPTouch = function (_NyaPlayerCore) {
 			},
 			danmaku_input: {
 				focus: function focus(e) {
+					NP._.preVideoStat = !video.paused;
+					video.pause();
 					if (!NP.isFullscreen()) return;
 					$.control_bottom.style.top = 0;
 					NP._bottomControlTransformY(0);
 				},
 				blur: function blur(e) {
+					if (NP._.preVideoStat) video.play();
 					if ($.control_bottom.style.top == '') return;
 					$.control_bottom.style.top = '';
 					NP._bottomControlTransformY($.control_bottom.offsetHeight - NP.opt.bottomControlHeight);
 				}
 			},
 			NP: {
-				danmakuToggle: function danmakuToggle(bool) {
+				danmakuFrameToggle: function danmakuFrameToggle(bool) {
 					return _this._iconActive('danmakuToggle', bool);
 				}, //listen danmakuToggle event to change button style
 				seekMark: function seekMark(t) {
@@ -3257,6 +3280,7 @@ var NyaPTouch = function (_NyaPlayerCore) {
 			var eves = events[eleid];
 			eves && (0, _NyaPCore.addEvents)($[eleid], eves);
 		}
+		if (NP.danmakuFrame.modules.TextDanmaku.enabled) NP._iconActive('danmakuToggle', true);
 
 		if (opt.playerFrame instanceof HTMLElement) opt.playerFrame.appendChild(NP.player);
 		return _this;
@@ -3539,13 +3563,32 @@ var Danmaku = function () {
 			this.danmakuFrame.unload(obj);
 		}
 	}, {
+		key: 'enable',
+		value: function enable() {
+			this.danmakuFrame.enable();
+			this.core.emit('danmakuFrameToggle', name, this.module(name).enabled);
+		}
+	}, {
+		key: 'disable',
+		value: function disable() {
+			this.danmakuFrame.enable();
+		}
+	}, {
 		key: 'toggle',
 		value: function toggle(name, bool) {
+			if (typeof name === 'boolean' || name == undefined) {
+				//frame switch mode
+				bool = name != undefined ? name : !this.danmakuFrame.enabled;
+				this.danmakuFrame[bool ? 'enable' : 'disable']();
+				this.core.emit('danmakuFrameToggle', bool);
+				return;
+			}
 			try {
 				if (bool == undefined) bool = !this.module(name).enabled;
 				this.danmakuFrame[bool ? 'enable' : 'disable'](name);
-				this.emit('danmakuToggle', name, this.module(name).enabled);
+				this.core.emit('danmakuModuleToggle', name, this.module(name).enabled);
 			} catch (e) {
+				console.error(e);
 				return false;
 			}
 			return true;

@@ -282,6 +282,7 @@ class DanmakuFrame {
 		F.fpsRec = F.fps || 60;
 		F.media = null;
 		F.working = false;
+		F.enabled = true;
 		F.modules = {}; //constructed module list
 		F.moduleList = [];
 		const style = document.createElement("style");
@@ -307,6 +308,16 @@ class DanmakuFrame {
 		F.draw = F.draw.bind(F);
 	}
 	enable(name) {
+		if (!name) {
+			this.enabled = true;
+			if (this.media) {
+				this.media.paused || this.start();
+			} else {
+				this.start();
+			}
+			this.container.hidden = false;
+			return;
+		}
 		let module = this.modules[name];
 		if (!module) return this.initModule(name);
 		module.enabled = true;
@@ -314,6 +325,13 @@ class DanmakuFrame {
 		return true;
 	}
 	disable(name) {
+		if (!name) {
+			this.pause();
+			this.moduleFunction('clear');
+			this.enabled = false;
+			this.container.hidden = true;
+			return;
+		}
 		let module = this.modules[name];
 		if (!module) return false;
 		module.enabled = false;
@@ -364,12 +382,13 @@ class DanmakuFrame {
 		this.moduleFunction('unload', danmakuObj);
 	}
 	start() {
-		if (this.working) return;
+		if (this.working || !this.enabled) return;
 		this.working = true;
 		this.moduleFunction('start');
 		this.draw(true);
 	}
 	pause() {
+		if (!this.enabled) return;
 		this.working = false;
 		this.moduleFunction('pause');
 	}
@@ -2205,7 +2224,7 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 		NP.loadingInfo(_('Creating player'));
 
 		NP._.player = (0, _Object2HTML2.default)({
-			_: 'div', attr: { class: 'NyaP', id: 'NyaP', tabindex: 0 }, child: [NP.videoFrame, { _: 'div', attr: { id: 'controls' }, child: [{ _: 'div', attr: { id: 'control' }, child: [{ _: 'span', attr: { id: 'control_left' }, child: [icon('play', { click: e => NP.playToggle() }, { title: _('play') })] }, { _: 'span', attr: { id: 'control_center' }, child: [{ _: 'div', prop: { id: 'progress_info' }, child: [{ _: 'span', child: [{ _: 'canvas', prop: { id: 'progress', pad: 10 } }] }, { _: 'span', prop: { id: 'time' }, child: [{ _: 'span', prop: { id: 'current_time' }, child: ['00:00'] }, '/', { _: 'span', prop: { id: 'total_time' }, child: ['00:00'] }] }] }, { _: 'div', prop: { id: 'danmaku_input_frame' }, child: [{ _: 'span', prop: { id: 'danmaku_style' }, child: [{ _: 'div', attr: { id: 'danmaku_style_pannel' }, child: [{ _: 'div', attr: { id: 'danmaku_color_box' } }, { _: 'input', attr: { id: 'danmaku_color', placeholder: _('hex color'), maxlength: "6" } }, { _: 'span', attr: { id: 'danmaku_mode_box' } }, { _: 'span', attr: { id: 'danmaku_size_box' } }] }, icon('danmakuStyle')] }, { _: 'input', attr: { id: 'danmaku_input', placeholder: _('Input danmaku here') } }, { _: 'span', prop: { id: 'danmaku_submit', innerHTML: _('Send') } }] }] }, { _: 'span', attr: { id: 'control_right' }, child: [icon('addDanmaku', { click: e => NP.danmakuInput() }, { title: _('danmaku input(Enter)') }), icon('danmakuToggle', { click: e => NP.Danmaku.toggle('TextDanmaku') }, { title: _('danmaku toggle(D)') }), icon('volume', {}, { title: _('volume($0)([shift]+↑↓)', '100%') }), icon('loop', { click: e => {
+			_: 'div', attr: { class: 'NyaP', id: 'NyaP', tabindex: 0 }, child: [NP.videoFrame, { _: 'div', attr: { id: 'controls' }, child: [{ _: 'div', attr: { id: 'control' }, child: [{ _: 'span', attr: { id: 'control_left' }, child: [icon('play', { click: e => NP.playToggle() }, { title: _('play') })] }, { _: 'span', attr: { id: 'control_center' }, child: [{ _: 'div', prop: { id: 'progress_info' }, child: [{ _: 'span', child: [{ _: 'canvas', prop: { id: 'progress', pad: 10 } }] }, { _: 'span', prop: { id: 'time' }, child: [{ _: 'span', prop: { id: 'current_time' }, child: ['00:00'] }, '/', { _: 'span', prop: { id: 'total_time' }, child: ['00:00'] }] }] }, { _: 'div', prop: { id: 'danmaku_input_frame' }, child: [{ _: 'span', prop: { id: 'danmaku_style' }, child: [{ _: 'div', attr: { id: 'danmaku_style_pannel' }, child: [{ _: 'div', attr: { id: 'danmaku_color_box' } }, { _: 'input', attr: { id: 'danmaku_color', placeholder: _('hex color'), maxlength: "6" } }, { _: 'span', attr: { id: 'danmaku_mode_box' } }, { _: 'span', attr: { id: 'danmaku_size_box' } }] }, icon('danmakuStyle')] }, { _: 'input', attr: { id: 'danmaku_input', placeholder: _('Input danmaku here') } }, { _: 'span', prop: { id: 'danmaku_submit', innerHTML: _('Send') } }] }] }, { _: 'span', attr: { id: 'control_right' }, child: [icon('addDanmaku', { click: e => NP.danmakuInput() }, { title: _('danmaku input(Enter)') }), icon('danmakuToggle', { click: e => NP.Danmaku.toggle() }, { title: _('danmaku toggle(D)') }), icon('volume', {}, { title: _('volume($0)([shift]+↑↓)', '100%') }), icon('loop', { click: e => {
 								video.loop = !video.loop;
 							} }, { title: _('loop(L)') }), { _: 'span', prop: { id: 'player_mode' }, child: [icon('fullPage', { click: e => NP.playerMode('fullPage') }, { title: _('full page(P)') }), icon('fullScreen', { click: e => NP.playerMode('fullScreen') }, { title: _('full screen(F)') })] }] }] }] }]
 		});
@@ -2368,7 +2387,7 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 				}
 			},
 			NP: {
-				danmakuToggle: bool => NP._iconActive('danmakuToggle', bool), //listen danmakuToggle event to change button style
+				danmakuFrameToggle: bool => NP._iconActive('danmakuToggle', bool), //listen danmakuToggle event to change button style
 				playerModeChange: mode => {
 					['fullPage', 'fullScreen'].forEach(m => {
 						NP._iconActive(m, mode === m);
@@ -2977,12 +2996,27 @@ class Danmaku {
 	remove(obj) {
 		this.danmakuFrame.unload(obj);
 	}
+	enable() {
+		this.danmakuFrame.enable();
+		this.core.emit('danmakuFrameToggle', name, this.module(name).enabled);
+	}
+	disable() {
+		this.danmakuFrame.enable();
+	}
 	toggle(name, bool) {
+		if (typeof name === 'boolean' || name == undefined) {
+			//frame switch mode
+			bool = name != undefined ? name : !this.danmakuFrame.enabled;
+			this.danmakuFrame[bool ? 'enable' : 'disable']();
+			this.core.emit('danmakuFrameToggle', bool);
+			return;
+		}
 		try {
 			if (bool == undefined) bool = !this.module(name).enabled;
 			this.danmakuFrame[bool ? 'enable' : 'disable'](name);
-			this.emit('danmakuToggle', name, this.module(name).enabled);
+			this.core.emit('danmakuModuleToggle', name, this.module(name).enabled);
 		} catch (e) {
+			console.error(e);
 			return false;
 		}
 		return true;

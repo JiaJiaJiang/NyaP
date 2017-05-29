@@ -28,9 +28,7 @@ LGPL license
 
 .NyaPTouch svg[id^='icon'] > * { fill: #5f3c2c; fill-opacity: 0; stroke: #5f3c2c; transition: fill-opacity .2s; }
 
-.NyaPTouch span[id^="icon_span_"] { cursor: pointer; display: inline-block; background-color: inherit; }
-
-.NyaPTouch span[id^="icon_span_"]:hover { background-color: #ececec !important; }
+.NyaPTouch span[id^="icon_span_"] { display: inline-block; background-color: inherit; }
 
 .NyaPTouch span[id^="icon_span_"]:hover svg > * { fill: #24b182; stroke: #24b182; }
 

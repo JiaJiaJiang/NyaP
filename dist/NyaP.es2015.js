@@ -298,6 +298,7 @@ var DanmakuFrame = function () {
 		F.fpsRec = F.fps || 60;
 		F.media = null;
 		F.working = false;
+		F.enabled = true;
 		F.modules = {}; //constructed module list
 		F.moduleList = [];
 		var style = document.createElement("style");
@@ -326,6 +327,16 @@ var DanmakuFrame = function () {
 	_createClass(DanmakuFrame, [{
 		key: 'enable',
 		value: function enable(name) {
+			if (!name) {
+				this.enabled = true;
+				if (this.media) {
+					this.media.paused || this.start();
+				} else {
+					this.start();
+				}
+				this.container.hidden = false;
+				return;
+			}
 			var module = this.modules[name];
 			if (!module) return this.initModule(name);
 			module.enabled = true;
@@ -335,6 +346,13 @@ var DanmakuFrame = function () {
 	}, {
 		key: 'disable',
 		value: function disable(name) {
+			if (!name) {
+				this.pause();
+				this.moduleFunction('clear');
+				this.enabled = false;
+				this.container.hidden = true;
+				return;
+			}
 			var module = this.modules[name];
 			if (!module) return false;
 			module.enabled = false;
@@ -399,7 +417,7 @@ var DanmakuFrame = function () {
 	}, {
 		key: 'start',
 		value: function start() {
-			if (this.working) return;
+			if (this.working || !this.enabled) return;
 			this.working = true;
 			this.moduleFunction('start');
 			this.draw(true);
@@ -407,6 +425,7 @@ var DanmakuFrame = function () {
 	}, {
 		key: 'pause',
 		value: function pause() {
+			if (!this.enabled) return;
 			this.working = false;
 			this.moduleFunction('pause');
 		}
@@ -2697,7 +2716,7 @@ var NyaP = function (_NyaPlayerCore) {
 							} }, { title: _('play') })] }, { _: 'span', attr: { id: 'control_center' }, child: [{ _: 'div', prop: { id: 'progress_info' }, child: [{ _: 'span', child: [{ _: 'canvas', prop: { id: 'progress', pad: 10 } }] }, { _: 'span', prop: { id: 'time' }, child: [{ _: 'span', prop: { id: 'current_time' }, child: ['00:00'] }, '/', { _: 'span', prop: { id: 'total_time' }, child: ['00:00'] }] }] }, { _: 'div', prop: { id: 'danmaku_input_frame' }, child: [{ _: 'span', prop: { id: 'danmaku_style' }, child: [{ _: 'div', attr: { id: 'danmaku_style_pannel' }, child: [{ _: 'div', attr: { id: 'danmaku_color_box' } }, { _: 'input', attr: { id: 'danmaku_color', placeholder: _('hex color'), maxlength: "6" } }, { _: 'span', attr: { id: 'danmaku_mode_box' } }, { _: 'span', attr: { id: 'danmaku_size_box' } }] }, icon('danmakuStyle')] }, { _: 'input', attr: { id: 'danmaku_input', placeholder: _('Input danmaku here') } }, { _: 'span', prop: { id: 'danmaku_submit', innerHTML: _('Send') } }] }] }, { _: 'span', attr: { id: 'control_right' }, child: [icon('addDanmaku', { click: function click(e) {
 								return NP.danmakuInput();
 							} }, { title: _('danmaku input(Enter)') }), icon('danmakuToggle', { click: function click(e) {
-								return NP.Danmaku.toggle('TextDanmaku');
+								return NP.Danmaku.toggle();
 							} }, { title: _('danmaku toggle(D)') }), icon('volume', {}, { title: _('volume($0)([shift]+↑↓)', '100%') }), icon('loop', { click: function click(e) {
 								video.loop = !video.loop;
 							} }, { title: _('loop(L)') }), { _: 'span', prop: { id: 'player_mode' }, child: [icon('fullPage', { click: function click(e) {
@@ -2891,7 +2910,7 @@ var NyaP = function (_NyaPlayerCore) {
 				}
 			},
 			NP: {
-				danmakuToggle: function danmakuToggle(bool) {
+				danmakuFrameToggle: function danmakuFrameToggle(bool) {
 					return NP._iconActive('danmakuToggle', bool);
 				}, //listen danmakuToggle event to change button style
 				playerModeChange: function playerModeChange(mode) {
@@ -3665,13 +3684,32 @@ var Danmaku = function () {
 			this.danmakuFrame.unload(obj);
 		}
 	}, {
+		key: 'enable',
+		value: function enable() {
+			this.danmakuFrame.enable();
+			this.core.emit('danmakuFrameToggle', name, this.module(name).enabled);
+		}
+	}, {
+		key: 'disable',
+		value: function disable() {
+			this.danmakuFrame.enable();
+		}
+	}, {
 		key: 'toggle',
 		value: function toggle(name, bool) {
+			if (typeof name === 'boolean' || name == undefined) {
+				//frame switch mode
+				bool = name != undefined ? name : !this.danmakuFrame.enabled;
+				this.danmakuFrame[bool ? 'enable' : 'disable']();
+				this.core.emit('danmakuFrameToggle', bool);
+				return;
+			}
 			try {
 				if (bool == undefined) bool = !this.module(name).enabled;
 				this.danmakuFrame[bool ? 'enable' : 'disable'](name);
-				this.emit('danmakuToggle', name, this.module(name).enabled);
+				this.core.emit('danmakuModuleToggle', name, this.module(name).enabled);
 			} catch (e) {
+				console.error(e);
 				return false;
 			}
 			return true;

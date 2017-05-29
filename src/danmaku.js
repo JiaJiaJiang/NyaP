@@ -28,12 +28,24 @@ class Danmaku{
 	remove(obj){
 		this.danmakuFrame.unload(obj);
 	}
+	enable(){
+		this.danmakuFrame.enable();
+		this.core.emit('danmakuFrameToggle',name,this.module(name).enabled);
+	}
+	disable(){this.danmakuFrame.enable();}
 	toggle(name,bool){
+		if(typeof name==='boolean' || name==undefined){//frame switch mode
+			bool=(name!=undefined)?name:!this.danmakuFrame.enabled;
+			this.danmakuFrame[bool?'enable':'disable']();
+			this.core.emit('danmakuFrameToggle',bool);
+			return;
+		}
 		try{
 			if(bool==undefined)bool=!this.module(name).enabled;
 			this.danmakuFrame[bool?'enable':'disable'](name);
-			this.emit('danmakuToggle',name,this.module(name).enabled);
+			this.core.emit('danmakuModuleToggle',name,this.module(name).enabled);
 		}catch(e){
+			console.error(e);
 			return false;
 		}
 		return true;

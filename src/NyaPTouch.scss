@@ -18,11 +18,9 @@ LGPL license
 		transition:fill-opacity .2s;
 	}
 	span[id^="icon_span_"]{
-		cursor: pointer;
 		display: inline-block;
 		background-color: inherit;
 		&:hover{
-			background-color:#ececec!important;
 			svg>*{
 				fill:#24b182;
 				stroke: #24b182;

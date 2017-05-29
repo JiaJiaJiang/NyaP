@@ -88,7 +88,7 @@ class NyaPTouch extends NyaPlayerCore{
 						{_:'div',attr:{id:'control_bottom_second'},child:[
 							icon('danmakuStyle'),
 							{_:'input',attr:{id:'danmaku_input',placeholder:_('Input danmaku here')}},
-							icon('danmakuToggle',{click:e=>this.Danmaku.toggle('TextDanmaku')}),
+							icon('danmakuToggle',{click:e=>this.Danmaku.toggle()}),
 							icon('loop',{click:e=>video.loop=!video.loop}),
 							icon('volume',{click:e=>video.muted=!video.muted}),
 						]},
@@ -107,6 +107,7 @@ class NyaPTouch extends NyaPlayerCore{
 			touchStartPoint:[0,0],
 			bottomControlDraging:false,
 			bottomControlTransformY:0,
+			preVideoStat:false,
 		});
 
 		Object.assign($.progress_wrap.style,{
@@ -216,18 +217,21 @@ class NyaPTouch extends NyaPlayerCore{
 			},
 			danmaku_input:{
 				focus:e=>{
+					NP._.preVideoStat=!video.paused;
+					video.pause();
 					if(!NP.isFullscreen())return;
 					$.control_bottom.style.top=0;
 					NP._bottomControlTransformY(0);
 				},
 				blur:e=>{
+					if(NP._.preVideoStat)video.play();
 					if($.control_bottom.style.top=='')return;
 					$.control_bottom.style.top='';
 					NP._bottomControlTransformY($.control_bottom.offsetHeight-NP.opt.bottomControlHeight);
 				},
 			},
 			NP:{
-				danmakuToggle:bool=>this._iconActive('danmakuToggle',bool),//listen danmakuToggle event to change button style
+				danmakuFrameToggle:bool=>this._iconActive('danmakuToggle',bool),//listen danmakuToggle event to change button style
 				seekMark:t=>{
 					if($.seekTo_bar.hidden)$.seekTo_bar.hidden=false;
 					$.seekTo_bar.style.width=`${(t/video.duration*100).toFixed(2)}%`;
@@ -245,6 +249,7 @@ class NyaPTouch extends NyaPlayerCore{
 			let eves=events[eleid];
 			eves&&addEvents($[eleid],eves);
 		}
+		if(NP.danmakuFrame.modules.TextDanmaku.enabled)NP._iconActive('danmakuToggle',true);
 
 		if(opt.playerFrame instanceof HTMLElement)
 			opt.playerFrame.appendChild(NP.player);

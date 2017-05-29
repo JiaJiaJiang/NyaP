@@ -10,7 +10,6 @@ import {NyaPlayerCore,
 		addEvents,
 		requestFullscreen,
 		exitFullscreen,
-		isFullscreen,
 		formatTime,
 		setAttrs,
 		padTime,
@@ -61,15 +60,15 @@ class NyaP extends NyaPlayerCore{
 				innerHTML:`<svg height=${ico[1]} width=${ico[0]} id="icon_${name}"">${ico[2]}</svg>`}});
 		}
 		
-		this.loadingInfo(_('Creating player'));
+		NP.loadingInfo(_('Creating player'));
 
-		this._.player=O2H({
+		NP._.player=O2H({
 			_:'div',attr:{class:'NyaP',id:'NyaP',tabindex:0},child:[
-				this.videoFrame,
+				NP.videoFrame,
 				{_:'div',attr:{id:'controls'},child:[
 					{_:'div',attr:{id:'control'},child:[
 						{_:'span',attr:{id:'control_left'},child:[
-							icon('play',{click:e=>this.playToggle()},{title:_('play')}),
+							icon('play',{click:e=>NP.playToggle()},{title:_('play')}),
 						]},
 						{_:'span',attr:{id:'control_center'},child:[
 							{_:'div',prop:{id:'progress_info'},child:[
@@ -97,13 +96,13 @@ class NyaP extends NyaPlayerCore{
 							]}
 						]},
 						{_:'span',attr:{id:'control_right'},child:[
-							icon('addDanmaku',{click:e=>this.danmakuInput()},{title:_('danmaku input(Enter)')}),
-							icon('danmakuToggle',{click:e=>this.Danmaku.toggle('TextDanmaku')},{title:_('danmaku toggle(D)')}),
+							icon('addDanmaku',{click:e=>NP.danmakuInput()},{title:_('danmaku input(Enter)')}),
+							icon('danmakuToggle',{click:e=>NP.Danmaku.toggle('TextDanmaku')},{title:_('danmaku toggle(D)')}),
 							icon('volume',{},{title:_('volume($0)([shift]+↑↓)','100%')}),
 							icon('loop',{click:e=>{video.loop=!video.loop;}},{title:_('loop(L)')}),
 							{_:'span',prop:{id:'player_mode'},child:[
-								icon('fullPage',{click:e=>this.playerMode('fullPage')},{title:_('full page(P)')}),
-								icon('fullScreen',{click:e=>this.playerMode('fullScreen')},{title:_('full screen(F)')})
+								icon('fullPage',{click:e=>NP.playerMode('fullPage')},{title:_('full page(P)')}),
+								icon('fullScreen',{click:e=>NP.playerMode('fullScreen')},{title:_('full screen(F)')})
 							]}
 						]},
 					]}
@@ -112,12 +111,12 @@ class NyaP extends NyaPlayerCore{
 		});
 
 		//msg box
-		this.videoFrame.appendChild(O2H({
+		NP.videoFrame.appendChild(O2H({
 			_:'div',attr:{id:'msg_box'}
 		}));
 
 		//add elements with id to $ prop
-		this.collectEles(this._.player);
+		NP.collectEles(NP._.player);
 
 		//danmaku sizes
 		opt.danmakuSizes&&opt.danmakuSizes.forEach((s,ind)=>{
@@ -135,52 +134,52 @@ class NyaP extends NyaPlayerCore{
 		opt.danmakuModes&&opt.danmakuModes.forEach(m=>{
 			$.danmaku_mode_box.appendChild(icon(`danmakuMode${m}`));
 		});
-		this.collectEles($.danmaku_mode_box);
+		NP.collectEles($.danmaku_mode_box);
 
 
 		//progress
 		setTimeout(()=>{//ResizeSensor
-			$.control.ResizeSensor=new ResizeSensor($.control,()=>this.refreshProgress());
-			this.refreshProgress();
+			$.control.ResizeSensor=new ResizeSensor($.control,()=>NP.refreshProgress());
+			NP.refreshProgress();
 		},0);
-		this._.progressContext=$.progress.getContext('2d');
+		NP._.progressContext=$.progress.getContext('2d');
 
 		//events
 		const events={
 			NyaP:{
-				keydown:e=>this._playerKeyHandle(e),
+				keydown:e=>NP._playerKeyHandle(e),
 			},
 			document:{
 				'fullscreenchange,mozfullscreenchange,webkitfullscreenchange,msfullscreenchange':e=>{
-					if(this._.playerMode=='fullScreen' && !isFullscreen())
-						this.playerMode('normal');
+					if(NP._.playerMode=='fullScreen' && !this.isFullscreen())
+						NP.playerMode('normal');
 				}
 			},
 			main_video:{
-				playing:e=>this._iconActive('play',true),
+				playing:e=>NP._iconActive('play',true),
 				'pause,stalled':e=>{
-					this._iconActive('play',false);
+					NP._iconActive('play',false);
 				},
 				timeupdate:(e)=>{
-					if(Date.now()-this._.lastTimeUpdate <30)return;
-					this._setTimeInfo(formatTime(video.currentTime,video.duration));
-					this.drawProgress();
-					this._.lastTimeUpdate=Date.now();
+					if(Date.now()-NP._.lastTimeUpdate <30)return;
+					NP._setTimeInfo(formatTime(video.currentTime,video.duration));
+					NP.drawProgress();
+					NP._.lastTimeUpdate=Date.now();
 				},
 				loadedmetadata:e=>{
-					this._setTimeInfo(null,formatTime(video.duration,video.duration));
+					NP._setTimeInfo(null,formatTime(video.duration,video.duration));
 				},
 				volumechange:e=>{
 					setAttrs($.volume_circle,{'stroke-dasharray':`${video.volume*12*Math.PI} 90`,style:`fill-opacity:${video.muted?.2:.6}!important`});
 					$.icon_span_volume.setAttribute('title',_('volume($0)([shift]+↑↓)',video.muted?_('muted'):`${video.volume*100|0}%`));
 				},
-				progress:e=>this.drawProgress(),
-				_loopChange:e=>this._iconActive('loop',e.value),
-				click:e=>this.playToggle(),
+				progress:e=>NP.drawProgress(),
+				_loopChange:e=>NP._iconActive('loop',e.value),
+				click:e=>NP.playToggle(),
 				contextmenu:e=>e.preventDefault(),
 			},
 			danmaku_container:{
-				click:e=>this.playToggle(),
+				click:e=>NP.playToggle(),
 				contextmenu:e=>e.preventDefault(),
 			},
 			progress:{
@@ -188,29 +187,29 @@ class NyaP extends NyaPlayerCore{
 					let t=e.target,
 						pre=limitIn((e.offsetX-t.pad)/(t.offsetWidth-2*t.pad),0,1);
 					if(e.type==='mousemove'){
-						this._.progressX=e.offsetX;this.drawProgress();
-						this._setTimeInfo(null,formatTime(pre*video.duration,video.duration));	
+						NP._.progressX=e.offsetX;NP.drawProgress();
+						NP._setTimeInfo(null,formatTime(pre*video.duration,video.duration));	
 					}else if(e.type==='click'){
 						video.currentTime=pre*video.duration;
 					}
 				},
 				mouseout:e=>{
-					this._.progressX=undefined;this.drawProgress();
-					this._setTimeInfo(null,formatTime(video.duration,video.duration));
+					NP._.progressX=undefined;NP.drawProgress();
+					NP._setTimeInfo(null,formatTime(video.duration,video.duration));
 				},
 			},
 			danmaku_style_pannel:{
-				click:e=>setImmediate(a=>this.$.danmaku_input.focus()),
+				click:e=>setImmediate(a=>NP.$.danmaku_input.focus()),
 			},
 			danmaku_color:{
 				'input,change':e=>{
-					let i=e.target,c=this.Danmaku.isVaildColor(i.value);
+					let i=e.target,c=NP.Danmaku.isVaildColor(i.value);
 					if(c){//match valid hex color code
 						i.style.backgroundColor=`#${c}`;
-						this._.danmakuColor=c;
+						NP._.danmakuColor=c;
 					}else{
-						this._.danmakuColor=undefined;
-						c=this.Danmaku.isVaildColor(this.opt.defaultDanmakuColor);
+						NP._.danmakuColor=undefined;
+						c=NP.Danmaku.isVaildColor(NP.opt.defaultDanmakuColor);
 						i.style.backgroundColor=c?`#${c}`:'';
 					}
 				},
@@ -237,20 +236,20 @@ class NyaP extends NyaPlayerCore{
 				}
 			},
 			danmaku_input:{
-				keydown:e=>{if(e.key==='Enter'){this.send();}else if(e.key==='Escape'){this.danmakuInput(false);}}
+				keydown:e=>{if(e.key==='Enter'){NP.send();}else if(e.key==='Escape'){NP.danmakuInput(false);}}
 			},
 			danmaku_submit:{
-				click:e=>this.send(),
+				click:e=>NP.send(),
 			},
 			danmaku_size_box:{
 				click:e=>{
 					let t=e.target;
 					if(!t.size)return;
 					toArray($.danmaku_size_box.childNodes).forEach(sp=>{
-						if(this._.danmakuSize===sp.size)sp.classList.remove('active');
+						if(NP._.danmakuSize===sp.size)sp.classList.remove('active');
 					});
 					t.classList.add('active');
-					this._.danmakuSize=t.size;
+					NP._.danmakuSize=t.size;
 				}
 			},
 			danmaku_color_box:{
@@ -262,10 +261,10 @@ class NyaP extends NyaPlayerCore{
 				}
 			},
 			NP:{
-				danmakuToggle:bool=>this._iconActive('danmakuToggle',bool),//listen danmakuToggle event to change button style
+				danmakuToggle:bool=>NP._iconActive('danmakuToggle',bool),//listen danmakuToggle event to change button style
 				playerModeChange:mode=>{
 					['fullPage','fullScreen'].forEach(m=>{
-						this._iconActive(m,mode===m);
+						NP._iconActive(m,mode===m);
 					});
 				}
 			},
@@ -283,11 +282,11 @@ class NyaP extends NyaPlayerCore{
 			&&toArray($.danmaku_size_box.childNodes).forEach(sp=>{if(sp.size===opt.defaultDanmakuSize)sp.click()});
 
 		
-		if(this.danmakuFrame.modules.TextDanmaku.enabled)this._iconActive('danmakuToggle',true);
+		if(NP.danmakuFrame.modules.TextDanmaku.enabled)NP._iconActive('danmakuToggle',true);
 
 
 		if(opt.playerFrame instanceof HTMLElement)
-			opt.playerFrame.appendChild(this.player);
+			opt.playerFrame.appendChild(NP.player);
 	}
 	_iconActive(name,bool){
 		this.$[`icon_span_${name}`].classList[bool?'add':'remove']('active_icon');

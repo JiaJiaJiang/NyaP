@@ -165,6 +165,14 @@ class NyaPlayerCore extends NyaPEventEmitter{
 		this._.playerMode=mode;
 		this.emit('playerModeChange',mode);
 	}
+	isFullscreen(){
+		const d=document;
+		return (d.webkitFullscreenElement
+				||d.msFullscreenElement
+				||d.mozFullScreenElement
+				||d.fullscreenElement)
+				==this.player;
+	}
 	get danmakuFrame(){return this.Danmaku.danmakuFrame;}
 	get player(){return this._.player;}
 	get video(){return this._.video;}

@@ -11,7 +11,6 @@ import {NyaPlayerCore,
 		addEvents,
 		requestFullscreen,
 		exitFullscreen,
-		isFullscreen,
 		formatTime,
 		setAttrs,
 		padTime,
@@ -127,7 +126,7 @@ class NyaPTouch extends NyaPlayerCore{
 		const events={
 			document:{
 				'fullscreenchange,mozfullscreenchange,webkitfullscreenchange,msfullscreenchange':e=>{
-					if(NP._.playerMode=='fullScreen' && !isFullscreen())
+					if(NP._.playerMode=='fullScreen' && !NP.isFullscreen())
 						NP.playerMode('normal');
 				}
 			},
@@ -198,16 +197,14 @@ class NyaPTouch extends NyaPlayerCore{
 			control_bottom:{
 				touchdrag:e=>{
 					NP._.bottomControlDraging=true;
-					NP._.bottomControlTransformY=limitIn(NP._.bottomControlTransformY-e.deltaY,
+					NP._bottomControlTransformY(limitIn(NP._.bottomControlTransformY-e.deltaY,
 														0,
-														$.control_bottom.offsetHeight-NP.opt.bottomControlHeight);
-					$.control_bottom.style.transform=`translate3d(0,-${NP._.bottomControlTransformY}px,0)`;
+														$.control_bottom.offsetHeight-NP.opt.bottomControlHeight));
 				},
 				touchend:e=>{
 					if(!NP._.bottomControlDraging)return;
 					let R=$.control_bottom.offsetHeight-NP.opt.bottomControlHeight;
-					NP._.bottomControlTransformY=NP._.bottomControlTransformY<(R/2)?0:R;
-					$.control_bottom.style.transform=`translate3d(0,-${NP._.bottomControlTransformY}px,0)`;
+					NP._bottomControlTransformY(NP._.bottomControlTransformY<(R/2)?0:R);
 				},
 			},
 			progress_frame:{
@@ -215,6 +212,18 @@ class NyaPTouch extends NyaPlayerCore{
 					let t=e.target,pad=NP.opt.progressPad,
 						pre=limitIn((e.offsetX-pad)/(t.offsetWidth-2*pad),0,1);
 					video.currentTime=pre*video.duration;
+				},
+			},
+			danmaku_input:{
+				focus:e=>{
+					if(!NP.isFullscreen())return;
+					$.control_bottom.style.top=0;
+					NP._bottomControlTransformY(0);
+				},
+				blur:e=>{
+					if($.control_bottom.style.top=='')return;
+					$.control_bottom.style.top='';
+					NP._bottomControlTransformY($.control_bottom.offsetHeight-NP.opt.bottomControlHeight);
 				},
 			},
 			NP:{
@@ -246,6 +255,10 @@ class NyaPTouch extends NyaPlayerCore{
 
 	controlsToggle(bool=this.$.controls.hidden){
 		this.$.controls.hidden=!bool;
+	}
+	_bottomControlTransformY(y=this._.bottomControlTransformY){
+		this._.bottomControlTransformY=y;
+		this.$.control_bottom.style.transform=`translate3d(0,-${y}px,0)`;
 	}
 	drawProgress(){
 		requestAnimationFrame(()=>{

@@ -2321,6 +2321,10 @@ class NyaPlayerCore extends NyaPEventEmitter {
 		this._.playerMode = mode;
 		this.emit('playerModeChange', mode);
 	}
+	isFullscreen() {
+		const d = document;
+		return (d.webkitFullscreenElement || d.msFullscreenElement || d.mozFullScreenElement || d.fullscreenElement) == this.player;
+	}
 	get danmakuFrame() {
 		return this.Danmaku.danmakuFrame;
 	}
@@ -2534,13 +2538,10 @@ class NyaPTouch extends _NyaPCore.NyaPlayerCore {
 		extendEvent.touchdrag($.control_bottom, { allowMultiTouch: false, preventDefaultY: true });
 
 		//events
-		//todo:上下滑变音量
-		//左右滑拖进度条，拖进度条时和初始纵向位置越远就跨度越大
-		//单击显隐控制界面
 		const events = {
 			document: {
 				'fullscreenchange,mozfullscreenchange,webkitfullscreenchange,msfullscreenchange': e => {
-					if (NP._.playerMode == 'fullScreen' && !(0, _NyaPCore.isFullscreen)()) NP.playerMode('normal');
+					if (NP._.playerMode == 'fullScreen' && !NP.isFullscreen()) NP.playerMode('normal');
 				}
 			},
 			main_video: {
@@ -2614,15 +2615,12 @@ class NyaPTouch extends _NyaPCore.NyaPlayerCore {
 			control_bottom: {
 				touchdrag: e => {
 					NP._.bottomControlDraging = true;
-					//bottom活动范围Hieght-50
-					NP._.bottomControlTransformY = (0, _NyaPCore.limitIn)(NP._.bottomControlTransformY - e.deltaY, 0, $.control_bottom.offsetHeight - NP.opt.bottomControlHeight);
-					$.control_bottom.style.transform = `translate3d(0,-${NP._.bottomControlTransformY}px,0)`;
+					NP._bottomControlTransformY((0, _NyaPCore.limitIn)(NP._.bottomControlTransformY - e.deltaY, 0, $.control_bottom.offsetHeight - NP.opt.bottomControlHeight));
 				},
 				touchend: e => {
 					if (!NP._.bottomControlDraging) return;
 					let R = $.control_bottom.offsetHeight - NP.opt.bottomControlHeight;
-					NP._.bottomControlTransformY = NP._.bottomControlTransformY < R / 2 ? 0 : R;
-					$.control_bottom.style.transform = `translate3d(0,-${NP._.bottomControlTransformY}px,0)`;
+					NP._bottomControlTransformY(NP._.bottomControlTransformY < R / 2 ? 0 : R);
 				}
 			},
 			progress_frame: {
@@ -2631,6 +2629,18 @@ class NyaPTouch extends _NyaPCore.NyaPlayerCore {
 					    pad = NP.opt.progressPad,
 					    pre = (0, _NyaPCore.limitIn)((e.offsetX - pad) / (t.offsetWidth - 2 * pad), 0, 1);
 					video.currentTime = pre * video.duration;
+				}
+			},
+			danmaku_input: {
+				focus: e => {
+					if (!NP.isFullscreen()) return;
+					$.control_bottom.style.top = 0;
+					NP._bottomControlTransformY(0);
+				},
+				blur: e => {
+					if ($.control_bottom.style.top == '') return;
+					$.control_bottom.style.top = '';
+					NP._bottomControlTransformY($.control_bottom.offsetHeight - NP.opt.bottomControlHeight);
 				}
 			},
 			NP: {
@@ -2663,6 +2673,10 @@ class NyaPTouch extends _NyaPCore.NyaPlayerCore {
 	controlsToggle(bool = this.$.controls.hidden) {
 		this.$.controls.hidden = !bool;
 	}
+	_bottomControlTransformY(y = this._.bottomControlTransformY) {
+		this._.bottomControlTransformY = y;
+		this.$.control_bottom.style.transform = `translate3d(0,-${y}px,0)`;
+	}
 	drawProgress() {
 		requestAnimationFrame(() => {
 			const V = this.video,
@@ -2673,7 +2687,6 @@ class NyaPTouch extends _NyaPCore.NyaPlayerCore {
 			this.$.buffed_bar.style.width = `${(lastBuffered / D * 100).toFixed(2)}%`;
 			this.$.progress_bar.style.width = `${(V.currentTime / D * 100).toFixed(2)}%`;
 		});
-		//this.emit('progressDrawn');
 	}
 	_iconActive(name, bool) {
 		this.$[`icon_span_${name}`].classList[bool ? 'add' : 'remove']('active_icon');

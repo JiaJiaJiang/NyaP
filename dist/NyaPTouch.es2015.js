@@ -2853,6 +2853,12 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 			this.emit('playerModeChange', mode);
 		}
 	}, {
+		key: 'isFullscreen',
+		value: function isFullscreen() {
+			var d = document;
+			return (d.webkitFullscreenElement || d.msFullscreenElement || d.mozFullScreenElement || d.fullscreenElement) == this.player;
+		}
+	}, {
 		key: 'danmakuFrame',
 		get: function get() {
 			return this.Danmaku.danmakuFrame;
@@ -3121,7 +3127,7 @@ var NyaPTouch = function (_NyaPlayerCore) {
 		var events = {
 			document: {
 				'fullscreenchange,mozfullscreenchange,webkitfullscreenchange,msfullscreenchange': function fullscreenchangeMozfullscreenchangeWebkitfullscreenchangeMsfullscreenchange(e) {
-					if (NP._.playerMode == 'fullScreen' && !(0, _NyaPCore.isFullscreen)()) NP.playerMode('normal');
+					if (NP._.playerMode == 'fullScreen' && !NP.isFullscreen()) NP.playerMode('normal');
 				}
 			},
 			main_video: {
@@ -3201,14 +3207,12 @@ var NyaPTouch = function (_NyaPlayerCore) {
 			control_bottom: {
 				touchdrag: function touchdrag(e) {
 					NP._.bottomControlDraging = true;
-					NP._.bottomControlTransformY = (0, _NyaPCore.limitIn)(NP._.bottomControlTransformY - e.deltaY, 0, $.control_bottom.offsetHeight - NP.opt.bottomControlHeight);
-					$.control_bottom.style.transform = 'translate3d(0,-' + NP._.bottomControlTransformY + 'px,0)';
+					NP._bottomControlTransformY((0, _NyaPCore.limitIn)(NP._.bottomControlTransformY - e.deltaY, 0, $.control_bottom.offsetHeight - NP.opt.bottomControlHeight));
 				},
 				touchend: function touchend(e) {
 					if (!NP._.bottomControlDraging) return;
 					var R = $.control_bottom.offsetHeight - NP.opt.bottomControlHeight;
-					NP._.bottomControlTransformY = NP._.bottomControlTransformY < R / 2 ? 0 : R;
-					$.control_bottom.style.transform = 'translate3d(0,-' + NP._.bottomControlTransformY + 'px,0)';
+					NP._bottomControlTransformY(NP._.bottomControlTransformY < R / 2 ? 0 : R);
 				}
 			},
 			progress_frame: {
@@ -3217,6 +3221,18 @@ var NyaPTouch = function (_NyaPlayerCore) {
 					    pad = NP.opt.progressPad,
 					    pre = (0, _NyaPCore.limitIn)((e.offsetX - pad) / (t.offsetWidth - 2 * pad), 0, 1);
 					video.currentTime = pre * video.duration;
+				}
+			},
+			danmaku_input: {
+				focus: function focus(e) {
+					if (!NP.isFullscreen()) return;
+					$.control_bottom.style.top = 0;
+					NP._bottomControlTransformY(0);
+				},
+				blur: function blur(e) {
+					if ($.control_bottom.style.top == '') return;
+					$.control_bottom.style.top = '';
+					NP._bottomControlTransformY($.control_bottom.offsetHeight - NP.opt.bottomControlHeight);
 				}
 			},
 			NP: {
@@ -3258,6 +3274,14 @@ var NyaPTouch = function (_NyaPlayerCore) {
 			var bool = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.$.controls.hidden;
 
 			this.$.controls.hidden = !bool;
+		}
+	}, {
+		key: '_bottomControlTransformY',
+		value: function _bottomControlTransformY() {
+			var y = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this._.bottomControlTransformY;
+
+			this._.bottomControlTransformY = y;
+			this.$.control_bottom.style.transform = 'translate3d(0,-' + y + 'px,0)';
 		}
 	}, {
 		key: 'drawProgress',

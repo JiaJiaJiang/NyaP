@@ -58,6 +58,63 @@ LGPL license
 		&>div[id^='progress_']{
 			position: relative;
 		}
+
+		#danmakuStyleEditor{
+			position: relative;
+			overflow: hidden;
+
+
+			#danmaku_mode_box,#danmaku_size_box,#danmaku_color_box{
+				font-size: 0;
+				position: absolute;
+				background-color: #fbfbfb;
+				display: flex;
+
+				span.active{
+					opacity: 1!important;
+				}
+				span{
+					opacity: .4;
+				}
+			}
+			#danmaku_size_box{
+				bottom: 100%;
+				width: 100%;
+				flex-direction:column;
+				span{
+				    width: 100%;
+				    height: 50px;
+				    line-height: 50px;
+				    text-align: center;
+				    display: inline-block;
+				    font-family: monospace;
+				    vertical-align: middle;
+				    background-color: inherit;
+				}
+			}
+			#danmaku_mode_box{
+				bottom: 100%;
+				left: 100%;
+			}
+			#danmaku_color_box{
+				height: 100%;
+				left: 100%;
+				top:0;
+				align-items:center;
+			    padding-right: 6px;
+				&>span{
+					width: 40px;
+					height: 40px;
+					margin-left: 6px;
+					border-radius: 15px;
+					display: inline-block;
+					border: 1px solid #ddd;
+				}
+			}
+			span[id^='icon_span_danmakuMode'] *{
+				pointer-events: none;
+			}
+		}
 		#danmaku_input{
 		    outline: 0;
 		    flex-grow: 1;

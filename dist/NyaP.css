@@ -8,7 +8,7 @@ LGPL license
 */
 .NyaP_fullfill, .NyaP, .NyaP #video_frame, .NyaP #video_frame video#main_video, .NyaP #video_frame #danmaku_container, .NyaP #video_frame div[class^=danmaku], .NyaP #controls, .NyaP #control, .NyaP canvas#progress, .NyaP #progress_info, .NyaP #danmaku_input_frame { top: 0; left: 0; width: 100%; height: 100%; position: absolute; }
 
-.NyaP { outline: none; background-color: #000; }
+.NyaP { outline: none; background-color: #000; /*#settings_box{ right: -10px; display: none; position: absolute; background-color:#ccc; bottom: $control_bar_height; } #player_settings:active{ #settings_box{ display: flex; } }*/ }
 
 .NyaP #loading_frame { top: 0; left: 0; width: 100%; height: 100%; display: flex; cursor: dafault; flex-wrap: wrap; position: absolute; align-items: center; justify-content: center; background-color: #efefef; }
 
@@ -86,15 +86,13 @@ LGPL license
 
 .NyaP #danmaku_mode_box > span.active, .NyaP #danmaku_size_box > span.active { background-color: #ececec !important; }
 
-.NyaP #danmaku_submit { color: #fff; display: flex; cursor: pointer; padding: 0 14px; text-align: center; align-items: center; background-color: #616161; }
-
 .NyaP #danmaku_color_box { width: 100%; display: flex; flex-wrap: wrap; margin-bottom: 8px; position: relative; justify-content: space-around; }
 
 .NyaP #danmaku_color_box > span { width: 30px; height: 30px; cursor: pointer; border-radius: 6px; display: inline-block; border: 1px solid #ddd; }
 
-.NyaP #settings_box { right: -10px; display: none; position: absolute; background-color: #ccc; bottom: 30px; }
+.NyaP span[id^='icon_span_danmakuMode'] * { pointer-events: none; }
 
-.NyaP #player_settings:active #settings_box { display: flex; }
+.NyaP #danmaku_submit { color: #fff; display: flex; cursor: pointer; padding: 0 14px; text-align: center; align-items: center; background-color: #616161; }
 
 .NyaP #time { padding: 0 5px; font-size: 14px; text-align: center; align-items: center; display: inline-flex; font-family: monospace; }
 

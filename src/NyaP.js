@@ -231,20 +231,23 @@ class NyaP extends NyaPlayerCore{
 					video.volume=limitIn(video.volume+(delta/100),0,1);
 				}
 			},
-			danmakuModeSwitch:{
-				click:function(){
-					let m=1*this.id.match(/\d$/)[0];
-					if(NP._.danmakuMode!==undefined)
-						$[`icon_span_danmakuMode${NP._.danmakuMode}`].classList.remove('active');
-					$[`icon_span_danmakuMode${m}`].classList.add('active');
-					NP._.danmakuMode=m;
-				}
-			},
 			danmaku_input:{
 				keydown:e=>{if(e.key==='Enter'){NP.send();}else if(e.key==='Escape'){NP.danmakuInput(false);}}
 			},
 			danmaku_submit:{
 				click:e=>NP.send(),
+			},
+			danmaku_mode_box:{
+				click:e=>{
+					let t=e.target;
+					if(t.id.startsWith('icon_span_danmakuMode')){
+						let m=1*t.id.match(/\d$/)[0];
+						if(NP._.danmakuMode!==undefined)
+							$[`icon_span_danmakuMode${NP._.danmakuMode}`].classList.remove('active');
+						$[`icon_span_danmakuMode${m}`].classList.add('active');
+						NP._.danmakuMode=m;
+					}
+				}
 			},
 			danmaku_size_box:{
 				click:e=>{
@@ -275,9 +278,9 @@ class NyaP extends NyaPlayerCore{
 			},
 		}
 		for(let eleid in $){//add events to elements
-			let eves=events[eleid];
+			let eves=events[eleid];/*
 			if(eleid.startsWith('icon_span_danmakuMode'))
-				eves=events.danmakuModeSwitch;
+				eves=events.danmakuModeSwitch;*/
 			eves&&addEvents($[eleid],eves);
 		}
 

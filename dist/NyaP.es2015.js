@@ -2873,14 +2873,6 @@ var NyaP = function (_NyaPlayerCore) {
 					video.volume = (0, _NyaPCore.limitIn)(video.volume + delta / 100, 0, 1);
 				}
 			},
-			danmakuModeSwitch: {
-				click: function click() {
-					var m = 1 * this.id.match(/\d$/)[0];
-					if (NP._.danmakuMode !== undefined) $['icon_span_danmakuMode' + NP._.danmakuMode].classList.remove('active');
-					$['icon_span_danmakuMode' + m].classList.add('active');
-					NP._.danmakuMode = m;
-				}
-			},
 			danmaku_input: {
 				keydown: function keydown(e) {
 					if (e.key === 'Enter') {
@@ -2893,6 +2885,17 @@ var NyaP = function (_NyaPlayerCore) {
 			danmaku_submit: {
 				click: function click(e) {
 					return NP.send();
+				}
+			},
+			danmaku_mode_box: {
+				click: function click(e) {
+					var t = e.target;
+					if (t.id.startsWith('icon_span_danmakuMode')) {
+						var m = 1 * t.id.match(/\d$/)[0];
+						if (NP._.danmakuMode !== undefined) $['icon_span_danmakuMode' + NP._.danmakuMode].classList.remove('active');
+						$['icon_span_danmakuMode' + m].classList.add('active');
+						NP._.danmakuMode = m;
+					}
 				}
 			},
 			danmaku_size_box: {
@@ -2927,8 +2930,9 @@ var NyaP = function (_NyaPlayerCore) {
 		};
 		for (var eleid in $) {
 			//add events to elements
-			var eves = events[eleid];
-			if (eleid.startsWith('icon_span_danmakuMode')) eves = events.danmakuModeSwitch;
+			var eves = events[eleid]; /*
+                             if(eleid.startsWith('icon_span_danmakuMode'))
+                             eves=events.danmakuModeSwitch;*/
 			eves && (0, _NyaPCore.addEvents)($[eleid], eves);
 		}
 

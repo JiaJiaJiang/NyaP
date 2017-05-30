@@ -64,7 +64,7 @@ LGPL license
 
 .NyaPTouch #control_bottom #progress_info #time > * { flex-shrink: 1; flex-grow: 1; }
 
-.NyaPTouch #msg_box { right: 0; bottom: 60px; display: flex; flex-flow: column; position: absolute; pointer-events: none; align-items: flex-end; }
+.NyaPTouch #msg_box { right: 0; bottom: 60px; display: flex; flex-flow: column; position: absolute; pointer-events: none; align-items: flex-end; font-family: monospace; }
 
 .NyaPTouch #msg_box [class^='msg_type_'] { margin: 4px; max-width: 15em; font-size: 1.1em; padding: 6px 10px; border-radius: 13px; will-change: opacity; pointer-events: auto; word-wrap: break-word; transition: opacity .6s; border: 1px solid #fbfbfb; }
 

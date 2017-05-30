@@ -18,6 +18,7 @@ i18n.langs['zh-CN']={
 	'Send':'发送',
 	'pause':'暂停',
 	'muted':'静音',
+	'volume':'音量',
 	'settings':'设置',
 	'loop(L)':'循环(L)',
 	'hex color':'Hex颜色',

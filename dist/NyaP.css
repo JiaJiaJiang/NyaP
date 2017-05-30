@@ -106,7 +106,7 @@ LGPL license
 
 .NyaP #player_mode:hover > #icon_span_fullScreen { display: block; }
 
-.NyaP #msg_box { right: 0; bottom: 0; display: flex; flex-flow: column; position: absolute; pointer-events: none; align-items: flex-end; }
+.NyaP #msg_box { right: 0; bottom: 0; display: flex; flex-flow: column; position: absolute; pointer-events: none; align-items: flex-end; font-family: monospace; }
 
 .NyaP #msg_box [class^='msg_type_'] { margin: 4px; font-size: 1em; max-width: 15em; cursor: pointer; padding: 4px 11px; border-radius: 3px; will-change: opacity; pointer-events: auto; word-wrap: break-word; transition: opacity .6s; box-shadow: 0 0 3px #ccc; border: 1px solid #a5a5a5; }
 

@@ -2541,7 +2541,8 @@ class NyaPTouch extends _NyaPCore.NyaPlayerCore {
 			touchStartPoint: [0, 0],
 			bottomControlDraging: false,
 			bottomControlTransformY: 0,
-			preVideoStat: false
+			preVideoStat: false,
+			volumeBox: new MsgBox('', 'info', $.msg_box)
 		});
 
 		Object.assign($.progress_wrap.style, {
@@ -2574,14 +2575,15 @@ class NyaPTouch extends _NyaPCore.NyaPlayerCore {
 				},
 				_loopChange: e => NP._iconActive('loop', e.value),
 				volumechange: e => {
+					NP._.volumeBox.renew(`${_('volume')}:${(video.volume * 100).toFixed(0)}%`);
 					(0, _NyaPCore.setAttrs)($.volume_circle, { 'stroke-dasharray': `${video.volume * 12 * Math.PI} 90`, style: `fill-opacity:${video.muted ? .2 : .6}!important` });
 				},
 				progress: e => NP.drawProgress(),
 				click: e => {
 					e.preventDefault();
 					NP.controlsToggle();
-					//NP.playToggle();
 				},
+				dblclick: e => NP.playToggle(),
 				timeupdate: e => {
 					if (Date.now() - NP._.lastTimeUpdate < 30) return;
 					NP._setTimeInfo((0, _NyaPCore.formatTime)(video.currentTime, video.duration));
@@ -2630,6 +2632,7 @@ class NyaPTouch extends _NyaPCore.NyaPlayerCore {
 					e.preventDefault();
 					if (!opt.dragToChangeVolume) return;
 					NP._.currentDragMode = 'volume';
+					NP._.volumeBox.renew(`${_('volume')}:${(video.volume * 100).toFixed(0)}%`);
 				}
 			},
 			control_bottom: {
@@ -2728,27 +2731,48 @@ class NyaPTouch extends _NyaPCore.NyaPlayerCore {
 
 	msg(text, type = 'tip') {
 		//type:tip|info|error
-		let msg = new MsgBox(text, type);
-		this.$.msg_box.appendChild(msg.msg);
+		let msg = new MsgBox(text, type, this.$.msg_box);
 		requestAnimationFrame(() => msg.show());
 	}
 }
 
 class MsgBox {
-	constructor(text, type) {
+	constructor(text, type, parentNode) {
 		this.using = false;
-		let msg = this.msg = (0, _Object2HTML2.default)({ _: 'div', attr: { class: `msg_type_${type}` }, child: [text] });
+		let msg = this.msg = (0, _Object2HTML2.default)({ _: 'div', attr: { class: `msg_type_${type}` } });
 		msg.addEventListener('click', () => this.remove());
+		this.parentNode = parentNode;
+		this.setText(text);
+	}
+	setTimeout(time) {
+		if (this.timeout) clearTimeout(this.timeout);
+		this.timeout = setTimeout(() => this.remove(), time || Math.max((this.texts ? this.texts.length : 0) * 0.6 * 1000, 5000));
+	}
+	setText(text) {
+		this.msg.innerHTML = '';
+		let e = text instanceof Node ? text : (0, _Object2HTML.Object2HTML)(text);
+		this.msg.appendChild(e);
 		if (text instanceof HTMLElement) text = text.textContent;
 		let texts = String(text).match(/\w+|\S/g);
-		this.timeout = setTimeout(() => this.remove(), Math.max((texts ? texts.length : 0) * 0.6 * 1000, 5000));
+		this.text = text;
+		this.texts = texts;
+	}
+	renew(text) {
+		this.setText(text);
+		this.setTimeout();
+		if (!this.using) this.show();
 	}
 	show() {
+		if (this.using) return;
 		this.msg.style.opacity = 0;
-		setTimeout(() => {
+		if (this.parentNode && this.parentNode !== this.msg.parentNode) {
+			this.parentNode.appendChild(this.msg);
+		}
+		this.msg.parentNode && setTimeout(() => {
 			this.using = true;
 			this.msg.style.opacity = 1;
 		}, 0);
+		this.setTimeout();
 	}
 	remove() {
 		if (!this.using) return;
@@ -2759,7 +2783,7 @@ class MsgBox {
 			this.timeout = 0;
 		}
 		setTimeout(() => {
-			this.msg.parentNode.removeChild(this.msg);
+			this.msg.parentNode && this.msg.parentNode.removeChild(this.msg);
 		}, 600);
 	}
 }
@@ -2990,6 +3014,7 @@ i18n.langs['zh-CN'] = {
 	'Send': '发送',
 	'pause': '暂停',
 	'muted': '静音',
+	'volume': '音量',
 	'settings': '设置',
 	'loop(L)': '循环(L)',
 	'hex color': 'Hex颜色',

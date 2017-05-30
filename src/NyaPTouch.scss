@@ -118,6 +118,7 @@ LGPL license
 		position: absolute;
 		pointer-events: none;
 		align-items: flex-end;
+		font-family: monospace;
 
 		[class^='msg_type_']{
 		    margin: 4px;

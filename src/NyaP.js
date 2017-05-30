@@ -118,6 +118,10 @@ class NyaP extends NyaPlayerCore{
 		//add elements with id to $ prop
 		NP.collectEles(NP._.player);
 
+		Object.assign(NP._,{
+			volumeBox:new MsgBox('','info',$.msg_box),
+		});
+
 		//danmaku sizes
 		opt.danmakuSizes&&opt.danmakuSizes.forEach((s,ind)=>{
 			let e=O2H({_:'span',attr:{style:`font-size:${12+ind*3}px;`,title:s},prop:{size:s},child:['A']});
@@ -170,6 +174,7 @@ class NyaP extends NyaPlayerCore{
 					NP._setTimeInfo(null,formatTime(video.duration,video.duration));
 				},
 				volumechange:e=>{
+					NP._.volumeBox.renew(`${_('volume')}:${(video.volume*100).toFixed(0)}%`);
 					setAttrs($.volume_circle,{'stroke-dasharray':`${video.volume*12*Math.PI} 90`,style:`fill-opacity:${video.muted?.2:.6}!important`});
 					$.icon_span_volume.setAttribute('title',_('volume($0)([shift]+↑↓)',video.muted?_('muted'):`${video.volume*100|0}%`));
 				},
@@ -449,30 +454,50 @@ class NyaP extends NyaPlayerCore{
 		if(this._.drawingProgress)return;
 		this._.drawingProgress=true;
 		requestAnimationFrame(()=>this._progressDrawer());
-		//this.emit('progressDrawn');
 	}
 	msg(text,type='tip'){//type:tip|info|error
-		let msg=new MsgBox(text,type);
-		this.$.msg_box.appendChild(msg.msg);
+		let msg=new MsgBox(text,type,this.$.msg_box);
 		requestAnimationFrame(()=>msg.show());
 	}
 }
 
 class MsgBox{
-	constructor(text,type){
+	constructor(text,type,parentNode){
 		this.using=false;
-		let msg=this.msg=O2H({_:'div',attr:{class:`msg_type_${type}`},child:[text]});
+		let msg=this.msg=O2H({_:'div',attr:{class:`msg_type_${type}`}});
 		msg.addEventListener('click',()=>this.remove());
+		this.parentNode=parentNode;
+		this.setText(text);
+	}
+	setTimeout(time){
+		if(this.timeout)clearTimeout(this.timeout);
+		this.timeout=setTimeout(()=>this.remove(),time||Math.max((this.texts?this.texts.length:0)*0.6*1000,5000));
+	}
+	setText(text){
+		this.msg.innerHTML='';
+		let e=(text instanceof Node)?text:Object2HTML(text);
+		this.msg.appendChild(e);
 		if(text instanceof HTMLElement)text=text.textContent;
 		let texts=String(text).match(/\w+|\S/g);
-		this.timeout=setTimeout(()=>this.remove(),Math.max((texts?texts.length:0)*0.6*1000,5000));
+		this.text=text;
+		this.texts=texts;
+	}
+	renew(text){
+		this.setText(text);
+		this.setTimeout();
+		if(!this.using)this.show();
 	}
 	show(){
+		if(this.using)return;
 		this.msg.style.opacity=0;
-		setTimeout(()=>{
+		if(this.parentNode && this.parentNode!==this.msg.parentNode){
+			this.parentNode.appendChild(this.msg);
+		}
+		this.msg.parentNode&&setTimeout(()=>{
 			this.using=true;
 			this.msg.style.opacity=1;
 		},0);
+		this.setTimeout();
 	}
 	remove(){
 		if(!this.using)return;
@@ -483,7 +508,7 @@ class MsgBox{
 			this.timeout=0;
 		}
 		setTimeout(()=>{
-			this.msg.parentNode.removeChild(this.msg);
+			this.msg.parentNode&&this.msg.parentNode.removeChild(this.msg);
 		},600);
 	}
 }

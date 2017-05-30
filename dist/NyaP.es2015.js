@@ -2734,6 +2734,10 @@ var NyaP = function (_NyaPlayerCore) {
 		//add elements with id to $ prop
 		NP.collectEles(NP._.player);
 
+		Object.assign(NP._, {
+			volumeBox: new MsgBox('', 'info', $.msg_box)
+		});
+
 		//danmaku sizes
 		opt.danmakuSizes && opt.danmakuSizes.forEach(function (s, ind) {
 			var e = (0, _Object2HTML2.default)({ _: 'span', attr: { style: 'font-size:' + (12 + ind * 3) + 'px;', title: s }, prop: { size: s }, child: ['A'] });
@@ -2791,6 +2795,7 @@ var NyaP = function (_NyaPlayerCore) {
 					NP._setTimeInfo(null, (0, _NyaPCore.formatTime)(video.duration, video.duration));
 				},
 				volumechange: function volumechange(e) {
+					NP._.volumeBox.renew(_('volume') + ':' + (video.volume * 100).toFixed(0) + '%');
 					(0, _NyaPCore.setAttrs)($.volume_circle, { 'stroke-dasharray': video.volume * 12 * Math.PI + ' 90', style: 'fill-opacity:' + (video.muted ? .2 : .6) + '!important' });
 					$.icon_span_volume.setAttribute('title', _('volume($0)([shift]+↑↓)', video.muted ? _('muted') : (video.volume * 100 | 0) + '%'));
 				},
@@ -3158,15 +3163,13 @@ var NyaP = function (_NyaPlayerCore) {
 			requestAnimationFrame(function () {
 				return _this4._progressDrawer();
 			});
-			//this.emit('progressDrawn');
 		}
 	}, {
 		key: 'msg',
 		value: function msg(text) {
 			var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'tip';
 			//type:tip|info|error
-			var msg = new MsgBox(text, type);
-			this.$.msg_box.appendChild(msg.msg);
+			var msg = new MsgBox(text, type, this.$.msg_box);
 			requestAnimationFrame(function () {
 				return msg.show();
 			});
@@ -3177,38 +3180,78 @@ var NyaP = function (_NyaPlayerCore) {
 }(_NyaPCore.NyaPlayerCore);
 
 var MsgBox = function () {
-	function MsgBox(text, type) {
+	function MsgBox(text, type, parentNode) {
 		var _this5 = this;
 
 		_classCallCheck(this, MsgBox);
 
 		this.using = false;
-		var msg = this.msg = (0, _Object2HTML2.default)({ _: 'div', attr: { class: 'msg_type_' + type }, child: [text] });
+		var msg = this.msg = (0, _Object2HTML2.default)({ _: 'div', attr: { class: 'msg_type_' + type } });
 		msg.addEventListener('click', function () {
 			return _this5.remove();
 		});
-		if (text instanceof HTMLElement) text = text.textContent;
-		var texts = String(text).match(/\w+|\S/g);
-		this.timeout = setTimeout(function () {
-			return _this5.remove();
-		}, Math.max((texts ? texts.length : 0) * 0.6 * 1000, 5000));
+		this.parentNode = parentNode;
+		this.setText(text);
 	}
 
 	_createClass(MsgBox, [{
-		key: 'show',
-		value: function show() {
+		key: 'setTimeout',
+		value: function (_setTimeout) {
+			function setTimeout(_x6) {
+				return _setTimeout.apply(this, arguments);
+			}
+
+			setTimeout.toString = function () {
+				return _setTimeout.toString();
+			};
+
+			return setTimeout;
+		}(function (time) {
 			var _this6 = this;
 
+			if (this.timeout) clearTimeout(this.timeout);
+			this.timeout = setTimeout(function () {
+				return _this6.remove();
+			}, time || Math.max((this.texts ? this.texts.length : 0) * 0.6 * 1000, 5000));
+		})
+	}, {
+		key: 'setText',
+		value: function setText(text) {
+			this.msg.innerHTML = '';
+			var e = text instanceof Node ? text : Object2HTML(text);
+			this.msg.appendChild(e);
+			if (text instanceof HTMLElement) text = text.textContent;
+			var texts = String(text).match(/\w+|\S/g);
+			this.text = text;
+			this.texts = texts;
+		}
+	}, {
+		key: 'renew',
+		value: function renew(text) {
+			this.setText(text);
+			this.setTimeout();
+			if (!this.using) this.show();
+		}
+	}, {
+		key: 'show',
+		value: function show() {
+			var _this7 = this;
+
+			if (this.using) return;
 			this.msg.style.opacity = 0;
-			setTimeout(function () {
-				_this6.using = true;
-				_this6.msg.style.opacity = 1;
+			if (this.parentNode && this.parentNode !== this.msg.parentNode) {
+				this.parentNode.appendChild(this.msg);
+			}
+			this.msg.parentNode && setTimeout(function () {
+				_this7.using = true;
+				_this7.msg.style.opacity = 1;
 			}, 0);
+			this.setTimeout();
 		}
 	}, {
 		key: 'remove',
 		value: function remove() {
-			var _this7 = this;
+			var _this8 = this;
 
 			if (!this.using) return;
 			this.using = false;
@@ -3218,7 +3261,7 @@ var MsgBox = function () {
 				this.timeout = 0;
 			}
 			setTimeout(function () {
-				_this7.msg.parentNode.removeChild(_this7.msg);
+				_this8.msg.parentNode && _this8.msg.parentNode.removeChild(_this8.msg);
 			}, 600);
 		}
 	}]);
@@ -3828,6 +3871,7 @@ i18n.langs['zh-CN'] = {
 	'Send': '发送',
 	'pause': '暂停',
 	'muted': '静音',
+	'volume': '音量',
 	'settings': '设置',
 	'loop(L)': '循环(L)',
 	'hex color': 'Hex颜色',

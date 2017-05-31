@@ -2532,7 +2532,7 @@ class NyaPTouch extends _NyaPCore.NyaPlayerCore {
 		NP.loadingInfo(_('Creating touch player'));
 
 		NP._.player = (0, _Object2HTML.Object2HTML)({
-			_: 'div', attr: { class: 'NyaPTouch', id: 'NyaPTouch' }, child: [NP.videoFrame, { _: 'div', prop: { id: 'controls' }, child: [{ _: 'div', prop: { id: 'control_bottom' }, child: [{ _: 'div', attr: { id: 'control_bottom_first' }, child: [{ _: 'div', attr: { id: 'progress_leftside_button' }, child: [icon('play', { click: e => NP.playToggle() })] }, { _: 'div', prop: { id: 'progress_info' }, child: [{ _: 'span', attr: { id: 'progress_frame' }, child: [{ _: 'div', prop: { id: 'progress_wrap' }, child: [{ _: 'div', prop: { id: 'buffed_bar' } }, { _: 'div', prop: { id: 'progress_bar' } }, { _: 'div', prop: { id: 'seekTo_bar', hidden: true } }] }] }, { _: 'span', prop: { id: 'time' }, child: [{ _: 'span', prop: { id: 'current_time' }, child: ['00:00'] }, '/', { _: 'span', prop: { id: 'total_time' }, child: ['00:00'] }] }] }, { _: 'span', prop: { id: 'progress_rightside_button' }, child: [icon('fullScreen', { click: e => NP.playerMode('fullScreen') })] }] }, { _: 'div', attr: { id: 'control_bottom_second' }, child: [{ _: 'span', attr: { id: 'danmakuStyleEditor' }, child: [icon('danmakuStyle', { click: e => NP.danmakuStyleToggle() }), { _: 'div', attr: { id: 'danmaku_size_box' } }, { _: 'div', attr: { id: 'danmaku_mode_box' } }, { _: 'div', attr: { id: 'danmaku_color_box' } }] }, { _: 'input', attr: { id: 'danmaku_input', placeholder: _('Input danmaku here') } }, icon('danmakuToggle', { click: e => this.Danmaku.toggle() }), icon('loop', { click: e => video.loop = !video.loop }), icon('volume', { click: e => video.muted = !video.muted })] }] }] }]
+			_: 'div', attr: { class: 'NyaPTouch', id: 'NyaPTouch' }, child: [NP.videoFrame, { _: 'div', prop: { id: 'controls' }, child: [{ _: 'div', prop: { id: 'control_bottom' }, child: [{ _: 'div', attr: { id: 'control_bottom_first' }, child: [{ _: 'div', attr: { id: 'progress_leftside_button' }, child: [icon('play', { click: e => NP.playToggle() })] }, { _: 'div', prop: { id: 'progress_info' }, child: [{ _: 'span', attr: { id: 'progress_frame' }, child: [{ _: 'div', prop: { id: 'progress_wrap' }, child: [{ _: 'div', prop: { id: 'buffed_bar' } }, { _: 'div', prop: { id: 'progress_bar' } }, { _: 'div', prop: { id: 'seekTo_bar', hidden: true } }] }] }, { _: 'span', prop: { id: 'time' }, child: [{ _: 'span', prop: { id: 'current_time' }, child: ['00:00'] }, '/', { _: 'span', prop: { id: 'total_time' }, child: ['00:00'] }] }] }, { _: 'span', prop: { id: 'progress_rightside_button' }, child: [icon('fullScreen', { click: e => NP.playerMode('fullScreen') })] }] }, { _: 'div', attr: { id: 'control_bottom_second' }, child: [{ _: 'span', attr: { id: 'danmakuStyleEditor', tabindex: 0 }, child: [icon('danmakuStyle', { click: e => NP.danmakuStyleToggle() }), { _: 'div', attr: { id: 'danmaku_size_box' } }, { _: 'div', attr: { id: 'danmaku_mode_box' } }, { _: 'div', attr: { id: 'danmaku_color_box' } }] }, { _: 'input', attr: { id: 'danmaku_input', placeholder: _('Input danmaku here') } }, icon('danmakuToggle', { click: e => this.Danmaku.toggle() }), icon('loop', { click: e => video.loop = !video.loop }), icon('volume', { click: e => video.muted = !video.muted })] }] }] }]
 		});
 
 		//msg box
@@ -2693,6 +2693,9 @@ class NyaPTouch extends _NyaPCore.NyaPlayerCore {
 					$.control_bottom.style.top = '';
 					NP._bottomControlTransformY($.control_bottom.offsetHeight - NP.opt.bottomControlHeight);
 				}
+			},
+			danmakuStyleEditor: {
+				blur: e => NP.danmakuStyleToggle(false)
 			},
 			danmaku_mode_box: {
 				click: e => {

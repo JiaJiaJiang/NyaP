@@ -3112,7 +3112,7 @@ var NyaPTouch = function (_NyaPlayerCore) {
 									return NP.playToggle();
 								} })] }, { _: 'div', prop: { id: 'progress_info' }, child: [{ _: 'span', attr: { id: 'progress_frame' }, child: [{ _: 'div', prop: { id: 'progress_wrap' }, child: [{ _: 'div', prop: { id: 'buffed_bar' } }, { _: 'div', prop: { id: 'progress_bar' } }, { _: 'div', prop: { id: 'seekTo_bar', hidden: true } }] }] }, { _: 'span', prop: { id: 'time' }, child: [{ _: 'span', prop: { id: 'current_time' }, child: ['00:00'] }, '/', { _: 'span', prop: { id: 'total_time' }, child: ['00:00'] }] }] }, { _: 'span', prop: { id: 'progress_rightside_button' }, child: [icon('fullScreen', { click: function click(e) {
 									return NP.playerMode('fullScreen');
-								} })] }] }, { _: 'div', attr: { id: 'control_bottom_second' }, child: [{ _: 'span', attr: { id: 'danmakuStyleEditor' }, child: [icon('danmakuStyle', { click: function click(e) {
+								} })] }] }, { _: 'div', attr: { id: 'control_bottom_second' }, child: [{ _: 'span', attr: { id: 'danmakuStyleEditor', tabindex: 0 }, child: [icon('danmakuStyle', { click: function click(e) {
 									return NP.danmakuStyleToggle();
 								} }), { _: 'div', attr: { id: 'danmaku_size_box' } }, { _: 'div', attr: { id: 'danmaku_mode_box' } }, { _: 'div', attr: { id: 'danmaku_color_box' } }] }, { _: 'input', attr: { id: 'danmaku_input', placeholder: _('Input danmaku here') } }, icon('danmakuToggle', { click: function click(e) {
 								return _this.Danmaku.toggle();
@@ -3288,6 +3288,11 @@ var NyaPTouch = function (_NyaPlayerCore) {
 					if ($.control_bottom.style.top == '') return;
 					$.control_bottom.style.top = '';
 					NP._bottomControlTransformY($.control_bottom.offsetHeight - NP.opt.bottomControlHeight);
+				}
+			},
+			danmakuStyleEditor: {
+				blur: function blur(e) {
+					return NP.danmakuStyleToggle(false);
 				}
 			},
 			danmaku_mode_box: {

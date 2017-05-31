@@ -44,7 +44,7 @@ LGPL license
 
 .NyaPTouch #control_bottom > div[id^='progress_'] { position: relative; }
 
-.NyaPTouch #control_bottom #danmakuStyleEditor { position: relative; overflow: hidden; }
+.NyaPTouch #control_bottom #danmakuStyleEditor { position: relative; overflow: hidden; outline: 0; }
 
 .NyaPTouch #control_bottom #danmakuStyleEditor #danmaku_mode_box, .NyaPTouch #control_bottom #danmakuStyleEditor #danmaku_size_box, .NyaPTouch #control_bottom #danmakuStyleEditor #danmaku_color_box { font-size: 0; position: absolute; background-color: #fbfbfb; display: flex; }
 

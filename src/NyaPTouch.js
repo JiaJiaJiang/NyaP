@@ -90,7 +90,7 @@ class NyaPTouch extends NyaPlayerCore{
 							]},
 						]},
 						{_:'div',attr:{id:'control_bottom_second'},child:[
-							{_:'span',attr:{id:'danmakuStyleEditor'},child:[
+							{_:'span',attr:{id:'danmakuStyleEditor',tabindex:0},child:[
 								icon('danmakuStyle',{click:e=>NP.danmakuStyleToggle()}),
 								{_:'div',attr:{id:'danmaku_size_box'}},
 								{_:'div',attr:{id:'danmaku_mode_box'}},
@@ -267,6 +267,9 @@ class NyaPTouch extends NyaPlayerCore{
 					$.control_bottom.style.top='';
 					NP._bottomControlTransformY($.control_bottom.offsetHeight-NP.opt.bottomControlHeight);
 				},
+			},
+			danmakuStyleEditor:{
+				blur:e=>NP.danmakuStyleToggle(false),
 			},
 			danmaku_mode_box:{
 				click:e=>{

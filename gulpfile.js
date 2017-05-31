@@ -52,7 +52,6 @@ gulp.task('js',function(){
 			gulp.start('js');
 		}
 	});
-	//return;
 });
 
 gulp.task('css', function (){

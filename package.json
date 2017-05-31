@@ -25,7 +25,7 @@
     "gulp-sass": "^3.1.0",
     "gulp-sourcemaps": "^2.4.1",
     "gulp-uglify": "^2.1.2",
-    "uglify-js": "github:mishoo/UglifyJS2#harmony",
+    "uglify-es": "github:mishoo/UglifyJS2#harmony",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0",
     "watchify": "^3.9.0"

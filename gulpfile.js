@@ -24,7 +24,7 @@ gulp.task('_compileJS',function(){
 			debug: true,
 		}).transform(
 			babelify.configure({
-				presets: [`es${es}`],
+				presets: ['stage-0',`es${es}`],
 				plugins: ["transform-es2015-modules-commonjs"]
 			})
 		)
@@ -68,16 +68,15 @@ gulp.task('css', function (){
 
 
 gulp.task('minjs',function(){
-	var uglifyjs = require('uglify-js');
-	var uglify = require('gulp-uglify/minifier');
+	var uglify = require('gulp-uglify');
 	let options = {
-		mangle: true,
+		//mangle: true,
 		compress: {
 			sequences: true,
 			conditionals: true,
 			dead_code: true,
-			booleans: true,
-			if_return: true,
+			//booleans: true,
+			//if_return: true,
 			join_vars: true,
 			comparisons:true,
 			evaluate:true,
@@ -85,7 +84,7 @@ gulp.task('minjs',function(){
 	};
 	return gulp.src('./dist/*.js')
 				.pipe(rename({extname:'.min.js'}))
-				.pipe(uglify(options,uglifyjs))
+				.pipe(uglify(options))
 				.on('error',function(e){
 					console.error(e);
 				})

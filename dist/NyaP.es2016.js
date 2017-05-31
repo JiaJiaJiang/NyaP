@@ -408,7 +408,7 @@ class DanmakuFrame {
 		F.media = media;
 		addEvents(media, {
 			playing: () => F.start(),
-			pause: () => F.pause(),
+			'pause,stalled,seeking': () => F.pause(),
 			ratechange: () => {
 				F.rate = F.media.playbackRate;
 				F.moduleFunction('rate', F.rate);
@@ -963,6 +963,21 @@ danmaku mode
 	3:top
 */
 
+function formatTime(sec, total) {
+	if (total == undefined) total = sec;
+	let r,
+	    s = sec | 0,
+	    h = s / 3600 | 0;
+	if (total >= 3600) s = s % 3600;
+	r = [padTime(s / 60 | 0), padTime(s % 60)];
+	total >= 3600 && r.unshift(h);
+	return r.join(':');
+}
+function padTime(n) {
+	//pad number to 2 chars
+	return n > 9 && n || `0${n}`;
+}
+
 function init(DanmakuFrame, DanmakuFrameModule) {
 	const defProp = Object.defineProperty;
 	const requestIdleCallback = window.requestIdleCallback || setImmediate;
@@ -1056,11 +1071,9 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			addEvents(media, {
 				seeked: () => {
 					D.time();
-					D.paused && D.start();
 					D._clearScreen(true);
 				},
-				seeking: () => D.pause(),
-				stalled: () => D.pause()
+				seeking: () => D.pause()
 			});
 		}
 		start() {
@@ -1106,7 +1119,8 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			if (i < D.indexMark) D.indexMark--;
 			return true;
 		}
-		_checkNewDanmaku() {
+		_checkNewDanmaku(force) {
+			if (this.paused && !force) return;
 			let D = this,
 			    d,
 			    time = D.frame.time;
@@ -1236,7 +1250,9 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			if (!force && this.paused || !this.enabled) return;
 			this._calcDanmakusPosition(force);
 			this.activeRendererMode.draw(force);
-			requestAnimationFrame(this._checkNewDanmaku);
+			requestAnimationFrame(() => {
+				this._checkNewDanmaku(force);
+			});
 		}
 		removeText(t) {
 			//remove the danmaku from screen
@@ -2281,6 +2297,9 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 				}
 			},
 			main_video: {
+				/*'play,playing,stalled,pause,seeking,seeked':e=>{
+    	console.log(e.type)
+    },*/
 				playing: e => NP._iconActive('play', true),
 				'pause,stalled': e => {
 					NP._iconActive('play', false);
@@ -2539,7 +2558,7 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 
 		let S = this.Danmaku.send(d, danmaku => {
 			if (danmaku && danmaku._ === 'text') this.$.danmaku_input.value = '';
-			let result = this.danmakuFrame.modules.TextDanmaku.load(danmaku);
+			let result = this.danmakuFrame.modules.TextDanmaku.load(danmaku, this.video.paused);
 			result.highlight = true;
 			if (this.opt.autoHideDanmakuInput) {
 				this.danmakuInput(false);
@@ -2908,6 +2927,7 @@ function isFullscreen() {
 	return !!(d.fullscreen || d.mozFullScreen || d.webkitIsFullScreen || d.msFullscreenElement);
 }
 function formatTime(sec, total) {
+	if (total == undefined) total = sec;
 	let r,
 	    s = sec | 0,
 	    h = s / 3600 | 0;

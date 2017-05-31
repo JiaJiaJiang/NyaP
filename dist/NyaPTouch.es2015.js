@@ -453,7 +453,7 @@ var DanmakuFrame = function () {
 				playing: function playing() {
 					return F.start();
 				},
-				pause: function pause() {
+				'pause,stalled,seeking': function pauseStalledSeeking() {
 					return F.pause();
 				},
 				ratechange: function ratechange() {
@@ -1141,6 +1141,21 @@ danmaku mode
 	3:top
 */
 
+function formatTime(sec, total) {
+	if (total == undefined) total = sec;
+	var r = void 0,
+	    s = sec | 0,
+	    h = s / 3600 | 0;
+	if (total >= 3600) s = s % 3600;
+	r = [padTime(s / 60 | 0), padTime(s % 60)];
+	total >= 3600 && r.unshift(h);
+	return r.join(':');
+}
+function padTime(n) {
+	//pad number to 2 chars
+	return n > 9 && n || '0' + n;
+}
+
 function init(DanmakuFrame, DanmakuFrameModule) {
 	var defProp = Object.defineProperty;
 	var requestIdleCallback = window.requestIdleCallback || setImmediate;
@@ -1245,13 +1260,9 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				addEvents(_media, {
 					seeked: function seeked() {
 						D.time();
-						D.paused && D.start();
 						D._clearScreen(true);
 					},
 					seeking: function seeking() {
-						return D.pause();
-					},
-					stalled: function stalled() {
 						return D.pause();
 					}
 				});
@@ -1315,7 +1326,8 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			}
 		}, {
 			key: '_checkNewDanmaku',
-			value: function _checkNewDanmaku() {
+			value: function _checkNewDanmaku(force) {
+				if (this.paused && !force) return;
 				var D = this,
 				    d = void 0,
 				    time = D.frame.time;
@@ -1458,10 +1470,14 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		}, {
 			key: 'draw',
 			value: function draw(force) {
+				var _this3 = this;
+
 				if (!force && this.paused || !this.enabled) return;
 				this._calcDanmakusPosition(force);
 				this.activeRendererMode.draw(force);
-				requestAnimationFrame(this._checkNewDanmaku);
+				requestAnimationFrame(function () {
+					_this3._checkNewDanmaku(force);
+				});
 			}
 		}, {
 			key: 'removeText',
@@ -1523,14 +1539,14 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 		}, {
 			key: 'resetTimeOfDanmakuOnScreen',
 			value: function resetTimeOfDanmakuOnScreen(cTime) {
-				var _this3 = this;
+				var _this4 = this;
 
 				//cause the position of the danmaku is based on time
 				//and if you don't want these danmaku on the screen to disappear after seeking,their time should be reset
 				if (cTime === undefined) cTime = this.frame.time;
 				this.DanmakuText.forEach(function (t) {
 					if (!t.danmaku) return;
-					t.time = cTime - (_this3.danmakuMoveTime - t.time);
+					t.time = cTime - (_this4.danmakuMoveTime - t.time);
 				});
 			}
 		}, {
@@ -1789,7 +1805,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 
 	var renderingDanmakuManager = function () {
 		function renderingDanmakuManager(dText) {
-			var _this4 = this;
+			var _this5 = this;
 
 			_classCallCheck(this, renderingDanmakuManager);
 
@@ -1797,7 +1813,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			this.totalArea = 0;
 			this.limitArea = Infinity;
 			if (dText.text2d.supported) this.timer = setInterval(function () {
-				return _this4.rendererModeCheck();
+				return _this5.rendererModeCheck();
 			}, 1500);
 		}
 
@@ -2952,6 +2968,7 @@ function isFullscreen() {
 	return !!(d.fullscreen || d.mozFullScreen || d.webkitIsFullScreen || d.msFullscreenElement);
 }
 function formatTime(sec, total) {
+	if (total == undefined) total = sec;
 	var r = void 0,
 	    s = sec | 0,
 	    h = s / 3600 | 0;
@@ -3108,7 +3125,7 @@ var NyaPTouch = function (_NyaPlayerCore) {
 			return (0, _Object2HTML2.default)({ _: 'span', event: event, attr: attr, prop: { id: 'icon_span_' + name,
 					innerHTML: '<svg height="' + NP.opt.bottomControlHeight + '" width="' + NP.opt.bottomControlHeight / ico[1] * ico[0] + '" viewBox="0,0,' + ico[0] + ',' + ico[1] + '" id="icon_' + name + '"">' + ico[2] + '</svg>' } });
 		}
-		NP.loadingInfo(_('Creating touch player'));
+		NP.loadingInfo(_('Creating player'));
 
 		NP._.player = (0, _Object2HTML.Object2HTML)({
 			_: 'div', attr: { class: 'NyaPTouch', id: 'NyaPTouch' }, child: [NP.videoFrame, { _: 'div', prop: { id: 'controls' }, child: [{ _: 'div', prop: { id: 'control_bottom' }, child: [{ _: 'div', attr: { id: 'control_bottom_first' }, child: [{ _: 'div', attr: { id: 'progress_leftside_button' }, child: [icon('play', { click: function click(e) {

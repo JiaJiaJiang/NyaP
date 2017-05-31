@@ -11,11 +11,9 @@
 <div id="player_container" style="position:relative;width:920px;height:550px;"></div>
 
 <script>
-var touchMode=false,//(window.navigator.userAgent.match(/mobile/)?true:false);
+var touchMode=navigator.userAgent.match(/mobile/i) && ('ontouchstart' in window),//touch player
 	scriptVer='es2016';
 
-if(navigator.userAgent.match(/mobile/i) && ('ontouchstart' in window))//touch player
-	touchMode=true;
 
 
 try{//es2016 version feature test

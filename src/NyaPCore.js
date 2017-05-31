@@ -218,6 +218,7 @@ function isFullscreen() {
 	return !!(d.fullscreen || d.mozFullScreen || d.webkitIsFullScreen || d.msFullscreenElement);
 }
 function formatTime(sec,total){
+	if(total==undefined)total=sec;
 	let r,s=sec|0,h=(s/3600)|0;
 	if(total>=3600)s=s%3600;
 	r=[padTime((s/60)|0),padTime(s%60)];

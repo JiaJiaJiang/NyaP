@@ -60,7 +60,7 @@ class NyaPTouch extends NyaPlayerCore{
 			return O2H({_:'span',event,attr,prop:{id:`icon_span_${name}`,
 				innerHTML:`<svg height="${NP.opt.bottomControlHeight}" width="${NP.opt.bottomControlHeight/ico[1]*ico[0]}" viewBox="0,0,${ico[0]},${ico[1]}" id="icon_${name}"">${ico[2]}</svg>`}});
 		}
-		NP.loadingInfo(_('Creating touch player'));
+		NP.loadingInfo(_('Creating player'));
 
 		NP._.player=Object2HTML({
 			_:'div',attr:{class:'NyaPTouch',id:'NyaPTouch'},child:[

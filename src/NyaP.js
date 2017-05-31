@@ -160,6 +160,9 @@ class NyaP extends NyaPlayerCore{
 				}
 			},
 			main_video:{
+				/*'play,playing,stalled,pause,seeking,seeked':e=>{
+					console.log(e.type)
+				},*/
 				playing:e=>NP._iconActive('play',true),
 				'pause,stalled':e=>{
 					NP._iconActive('play',false);

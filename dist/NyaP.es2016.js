@@ -963,21 +963,6 @@ danmaku mode
 	3:top
 */
 
-function formatTime(sec, total) {
-	if (total == undefined) total = sec;
-	let r,
-	    s = sec | 0,
-	    h = s / 3600 | 0;
-	if (total >= 3600) s = s % 3600;
-	r = [padTime(s / 60 | 0), padTime(s % 60)];
-	total >= 3600 && r.unshift(h);
-	return r.join(':');
-}
-function padTime(n) {
-	//pad number to 2 chars
-	return n > 9 && n || `0${n}`;
-}
-
 function init(DanmakuFrame, DanmakuFrameModule) {
 	const defProp = Object.defineProperty;
 	const requestIdleCallback = window.requestIdleCallback || setImmediate;

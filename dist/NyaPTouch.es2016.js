@@ -408,7 +408,7 @@ class DanmakuFrame {
 		F.media = media;
 		addEvents(media, {
 			playing: () => F.start(),
-			pause: () => F.pause(),
+			'pause,stalled,seeking': () => F.pause(),
 			ratechange: () => {
 				F.rate = F.media.playbackRate;
 				F.moduleFunction('rate', F.rate);
@@ -1056,11 +1056,9 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			addEvents(media, {
 				seeked: () => {
 					D.time();
-					D.paused && D.start();
 					D._clearScreen(true);
 				},
-				seeking: () => D.pause(),
-				stalled: () => D.pause()
+				seeking: () => D.pause()
 			});
 		}
 		start() {
@@ -1106,7 +1104,8 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			if (i < D.indexMark) D.indexMark--;
 			return true;
 		}
-		_checkNewDanmaku() {
+		_checkNewDanmaku(force) {
+			if (this.paused && !force) return;
 			let D = this,
 			    d,
 			    time = D.frame.time;
@@ -1236,7 +1235,9 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			if (!force && this.paused || !this.enabled) return;
 			this._calcDanmakusPosition(force);
 			this.activeRendererMode.draw(force);
-			requestAnimationFrame(this._checkNewDanmaku);
+			requestAnimationFrame(() => {
+				this._checkNewDanmaku(force);
+			});
 		}
 		removeText(t) {
 			//remove the danmaku from screen
@@ -2397,6 +2398,7 @@ function isFullscreen() {
 	return !!(d.fullscreen || d.mozFullScreen || d.webkitIsFullScreen || d.msFullscreenElement);
 }
 function formatTime(sec, total) {
+	if (total == undefined) total = sec;
 	let r,
 	    s = sec | 0,
 	    h = s / 3600 | 0;
@@ -2532,7 +2534,7 @@ class NyaPTouch extends _NyaPCore.NyaPlayerCore {
 			return (0, _Object2HTML2.default)({ _: 'span', event, attr, prop: { id: `icon_span_${name}`,
 					innerHTML: `<svg height="${NP.opt.bottomControlHeight}" width="${NP.opt.bottomControlHeight / ico[1] * ico[0]}" viewBox="0,0,${ico[0]},${ico[1]}" id="icon_${name}"">${ico[2]}</svg>` } });
 		}
-		NP.loadingInfo(_('Creating touch player'));
+		NP.loadingInfo(_('Creating player'));
 
 		NP._.player = (0, _Object2HTML.Object2HTML)({
 			_: 'div', attr: { class: 'NyaPTouch', id: 'NyaPTouch' }, child: [NP.videoFrame, { _: 'div', prop: { id: 'controls' }, child: [{ _: 'div', prop: { id: 'control_bottom' }, child: [{ _: 'div', attr: { id: 'control_bottom_first' }, child: [{ _: 'div', attr: { id: 'progress_leftside_button' }, child: [icon('play', { click: e => NP.playToggle() })] }, { _: 'div', prop: { id: 'progress_info' }, child: [{ _: 'span', attr: { id: 'progress_frame' }, child: [{ _: 'div', prop: { id: 'progress_wrap' }, child: [{ _: 'div', prop: { id: 'buffed_bar' } }, { _: 'div', prop: { id: 'progress_bar' } }, { _: 'div', prop: { id: 'seekTo_bar', hidden: true } }] }] }, { _: 'span', prop: { id: 'time' }, child: [{ _: 'span', prop: { id: 'current_time' }, child: ['00:00'] }, '/', { _: 'span', prop: { id: 'total_time' }, child: ['00:00'] }] }] }, { _: 'span', prop: { id: 'progress_rightside_button' }, child: [icon('fullScreen', { click: e => NP.playerMode('fullScreen') })] }] }, { _: 'div', attr: { id: 'control_bottom_second' }, child: [{ _: 'span', attr: { id: 'danmakuStyleEditor', tabindex: 0 }, child: [icon('danmakuStyle', { click: e => NP.danmakuStyleToggle() }), { _: 'div', attr: { id: 'danmaku_size_box' } }, { _: 'div', attr: { id: 'danmaku_mode_box' } }, { _: 'div', attr: { id: 'danmaku_color_box' } }] }, { _: 'input', attr: { id: 'danmaku_input', placeholder: _('Input danmaku here') } }, icon('danmakuToggle', { click: e => this.Danmaku.toggle() }), icon('loop', { click: e => video.loop = !video.loop }), icon('volume', { click: e => video.muted = !video.muted })] }] }] }]
@@ -2792,7 +2794,7 @@ class NyaPTouch extends _NyaPCore.NyaPlayerCore {
 
 		let S = this.Danmaku.send(d, danmaku => {
 			if (danmaku && danmaku._ === 'text') this.$.danmaku_input.value = '';
-			let result = this.danmakuFrame.modules.TextDanmaku.load(danmaku, true);
+			let result = this.danmakuFrame.modules.TextDanmaku.load(danmaku, this.video.paused);
 			result.highlight = true;
 		});
 	}

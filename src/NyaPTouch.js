@@ -150,14 +150,16 @@ class NyaPTouch extends NyaPlayerCore{
 			$.danmaku_mode_box.appendChild(icon(`danmakuMode${m}`));
 		});
 		NP.collectEles($.danmaku_mode_box);
-
 		//events
 		const events={
 			document:{
 				'fullscreenchange,mozfullscreenchange,webkitfullscreenchange,msfullscreenchange':e=>{
 					if(NP._.playerMode=='fullScreen' && !NP.isFullscreen())
 						NP.playerMode('normal');
-				}
+				},
+				visibilitychange:e=>{
+					if(document.hidden)NP._.preVideoStat=false;
+				},
 			},
 			main_video:{
 				playing:e=>NP._iconActive('play',true),
@@ -169,7 +171,7 @@ class NyaPTouch extends NyaPlayerCore{
 				},
 				_loopChange:e=>NP._iconActive('loop',e.value),
 				volumechange:e=>{
-					NP._.volumeBox.renew(`${_('volume')}:${(video.volume*100).toFixed(0)}%`);
+					NP._.volumeBox.renew(`${_('volume')}:${(video.volume*100).toFixed(0)}%`+`${video.muted?('('+_('muted')+')'):''}`);
 					setAttrs($.volume_circle,{'stroke-dasharray':`${video.volume*12*Math.PI} 90`,style:`fill-opacity:${video.muted?.2:.6}!important`});
 				},
 				progress:e=>NP.drawProgress(),
@@ -188,6 +190,9 @@ class NyaPTouch extends NyaPlayerCore{
 					let T=e.changedTouches[0];
 					if(NP._.currentDragMode)return;
 					NP._.touchStartPoint=[T.clientX,T.clientY];
+				},
+				touchmove:e=>{
+					if(NP._.currentDragMode)e.preventDefault();
 				},
 				touchdrag:e=>{
 					if(!NP._.currentDragMode){//make sure the drag mode:seek,volume
@@ -222,7 +227,7 @@ class NyaPTouch extends NyaPlayerCore{
 					e.preventDefault();
 					if(!opt.dragToChangeVolume)return;
 					NP._.currentDragMode='volume';
-					NP._.volumeBox.renew(`${_('volume')}:${(video.volume*100).toFixed(0)}%`);
+					NP._.volumeBox.renew(`${_('volume')}:${(video.volume*100).toFixed(0)}%`+`${video.muted?('('+_('muted')+')'):''}`);
 				},
 			},
 			control_bottom:{
@@ -254,6 +259,9 @@ class NyaPTouch extends NyaPlayerCore{
 				},
 			},
 			danmaku_input:{
+				'keydown':e=>{
+					if(e.key=='Enter')NP.send();
+				},
 				focus:e=>{
 					NP._.preVideoStat=!video.paused;
 					video.pause();
@@ -262,7 +270,7 @@ class NyaPTouch extends NyaPlayerCore{
 					NP._bottomControlTransformY(0);
 				},
 				blur:e=>{
-					if(NP._.preVideoStat)video.play();
+					setTimeout(()=>{if(NP._.preVideoStat)video.play();},100);
 					if($.control_bottom.style.top=='')return;
 					$.control_bottom.style.top='';
 					NP._bottomControlTransformY($.control_bottom.offsetHeight-NP.opt.bottomControlHeight);
@@ -343,9 +351,22 @@ class NyaPTouch extends NyaPlayerCore{
 		if(opt.playerFrame instanceof HTMLElement)
 			opt.playerFrame.appendChild(NP.player);
 	}
-	danmakuInput(){}
 	
-	send(){}
+	send(){
+		let color=this._.danmakuColor||this.opt.defaultDanmakuColor,
+			text=this.$.danmaku_input.value,
+			size=this._.danmakuSize,
+			mode=this._.danmakuMode,
+			time=this.danmakuFrame.time,
+			d={color,text,size,mode,time};
+
+		let S=this.Danmaku.send(d,(danmaku)=>{
+			if(danmaku&&danmaku._==='text')
+				this.$.danmaku_input.value='';
+			let result=this.danmakuFrame.modules.TextDanmaku.load(danmaku,this.video.paused);
+			result.highlight=true;
+		});
+	}
 
 	controlsToggle(bool=this.$.controls.hidden){
 		this.$.controls.hidden=!bool;

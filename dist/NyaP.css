@@ -36,6 +36,8 @@ LGPL license
 
 .NyaP span[id^="icon_span_"] { cursor: pointer; display: inline-block; background-color: inherit; }
 
+.NyaP span[id^="icon_span_"] * { pointer-events: none; }
+
 .NyaP span[id^="icon_span_"]:hover { background-color: #ececec !important; }
 
 .NyaP span[id^="icon_span_"]:hover svg > * { fill: #24b182; stroke: #24b182; }
@@ -89,8 +91,6 @@ LGPL license
 .NyaP #danmaku_color_box { width: 100%; display: flex; flex-wrap: wrap; margin-bottom: 8px; position: relative; justify-content: space-around; }
 
 .NyaP #danmaku_color_box > span { width: 30px; height: 30px; cursor: pointer; border-radius: 6px; display: inline-block; border: 1px solid #ddd; }
-
-.NyaP span[id^='icon_span_danmakuMode'] * { pointer-events: none; }
 
 .NyaP #danmaku_submit { color: #fff; display: flex; cursor: pointer; padding: 0 14px; text-align: center; align-items: center; background-color: #616161; }
 

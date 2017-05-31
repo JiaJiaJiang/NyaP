@@ -20,6 +20,9 @@ LGPL license
 	span[id^="icon_span_"]{
 		display: inline-block;
 		background-color: inherit;
+		*{
+			pointer-events: none;
+		}
 		&:hover{
 			svg>*{
 				fill:#24b182;
@@ -110,9 +113,6 @@ LGPL license
 					display: inline-block;
 					border: 1px solid #ddd;
 				}
-			}
-			span[id^='icon_span_danmakuMode'] *{
-				pointer-events: none;
 			}
 		}
 		#danmaku_input{

@@ -1271,7 +1271,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			}
 		}, {
 			key: 'load',
-			value: function load(d) {
+			value: function load(d, addToScreen) {
 				if (!d || d._ !== 'text') {
 					return false;
 				}
@@ -1290,6 +1290,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				d.style.fontSize = d.style.fontSize ? d.style.fontSize + 0.5 | 0 : this.defaultStyle.fontSize;
 				if (isNaN(d.style.fontSize) || d.style.fontSize === Infinity || d.style.fontSize === 0) d.style.fontSize = this.defaultStyle.fontSize;
 				if (typeof d.mode !== 'number') d.mode = 0;
+				if (addToScreen) this._addNewDanmaku(d);
 				return d;
 			}
 		}, {
@@ -2357,8 +2358,10 @@ var TextCanvas = function (_Template) {
 		value: function enable() {
 			var _this4 = this;
 
-			this.dText.DanmakuText.forEach(function (t) {
-				return _this4.newDanmaku(t);
+			requestAnimationFrame(function () {
+				_this4.dText.DanmakuText.forEach(function (t) {
+					return _this4.newDanmaku(t);
+				});
 			});
 			this.container.hidden = false;
 		}
@@ -3167,12 +3170,14 @@ var NyaPTouch = function (_NyaPlayerCore) {
 			$.danmaku_mode_box.appendChild(icon('danmakuMode' + m));
 		});
 		NP.collectEles($.danmaku_mode_box);
-
 		//events
 		var events = {
 			document: {
 				'fullscreenchange,mozfullscreenchange,webkitfullscreenchange,msfullscreenchange': function fullscreenchangeMozfullscreenchangeWebkitfullscreenchangeMsfullscreenchange(e) {
 					if (NP._.playerMode == 'fullScreen' && !NP.isFullscreen()) NP.playerMode('normal');
+				},
+				visibilitychange: function visibilitychange(e) {
+					if (document.hidden) NP._.preVideoStat = false;
 				}
 			},
 			main_video: {
@@ -3189,7 +3194,7 @@ var NyaPTouch = function (_NyaPlayerCore) {
 					return NP._iconActive('loop', e.value);
 				},
 				volumechange: function volumechange(e) {
-					NP._.volumeBox.renew(_('volume') + ':' + (video.volume * 100).toFixed(0) + '%');
+					NP._.volumeBox.renew(_('volume') + ':' + (video.volume * 100).toFixed(0) + '%' + ('' + (video.muted ? '(' + _('muted') + ')' : '')));
 					(0, _NyaPCore.setAttrs)($.volume_circle, { 'stroke-dasharray': video.volume * 12 * Math.PI + ' 90', style: 'fill-opacity:' + (video.muted ? .2 : .6) + '!important' });
 				},
 				progress: function progress(e) {
@@ -3212,6 +3217,9 @@ var NyaPTouch = function (_NyaPlayerCore) {
 					var T = e.changedTouches[0];
 					if (NP._.currentDragMode) return;
 					NP._.touchStartPoint = [T.clientX, T.clientY];
+				},
+				touchmove: function touchmove(e) {
+					if (NP._.currentDragMode) e.preventDefault();
 				},
 				touchdrag: function touchdrag(e) {
 					if (!NP._.currentDragMode) {
@@ -3250,7 +3258,7 @@ var NyaPTouch = function (_NyaPlayerCore) {
 					e.preventDefault();
 					if (!opt.dragToChangeVolume) return;
 					NP._.currentDragMode = 'volume';
-					NP._.volumeBox.renew(_('volume') + ':' + (video.volume * 100).toFixed(0) + '%');
+					NP._.volumeBox.renew(_('volume') + ':' + (video.volume * 100).toFixed(0) + '%' + ('' + (video.muted ? '(' + _('muted') + ')' : '')));
 				}
 			},
 			control_bottom: {
@@ -3276,6 +3284,9 @@ var NyaPTouch = function (_NyaPlayerCore) {
 				}
 			},
 			danmaku_input: {
+				'keydown': function keydown(e) {
+					if (e.key == 'Enter') NP.send();
+				},
 				focus: function focus(e) {
 					NP._.preVideoStat = !video.paused;
 					video.pause();
@@ -3284,7 +3295,9 @@ var NyaPTouch = function (_NyaPlayerCore) {
 					NP._bottomControlTransformY(0);
 				},
 				blur: function blur(e) {
-					if (NP._.preVideoStat) video.play();
+					setTimeout(function () {
+						if (NP._.preVideoStat) video.play();
+					}, 100);
 					if ($.control_bottom.style.top == '') return;
 					$.control_bottom.style.top = '';
 					NP._bottomControlTransformY($.control_bottom.offsetHeight - NP.opt.bottomControlHeight);
@@ -3373,11 +3386,23 @@ var NyaPTouch = function (_NyaPlayerCore) {
 	}
 
 	_createClass(NyaPTouch, [{
-		key: 'danmakuInput',
-		value: function danmakuInput() {}
-	}, {
 		key: 'send',
-		value: function send() {}
+		value: function send() {
+			var _this2 = this;
+
+			var color = this._.danmakuColor || this.opt.defaultDanmakuColor,
+			    text = this.$.danmaku_input.value,
+			    size = this._.danmakuSize,
+			    mode = this._.danmakuMode,
+			    time = this.danmakuFrame.time,
+			    d = { color: color, text: text, size: size, mode: mode, time: time };
+
+			var S = this.Danmaku.send(d, function (danmaku) {
+				if (danmaku && danmaku._ === 'text') _this2.$.danmaku_input.value = '';
+				var result = _this2.danmakuFrame.modules.TextDanmaku.load(danmaku, _this2.video.paused);
+				result.highlight = true;
+			});
+		}
 	}, {
 		key: 'controlsToggle',
 		value: function controlsToggle() {
@@ -3403,16 +3428,16 @@ var NyaPTouch = function (_NyaPlayerCore) {
 	}, {
 		key: 'drawProgress',
 		value: function drawProgress() {
-			var _this2 = this;
+			var _this3 = this;
 
 			requestAnimationFrame(function () {
-				var V = _this2.video,
+				var V = _this3.video,
 				    B = V.buffered,
 				    D = V.duration;
 				var lastBuffered = 0;
 				if (B.length) lastBuffered = B.end(B.length - 1);
-				_this2.$.buffed_bar.style.width = (lastBuffered / D * 100).toFixed(2) + '%';
-				_this2.$.progress_bar.style.width = (V.currentTime / D * 100).toFixed(2) + '%';
+				_this3.$.buffed_bar.style.width = (lastBuffered / D * 100).toFixed(2) + '%';
+				_this3.$.progress_bar.style.width = (V.currentTime / D * 100).toFixed(2) + '%';
 			});
 		}
 	}, {
@@ -3423,17 +3448,17 @@ var NyaPTouch = function (_NyaPlayerCore) {
 	}, {
 		key: '_setTimeInfo',
 		value: function _setTimeInfo() {
-			var _this3 = this;
+			var _this4 = this;
 
 			var a = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 			var b = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
 			requestAnimationFrame(function () {
 				if (a !== null) {
-					_this3.$.current_time.innerHTML = a;
+					_this4.$.current_time.innerHTML = a;
 				}
 				if (b !== null) {
-					_this3.$.total_time.innerHTML = b;
+					_this4.$.total_time.innerHTML = b;
 				}
 			});
 		}
@@ -3454,14 +3479,14 @@ var NyaPTouch = function (_NyaPlayerCore) {
 
 var MsgBox = function () {
 	function MsgBox(text, type, parentNode) {
-		var _this4 = this;
+		var _this5 = this;
 
 		_classCallCheck(this, MsgBox);
 
 		this.using = false;
 		var msg = this.msg = (0, _Object2HTML2.default)({ _: 'div', attr: { class: 'msg_type_' + type } });
 		msg.addEventListener('click', function () {
-			return _this4.remove();
+			return _this5.remove();
 		});
 		this.parentNode = parentNode;
 		this.setText(text);
@@ -3480,11 +3505,11 @@ var MsgBox = function () {
 
 			return setTimeout;
 		}(function (time) {
-			var _this5 = this;
+			var _this6 = this;
 
 			if (this.timeout) clearTimeout(this.timeout);
 			this.timeout = setTimeout(function () {
-				return _this5.remove();
+				return _this6.remove();
 			}, time || Math.max((this.texts ? this.texts.length : 0) * 0.6 * 1000, 5000));
 		})
 	}, {
@@ -3508,7 +3533,7 @@ var MsgBox = function () {
 	}, {
 		key: 'show',
 		value: function show() {
-			var _this6 = this;
+			var _this7 = this;
 
 			if (this.using) return;
 			this.msg.style.opacity = 0;
@@ -3516,15 +3541,15 @@ var MsgBox = function () {
 				this.parentNode.appendChild(this.msg);
 			}
 			this.msg.parentNode && setTimeout(function () {
-				_this6.using = true;
-				_this6.msg.style.opacity = 1;
+				_this7.using = true;
+				_this7.msg.style.opacity = 1;
 			}, 0);
 			this.setTimeout();
 		}
 	}, {
 		key: 'remove',
 		value: function remove() {
-			var _this7 = this;
+			var _this8 = this;
 
 			if (!this.using) return;
 			this.using = false;
@@ -3534,7 +3559,7 @@ var MsgBox = function () {
 				this.timeout = 0;
 			}
 			setTimeout(function () {
-				_this7.msg.parentNode && _this7.msg.parentNode.removeChild(_this7.msg);
+				_this8.msg.parentNode && _this8.msg.parentNode.removeChild(_this8.msg);
 			}, 600);
 		}
 	}]);
@@ -3782,7 +3807,7 @@ var Danmaku = function () {
 		key: 'isVaildColor',
 		value: function isVaildColor(co) {
 			if (typeof co !== 'string') return false;
-			return co = co.match(/^#?(([\da-f\$]{3}){1,2})$/i) ? co[1] : false;
+			return (co = co.match(/^\#?(([\da-f\$]{3}){1,2})$/i)) ? co[1] : false;
 		}
 	}, {
 		key: 'setDefaultTextStyle',

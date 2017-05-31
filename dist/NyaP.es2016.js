@@ -1072,7 +1072,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			this.paused = true;
 			this.activeRendererMode.pause();
 		}
-		load(d) {
+		load(d, addToScreen) {
 			if (!d || d._ !== 'text') {
 				return false;
 			}
@@ -1091,6 +1091,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			d.style.fontSize = d.style.fontSize ? d.style.fontSize + 0.5 | 0 : this.defaultStyle.fontSize;
 			if (isNaN(d.style.fontSize) || d.style.fontSize === Infinity || d.style.fontSize === 0) d.style.fontSize = this.defaultStyle.fontSize;
 			if (typeof d.mode !== 'number') d.mode = 0;
+			if (addToScreen) this._addNewDanmaku(d);
 			return d;
 		}
 		loadList(danmakuArray) {
@@ -1930,7 +1931,9 @@ class TextCanvas extends _textModuleTemplate2.default {
 		t._cache.parentNode && this.container.removeChild(t._cache);
 	}
 	enable() {
-		this.dText.DanmakuText.forEach(t => this.newDanmaku(t));
+		requestAnimationFrame(() => {
+			this.dText.DanmakuText.forEach(t => this.newDanmaku(t));
+		});
 		this.container.hidden = false;
 	}
 	disable() {
@@ -2292,7 +2295,7 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 					NP._setTimeInfo(null, (0, _NyaPCore.formatTime)(video.duration, video.duration));
 				},
 				volumechange: e => {
-					NP._.volumeBox.renew(`${_('volume')}:${(video.volume * 100).toFixed(0)}%`);
+					NP._.volumeBox.renew(`${_('volume')}:${(video.volume * 100).toFixed(0)}%` + `${video.muted ? '(' + _('muted') + ')' : ''}`);
 					(0, _NyaPCore.setAttrs)($.volume_circle, { 'stroke-dasharray': `${video.volume * 12 * Math.PI} 90`, style: `fill-opacity:${video.muted ? .2 : .6}!important` });
 					$.icon_span_volume.setAttribute('title', _('volume($0)([shift]+↑↓)', video.muted ? _('muted') : `${video.volume * 100 | 0}%`));
 				},
@@ -2405,9 +2408,7 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 		};
 		for (let eleid in $) {
 			//add events to elements
-			let eves = events[eleid]; /*
-                             if(eleid.startsWith('icon_span_danmakuMode'))
-                             eves=events.danmakuModeSwitch;*/
+			let eves = events[eleid];
 			eves && (0, _NyaPCore.addEvents)($[eleid], eves);
 		}
 
@@ -2481,7 +2482,7 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 				{
 					//danmaku toggle
 					if (_RE) return;
-					this.danmakuToggle();break;
+					this.Danmaku.toggle();break;
 				}
 			case 'm':
 				{
@@ -3075,7 +3076,7 @@ class Danmaku {
 	}
 	isVaildColor(co) {
 		if (typeof co !== 'string') return false;
-		return co = co.match(/^#?(([\da-f\$]{3}){1,2})$/i) ? co[1] : false;
+		return (co = co.match(/^\#?(([\da-f\$]{3}){1,2})$/i)) ? co[1] : false;
 	}
 	setDefaultTextStyle(opt) {
 		if (opt) for (let n in opt) this.module('TextDanmaku').defaultStyle[n] = opt[n];

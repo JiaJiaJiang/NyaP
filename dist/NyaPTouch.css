@@ -30,6 +30,8 @@ LGPL license
 
 .NyaPTouch span[id^="icon_span_"] { display: inline-block; background-color: inherit; }
 
+.NyaPTouch span[id^="icon_span_"] * { pointer-events: none; }
+
 .NyaPTouch span[id^="icon_span_"]:hover svg > * { fill: #24b182; stroke: #24b182; }
 
 .NyaPTouch #controls { will-change: display; }
@@ -61,8 +63,6 @@ LGPL license
 .NyaPTouch #control_bottom #danmakuStyleEditor #danmaku_color_box { height: 100%; left: 100%; top: 0; align-items: center; padding-right: 6px; }
 
 .NyaPTouch #control_bottom #danmakuStyleEditor #danmaku_color_box > span { width: 40px; height: 40px; margin-left: 6px; border-radius: 15px; display: inline-block; border: 1px solid #ddd; }
-
-.NyaPTouch #control_bottom #danmakuStyleEditor span[id^='icon_span_danmakuMode'] * { pointer-events: none; }
 
 .NyaPTouch #control_bottom #danmaku_input { outline: 0; flex-grow: 1; padding: 0 7px; border: 1px solid #ccc; box-sizing: border-box; user-select: initial; font-size: 15px; background-color: inherit; }
 

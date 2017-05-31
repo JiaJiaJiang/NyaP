@@ -36,6 +36,9 @@ LGPL license
 		cursor: pointer;
 		display: inline-block;
 		background-color: inherit;
+		*{
+			pointer-events: none;
+		}
 
 		&:hover{
 			background-color:#ececec!important;
@@ -193,9 +196,6 @@ LGPL license
 			display: inline-block;
 			border: 1px solid #ddd;
 		}
-	}
-	span[id^='icon_span_danmakuMode'] *{
-		pointer-events: none;
 	}
 	#danmaku_submit{
 		color: #fff;

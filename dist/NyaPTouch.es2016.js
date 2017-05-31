@@ -1072,7 +1072,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			this.paused = true;
 			this.activeRendererMode.pause();
 		}
-		load(d) {
+		load(d, addToScreen) {
 			if (!d || d._ !== 'text') {
 				return false;
 			}
@@ -1091,6 +1091,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			d.style.fontSize = d.style.fontSize ? d.style.fontSize + 0.5 | 0 : this.defaultStyle.fontSize;
 			if (isNaN(d.style.fontSize) || d.style.fontSize === Infinity || d.style.fontSize === 0) d.style.fontSize = this.defaultStyle.fontSize;
 			if (typeof d.mode !== 'number') d.mode = 0;
+			if (addToScreen) this._addNewDanmaku(d);
 			return d;
 		}
 		loadList(danmakuArray) {
@@ -1930,7 +1931,9 @@ class TextCanvas extends _textModuleTemplate2.default {
 		t._cache.parentNode && this.container.removeChild(t._cache);
 	}
 	enable() {
-		this.dText.DanmakuText.forEach(t => this.newDanmaku(t));
+		requestAnimationFrame(() => {
+			this.dText.DanmakuText.forEach(t => this.newDanmaku(t));
+		});
 		this.container.hidden = false;
 	}
 	disable() {
@@ -2579,12 +2582,14 @@ class NyaPTouch extends _NyaPCore.NyaPlayerCore {
 			$.danmaku_mode_box.appendChild(icon(`danmakuMode${m}`));
 		});
 		NP.collectEles($.danmaku_mode_box);
-
 		//events
 		const events = {
 			document: {
 				'fullscreenchange,mozfullscreenchange,webkitfullscreenchange,msfullscreenchange': e => {
 					if (NP._.playerMode == 'fullScreen' && !NP.isFullscreen()) NP.playerMode('normal');
+				},
+				visibilitychange: e => {
+					if (document.hidden) NP._.preVideoStat = false;
 				}
 			},
 			main_video: {
@@ -2597,7 +2602,7 @@ class NyaPTouch extends _NyaPCore.NyaPlayerCore {
 				},
 				_loopChange: e => NP._iconActive('loop', e.value),
 				volumechange: e => {
-					NP._.volumeBox.renew(`${_('volume')}:${(video.volume * 100).toFixed(0)}%`);
+					NP._.volumeBox.renew(`${_('volume')}:${(video.volume * 100).toFixed(0)}%` + `${video.muted ? '(' + _('muted') + ')' : ''}`);
 					(0, _NyaPCore.setAttrs)($.volume_circle, { 'stroke-dasharray': `${video.volume * 12 * Math.PI} 90`, style: `fill-opacity:${video.muted ? .2 : .6}!important` });
 				},
 				progress: e => NP.drawProgress(),
@@ -2616,6 +2621,9 @@ class NyaPTouch extends _NyaPCore.NyaPlayerCore {
 					let T = e.changedTouches[0];
 					if (NP._.currentDragMode) return;
 					NP._.touchStartPoint = [T.clientX, T.clientY];
+				},
+				touchmove: e => {
+					if (NP._.currentDragMode) e.preventDefault();
 				},
 				touchdrag: e => {
 					if (!NP._.currentDragMode) {
@@ -2654,7 +2662,7 @@ class NyaPTouch extends _NyaPCore.NyaPlayerCore {
 					e.preventDefault();
 					if (!opt.dragToChangeVolume) return;
 					NP._.currentDragMode = 'volume';
-					NP._.volumeBox.renew(`${_('volume')}:${(video.volume * 100).toFixed(0)}%`);
+					NP._.volumeBox.renew(`${_('volume')}:${(video.volume * 100).toFixed(0)}%` + `${video.muted ? '(' + _('muted') + ')' : ''}`);
 				}
 			},
 			control_bottom: {
@@ -2680,6 +2688,9 @@ class NyaPTouch extends _NyaPCore.NyaPlayerCore {
 				}
 			},
 			danmaku_input: {
+				'keydown': e => {
+					if (e.key == 'Enter') NP.send();
+				},
 				focus: e => {
 					NP._.preVideoStat = !video.paused;
 					video.pause();
@@ -2688,7 +2699,9 @@ class NyaPTouch extends _NyaPCore.NyaPlayerCore {
 					NP._bottomControlTransformY(0);
 				},
 				blur: e => {
-					if (NP._.preVideoStat) video.play();
+					setTimeout(() => {
+						if (NP._.preVideoStat) video.play();
+					}, 100);
 					if ($.control_bottom.style.top == '') return;
 					$.control_bottom.style.top = '';
 					NP._bottomControlTransformY($.control_bottom.offsetHeight - NP.opt.bottomControlHeight);
@@ -2768,9 +2781,21 @@ class NyaPTouch extends _NyaPCore.NyaPlayerCore {
 
 		if (opt.playerFrame instanceof HTMLElement) opt.playerFrame.appendChild(NP.player);
 	}
-	danmakuInput() {}
 
-	send() {}
+	send() {
+		let color = this._.danmakuColor || this.opt.defaultDanmakuColor,
+		    text = this.$.danmaku_input.value,
+		    size = this._.danmakuSize,
+		    mode = this._.danmakuMode,
+		    time = this.danmakuFrame.time,
+		    d = { color, text, size, mode, time };
+
+		let S = this.Danmaku.send(d, danmaku => {
+			if (danmaku && danmaku._ === 'text') this.$.danmaku_input.value = '';
+			let result = this.danmakuFrame.modules.TextDanmaku.load(danmaku, true);
+			result.highlight = true;
+		});
+	}
 
 	controlsToggle(bool = this.$.controls.hidden) {
 		this.$.controls.hidden = !bool;
@@ -3053,7 +3078,7 @@ class Danmaku {
 	}
 	isVaildColor(co) {
 		if (typeof co !== 'string') return false;
-		return co = co.match(/^#?(([\da-f\$]{3}){1,2})$/i) ? co[1] : false;
+		return (co = co.match(/^\#?(([\da-f\$]{3}){1,2})$/i)) ? co[1] : false;
 	}
 	setDefaultTextStyle(opt) {
 		if (opt) for (let n in opt) this.module('TextDanmaku').defaultStyle[n] = opt[n];

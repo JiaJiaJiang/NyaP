@@ -76,7 +76,7 @@ class Danmaku{
 	}
 	isVaildColor(co){
 		if(typeof co !== 'string')return false;
-		return (co=co.match(/^#?(([\da-f\$]{3}){1,2})$/i)?co[1]:false);
+		return (co=co.match(/^\#?(([\da-f\$]{3}){1,2})$/i))?co[1]:false;
 	}
 	setDefaultTextStyle(opt){
 		if(opt)for(let n in opt)this.module('TextDanmaku').defaultStyle[n]=opt[n];

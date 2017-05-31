@@ -174,7 +174,7 @@ class NyaP extends NyaPlayerCore{
 					NP._setTimeInfo(null,formatTime(video.duration,video.duration));
 				},
 				volumechange:e=>{
-					NP._.volumeBox.renew(`${_('volume')}:${(video.volume*100).toFixed(0)}%`);
+					NP._.volumeBox.renew(`${_('volume')}:${(video.volume*100).toFixed(0)}%`+`${video.muted?('('+_('muted')+')'):''}`);
 					setAttrs($.volume_circle,{'stroke-dasharray':`${video.volume*12*Math.PI} 90`,style:`fill-opacity:${video.muted?.2:.6}!important`});
 					$.icon_span_volume.setAttribute('title',_('volume($0)([shift]+↑↓)',video.muted?_('muted'):`${video.volume*100|0}%`));
 				},
@@ -278,9 +278,7 @@ class NyaP extends NyaPlayerCore{
 			},
 		}
 		for(let eleid in $){//add events to elements
-			let eves=events[eleid];/*
-			if(eleid.startsWith('icon_span_danmakuMode'))
-				eves=events.danmakuModeSwitch;*/
+			let eves=events[eleid];
 			eves&&addEvents($[eleid],eves);
 		}
 
@@ -339,7 +337,7 @@ class NyaP extends NyaPlayerCore{
 			}
 			case 'd':{//danmaku toggle
 				if(_RE)return;
-				this.danmakuToggle();break;
+				this.Danmaku.toggle();break;
 			}
 			case 'm':{//mute
 				if(_RE)return;
@@ -386,7 +384,7 @@ class NyaP extends NyaPlayerCore{
 		let S=this.Danmaku.send(d,(danmaku)=>{
 			if(danmaku&&danmaku._==='text')
 				this.$.danmaku_input.value='';
-			let result=this.danmakuFrame.modules.TextDanmaku.load(danmaku);
+			let result=this.danmakuFrame.modules.TextDanmaku.load(danmaku,this.video.paused);
 			result.highlight=true;
 			if(this.opt.autoHideDanmakuInput){this.danmakuInput(false);}
 		});

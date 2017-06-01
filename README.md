@@ -5,7 +5,7 @@ NyaP
 ## 功能
 * 播放视频
 * 处理弹幕
-* 普通模式`NyaP`和触摸屏模式`NyaPTouch`(未完成)
+* 普通模式`NyaP`和触摸屏模式`NyaPTouch`
 
 ## 使用的部件
 * [Object2HTML](https://coding.net/u/luojia/p/Object2HTML/git) : 把js对象转换为DOM对象

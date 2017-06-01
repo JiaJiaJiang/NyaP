@@ -207,7 +207,7 @@ class NyaP extends NyaPlayerCore{
 				},
 			},
 			danmaku_style_pannel:{
-				click:e=>setImmediate(a=>NP.$.danmaku_input.focus()),
+				click:e=>{if(e.target.tagName!=='INPUT')setImmediate(a=>NP.$.danmaku_input.focus())},
 			},
 			danmaku_color:{
 				'input,change':e=>{

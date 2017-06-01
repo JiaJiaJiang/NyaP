@@ -2316,7 +2316,6 @@ class NyaPlayerCore extends NyaPEventEmitter {
 	}
 	playerMode(mode = 'normal') {
 		if (mode === 'normal' && this._.playerMode === mode) return;
-		let $ = this.$;
 		if (this._.playerMode === 'fullPage') {
 			this.player.style.position = '';
 		} else if (this._.playerMode === 'fullScreen') {
@@ -2737,8 +2736,7 @@ class NyaPTouch extends _NyaPCore.NyaPlayerCore {
 			danmaku_color_box: {
 				click: e => {
 					if (e.target.color) {
-						let i = e.target,
-						    c = NP.Danmaku.isVaildColor(e.target.color);
+						let c = NP.Danmaku.isVaildColor(e.target.color);
 						if (c) {
 							//match valid hex color code
 							NP._.danmakuColor = c;
@@ -2792,7 +2790,7 @@ class NyaPTouch extends _NyaPCore.NyaPlayerCore {
 		    time = this.danmakuFrame.time,
 		    d = { color, text, size, mode, time };
 
-		let S = this.Danmaku.send(d, danmaku => {
+		this.Danmaku.send(d, danmaku => {
 			if (danmaku && danmaku._ === 'text') this.$.danmaku_input.value = '';
 			let result = this.danmakuFrame.modules.TextDanmaku.load(danmaku, this.video.paused);
 			result.highlight = true;
@@ -3005,6 +3003,8 @@ var _danmakuText = require('../lib/danmaku-text/src/danmaku-text.js');
 
 var _danmakuText2 = _interopRequireDefault(_danmakuText);
 
+var _NyaPCore = require('./NyaPCore.js');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 (0, _danmakuText2.default)(_danmakuFrame.DanmakuFrame, _danmakuFrame.DanmakuFrameModule); //init TextDanmaku mod
@@ -3067,7 +3067,7 @@ class Danmaku {
 		obj.color = this.isVaildColor(obj.color);
 		if (obj.color) {
 			obj.color = obj.color.replace(/\$/g, () => {
-				return colorChars[limitIn(16 * Math.random() | 0, 0, 15)];
+				return colorChars[(0, _NyaPCore.limitIn)(16 * Math.random() | 0, 0, 15)];
 			});
 		} else {
 			obj.color = null;
@@ -3092,7 +3092,7 @@ class Danmaku {
 
 exports.default = Danmaku;
 
-},{"../lib/danmaku-frame/src/danmaku-frame.js":3,"../lib/danmaku-text/src/danmaku-text.js":6}],15:[function(require,module,exports){
+},{"../lib/danmaku-frame/src/danmaku-frame.js":3,"../lib/danmaku-text/src/danmaku-text.js":6,"./NyaPCore.js":12}],15:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {

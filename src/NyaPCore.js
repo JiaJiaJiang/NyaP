@@ -140,7 +140,6 @@ class NyaPlayerCore extends NyaPEventEmitter{
 	}
 	playerMode(mode='normal'){
 		if(mode==='normal' && this._.playerMode===mode)return;
-		let $=this.$;
 		if(this._.playerMode==='fullPage'){
 			this.player.style.position='';
 		}else if(this._.playerMode==='fullScreen'){

@@ -305,7 +305,7 @@ class NyaPTouch extends NyaPlayerCore{
 			danmaku_color_box:{
 				click:e=>{
 					if(e.target.color){
-						let i=e.target,c=NP.Danmaku.isVaildColor(e.target.color);
+						let c=NP.Danmaku.isVaildColor(e.target.color);
 						if(c){//match valid hex color code
 							NP._.danmakuColor=c;
 							toArray($.danmaku_color_box.childNodes).forEach(cp=>{
@@ -360,7 +360,7 @@ class NyaPTouch extends NyaPlayerCore{
 			time=this.danmakuFrame.time,
 			d={color,text,size,mode,time};
 
-		let S=this.Danmaku.send(d,(danmaku)=>{
+		this.Danmaku.send(d,(danmaku)=>{
 			if(danmaku&&danmaku._==='text')
 				this.$.danmaku_input.value='';
 			let result=this.danmakuFrame.modules.TextDanmaku.load(danmaku,this.video.paused);

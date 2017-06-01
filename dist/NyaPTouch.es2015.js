@@ -2791,18 +2791,16 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 
 		//define events
 		{
-			(function () {
-				//video:_loopChange
-				var LoopDesc = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'loop');
-				Object.defineProperty(_this2.video, 'loop', {
-					get: LoopDesc.get,
-					set: function set(bool) {
-						if (bool === this.loop) return;
-						this.dispatchEvent(Object.assign(new Event('_loopChange'), { value: bool }));
-						LoopDesc.set.call(this, bool);
-					}
-				});
-			})();
+			//video:_loopChange
+			var LoopDesc = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'loop');
+			Object.defineProperty(_this2.video, 'loop', {
+				get: LoopDesc.get,
+				set: function set(bool) {
+					if (bool === this.loop) return;
+					this.dispatchEvent(Object.assign(new Event('_loopChange'), { value: bool }));
+					LoopDesc.set.call(this, bool);
+				}
+			});
 		}
 		addEvents(_this2.video, {
 			loadedmetadata: function loadedmetadata(e) {
@@ -2847,7 +2845,6 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 			var mode = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'normal';
 
 			if (mode === 'normal' && this._.playerMode === mode) return;
-			var $ = this.$;
 			if (this._.playerMode === 'fullPage') {
 				this.player.style.position = '';
 			} else if (this._.playerMode === 'fullScreen') {
@@ -3335,8 +3332,7 @@ var NyaPTouch = function (_NyaPlayerCore) {
 			danmaku_color_box: {
 				click: function click(e) {
 					if (e.target.color) {
-						var i = e.target,
-						    c = NP.Danmaku.isVaildColor(e.target.color);
+						var c = NP.Danmaku.isVaildColor(e.target.color);
 						if (c) {
 							//match valid hex color code
 							NP._.danmakuColor = c;
@@ -3399,7 +3395,7 @@ var NyaPTouch = function (_NyaPlayerCore) {
 			    time = this.danmakuFrame.time,
 			    d = { color: color, text: text, size: size, mode: mode, time: time };
 
-			var S = this.Danmaku.send(d, function (danmaku) {
+			this.Danmaku.send(d, function (danmaku) {
 				if (danmaku && danmaku._ === 'text') _this2.$.danmaku_input.value = '';
 				var result = _this2.danmakuFrame.modules.TextDanmaku.load(danmaku, _this2.video.paused);
 				result.highlight = true;
@@ -3684,6 +3680,8 @@ var _danmakuText = require('../lib/danmaku-text/src/danmaku-text.js');
 
 var _danmakuText2 = _interopRequireDefault(_danmakuText);
 
+var _NyaPCore = require('./NyaPCore.js');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -3794,7 +3792,7 @@ var Danmaku = function () {
 			obj.color = this.isVaildColor(obj.color);
 			if (obj.color) {
 				obj.color = obj.color.replace(/\$/g, function () {
-					return colorChars[limitIn(16 * Math.random() | 0, 0, 15)];
+					return colorChars[(0, _NyaPCore.limitIn)(16 * Math.random() | 0, 0, 15)];
 				});
 			} else {
 				obj.color = null;
@@ -3832,7 +3830,7 @@ var Danmaku = function () {
 
 exports.default = Danmaku;
 
-},{"../lib/danmaku-frame/src/danmaku-frame.js":3,"../lib/danmaku-text/src/danmaku-text.js":6}],15:[function(require,module,exports){
+},{"../lib/danmaku-frame/src/danmaku-frame.js":3,"../lib/danmaku-text/src/danmaku-text.js":6,"./NyaPCore.js":12}],15:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {

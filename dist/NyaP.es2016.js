@@ -2329,7 +2329,9 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 				}
 			},
 			danmaku_style_pannel: {
-				click: e => setImmediate(a => NP.$.danmaku_input.focus())
+				click: e => {
+					if (e.target.tagName !== 'INPUT') setImmediate(a => NP.$.danmaku_input.focus());
+				}
 			},
 			danmaku_color: {
 				'input,change': e => {
@@ -2830,7 +2832,6 @@ class NyaPlayerCore extends NyaPEventEmitter {
 	}
 	playerMode(mode = 'normal') {
 		if (mode === 'normal' && this._.playerMode === mode) return;
-		let $ = this.$;
 		if (this._.playerMode === 'fullPage') {
 			this.player.style.position = '';
 		} else if (this._.playerMode === 'fullScreen') {
@@ -3006,6 +3007,8 @@ var _danmakuText = require('../lib/danmaku-text/src/danmaku-text.js');
 
 var _danmakuText2 = _interopRequireDefault(_danmakuText);
 
+var _NyaPCore = require('./NyaPCore.js');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 (0, _danmakuText2.default)(_danmakuFrame.DanmakuFrame, _danmakuFrame.DanmakuFrameModule); //init TextDanmaku mod
@@ -3068,7 +3071,7 @@ class Danmaku {
 		obj.color = this.isVaildColor(obj.color);
 		if (obj.color) {
 			obj.color = obj.color.replace(/\$/g, () => {
-				return colorChars[limitIn(16 * Math.random() | 0, 0, 15)];
+				return colorChars[(0, _NyaPCore.limitIn)(16 * Math.random() | 0, 0, 15)];
 			});
 		} else {
 			obj.color = null;
@@ -3093,7 +3096,7 @@ class Danmaku {
 
 exports.default = Danmaku;
 
-},{"../lib/danmaku-frame/src/danmaku-frame.js":3,"../lib/danmaku-text/src/danmaku-text.js":6}],15:[function(require,module,exports){
+},{"../lib/danmaku-frame/src/danmaku-frame.js":3,"../lib/danmaku-text/src/danmaku-text.js":6,"./NyaPCore.js":13}],15:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {

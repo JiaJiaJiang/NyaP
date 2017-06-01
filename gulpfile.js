@@ -11,12 +11,12 @@ var minimistOpt = {
 var options = minimist(process.argv.slice(2), minimistOpt);
 
 gulp.task('_compileJS',function(){
-	var name=options.touch?'NyaPTouch.js':'NyaP.js';
-	var buffer = require('vinyl-buffer');
-	var source = require('vinyl-source-stream');
-	var babelify = require('babelify');
-	var browserify = require('browserify');
-	var es=options.es;
+	var name=options.touch?'NyaPTouch.js':'NyaP.js',
+		buffer = require('vinyl-buffer'),
+		source = require('vinyl-source-stream'),
+		babelify = require('babelify'),
+		browserify = require('browserify'),
+		es=options.es;
 
 	return browserify({
 			entries: name,
@@ -68,7 +68,9 @@ gulp.task('css', function (){
 
 
 gulp.task('minjs',function(){
-	var uglify = require('gulp-uglify');
+	var composer = require('gulp-uglify/composer');
+	var uglifyes = require('uglify-es');
+	var uglify = composer(uglifyes, console);
 	let options = {
 		//mangle: true,
 		compress: {

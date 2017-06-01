@@ -5,6 +5,7 @@ LGPL license
 'use strict';
 import {DanmakuFrame,DanmakuFrameModule} from '../lib/danmaku-frame/src/danmaku-frame.js'
 import initTextDanmaku from '../lib/danmaku-text/src/danmaku-text.js'
+import {limitIn} from './NyaPCore.js';
 initTextDanmaku(DanmakuFrame,DanmakuFrameModule);//init TextDanmaku mod
 
 const colorChars='0123456789abcdef';

@@ -72,7 +72,7 @@ gulp.task('minjs',function(){
 	var uglifyes = require('uglify-es');
 	var uglify = composer(uglifyes, console);
 	let options = {
-		//mangle: true,
+		mangle: true,
 		compress: {
 			sequences: true,
 			conditionals: true,

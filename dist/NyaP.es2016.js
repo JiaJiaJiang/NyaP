@@ -2432,7 +2432,6 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 			typeof opt.defaultDanmakuSize === 'number' && (0, _NyaPCore.toArray)($.danmaku_size_box.childNodes).forEach(sp => {
 				if (sp.size === opt.defaultDanmakuSize) sp.click();
 			});
-			//if(NP.danmakuFrame.enabled)NP._iconActive('danmakuToggle',true);
 		}
 
 		if (opt.playerFrame instanceof HTMLElement) opt.playerFrame.appendChild(NP.player);
@@ -2555,8 +2554,8 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 
 		let S = this.Danmaku.send(d, danmaku => {
 			if (danmaku && danmaku._ === 'text') this.$.danmaku_input.value = '';
-			let result = this.danmakuFrame.load(danmaku, this.video.paused);
-			result.highlight = true;
+			danmaku.highlight = true;
+			this.danmakuFrame.load(danmaku, this.video.paused);
 			if (this.opt.autoHideDanmakuInput) {
 				this.danmakuInput(false);
 			}

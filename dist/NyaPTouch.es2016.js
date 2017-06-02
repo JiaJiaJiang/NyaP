@@ -2818,8 +2818,8 @@ class NyaPTouch extends _NyaPCore.NyaPlayerCore {
 
 		this.Danmaku.send(d, danmaku => {
 			if (danmaku && danmaku._ === 'text') this.$.danmaku_input.value = '';
-			let result = this.danmakuFrame.load(danmaku, this.video.paused);
-			result.highlight = true;
+			danmaku.highlight = true;
+			this.danmakuFrame.load(danmaku, this.video.paused);
 		});
 	}
 

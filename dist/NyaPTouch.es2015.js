@@ -19,9 +19,9 @@ function Object2HTML(obj, func) {
 	var ele = void 0,
 	    o = void 0,
 	    e = void 0;
-	if (typeof obj === 'string' || typeof obj === 'number') return document.createTextNode(obj); //text node
-	if (obj === null || (typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) !== 'object' || '_' in obj === false || typeof obj._ !== 'string' || obj._ == '') return; //if it dont have a _ prop to specify a tag
-	ele = document.createElement(obj._);
+	if (typeof obj === 'string' || typeof obj === 'number') ele = document.createTextNode(obj); //text node
+	else if (obj instanceof Node) ele = obj;else if (obj === null || (typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) !== 'object' || '_' in obj === false || typeof obj._ !== 'string' || obj._ == '') return; //if it dont have a _ prop to specify a tag
+	ele || (ele = document.createElement(obj._));
 	//attributes
 	if (_Obj(obj.attr)) for (o in obj.attr) {
 		ele.setAttribute(o, obj.attr[o]);
@@ -33,7 +33,7 @@ function Object2HTML(obj, func) {
 		ele.addEventListener(o, obj.event[o]);
 	} //childNodes
 	if (_Obj(obj.child) && obj.child.length > 0) obj.child.forEach(function (o) {
-		e = o instanceof Node ? o : Object2HTML(o, func);
+		e = Object2HTML(o, func);
 		e instanceof Node && ele.appendChild(e);
 	});
 	func && func(ele);
@@ -2692,7 +2692,7 @@ var NyaPCoreOptions = {
 	muted: false,
 	volume: 1,
 	loop: false,
-	//enableDanmaku:true,
+	enableDanmaku: true,
 	danmakuModule: ['TextDanmaku'],
 	danmakuModuleArg: {
 		TextDanmaku: {
@@ -2786,18 +2786,24 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 		var _this2 = _possibleConstructorReturn(this, (NyaPlayerCore.__proto__ || Object.getPrototypeOf(NyaPlayerCore)).call(this));
 
 		opt = _this2.opt = Object.assign({}, NyaPCoreOptions, opt);
-		var $ = _this2.$ = { document: document, window: window, NP: _this2 };
-		_this2._ = {
+		var $ = _this2.$ = { document: document, window: window, NP: _this2 }; //for save elements that has an id
+		_this2._ = { //for private variables
 			video: (0, _Object2HTML2.default)({ _: 'video', attr: { id: 'main_video' } }),
 			playerMode: 'normal'
-		}; //for private variables
-		_this2.container = (0, _Object2HTML2.default)({ _: 'div', prop: { id: 'danmaku_container' } });
-		_this2.videoFrame = (0, _Object2HTML2.default)({ _: 'div', attr: { id: 'video_frame' }, child: [_this2.video, _this2.container, { _: 'div', attr: { id: 'loading_frame' }, child: [{ _: 'div', attr: { id: 'loading_anime' }, child: ['(๑•́ ω •̀๑)'] }, { _: 'div', attr: { id: 'loading_info' } }] }] });
+		};
+
+		_this2.videoFrame = (0, _Object2HTML2.default)({ _: 'div', attr: { id: 'video_frame' }, child: [_this2.video,
+			//this.container,
+			{ _: 'div', attr: { id: 'loading_frame' }, child: [{ _: 'div', attr: { id: 'loading_anime' }, child: ['(๑•́ ω •̀๑)'] }, { _: 'div', attr: { id: 'loading_info' } }] }] });
 		_this2.collectEles(_this2.videoFrame);
 
-		_this2.loadingInfo(_('Loading danmaku frame'));
-		_this2.Danmaku = new _danmaku2.default(_this2);
-
+		if (_this2._danmakuEnabled) {
+			_this2.danmakuContainer = (0, _Object2HTML2.default)({ _: 'div', prop: { id: 'danmaku_container' } });
+			_this2.loadingInfo(_('Loading danmaku frame'));
+			_this2.Danmaku = new _danmaku2.default(_this2);
+			_this2.videoFrame.insertBefore(_this2.danmakuContainer, $.loading_frame);
+			_this2.collectEles(_this2.danmakuContainer);
+		}
 		_this2._.loadingAnimeInterval = setInterval(function () {
 			$.loading_anime.style.transform = "translate(" + rand(-20, 20) + "px," + rand(-20, 20) + "px) rotate(" + rand(-10, 10) + "deg)";
 		}, 80);
@@ -2931,6 +2937,11 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 		key: 'videoSize',
 		get: function get() {
 			return [this.video.videoWidth, this.video.videoHeight];
+		}
+	}, {
+		key: '_danmakuEnabled',
+		get: function get() {
+			return this.opt.enableDanmaku == true;
 		}
 	}]);
 
@@ -3082,7 +3093,6 @@ var _ = _i18n.i18n._;
 
 //NyaPTouch options
 var NyaPTouchOptions = {
-	//autoHideDanmakuInput:true,//hide danmakuinput after danmaku sending
 	danmakuColors: ['fff', '6cf', 'ff0', 'f00', '0f0', '00f', 'f0f', '000'], //colors in the danmaku style pannel
 	danmakuModes: [0, 3, 2, 1], //0:right	1:left	2:bottom	3:top
 	danmakuSizes: [20, 24, 36],
@@ -3108,7 +3118,7 @@ var NyaPTouch = function (_NyaPlayerCore) {
 		    $ = NP.$,
 		    video = NP.video;
 
-		var icons = {
+		var icons = _this.icons = {
 			play: [30, 30, '<path d="m10.063,8.856l9.873,6.143l-9.873,6.143v-12.287z" stroke-width="3" stroke-linejoin="round"/>'],
 			fullScreen: [30, 30, '<path stroke-linejoin="round" d="m11.166,9.761l-5.237,5.239l5.237,5.238l1.905,-1.905l-3.333,-3.333l3.332,-3.333l-1.904,-1.906zm7.665,0l-1.903,1.905l3.332,3.333l-3.332,3.332l1.903,1.905l5.238,-5.238l-5.238,-5.237z" stroke-width="1.3" />'],
 			loop: [30, 30, '<path stroke-linejoin="round" stroke-width="1" d="m20.945,15.282c-0.204,-0.245 -0.504,-0.387 -0.823,-0.387c-0.583,0 -1.079,0.398 -1.205,0.969c-0.400,1.799 -2.027,3.106 -3.870,3.106c-2.188,0 -3.969,-1.780 -3.969,-3.969c0,-2.189 1.781,-3.969 3.969,-3.969c0.720,0 1.412,0.192 2.024,0.561l-0.334,0.338c-0.098,0.100 -0.127,0.250 -0.073,0.380c0.055,0.130 0.183,0.213 0.324,0.212l2.176,0.001c0.255,-0.002 0.467,-0.231 0.466,-0.482l-0.008,-2.183c-0.000,-0.144 -0.085,-0.272 -0.217,-0.325c-0.131,-0.052 -0.280,-0.022 -0.379,0.077l-0.329,0.334c-1.058,-0.765 -2.340,-1.182 -3.649,-1.182c-3.438,0 -6.236,2.797 -6.236,6.236c0,3.438 2.797,6.236 6.236,6.236c2.993,0 5.569,-2.133 6.126,-5.072c0.059,-0.314 -0.022,-0.635 -0.227,-0.882z"/>'],
@@ -3121,6 +3131,7 @@ var NyaPTouch = function (_NyaPlayerCore) {
 			danmakuMode2: [30, 30, '<path stroke-width="3" d="m7.972,22.513l14.054,0"/>']
 
 		};
+		Object.assign(icons, opt.icons);
 		function icon(name, event) {
 			var attr = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
@@ -3128,8 +3139,8 @@ var NyaPTouch = function (_NyaPlayerCore) {
 			return (0, _Object2HTML2.default)({ _: 'span', event: event, attr: attr, prop: { id: 'icon_span_' + name,
 					innerHTML: '<svg height="' + NP.opt.bottomControlHeight + '" width="' + NP.opt.bottomControlHeight / ico[1] * ico[0] + '" viewBox="0,0,' + ico[0] + ',' + ico[1] + '" id="icon_' + name + '"">' + ico[2] + '</svg>' } });
 		}
-		NP.loadingInfo(_('Creating player'));
 
+		NP.loadingInfo(_('Creating player'));
 		NP._.player = (0, _Object2HTML.Object2HTML)({
 			_: 'div', attr: { class: 'NyaPTouch', id: 'NyaPTouch' }, child: [NP.videoFrame, { _: 'div', prop: { id: 'controls' }, child: [{ _: 'div', prop: { id: 'control_bottom' }, child: [{ _: 'div', attr: { id: 'control_bottom_first' }, child: [{ _: 'div', attr: { id: 'progress_leftside_button' }, child: [icon('play', { click: function click(e) {
 									return NP.playToggle();
@@ -3139,7 +3150,7 @@ var NyaPTouch = function (_NyaPlayerCore) {
 									return NP.danmakuStyleToggle();
 								} }), { _: 'div', attr: { id: 'danmaku_size_box' } }, { _: 'div', attr: { id: 'danmaku_mode_box' } }, { _: 'div', attr: { id: 'danmaku_color_box' } }] }, { _: 'input', attr: { id: 'danmaku_input', placeholder: _('Input danmaku here') } }, icon('danmakuToggle', { click: function click(e) {
 								return _this.Danmaku.toggle();
-							} }), icon('loop', { click: function click(e) {
+							} }, { class: 'active_icon' }), icon('loop', { click: function click(e) {
 								return video.loop = !video.loop;
 							} }), icon('volume', { click: function click(e) {
 								return video.muted = !video.muted;
@@ -3160,36 +3171,44 @@ var NyaPTouch = function (_NyaPlayerCore) {
 			volumeBox: new MsgBox('', 'info', $.msg_box)
 		});
 
+		//calc progress and control_bottom styles
 		Object.assign($.progress_wrap.style, {
 			left: NP.opt.progressPad + 'px',
 			right: NP.opt.progressPad + 'px',
 			height: NP.opt.progressBarHeight + 'px',
 			marginTop: -NP.opt.progressBarHeight / 2 + 1 + 'px'
 		});
-
 		$.control_bottom.style.marginTop = '-' + NP.opt.bottomControlHeight + 'px';
 
 		//add touch drag event to video
 		extendEvent.touchdrag($.main_video, { allowMultiTouch: false, preventDefaultX: true });
 		extendEvent.touchdrag($.control_bottom, { allowMultiTouch: false, preventDefaultY: true });
 
-		//danmaku sizes
-		opt.danmakuSizes && opt.danmakuSizes.forEach(function (s, ind) {
-			var e = (0, _Object2HTML2.default)({ _: 'span', attr: { style: 'font-size:' + (16 + ind * 3) + 'px;', title: s }, prop: { size: s }, child: ['A'] });
-			$.danmaku_size_box.appendChild(e);
-		});
+		if (_this._danmakuEnabled) {
+			//danmaku sizes
+			opt.danmakuSizes && opt.danmakuSizes.forEach(function (s, ind) {
+				var e = (0, _Object2HTML2.default)({ _: 'span', attr: { style: 'font-size:' + (16 + ind * 3) + 'px;', title: s }, prop: { size: s }, child: ['A'] });
+				$.danmaku_size_box.appendChild(e);
+			});
 
-		//danmaku colors
-		opt.danmakuColors && opt.danmakuColors.forEach(function (c) {
-			var e = (0, _Object2HTML2.default)({ _: 'span', attr: { style: 'background-color:#' + c + ';', title: c }, prop: { color: c } });
-			$.danmaku_color_box.appendChild(e);
-		});
+			//danmaku colors
+			opt.danmakuColors && opt.danmakuColors.forEach(function (c) {
+				var e = (0, _Object2HTML2.default)({ _: 'span', attr: { style: 'background-color:#' + c + ';', title: c }, prop: { color: c } });
+				$.danmaku_color_box.appendChild(e);
+			});
 
-		//danmaku modes
-		opt.danmakuModes && opt.danmakuModes.forEach(function (m) {
-			$.danmaku_mode_box.appendChild(icon('danmakuMode' + m));
-		});
-		NP.collectEles($.danmaku_mode_box);
+			//danmaku modes
+			opt.danmakuModes && opt.danmakuModes.forEach(function (m) {
+				$.danmaku_mode_box.appendChild(icon('danmakuMode' + m));
+			});
+			NP.collectEles($.danmaku_mode_box);
+		} else {
+			for (var i in $) {
+				if (i.match(/danmaku/i)) {
+					$[i].parentNode.removeChild($[i]);
+				}
+			}
+		}
 		//events
 		var events = {
 			document: {
@@ -3214,7 +3233,7 @@ var NyaPTouch = function (_NyaPlayerCore) {
 					return NP._iconActive('loop', e.value);
 				},
 				volumechange: function volumechange(e) {
-					NP._.volumeBox.renew(_('volume') + ':' + (video.volume * 100).toFixed(0) + '%' + ('' + (video.muted ? '(' + _('muted') + ')' : '')));
+					NP._.volumeBox.renew(_('volume') + ':' + (video.volume * 100).toFixed(0) + '%' + ('' + (video.muted ? '(' + _('muted') + ')' : '')), 3000);
 					(0, _NyaPCore.setAttrs)($.volume_circle, { 'stroke-dasharray': video.volume * 12 * Math.PI + ' 90', style: 'fill-opacity:' + (video.muted ? .2 : .6) + '!important' });
 				},
 				progress: function progress(e) {
@@ -3278,7 +3297,7 @@ var NyaPTouch = function (_NyaPlayerCore) {
 					e.preventDefault();
 					if (!opt.dragToChangeVolume) return;
 					NP._.currentDragMode = 'volume';
-					NP._.volumeBox.renew(_('volume') + ':' + (video.volume * 100).toFixed(0) + '%' + ('' + (video.muted ? '(' + _('muted') + ')' : '')));
+					NP._.volumeBox.renew(_('volume') + ':' + (video.volume * 100).toFixed(0) + '%' + ('' + (video.muted ? '(' + _('muted') + ')' : '')), 3000);
 				}
 			},
 			control_bottom: {
@@ -3393,12 +3412,12 @@ var NyaPTouch = function (_NyaPlayerCore) {
 			eves && (0, _NyaPCore.addEvents)($[eleid], eves);
 		}
 
-		Number.isInteger(opt.defaultDanmakuMode) && $['icon_span_danmakuMode' + opt.defaultDanmakuMode].click(); //init to default danmaku mode
-		typeof opt.defaultDanmakuSize === 'number' && (0, _NyaPCore.toArray)($.danmaku_size_box.childNodes).forEach(function (sp) {
-			if (sp.size === opt.defaultDanmakuSize) sp.click();
-		});
-
-		if (NP.danmakuFrame.enabled) NP._iconActive('danmakuToggle', true);
+		if (NP._danmakuEnabled) {
+			Number.isInteger(opt.defaultDanmakuMode) && $['icon_span_danmakuMode' + opt.defaultDanmakuMode].click(); //init to default danmaku mode
+			typeof opt.defaultDanmakuSize === 'number' && (0, _NyaPCore.toArray)($.danmaku_size_box.childNodes).forEach(function (sp) {
+				if (sp.size === opt.defaultDanmakuSize) sp.click();
+			});
+		}
 
 		if (opt.playerFrame instanceof HTMLElement) opt.playerFrame.appendChild(NP.player);
 		return _this;
@@ -3418,8 +3437,8 @@ var NyaPTouch = function (_NyaPlayerCore) {
 
 			this.Danmaku.send(d, function (danmaku) {
 				if (danmaku && danmaku._ === 'text') _this2.$.danmaku_input.value = '';
-				var result = _this2.danmakuFrame.load(danmaku, _this2.video.paused);
-				result.highlight = true;
+				danmaku.highlight = true;
+				_this2.danmakuFrame.load(danmaku, _this2.video.paused);
 			});
 		}
 	}, {
@@ -3535,8 +3554,8 @@ var MsgBox = function () {
 		key: 'setText',
 		value: function setText(text) {
 			this.msg.innerHTML = '';
-			var e = text instanceof Node ? text : (0, _Object2HTML.Object2HTML)(text);
-			this.msg.appendChild(e);
+			var e = (0, _Object2HTML.Object2HTML)(text);
+			e && this.msg.appendChild(e);
 			if (text instanceof HTMLElement) text = text.textContent;
 			var texts = String(text).match(/\w+|\S/g);
 			this.text = text;
@@ -3544,9 +3563,9 @@ var MsgBox = function () {
 		}
 	}, {
 		key: 'renew',
-		value: function renew(text) {
+		value: function renew(text, time) {
 			this.setText(text);
-			this.setTimeout();
+			this.setTimeout(time);
 			if (!this.using) this.show();
 		}
 	}, {
@@ -3719,7 +3738,7 @@ var Danmaku = function () {
 		_classCallCheck(this, Danmaku);
 
 		this.core = core;
-		this.danmakuFrame = new _danmakuFrame.DanmakuFrame(core.container);
+		this.danmakuFrame = new _danmakuFrame.DanmakuFrame(core.danmakuContainer);
 		this.danmakuFrame.setMedia(core.video);
 		if (core.opt.danmakuModule instanceof Array) {
 			core.opt.danmakuModule.forEach(function (m) {
@@ -3882,11 +3901,11 @@ var i18n = {
 i18n.langs['zh-CN'] = {
 	'play': '播放',
 	'Send': '发送',
+	'loop': '循环',
 	'pause': '暂停',
 	'muted': '静音',
 	'volume': '音量',
 	'settings': '设置',
-	'loop(L)': '循环(L)',
 	'hex color': 'Hex颜色',
 	'full page(P)': '全页模式(P)',
 	'Creating player': '创建播放器',

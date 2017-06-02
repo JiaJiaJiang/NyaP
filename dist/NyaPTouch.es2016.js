@@ -1073,7 +1073,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			this.paused = true;
 			this.activeRendererMode.pause();
 		}
-		load(d, forceAddToScreen) {
+		load(d, autoAddToScreen) {
 			if (!d || d._ !== 'text') {
 				return false;
 			}
@@ -1086,13 +1086,13 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			    arr = this.list;
 			ind = dichotomy(arr, d.time, 0, arr.length - 1, false);
 			arr.splice(ind, 0, d);
-			if (ind <= this.indexMark) this.indexMark++;
+			if (ind < this.indexMark) this.indexMark++;
 			//round d.style.fontSize to prevent Iifinity loop in tunnel
 			if (typeof d.style !== 'object') d.style = {};
 			d.style.fontSize = d.style.fontSize ? d.style.fontSize + 0.5 | 0 : this.defaultStyle.fontSize;
 			if (isNaN(d.style.fontSize) || d.style.fontSize === Infinity || d.style.fontSize === 0) d.style.fontSize = this.defaultStyle.fontSize;
 			if (typeof d.mode !== 'number') d.mode = 0;
-			if (forceAddToScreen) this._addNewDanmaku(d);
+			if (autoAddToScreen && ind < this.indexMark) this._addNewDanmaku(d);
 			return d;
 		}
 		loadList(danmakuArray) {

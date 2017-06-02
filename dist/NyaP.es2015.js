@@ -1271,7 +1271,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			key: 'start',
 			value: function start() {
 				this.paused = false;
-				this.recheckIndexMark();
+				//this.recheckIndexMark();
 				this.activeRendererMode.start();
 			}
 		}, {
@@ -1301,6 +1301,9 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				d.style.fontSize = d.style.fontSize ? d.style.fontSize + 0.5 | 0 : this.defaultStyle.fontSize;
 				if (isNaN(d.style.fontSize) || d.style.fontSize === Infinity || d.style.fontSize === 0) d.style.fontSize = this.defaultStyle.fontSize;
 				if (typeof d.mode !== 'number') d.mode = 0;
+				if (autoAddToScreen) {
+					console.log(ind, this.indexMark);
+				}
 				if (autoAddToScreen && ind < this.indexMark) this._addNewDanmaku(d);
 				return d;
 			}

@@ -52,13 +52,21 @@ document.head.appendChild(dm);
 
 if(touchMode)NyaP=NyaPTouch;
 
+//create player
 var NP=new NyaP({
 	src:((location.protocol==='file:'))?tests[number][2]:tests[number][1],
 	//muted:true,
+	//enableDanmaku:false,
 	volume:0.3,
-	danmakuOption:{
-		allowLines:true,
-		screenLimit:0,
+	danmakuModuleArg:{
+		TextDanmaku:{
+			defaultStyle:{},
+			options:{
+				allowLines:true,
+				screenLimit:0,
+				//autoShiftRenderingMode:false
+			},
+		}
 	},
 	danmakuSend:function(d,callback){
 		console.log(d);
@@ -70,7 +78,6 @@ var NP=new NyaP({
 	},
 	playerFrame:document.querySelector('#player_container'),
 });
-// NP.TextDanmaku.options.autoShiftRenderingMode=false;
 
 window.addEventListener('load',function(){
 	var danmakus=[],textDM={_:'text'};
@@ -79,10 +86,9 @@ window.addEventListener('load',function(){
 		item.s=item.s*0.85;
 		danmakus.push(Object.assign(Object.create(textDM),{text:item.c,time:item.t,mode:item.ty,style:{fontSize:item.s,color:'#'+(item.co||'fff')},date:item.d,id:item.id}));
 	}
-	NP.Danmaku.loadList(danmakus);
+	NP.Danmaku&&NP.Danmaku.loadList(danmakus);
 });
 
-//clearInterval(NP._.loadingAnimeInterval)
 NP.msg('this is a tip')
 NP.msg('this is an info','info')
 NP.msg('this is an error,and these messages\' time depends on the words\' count','error')

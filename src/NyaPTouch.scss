@@ -45,6 +45,7 @@ LGPL license
 		top: 100%;
 		width: 100%;
 		font-size: 0;
+		opacity: 0.95;
 		position: absolute;
 		will-change:transform;
 		transition: transform .05s linear;
@@ -54,6 +55,7 @@ LGPL license
 			width: 100%;
 			display: flex;
 			position: relative;
+		    justify-content: flex-end;
 			&>div{
 				display: inline-block;
 			}

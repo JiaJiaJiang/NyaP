@@ -206,18 +206,6 @@ LGPL license
 		align-items: center;
 		background-color: #616161;
 	}
-	/*#settings_box{
-		right: -10px;
-		display: none;
-		position: absolute;
-		background-color:#ccc;
-		bottom: $control_bar_height;
-	}
-	#player_settings:active{
-		#settings_box{
-			display: flex;
-		}
-	}*/
 	#time{
 		padding: 0 5px;
 		font-size: 14px;
@@ -228,20 +216,13 @@ LGPL license
 		
 		&>*{flex-shrink:1;flex-grow: 1;}
 	}
-	#icon_span_fullScreen{
-		left: 0;
-		bottom: 100%;
-		display: none;
-		border-bottom: 0;
-		position: absolute;
-		border: 1px solid #ccc;
-		border-radius: 8px 0 0;
-	}
 	#player_mode{
 		font-size: 0;
+		overflow: hidden;
+	    flex-direction: column-reverse;
 
-		&:hover>#icon_span_fullScreen{
-			display: block;
+		&:hover{
+			overflow: initial;
 		}
 	}
 	#msg_box{

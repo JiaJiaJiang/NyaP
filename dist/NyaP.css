@@ -8,7 +8,7 @@ LGPL license
 */
 .NyaP_fullfill, .NyaP, .NyaP #video_frame, .NyaP #video_frame video#main_video, .NyaP #video_frame #danmaku_container, .NyaP #video_frame div[class^=danmaku], .NyaP #controls, .NyaP #control, .NyaP canvas#progress, .NyaP #progress_info, .NyaP #danmaku_input_frame { top: 0; left: 0; width: 100%; height: 100%; position: absolute; }
 
-.NyaP { outline: none; background-color: #000; /*#settings_box{ right: -10px; display: none; position: absolute; background-color:#ccc; bottom: $control_bar_height; } #player_settings:active{ #settings_box{ display: flex; } }*/ }
+.NyaP { outline: none; background-color: #000; }
 
 .NyaP #loading_frame { top: 0; left: 0; width: 100%; height: 100%; display: flex; cursor: dafault; flex-wrap: wrap; position: absolute; align-items: center; justify-content: center; background-color: #efefef; }
 
@@ -98,11 +98,9 @@ LGPL license
 
 .NyaP #time > * { flex-shrink: 1; flex-grow: 1; }
 
-.NyaP #icon_span_fullScreen { left: 0; bottom: 100%; display: none; border-bottom: 0; position: absolute; border: 1px solid #ccc; border-radius: 8px 0 0; }
+.NyaP #player_mode { font-size: 0; overflow: hidden; flex-direction: column-reverse; }
 
-.NyaP #player_mode { font-size: 0; }
-
-.NyaP #player_mode:hover > #icon_span_fullScreen { display: block; }
+.NyaP #player_mode:hover { overflow: initial; }
 
 .NyaP #msg_box { right: 0; bottom: 0; display: flex; flex-flow: column; position: absolute; pointer-events: none; align-items: flex-end; font-family: monospace; }
 

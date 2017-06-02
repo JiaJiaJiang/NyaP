@@ -13,12 +13,16 @@ const danmakuProp=['color','text','size','mode','time'];
 class Danmaku{
 	constructor(core){
 		this.core=core;
-		this.danmakuFrame=new DanmakuFrame(core.container);
+		this.danmakuFrame=new DanmakuFrame(core.danmakuContainer);
 		this.danmakuFrame.setMedia(core.video);
-		this.danmakuFrame.enable('TextDanmaku');
-
+		if(core.opt.danmakuModule instanceof Array){
+			core.opt.danmakuModule.forEach(m=>{
+				this.danmakuFrame.enable(m,core.opt.danmakuModuleArg[m]);
+			});
+		}
+/*
 		this.setTextDanmakuOptions(core.opt.danmakuOption);
-		this.setDefaultTextStyle(core.opt.textStyle);
+		this.setDefaultTextStyle(core.opt.textStyle);*/
 	}
 	load(obj){
 		return this.danmakuFrame.load(obj);
@@ -78,13 +82,13 @@ class Danmaku{
 	isVaildColor(co){
 		if(typeof co !== 'string')return false;
 		return (co=co.match(/^\#?(([\da-f\$]{3}){1,2})$/i))?co[1]:false;
-	}
+	}/*
 	setDefaultTextStyle(opt){
 		if(opt)for(let n in opt)this.module('TextDanmaku').defaultStyle[n]=opt[n];
 	}
 	setTextDanmakuOptions(opt){
 		if(opt)for(let n in opt)this.module('TextDanmaku').options[n]=opt[n];
-	}
+	}*/
 }
 
 export default Danmaku;

@@ -16,12 +16,19 @@ const NyaPCoreOptions={
 	muted:false,
 	volume:1,
 	loop:false,
+	enableDanmaku:true,
+	danmakuModule:['TextDanmaku'],
+	danmakuModuleArg:{
+		TextDanmaku:{
+			defaultStyle:{},
+			options:{},
+		}
+	},
+	//for sending danmaku
 	defaultDanmakuColor:null,//a hex color(without #),when the color inputed is invalid,this color will be applied
 	defaultDanmakuMode:0,//right
 	defaultDanmakuSize:24,
 	danmakuSend:(d,callback)=>{callback(false);},//the func for sending danmaku
-	textStyle:{},
-	danmakuOption:{},
 }
 
 
@@ -65,16 +72,16 @@ class NyaPlayerCore extends NyaPEventEmitter{
 	constructor(opt){
 		super();
 		opt=this.opt=Object.assign({},NyaPCoreOptions,opt);
-		const $=this.$={document,window,NP:this};
-		this._={
+		const $=this.$={document,window,NP:this};//for save elements that has an id
+		this._={//for private variables
 			video:O2H({_:'video',attr:{id:'main_video'}}),
 			playerMode:'normal',
-		};//for private variables
-		this.container=O2H({_:'div',prop:{id:'danmaku_container'}});
+		};
+
 		this.videoFrame=O2H(
 			{_:'div',attr:{id:'video_frame'},child:[
 				this.video,
-				this.container,
+				//this.container,
 				{_:'div',attr:{id:'loading_frame'},child:[
 					{_:'div',attr:{id:'loading_anime'},child:['(๑•́ ω •̀๑)']},
 					{_:'div',attr:{id:'loading_info'}},
@@ -83,9 +90,13 @@ class NyaPlayerCore extends NyaPEventEmitter{
 		);
 		this.collectEles(this.videoFrame);
 
-		this.loadingInfo(_('Loading danmaku frame'));
-		this.Danmaku=new Danmaku(this);
-
+		if(this._danmakuEnabled){
+			this.danmakuContainer=O2H({_:'div',prop:{id:'danmaku_container'}});
+			this.loadingInfo(_('Loading danmaku frame'));
+			this.Danmaku=new Danmaku(this);
+			this.videoFrame.insertBefore(this.danmakuContainer,$.loading_frame);
+			this.collectEles(this.danmakuContainer);
+		}
 		this._.loadingAnimeInterval=setInterval(()=>{
 			$.loading_anime.style.transform="translate("+rand(-20,20)+"px,"+rand(-20,20)+"px) rotate("+rand(-10,10)+"deg)";
 		},80);
@@ -179,6 +190,7 @@ class NyaPlayerCore extends NyaPEventEmitter{
 	set src(s){this.video.src=s;}
 	get TextDanmaku(){return this.danmakuFrame.modules.TextDanmaku;}
 	get videoSize(){return [this.video.videoWidth,this.video.videoHeight];}
+	get _danmakuEnabled(){return this.opt.enableDanmaku==true;}
 }
 
 

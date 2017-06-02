@@ -40,7 +40,7 @@ LGPL license
 
 .NyaPTouch #control_bottom { top: 100%; width: 100%; font-size: 0; position: absolute; will-change: transform; transition: transform .05s linear; background-color: #fff; }
 
-.NyaPTouch #control_bottom div[id^='control_bottom_'] { width: 100%; display: flex; position: relative; }
+.NyaPTouch #control_bottom div[id^='control_bottom_'] { width: 100%; display: flex; position: relative; justify-content: flex-end; }
 
 .NyaPTouch #control_bottom div[id^='control_bottom_'] > div { display: inline-block; }
 

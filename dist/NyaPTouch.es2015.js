@@ -1282,7 +1282,7 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 			}
 		}, {
 			key: 'load',
-			value: function load(d, addToScreen) {
+			value: function load(d, forceAddToScreen) {
 				if (!d || d._ !== 'text') {
 					return false;
 				}
@@ -1295,13 +1295,13 @@ function init(DanmakuFrame, DanmakuFrameModule) {
 				    arr = this.list;
 				ind = dichotomy(arr, d.time, 0, arr.length - 1, false);
 				arr.splice(ind, 0, d);
-				if (ind < this.indexMark) this.indexMark++;
+				if (ind <= this.indexMark) this.indexMark++;
 				//round d.style.fontSize to prevent Iifinity loop in tunnel
 				if (_typeof(d.style) !== 'object') d.style = {};
 				d.style.fontSize = d.style.fontSize ? d.style.fontSize + 0.5 | 0 : this.defaultStyle.fontSize;
 				if (isNaN(d.style.fontSize) || d.style.fontSize === Infinity || d.style.fontSize === 0) d.style.fontSize = this.defaultStyle.fontSize;
 				if (typeof d.mode !== 'number') d.mode = 0;
-				if (addToScreen) this._addNewDanmaku(d);
+				if (forceAddToScreen) this._addNewDanmaku(d);
 				return d;
 			}
 		}, {
@@ -3438,7 +3438,7 @@ var NyaPTouch = function (_NyaPlayerCore) {
 			this.Danmaku.send(d, function (danmaku) {
 				if (danmaku && danmaku._ === 'text') _this2.$.danmaku_input.value = '';
 				danmaku.highlight = true;
-				_this2.danmakuFrame.load(danmaku, _this2.video.paused);
+				_this2.danmakuFrame.load(danmaku, true);
 			});
 		}
 	}, {

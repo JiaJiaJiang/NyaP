@@ -394,7 +394,7 @@ class NyaP extends NyaPlayerCore{
 			if(danmaku&&danmaku._==='text')
 				this.$.danmaku_input.value='';
 			danmaku.highlight=true;
-			this.danmakuFrame.load(danmaku,this.video.paused);
+			this.danmakuFrame.load(danmaku,true);
 			if(this.opt.autoHideDanmakuInput){this.danmakuInput(false);}
 		});
 

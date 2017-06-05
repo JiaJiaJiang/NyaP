@@ -4,9 +4,9 @@ LGPL license
 */
 'use strict';
 import {DanmakuFrame,DanmakuFrameModule} from '../lib/danmaku-frame/src/danmaku-frame.js'
-import initTextDanmaku from '../lib/danmaku-text/src/danmaku-text.js'
+import addTextDanmaku from '../lib/danmaku-text/src/danmaku-text.js'
 import {limitIn} from './NyaPCore.js';
-initTextDanmaku(DanmakuFrame,DanmakuFrameModule);//init TextDanmaku mod
+addTextDanmaku(DanmakuFrame,DanmakuFrameModule);//init TextDanmaku mod
 
 const colorChars='0123456789abcdef';
 const danmakuProp=['color','text','size','mode','time'];
@@ -14,15 +14,16 @@ class Danmaku{
 	constructor(core){
 		this.core=core;
 		this.danmakuFrame=new DanmakuFrame(core.danmakuContainer);
-		this.danmakuFrame.setMedia(core.video);
 		if(core.opt.danmakuModule instanceof Array){
 			core.opt.danmakuModule.forEach(m=>{
-				this.danmakuFrame.enable(m,core.opt.danmakuModuleArg[m]);
+				this.initModule(m);
+				this.danmakuFrame.enable(m);
 			});
 		}
-/*
-		this.setTextDanmakuOptions(core.opt.danmakuOption);
-		this.setDefaultTextStyle(core.opt.textStyle);*/
+		this.danmakuFrame.setMedia(core.video);
+	}
+	initModule(name){
+		return this.danmakuFrame.initModule(name,this.core.opt.danmakuModuleArg[name]);
 	}
 	load(obj){
 		return this.danmakuFrame.load(obj);
@@ -82,13 +83,7 @@ class Danmaku{
 	isVaildColor(co){
 		if(typeof co !== 'string')return false;
 		return (co=co.match(/^\#?(([\da-f\$]{3}){1,2})$/i))?co[1]:false;
-	}/*
-	setDefaultTextStyle(opt){
-		if(opt)for(let n in opt)this.module('TextDanmaku').defaultStyle[n]=opt[n];
 	}
-	setTextDanmakuOptions(opt){
-		if(opt)for(let n in opt)this.module('TextDanmaku').options[n]=opt[n];
-	}*/
 }
 
 export default Danmaku;

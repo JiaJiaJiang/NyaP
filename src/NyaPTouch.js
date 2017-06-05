@@ -116,6 +116,7 @@ class NyaPTouch extends NyaPlayerCore{
 			bottomControlDraging:undefined,
 			bottomControlTransformY:0,
 			preVideoStat:false,
+			seekTo:0,
 			volumeBox:new MsgBox('','info',$.msg_box),
 		});
 

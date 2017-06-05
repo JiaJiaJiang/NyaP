@@ -284,15 +284,10 @@ class DanmakuFrame {
 		F.working = false;
 		F.enabled = true;
 		F.modules = {}; //constructed module list
-		F.moduleList = [];
+		//F.moduleList=[];
 		const style = document.createElement("style");
 		document.head.appendChild(style);
 		F.styleSheet = style.sheet;
-
-		for (let m in DanmakuFrame.moduleList) {
-			//init all modules
-			F.initModule(m);
-		}
 
 		setTimeout(() => {
 			//container size sensor
@@ -318,8 +313,8 @@ class DanmakuFrame {
 			this.container.hidden = false;
 			return;
 		}
-		let module = this.modules[name];
-		if (!module) return this.initModule(name);
+		let module = this.modules[name] || this.initModule(name);
+		if (!module) return false;
 		module.enabled = true;
 		module.enable && module.enable();
 		return true;
@@ -343,16 +338,18 @@ class DanmakuFrame {
 		if (s instanceof Array === false) return;
 		s.forEach(r => this.styleSheet.insertRule(r, this.styleSheet.cssRules.length));
 	}
-	initModule(name) {
-		let mod = DanmakuFrame.moduleList[name];
+	initModule(name, arg) {
+		if (this.modules[name]) {
+			console.warn(`The module [${name}] has already inited.`);
+			return this.modules[name];
+		}
+		let mod = DanmakuFrame.availableModules[name];
 		if (!mod) throw 'Module [' + name + '] does not exist.';
-		let module = new mod(this);
+		let module = new mod(this, arg);
 		if (module instanceof DanmakuFrameModule === false) throw 'Constructor of ' + name + ' is not extended from DanmakuFrameModule';
-		module.enabled = true;
 		this.modules[name] = module;
-		this.moduleList.push(name);
 		console.debug(`Mod Inited: ${name}`);
-		return true;
+		return module;
 	}
 	set time(t) {
 		//current media time (ms)
@@ -398,8 +395,9 @@ class DanmakuFrame {
 		this.moduleFunction('resize');
 	}
 	moduleFunction(name, ...arg) {
-		for (let i = 0, m; i < this.moduleList.length; i++) {
-			m = this.modules[this.moduleList[i]];
+		let m;
+		for (let n in this.modules) {
+			m = this.modules[n];
 			if (m.enabled && m[name]) m[name](...arg);
 		}
 	}
@@ -417,15 +415,15 @@ class DanmakuFrame {
 		F.moduleFunction('media', media);
 	}
 	static addModule(name, module) {
-		if (name in this.moduleList) {
+		if (name in this.availableModules) {
 			console.warn('The module "' + name + '" has already been added.');
 			return;
 		}
-		this.moduleList[name] = module;
+		this.availableModules[name] = module;
 	}
 }
 
-DanmakuFrame.moduleList = {};
+DanmakuFrame.availableModules = {};
 
 class DanmakuFrameModule {
 	constructor(frame) {
@@ -2721,9 +2719,11 @@ window.Object2HTML = _Object2HTML2.default;
 
 //default options
 const NyaPCoreOptions = {
+	//for video
 	muted: false,
 	volume: 1,
 	loop: false,
+	//for danmaku
 	enableDanmaku: true,
 	danmakuModule: ['TextDanmaku'],
 	danmakuModuleArg: {
@@ -2738,7 +2738,10 @@ const NyaPCoreOptions = {
 	defaultDanmakuSize: 24,
 	danmakuSend: (d, callback) => {
 		callback(false);
-	} };
+	}, //the func for sending danmaku
+	//for player
+	source: (name, address, callback) => callback(name, address)
+};
 
 class NyaPEventEmitter {
 	constructor() {
@@ -2887,6 +2890,10 @@ class NyaPlayerCore extends NyaPEventEmitter {
 		const d = document;
 		return (d.webkitFullscreenElement || d.msFullscreenElement || d.mozFullScreenElement || d.fullscreenElement) == this.player;
 	}
+	addSource(name, address) {
+		//var resule=this.opt.source(name)
+	}
+	useSource(name) {}
 	get danmakuFrame() {
 		return this.Danmaku.danmakuFrame;
 	}
@@ -3046,15 +3053,16 @@ class Danmaku {
 	constructor(core) {
 		this.core = core;
 		this.danmakuFrame = new _danmakuFrame.DanmakuFrame(core.danmakuContainer);
-		this.danmakuFrame.setMedia(core.video);
 		if (core.opt.danmakuModule instanceof Array) {
 			core.opt.danmakuModule.forEach(m => {
-				this.danmakuFrame.enable(m, core.opt.danmakuModuleArg[m]);
+				this.initModule(m);
+				this.danmakuFrame.enable(m);
 			});
 		}
-		/*
-  		this.setTextDanmakuOptions(core.opt.danmakuOption);
-  		this.setDefaultTextStyle(core.opt.textStyle);*/
+		this.danmakuFrame.setMedia(core.video);
+	}
+	initModule(name) {
+		return this.danmakuFrame.initModule(name, this.core.opt.danmakuModuleArg[name]);
 	}
 	load(obj) {
 		return this.danmakuFrame.load(obj);
@@ -3116,13 +3124,7 @@ class Danmaku {
 	isVaildColor(co) {
 		if (typeof co !== 'string') return false;
 		return (co = co.match(/^\#?(([\da-f\$]{3}){1,2})$/i)) ? co[1] : false;
-	} /*
-   setDefaultTextStyle(opt){
-   if(opt)for(let n in opt)this.module('TextDanmaku').defaultStyle[n]=opt[n];
-   }
-   setTextDanmakuOptions(opt){
-   if(opt)for(let n in opt)this.module('TextDanmaku').options[n]=opt[n];
-   }*/
+	}
 }
 
 exports.default = Danmaku;

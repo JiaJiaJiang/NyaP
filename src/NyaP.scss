@@ -36,8 +36,10 @@ LGPL license
 		cursor: pointer;
 		display: inline-block;
 		background-color: inherit;
-		*{
+
+		svg{
 			pointer-events: none;
+			display: block;
 		}
 
 		&:hover{

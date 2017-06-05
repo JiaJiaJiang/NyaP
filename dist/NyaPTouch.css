@@ -30,7 +30,7 @@ LGPL license
 
 .NyaPTouch span[id^="icon_span_"] { display: inline-block; background-color: inherit; }
 
-.NyaPTouch span[id^="icon_span_"] * { pointer-events: none; }
+.NyaPTouch span[id^="icon_span_"] svg { pointer-events: none; display: block; }
 
 .NyaPTouch span[id^="icon_span_"]:hover svg > * { fill: #24b182; stroke: #24b182; }
 
@@ -38,7 +38,7 @@ LGPL license
 
 .NyaPTouch[playerMode="fullScreen"] #control_bottom { position: fixed; }
 
-.NyaPTouch #control_bottom { top: 100%; width: 100%; font-size: 0; position: absolute; will-change: transform; transition: transform .05s linear; background-color: #fff; }
+.NyaPTouch #control_bottom { top: 100%; width: 100%; font-size: 0; opacity: 0.95; position: absolute; will-change: transform; transition: transform .05s linear; background-color: #fff; }
 
 .NyaPTouch #control_bottom div[id^='control_bottom_'] { width: 100%; display: flex; position: relative; justify-content: flex-end; }
 

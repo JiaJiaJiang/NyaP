@@ -13,9 +13,11 @@ window.Object2HTML=O2H;
 
 //default options
 const NyaPCoreOptions={
+	//for video
 	muted:false,
 	volume:1,
 	loop:false,
+	//for danmaku
 	enableDanmaku:true,
 	danmakuModule:['TextDanmaku'],
 	danmakuModuleArg:{
@@ -29,6 +31,8 @@ const NyaPCoreOptions={
 	defaultDanmakuMode:0,//right
 	defaultDanmakuSize:24,
 	danmakuSend:(d,callback)=>{callback(false);},//the func for sending danmaku
+	//for player
+	source:(name,address,callback)=>callback(name,address),
 }
 
 
@@ -182,6 +186,12 @@ class NyaPlayerCore extends NyaPEventEmitter{
 				||d.mozFullScreenElement
 				||d.fullscreenElement)
 				==this.player;
+	}
+	addSource(name,address){
+		//var resule=this.opt.source(name)
+	}
+	useSource(name){
+
 	}
 	get danmakuFrame(){return this.Danmaku.danmakuFrame;}
 	get player(){return this._.player;}

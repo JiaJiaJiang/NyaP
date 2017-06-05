@@ -20,8 +20,9 @@ LGPL license
 	span[id^="icon_span_"]{
 		display: inline-block;
 		background-color: inherit;
-		*{
+		svg{
 			pointer-events: none;
+			display: block;
 		}
 		&:hover{
 			svg>*{

@@ -36,7 +36,7 @@ LGPL license
 
 .NyaP span[id^="icon_span_"] { cursor: pointer; display: inline-block; background-color: inherit; }
 
-.NyaP span[id^="icon_span_"] * { pointer-events: none; }
+.NyaP span[id^="icon_span_"] svg { pointer-events: none; display: block; }
 
 .NyaP span[id^="icon_span_"]:hover { background-color: #ececec !important; }
 

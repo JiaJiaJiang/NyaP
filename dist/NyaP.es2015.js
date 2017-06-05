@@ -300,15 +300,10 @@ var DanmakuFrame = function () {
 		F.working = false;
 		F.enabled = true;
 		F.modules = {}; //constructed module list
-		F.moduleList = [];
+		//F.moduleList=[];
 		var style = document.createElement("style");
 		document.head.appendChild(style);
 		F.styleSheet = style.sheet;
-
-		for (var m in DanmakuFrame.moduleList) {
-			//init all modules
-			F.initModule(m);
-		}
 
 		setTimeout(function () {
 			//container size sensor
@@ -337,8 +332,8 @@ var DanmakuFrame = function () {
 				this.container.hidden = false;
 				return;
 			}
-			var module = this.modules[name];
-			if (!module) return this.initModule(name);
+			var module = this.modules[name] || this.initModule(name);
+			if (!module) return false;
 			module.enabled = true;
 			module.enable && module.enable();
 			return true;
@@ -372,16 +367,18 @@ var DanmakuFrame = function () {
 		}
 	}, {
 		key: 'initModule',
-		value: function initModule(name) {
-			var mod = DanmakuFrame.moduleList[name];
+		value: function initModule(name, arg) {
+			if (this.modules[name]) {
+				console.warn('The module [' + name + '] has already inited.');
+				return this.modules[name];
+			}
+			var mod = DanmakuFrame.availableModules[name];
 			if (!mod) throw 'Module [' + name + '] does not exist.';
-			var module = new mod(this);
+			var module = new mod(this, arg);
 			if (module instanceof DanmakuFrameModule === false) throw 'Constructor of ' + name + ' is not extended from DanmakuFrameModule';
-			module.enabled = true;
 			this.modules[name] = module;
-			this.moduleList.push(name);
 			console.debug('Mod Inited: ' + name);
-			return true;
+			return module;
 		}
 	}, {
 		key: 'draw',
@@ -443,14 +440,16 @@ var DanmakuFrame = function () {
 	}, {
 		key: 'moduleFunction',
 		value: function moduleFunction(name) {
+			var m = void 0;
+
 			for (var _len2 = arguments.length, arg = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
 				arg[_key2 - 1] = arguments[_key2];
 			}
 
-			for (var i = 0, m; i < this.moduleList.length; i++) {
+			for (var n in this.modules) {
 				var _m;
 
-				m = this.modules[this.moduleList[i]];
+				m = this.modules[n];
 				if (m.enabled && m[name]) (_m = m)[name].apply(_m, arg);
 			}
 		}
@@ -486,18 +485,18 @@ var DanmakuFrame = function () {
 	}], [{
 		key: 'addModule',
 		value: function addModule(name, module) {
-			if (name in this.moduleList) {
+			if (name in this.availableModules) {
 				console.warn('The module "' + name + '" has already been added.');
 				return;
 			}
-			this.moduleList[name] = module;
+			this.availableModules[name] = module;
 		}
 	}]);
 
 	return DanmakuFrame;
 }();
 
-DanmakuFrame.moduleList = {};
+DanmakuFrame.availableModules = {};
 
 var DanmakuFrameModule = function DanmakuFrameModule(frame) {
 	_classCallCheck(this, DanmakuFrameModule);
@@ -3343,9 +3342,11 @@ window.Object2HTML = _Object2HTML2.default;
 
 //default options
 var NyaPCoreOptions = {
+	//for video
 	muted: false,
 	volume: 1,
 	loop: false,
+	//for danmaku
 	enableDanmaku: true,
 	danmakuModule: ['TextDanmaku'],
 	danmakuModuleArg: {
@@ -3360,7 +3361,12 @@ var NyaPCoreOptions = {
 	defaultDanmakuSize: 24,
 	danmakuSend: function danmakuSend(d, callback) {
 		callback(false);
-	} };
+	}, //the func for sending danmaku
+	//for player
+	source: function source(name, address, callback) {
+		return callback(name, address);
+	}
+};
 
 var NyaPEventEmitter = function () {
 	function NyaPEventEmitter() {
@@ -3560,6 +3566,14 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 			return (d.webkitFullscreenElement || d.msFullscreenElement || d.mozFullScreenElement || d.fullscreenElement) == this.player;
 		}
 	}, {
+		key: 'addSource',
+		value: function addSource(name, address) {
+			//var resule=this.opt.source(name)
+		}
+	}, {
+		key: 'useSource',
+		value: function useSource(name) {}
+	}, {
 		key: 'danmakuFrame',
 		get: function get() {
 			return this.Danmaku.danmakuFrame;
@@ -3756,18 +3770,21 @@ var Danmaku = function () {
 
 		this.core = core;
 		this.danmakuFrame = new _danmakuFrame.DanmakuFrame(core.danmakuContainer);
-		this.danmakuFrame.setMedia(core.video);
 		if (core.opt.danmakuModule instanceof Array) {
 			core.opt.danmakuModule.forEach(function (m) {
-				_this.danmakuFrame.enable(m, core.opt.danmakuModuleArg[m]);
+				_this.initModule(m);
+				_this.danmakuFrame.enable(m);
 			});
 		}
-		/*
-  		this.setTextDanmakuOptions(core.opt.danmakuOption);
-  		this.setDefaultTextStyle(core.opt.textStyle);*/
+		this.danmakuFrame.setMedia(core.video);
 	}
 
 	_createClass(Danmaku, [{
+		key: 'initModule',
+		value: function initModule(name) {
+			return this.danmakuFrame.initModule(name, this.core.opt.danmakuModuleArg[name]);
+		}
+	}, {
 		key: 'load',
 		value: function load(obj) {
 			return this.danmakuFrame.load(obj);
@@ -3871,14 +3888,7 @@ var Danmaku = function () {
 		value: function isVaildColor(co) {
 			if (typeof co !== 'string') return false;
 			return (co = co.match(/^\#?(([\da-f\$]{3}){1,2})$/i)) ? co[1] : false;
-		} /*
-    setDefaultTextStyle(opt){
-    if(opt)for(let n in opt)this.module('TextDanmaku').defaultStyle[n]=opt[n];
-    }
-    setTextDanmakuOptions(opt){
-    if(opt)for(let n in opt)this.module('TextDanmaku').options[n]=opt[n];
-    }*/
-
+		}
 	}]);
 
 	return Danmaku;

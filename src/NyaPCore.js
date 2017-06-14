@@ -137,7 +137,6 @@ class NyaPlayerCore extends NyaPEventEmitter{
 			},
 		});
 
-
 		this.emit('coreLoad');
 	}
 	playToggle(Switch=this.video.paused){

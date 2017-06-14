@@ -11,3 +11,5 @@ NyaP
 * [Object2HTML](https://coding.net/u/luojia/p/Object2HTML/git) : 把js对象转换为DOM对象
 * [danmaku-frame](https://coding.net/u/luojia/p/danmaku-frame/git) : 弹幕框架
 * [danmaku-text](https://coding.net/u/luojia/p/danmaku-text/git) : 用于弹幕框架的文本弹幕模块
+
+要是有人想用我再写文档吧。

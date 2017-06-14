@@ -2890,10 +2890,6 @@ class NyaPlayerCore extends NyaPEventEmitter {
 		const d = document;
 		return (d.webkitFullscreenElement || d.msFullscreenElement || d.mozFullScreenElement || d.fullscreenElement) == this.player;
 	}
-	addSource(name, address) {
-		//var resule=this.opt.source(name)
-	}
-	useSource(name) {}
 	get danmakuFrame() {
 		return this.Danmaku.danmakuFrame;
 	}

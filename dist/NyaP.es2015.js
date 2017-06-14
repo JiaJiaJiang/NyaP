@@ -3566,14 +3566,6 @@ var NyaPlayerCore = function (_NyaPEventEmitter) {
 			return (d.webkitFullscreenElement || d.msFullscreenElement || d.mozFullScreenElement || d.fullscreenElement) == this.player;
 		}
 	}, {
-		key: 'addSource',
-		value: function addSource(name, address) {
-			//var resule=this.opt.source(name)
-		}
-	}, {
-		key: 'useSource',
-		value: function useSource(name) {}
-	}, {
 		key: 'danmakuFrame',
 		get: function get() {
 			return this.Danmaku.danmakuFrame;

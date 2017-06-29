@@ -96,7 +96,7 @@ class NyaP extends NyaPlayerCore{
 						{_:'span',attr:{id:'control_right'},child:[
 							icon('addDanmaku',{click:e=>NP.danmakuInput()},{title:_('danmaku input(Enter)')}),
 							icon('danmakuToggle',{click:e=>NP.Danmaku.toggle()},{title:_('danmaku toggle(D)'),class:'active_icon'}),
-							icon('volume',{},{title:_('volume($0)([shift]+↑↓)','100%')}),
+							icon('volume',{},{title:`${_('volume')}:(${video.muted?_('muted'):(video.volume*100|0)+'%'})([shift]+↑↓)(${_('wheeling')})`}),
 							icon('loop',{click:e=>{video.loop=!video.loop;}},{title:_('loop')+'(L)'}),
 							{_:'span',prop:{id:'player_mode'},child:[
 								icon('fullScreen',{click:e=>NP.playerMode('fullScreen')},{title:_('full screen(F)')}),
@@ -187,7 +187,7 @@ class NyaP extends NyaPlayerCore{
 				volumechange:e=>{
 					NP._.volumeBox.renew(`${_('volume')}:${(video.volume*100).toFixed(0)}%`+`${video.muted?('('+_('muted')+')'):''}`,3000);
 					setAttrs($.volume_circle,{'stroke-dasharray':`${video.volume*12*Math.PI} 90`,style:`fill-opacity:${video.muted?.2:.6}!important`});
-					$.icon_span_volume.setAttribute('title',_('volume($0)([shift]+↑↓)',video.muted?_('muted'):`${video.volume*100|0}%`));
+					$.icon_span_volume.setAttribute('title',`${_('volume')}:(${video.muted?_('muted'):((video.volume*100|0)+'%')})([shift]+↑↓)(${_('wheeling')})`);
 				},
 				progress:e=>NP.drawProgress(),
 				_loopChange:e=>NP._iconActive('loop',e.value),

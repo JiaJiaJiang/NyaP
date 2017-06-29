@@ -462,7 +462,7 @@ var DanmakuFrame = function () {
 				playing: function playing() {
 					return F.start();
 				},
-				'pause,stalled,seeking': function pauseStalledSeeking() {
+				'pause,stalled,seeking,suspend': function pauseStalledSeekingSuspend() {
 					return F.pause();
 				},
 				ratechange: function ratechange() {
@@ -2736,7 +2736,7 @@ var NyaP = function (_NyaPlayerCore) {
 								return NP.danmakuInput();
 							} }, { title: _('danmaku input(Enter)') }), icon('danmakuToggle', { click: function click(e) {
 								return NP.Danmaku.toggle();
-							} }, { title: _('danmaku toggle(D)'), class: 'active_icon' }), icon('volume', {}, { title: _('volume($0)([shift]+↑↓)', '100%') }), icon('loop', { click: function click(e) {
+							} }, { title: _('danmaku toggle(D)'), class: 'active_icon' }), icon('volume', {}, { title: _('volume') + ':(' + (video.muted ? _('muted') : (video.volume * 100 | 0) + '%') + ')([shift]+\u2191\u2193)(' + _('wheeling') + ')' }), icon('loop', { click: function click(e) {
 								video.loop = !video.loop;
 							} }, { title: _('loop') + '(L)' }), { _: 'span', prop: { id: 'player_mode' }, child: [icon('fullScreen', { click: function click(e) {
 									return NP.playerMode('fullScreen');
@@ -2827,7 +2827,7 @@ var NyaP = function (_NyaPlayerCore) {
 				volumechange: function volumechange(e) {
 					NP._.volumeBox.renew(_('volume') + ':' + (video.volume * 100).toFixed(0) + '%' + ('' + (video.muted ? '(' + _('muted') + ')' : '')), 3000);
 					(0, _NyaPCore.setAttrs)($.volume_circle, { 'stroke-dasharray': video.volume * 12 * Math.PI + ' 90', style: 'fill-opacity:' + (video.muted ? .2 : .6) + '!important' });
-					$.icon_span_volume.setAttribute('title', _('volume($0)([shift]+↑↓)', video.muted ? _('muted') : (video.volume * 100 | 0) + '%'));
+					$.icon_span_volume.setAttribute('title', _('volume') + ':(' + (video.muted ? _('muted') : (video.volume * 100 | 0) + '%') + ')([shift]+\u2191\u2193)(' + _('wheeling') + ')');
 				},
 				progress: function progress(e) {
 					return NP.drawProgress();
@@ -3925,6 +3925,7 @@ i18n.langs['zh-CN'] = {
 	'muted': '静音',
 	'volume': '音量',
 	'settings': '设置',
+	'wheeling': '滚轮',
 	'hex color': 'Hex颜色',
 	'full page(P)': '全页模式(P)',
 	'Creating player': '创建播放器',
@@ -3933,7 +3934,6 @@ i18n.langs['zh-CN'] = {
 	'Input danmaku here': '在这里输入弹幕',
 	'Loading danmaku frame': '加载弹幕框架',
 	'danmaku input(Enter)': '弹幕输入框(回车)',
-	'volume($0)([shift]+↑↓)': '音量($0)([shift]+↑↓)',
 	'Failed to change to fullscreen mode': '无法切换到全屏模式'
 };
 

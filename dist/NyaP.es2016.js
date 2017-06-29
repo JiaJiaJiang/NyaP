@@ -406,7 +406,7 @@ class DanmakuFrame {
 		F.media = media;
 		addEvents(media, {
 			playing: () => F.start(),
-			'pause,stalled,seeking': () => F.pause(),
+			'pause,stalled,seeking,suspend': () => F.pause(),
 			ratechange: () => {
 				F.rate = F.media.playbackRate;
 				F.moduleFunction('rate', F.rate);
@@ -2230,7 +2230,7 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 
 		NP.loadingInfo(_('Creating player'));
 		NP._.player = (0, _Object2HTML2.default)({
-			_: 'div', attr: { class: 'NyaP', id: 'NyaP', tabindex: 0 }, child: [NP.videoFrame, { _: 'div', attr: { id: 'controls' }, child: [{ _: 'div', attr: { id: 'control' }, child: [{ _: 'span', attr: { id: 'control_left' }, child: [icon('play', { click: e => NP.playToggle() }, { title: _('play') })] }, { _: 'span', attr: { id: 'control_center' }, child: [{ _: 'div', prop: { id: 'progress_info' }, child: [{ _: 'span', child: [{ _: 'canvas', prop: { id: 'progress', pad: 10 } }] }, { _: 'span', prop: { id: 'time' }, child: [{ _: 'span', prop: { id: 'current_time' }, child: ['00:00'] }, '/', { _: 'span', prop: { id: 'total_time' }, child: ['00:00'] }] }] }, { _: 'div', prop: { id: 'danmaku_input_frame' }, child: [{ _: 'span', prop: { id: 'danmaku_style' }, child: [{ _: 'div', attr: { id: 'danmaku_style_pannel' }, child: [{ _: 'div', attr: { id: 'danmaku_color_box' } }, { _: 'input', attr: { id: 'danmaku_color', placeholder: _('hex color'), maxlength: "6" } }, { _: 'span', attr: { id: 'danmaku_mode_box' } }, { _: 'span', attr: { id: 'danmaku_size_box' } }] }, icon('danmakuStyle')] }, { _: 'input', attr: { id: 'danmaku_input', placeholder: _('Input danmaku here') } }, { _: 'span', prop: { id: 'danmaku_submit', innerHTML: _('Send') } }] }] }, { _: 'span', attr: { id: 'control_right' }, child: [icon('addDanmaku', { click: e => NP.danmakuInput() }, { title: _('danmaku input(Enter)') }), icon('danmakuToggle', { click: e => NP.Danmaku.toggle() }, { title: _('danmaku toggle(D)'), class: 'active_icon' }), icon('volume', {}, { title: _('volume($0)([shift]+↑↓)', '100%') }), icon('loop', { click: e => {
+			_: 'div', attr: { class: 'NyaP', id: 'NyaP', tabindex: 0 }, child: [NP.videoFrame, { _: 'div', attr: { id: 'controls' }, child: [{ _: 'div', attr: { id: 'control' }, child: [{ _: 'span', attr: { id: 'control_left' }, child: [icon('play', { click: e => NP.playToggle() }, { title: _('play') })] }, { _: 'span', attr: { id: 'control_center' }, child: [{ _: 'div', prop: { id: 'progress_info' }, child: [{ _: 'span', child: [{ _: 'canvas', prop: { id: 'progress', pad: 10 } }] }, { _: 'span', prop: { id: 'time' }, child: [{ _: 'span', prop: { id: 'current_time' }, child: ['00:00'] }, '/', { _: 'span', prop: { id: 'total_time' }, child: ['00:00'] }] }] }, { _: 'div', prop: { id: 'danmaku_input_frame' }, child: [{ _: 'span', prop: { id: 'danmaku_style' }, child: [{ _: 'div', attr: { id: 'danmaku_style_pannel' }, child: [{ _: 'div', attr: { id: 'danmaku_color_box' } }, { _: 'input', attr: { id: 'danmaku_color', placeholder: _('hex color'), maxlength: "6" } }, { _: 'span', attr: { id: 'danmaku_mode_box' } }, { _: 'span', attr: { id: 'danmaku_size_box' } }] }, icon('danmakuStyle')] }, { _: 'input', attr: { id: 'danmaku_input', placeholder: _('Input danmaku here') } }, { _: 'span', prop: { id: 'danmaku_submit', innerHTML: _('Send') } }] }] }, { _: 'span', attr: { id: 'control_right' }, child: [icon('addDanmaku', { click: e => NP.danmakuInput() }, { title: _('danmaku input(Enter)') }), icon('danmakuToggle', { click: e => NP.Danmaku.toggle() }, { title: _('danmaku toggle(D)'), class: 'active_icon' }), icon('volume', {}, { title: `${_('volume')}:(${video.muted ? _('muted') : (video.volume * 100 | 0) + '%'})([shift]+↑↓)(${_('wheeling')})` }), icon('loop', { click: e => {
 								video.loop = !video.loop;
 							} }, { title: _('loop') + '(L)' }), { _: 'span', prop: { id: 'player_mode' }, child: [icon('fullScreen', { click: e => NP.playerMode('fullScreen') }, { title: _('full screen(F)') }), icon('fullPage', { click: e => NP.playerMode('fullPage') }, { title: _('full page(P)') })] }] }] }] }]
 		});
@@ -2311,7 +2311,7 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 				volumechange: e => {
 					NP._.volumeBox.renew(`${_('volume')}:${(video.volume * 100).toFixed(0)}%` + `${video.muted ? '(' + _('muted') + ')' : ''}`, 3000);
 					(0, _NyaPCore.setAttrs)($.volume_circle, { 'stroke-dasharray': `${video.volume * 12 * Math.PI} 90`, style: `fill-opacity:${video.muted ? .2 : .6}!important` });
-					$.icon_span_volume.setAttribute('title', _('volume($0)([shift]+↑↓)', video.muted ? _('muted') : `${video.volume * 100 | 0}%`));
+					$.icon_span_volume.setAttribute('title', `${_('volume')}:(${video.muted ? _('muted') : (video.volume * 100 | 0) + '%'})([shift]+↑↓)(${_('wheeling')})`);
 				},
 				progress: e => NP.drawProgress(),
 				_loopChange: e => NP._iconActive('loop', e.value),
@@ -3155,6 +3155,7 @@ i18n.langs['zh-CN'] = {
 	'muted': '静音',
 	'volume': '音量',
 	'settings': '设置',
+	'wheeling': '滚轮',
 	'hex color': 'Hex颜色',
 	'full page(P)': '全页模式(P)',
 	'Creating player': '创建播放器',
@@ -3163,7 +3164,6 @@ i18n.langs['zh-CN'] = {
 	'Input danmaku here': '在这里输入弹幕',
 	'Loading danmaku frame': '加载弹幕框架',
 	'danmaku input(Enter)': '弹幕输入框(回车)',
-	'volume($0)([shift]+↑↓)': '音量($0)([shift]+↑↓)',
 	'Failed to change to fullscreen mode': '无法切换到全屏模式'
 };
 

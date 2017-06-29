@@ -406,7 +406,7 @@ class DanmakuFrame {
 		F.media = media;
 		addEvents(media, {
 			playing: () => F.start(),
-			'pause,stalled,seeking': () => F.pause(),
+			'pause,stalled,seeking,suspend': () => F.pause(),
 			ratechange: () => {
 				F.rate = F.media.playbackRate;
 				F.moduleFunction('rate', F.rate);
@@ -3154,6 +3154,7 @@ i18n.langs['zh-CN'] = {
 	'muted': '静音',
 	'volume': '音量',
 	'settings': '设置',
+	'wheeling': '滚轮',
 	'hex color': 'Hex颜色',
 	'full page(P)': '全页模式(P)',
 	'Creating player': '创建播放器',
@@ -3162,7 +3163,6 @@ i18n.langs['zh-CN'] = {
 	'Input danmaku here': '在这里输入弹幕',
 	'Loading danmaku frame': '加载弹幕框架',
 	'danmaku input(Enter)': '弹幕输入框(回车)',
-	'volume($0)([shift]+↑↓)': '音量($0)([shift]+↑↓)',
 	'Failed to change to fullscreen mode': '无法切换到全屏模式'
 };
 

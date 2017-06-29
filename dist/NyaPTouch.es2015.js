@@ -462,7 +462,7 @@ var DanmakuFrame = function () {
 				playing: function playing() {
 					return F.start();
 				},
-				'pause,stalled,seeking,suspend': function pauseStalledSeekingSuspend() {
+				'pause,stalled,seeking,waiting': function pauseStalledSeekingWaiting() {
 					return F.pause();
 				},
 				ratechange: function ratechange() {

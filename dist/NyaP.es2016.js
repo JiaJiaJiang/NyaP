@@ -406,7 +406,7 @@ class DanmakuFrame {
 		F.media = media;
 		addEvents(media, {
 			playing: () => F.start(),
-			'pause,stalled,seeking,suspend': () => F.pause(),
+			'pause,stalled,seeking,waiting': () => F.pause(),
 			ratechange: () => {
 				F.rate = F.media.playbackRate;
 				F.moduleFunction('rate', F.rate);

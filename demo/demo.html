@@ -12,10 +12,7 @@
 
 <script>
 var touchMode=navigator.userAgent.match(/mobile/i) && ('ontouchstart' in window),//touch player
-	scriptVer='es2016';
-
-
-
+	scriptVer=50;
 try{//es2016 version feature test
 	'use strict';
 	[
@@ -24,10 +21,11 @@ try{//es2016 version feature test
 		'{window}',//concise property
 		'[...[]]',//expand array
 		'let a;const b=1;',//let const
+		'fetch.name==="fetch"',//fetch api
 	].forEach(function(s){eval(s)});
 }catch(e){
-	console.log('not supported deature:',e);
-	scriptVer='es2015';
+	console.log('not supported feature:',e);
+	scriptVer=80;
 }
 var playerName='NyaP'+(touchMode?"Touch":"");
 console.log('load player',playerName,scriptVer);
@@ -38,23 +36,23 @@ document.write(
 </script>
 
 <script>
-var tests={
-	1:['danmaku.js','//dn-jia-io.qbox.me/video/osu%20Dont%20cry%2020140811%20001526.mp4','osu.mp4'],
-	2:['danmaku2.js','//dn-jia-io.qbox.me/video/27107IOSYSTheLovelyFreezingTomboyishBathCirnosHotSpring.mp4','9.mp4'],
-}
+var tests=[
+	['"ipfs":QmNMFQdHo2HaYfWySgkk1rzfveSADDMLZYpM1y29oKbShN','https://hardbin.com/ipfs/QmXKrHA5wGiYv1dCh9aHEryZnqRwSLUxTZLV3Qm3xHFs5r'],
+	['"ipfs":Qma2HCKSLjyhRZezyUYrz7tNTQuG2yxZL24qHWV1kFjvKJ','https://hardbin.com/ipfs/QmYALufK7J7j7zgLSUEMkJKYBAsqc8gGtNpLM3qfJve1jm'],
+]
 
-var number=location.hash.match(/\#(\d+)$/);
+/*var number=location.hash.match(/\#(\d+)$/);
 number=(number)?Number(number[1]):1;
 
 var dm=document.createElement('script');
 dm.src=tests[number][0];
-document.head.appendChild(dm);
+document.head.appendChild(dm);*/
 
 if(touchMode)NyaP=NyaPTouch;
 
 //create player
 var NP=new NyaP({
-	src:((location.protocol==='file:'))?tests[number][2]:tests[number][1],
+	//src:((location.protocol==='file:'))?tests[number][2]:tests[number][1],
 	//muted:true,
 	//enableDanmaku:false,
 	volume:0.3,
@@ -68,6 +66,10 @@ var NP=new NyaP({
 			},
 		}
 	},
+	plugins:[
+		'https://hardbin.com/ipfs/QmdRDA2cZHSNutkUUJEgoaWWTTnV65NGWsS4QPmtriYLAp',
+		'https://hardbin.com/ipfs/Qmc6C7Yz6GFxwYHPcU1otsiHU1rfo5XBPuMv5nbRwgzzpp'
+	],
 	danmakuSend:function(d,callback){
 		console.log(d);
 		var d2={_:'text',text:d.text,time:d.time,mode:d.mode,style:{fontSize:d.size},date:Date.now(),id:0};
@@ -79,7 +81,7 @@ var NP=new NyaP({
 	playerFrame:document.querySelector('#player_container'),
 });
 
-window.addEventListener('load',function(){
+/*window.addEventListener('load',function(){
 	var danmakus=[],textDM={_:'text'};
 	for(var i=0;i<rawDanmakuList.length;i++){
 		var item=rawDanmakuList[i];
@@ -87,7 +89,7 @@ window.addEventListener('load',function(){
 		danmakus.push(Object.assign(Object.create(textDM),{text:item.c,time:item.t,mode:item.ty,style:{fontSize:item.s,color:'#'+(item.co||'fff')},date:item.d,id:item.id}));
 	}
 	NP.Danmaku&&NP.Danmaku.loadList(danmakus);
-});
+});*/
 
 NP.msg('this is a tip')
 NP.msg('this is an info','info')
@@ -102,13 +104,52 @@ function changeMode(n){
 }
 </script>
 
-<div style="position:fixed;top:0;left:0;color:#fff;">本演示发送的弹幕不会提交至服务器，仅本地预览。
+<div style="position:fixed;top:0;left:0;color:#fff;">
+	本演示发送的弹幕不会提交至服务器，仅本地预览。 <br>
+	没处理demo切换，要换demo前请刷新页面。<br>
+	演示视频将随机使用一个ipfs网关加载，缓冲可能较慢。
 	<div>
 		<button onclick="changeMode(1)">CSS Transition</button>
 		<button onclick="changeMode(2)">Canvas2d</button>
-		<button onclick="changeMode(3)">WebGL</button>
+		<button disabled onclick="changeMode(3)">WebGL</button>
+	</div>
+	<div id="demoSelection">
+		videoSrc:<input type="text" id="videoSrc" style="width:40em;"><br>
+		danmakuJSON:<input type="text" id="danmakuJSON" style="width:40em;"><br>
+		<button id="loadButton">load</button><br>
+		选择一个演示：
 	</div>
 </div>
-
+<script>
+//add tests
+tests.forEach(function(t,i){
+	let b=document.createElement('button');
+	b.innerHTML='demo '+i;
+	b.onclick=function(){
+		videoSrc.value=t[0];
+		danmakuJSON.value=t[1];
+		loadButton.click();
+	}
+	demoSelection.appendChild(b);
+});
+loadButton.addEventListener('click',function(){
+	NP.src=videoSrc.value;
+	NP.loadingInfo(NP.i18n._('Loading danmaku'));
+	fetch(danmakuJSON.value)
+		.then(res=>res.json())
+		.then(json=>{
+			var danmakus=[],textDM={_:'text'};
+			for(var i=0;i<json.length;i++){
+				var item=json[i];
+				item.s=item.s*0.85;
+				danmakus.push(Object.assign(Object.create(textDM),{text:item.c,time:item.t,mode:item.ty,style:{fontSize:item.s,color:'#'+(item.co||'fff')},date:item.d,id:item.id}));
+			}
+			NP.Danmaku&&NP.Danmaku.loadList(danmakus);
+		}).catch(function(e){
+		alert('无法加载弹幕');
+		console.error(e);
+	})
+});
+</script>
 </body>
 </html>

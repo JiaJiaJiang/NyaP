@@ -59,7 +59,7 @@ class NyaP extends NyaPlayerCore{
 				innerHTML:`<svg height=${ico[1]} width=${ico[0]} id="icon_${name}"">${ico[2]}</svg>`}});
 		}
 		
-		NP.loadingInfo(_('Creating player'));
+		let _licp=NP.loadingInfo(_('Creating player')+' -- ');
 		NP._.player=O2H({
 			_:'div',attr:{class:'NyaP',id:'NyaP',tabindex:0},child:[
 				NP.videoFrame,
@@ -145,8 +145,6 @@ class NyaP extends NyaPlayerCore{
 				}
 			}
 		}
-
-		
 
 
 		//progress
@@ -302,6 +300,8 @@ class NyaP extends NyaPlayerCore{
 		
 		if(opt.playerFrame instanceof HTMLElement)
 			opt.playerFrame.appendChild(NP.player);
+
+		_licp.append('done');
 	}
 	_iconActive(name,bool){
 		this.$[`icon_span_${name}`].classList[bool?'add':'remove']('active_icon');
@@ -485,7 +485,7 @@ class MsgBox{
 	}
 	setText(text){
 		this.msg.innerHTML='';
-		let e=Object2HTML(text);
+		let e=O2H(text);
 		e&&this.msg.appendChild(e);
 		if(text instanceof HTMLElement)text=text.textContent;
 		let texts=String(text).match(/\w+|\S/g);

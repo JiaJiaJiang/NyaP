@@ -9,7 +9,6 @@ import Danmaku from './danmaku.js';
 import O2H from '../lib/Object2HTML/Object2HTML.js'
 
 const _=i18n._;
-window.Object2HTML=O2H;
 
 //default options
 const NyaPCoreOptions={
@@ -48,19 +47,24 @@ class NyaPEventEmitter{
 		if(e in this._events){
 			const hs=this._events[e];
 			try{
-				hs.forEach(h=>{h.apply(this,arg)});
+				for(let h of hs){
+					if(h.apply(this,arg)===false)return;
+				}
 			}catch(e){
 				console.error(e);
 			}
 		}
 	}
-	addEventListener(e,handle){
-		this.on(e,handle);
+	addEventListener(...args){
+		this.on(...args);
 	}
-	on(e,handle){
+	on(e,handle,top=false){
 		if(!(handle instanceof Function))return;
 		if(!(e in this._events))this._events[e]=[];
-		this._events[e].push(handle);
+		if(top)
+			this._events[e].unshift(handle);
+		else
+			this._events[e].push(handle);
 	}
 	removeEvent(e,handle){
 		if(!(e in this._events))return;
@@ -77,6 +81,9 @@ class NyaPlayerCore extends NyaPEventEmitter{
 		super();
 		opt=this.opt=Object.assign({},NyaPCoreOptions,opt);
 		const $=this.$={document,window,NP:this};//for save elements that has an id
+		this.plugins={};
+		this.stats={};
+		this.i18n=i18n;
 		this._={//for private variables
 			video:O2H({_:'video',attr:{id:'main_video'}}),
 			playerMode:'normal',
@@ -94,12 +101,17 @@ class NyaPlayerCore extends NyaPEventEmitter{
 		);
 		this.collectEles(this.videoFrame);
 
+
+		let _lilc=this.loadingInfo(_('Loading core')+' -- ');
+
+
 		if(this._danmakuEnabled){
 			this.danmakuContainer=O2H({_:'div',prop:{id:'danmaku_container'}});
-			this.loadingInfo(_('Loading danmaku frame'));
+			let _lildf=this.loadingInfo(_('Loading danmaku frame')+' -- ');
 			this.Danmaku=new Danmaku(this);
 			this.videoFrame.insertBefore(this.danmakuContainer,$.loading_frame);
 			this.collectEles(this.danmakuContainer);
+			_lildf.append('done');
 		}
 		this._.loadingAnimeInterval=setInterval(()=>{
 			$.loading_anime.style.transform="translate("+rand(-20,20)+"px,"+rand(-20,20)+"px) rotate("+rand(-10,10)+"deg)";
@@ -107,7 +119,7 @@ class NyaPlayerCore extends NyaPEventEmitter{
 
 		//options
 		setTimeout(a=>{
-			['src','muted','volume','loop'].forEach(o=>{//dont change the order
+			['muted','volume','loop'].forEach(o=>{//dont change the order
 				(opt[o]!==undefined)&&(this.video[o]=opt[o]);
 			})
 		},0)
@@ -128,7 +140,8 @@ class NyaPlayerCore extends NyaPEventEmitter{
 		addEvents(this.video,{
 			loadedmetadata:e=>{
 				clearInterval(this._.loadingAnimeInterval);
-				$.loading_frame.parentNode.removeChild($.loading_frame);
+				if($.loading_frame.parentNode)//remove loading animation
+					$.loading_frame.parentNode.removeChild($.loading_frame);
 			},
 			error:e=>{
 				clearInterval(this._.loadingAnimeInterval);
@@ -137,13 +150,42 @@ class NyaPlayerCore extends NyaPEventEmitter{
 			},
 		});
 
+		//define default video src handle
+		this.on('setVideoSrc',src=>{
+			this.video.src=src;
+			return false;//stop the event
+		});
+		if(opt.src)this.src=opt.src;
+
+		this.on('coreLoad',()=>{
+			this.stats.coreLoaded=true;
+			_lilc.append('done');
+			//this.loadingInfo(_('Core loaded'));
+		});
+		if(Array.isArray(opt.plugins)){//load plugins,opt.plugins is a list of url for plugins
+			let _lilp=this.loadingInfo(_('Loading plugin')+' -- ');
+			let pluginList=[];
+			for(let url of opt.plugins){
+				pluginList.push(this.loadPlugin(url));
+			}
+			Promise.all(pluginList).then(()=>{
+				_lilp.append('done');
+				this.emit('coreLoad');
+			}).catch(e=>{
+				console.error(e);
+				this.emit('coreLoadingError',e);
+			})
+			return;
+		}
 		this.emit('coreLoad');
 	}
 	playToggle(Switch=this.video.paused){
 		this.video[Switch?'play':'pause']();
 	}
 	loadingInfo(text){
-		this.$.loading_info.appendChild(O2H({_:'div',child:[text]}));
+		let d=O2H({_:'div',child:[text]});
+		this.$.loading_info.appendChild(d);
+		return d;
 	}
 	collectEles(ele){
 		const $=this.$;
@@ -186,11 +228,40 @@ class NyaPlayerCore extends NyaPEventEmitter{
 				||d.fullscreenElement)
 				==this.player;
 	}
+	loadPlugin(url){//load a js plugin for NyaP
+		return fetch(url)
+		.then(res=>res.text())
+		.then(script=>{
+			'use strict';
+			script=script.trim();
+			let plugin=eval(script);
+			if((typeof plugin.name!=='string')||!plugin.name)
+				throw(new TypeError('Invalid plugin name'));
+			if(this.plugins[plugin.name])
+				throw(`Plugin already loaded: ${plugin.name}`);
+			this.plugins[plugin.name]=plugin;
+			plugin.init(this);
+			this.emit('pluginLoaded',plugin.name);
+			return plugin.name;
+		}).catch(e=>{
+			console.error('pluginLoadingError',e);
+			this.emit('pluginLoadingError',e);
+		});
+	}
 	get danmakuFrame(){return this.Danmaku.danmakuFrame;}
 	get player(){return this._.player;}
 	get video(){return this._.video;}
 	get src(){return this.video.src;}
-	set src(s){this.video.src=s;}
+	set src(s){
+		s=s.trim();
+		if(!this.stats.coreLoaded)
+			this.on('coreLoad',()=>{
+				this.src=s;
+			});
+		else{
+			this.emit('setVideoSrc',s);
+		}
+	}
 	get TextDanmaku(){return this.danmakuFrame.modules.TextDanmaku;}
 	get videoSize(){return [this.video.videoWidth,this.video.videoHeight];}
 	get _danmakuEnabled(){return this.opt.enableDanmaku==true;}

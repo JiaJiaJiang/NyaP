@@ -5,8 +5,7 @@ LGPL license
 'use strict';
 
 import {i18n} from './i18n.js';
-import O2H from '../lib/Object2HTML/Object2HTML.js'
-import {Object2HTML} from '../lib/Object2HTML/Object2HTML.js';
+import O2H from '../lib/Object2HTML/Object2HTML.js';
 import {NyaPlayerCore,
 		addEvents,
 		requestFullscreen,
@@ -60,8 +59,8 @@ class NyaPTouch extends NyaPlayerCore{
 				innerHTML:`<svg height="${NP.opt.bottomControlHeight}" width="${NP.opt.bottomControlHeight/ico[1]*ico[0]}" viewBox="0,0,${ico[0]},${ico[1]}" id="icon_${name}"">${ico[2]}</svg>`}});
 		}
 
-		NP.loadingInfo(_('Creating player'));
-		NP._.player=Object2HTML({
+		let _licp=NP.loadingInfo(_('Creating player')+' -- ');
+		NP._.player=O2H({
 			_:'div',attr:{class:'NyaPTouch',id:'NyaPTouch'},child:[
 				NP.videoFrame,
 				{_:'div',prop:{id:'controls'},child:[
@@ -359,6 +358,8 @@ class NyaPTouch extends NyaPlayerCore{
 
 		if(opt.playerFrame instanceof HTMLElement)
 			opt.playerFrame.appendChild(NP.player);
+
+		_licp.append('done');
 	}
 	
 	send(){
@@ -432,7 +433,7 @@ class MsgBox{
 	}
 	setText(text){
 		this.msg.innerHTML='';
-		let e=Object2HTML(text);
+		let e=O2H(text);
 		e&&this.msg.appendChild(e);
 		if(text instanceof HTMLElement)text=text.textContent;
 		let texts=String(text).match(/\w+|\S/g);

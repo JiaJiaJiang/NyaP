@@ -1,118 +1,104 @@
 var gulp = require('gulp');
-var rename = require('gulp-rename');
 var sourcemaps = require('gulp-sourcemaps');
-var minimist = require('minimist');
+// var minimist = require('minimist');
+// var changed = require('gulp-changed');
 
-var minimistOpt = {
-	string:['es'],
-	boolean:['touch'],
-};
+var dist='./dist';
 
-var options = minimist(process.argv.slice(2), minimistOpt);
+//css
+function transcss(name){
+	var sass = require("gulp-sass");
 
-gulp.task('_compileJS',function(){
-	var name=options.touch?'NyaPTouch.js':'NyaP.js',
+	return gulp.src(`./src/${name}`)
+		// .pipe(changed(dist))
+		.pipe(sourcemaps.init({ loadMaps: true }))
+		.pipe(sass({
+			outputStyle: 'compressed'
+		}).on('error', sass.logError))
+		.pipe(sourcemaps.write('./'))
+		.pipe(gulp.dest(dist));
+}
+
+gulp.task('css-NyaPTouch',function(){
+	return transcss('NyaPTouch.scss');
+});
+gulp.task('css-NyaP',function(){
+	return transcss('NyaP.scss');
+});
+
+gulp.task('css',gulp.parallel('css-NyaP','css-NyaPTouch'));
+
+
+
+//js
+function transjs(name,cover=90){
+	var babelify = require('babelify'),
+		browserify = require('browserify'),
 		buffer = require('vinyl-buffer'),
 		source = require('vinyl-source-stream'),
-		babelify = require('babelify'),
-		browserify = require('browserify'),
-		es=options.es;
+		rename = require('gulp-rename');
+
+	console.log(`compiling ${name} covers ${cover}% browsers`);
 
 	return browserify({
 			entries: name,
 			basedir:'./src',
 			debug: true,
-		}).transform(
-			babelify.configure({
-				presets: ['stage-0',`es${es}`],
-				plugins: ["transform-es2015-modules-commonjs"]
-			})
+			// sourceType: 'module'
+		})
+		.transform(
+			"babelify",{
+				presets: [
+					[
+						"@babel/preset-env",{
+							"targets":{ 
+								"browsers":`cover ${cover}%`
+							},
+							"debug": true,
+							"useBuiltIns": 'usage'
+						}
+					],
+					/*["minify", {
+						// "mangle": {
+						// 	"exclude": ["MyCustomError"]
+						// },
+						//"keepFnName": true
+					}]*/
+				],
+			}
 		)
 		.bundle()
 		.pipe(source(`./${name}`))
-		.pipe(rename({extname:`.es${es}.js`}))
+		.pipe(rename({extname:`.${cover}.js`}))
 		.pipe(buffer())
 		.pipe(sourcemaps.init({ loadMaps: true }))
 		.pipe(sourcemaps.write('./'))
-		.pipe(gulp.dest('./dist'));
+		.pipe(gulp.dest(dist));
+}
+gulp.task('js-NyaPTouch-cover-50',function(){
+	return transjs('NyaPTouch.js',50)||console.log('poi');
+});
+gulp.task('js-NyaP-cover-50',function(){
+	return transjs('NyaP.js',50);
+});
+gulp.task('js-NyaPTouch-cover-80',function(){
+	return transjs('NyaPTouch.js',80);
+});
+gulp.task('js-NyaP-cover-80',function(){
+	return transjs('NyaP.js',80);
 });
 
-var esList=['2015','2016'];
-gulp.task('js',function(){
-	if(options.es){
-		gulp.start('_compileJS');
-		return;
-	}
-	var es=esList.shift();
-	options.es=es;
-	console.log('es'+es);
-	return gulp.start('_compileJS',function(err){
-		options.es='';
-		if(esList.length){
-			gulp.start('js');
-		}
-	});
-});
+gulp.task('js-NyaP',gulp.parallel(
+	'js-NyaP-cover-50','js-NyaP-cover-80'
+));
+gulp.task('js-NyaPTouch',gulp.parallel(
+	'js-NyaPTouch-cover-50','js-NyaPTouch-cover-80'
+));
 
-gulp.task('css', function (){
-	var sass = require("gulp-sass");
-	var name=options.touch?'NyaPTouch.scss':'NyaP.scss';
-    return gulp.src(`./src/${name}`)
-		.pipe(sourcemaps.init({ loadMaps: true }))
-        .pipe(sass({
-            outputStyle: 'compact'
-        }).on('error', sass.logError))
-		.pipe(sourcemaps.write('./'))
-        .pipe(gulp.dest('./dist'));
-});
+gulp.task('js',gulp.parallel(
+	'js-NyaP','js-NyaPTouch'
+));
 
 
-gulp.task('minjs',function(){
-	var composer = require('gulp-uglify/composer');
-	var uglifyes = require('uglify-es');
-	var uglify = composer(uglifyes, console);
-	let options = {
-		mangle: true,
-		compress: {
-			sequences: true,
-			conditionals: true,
-			dead_code: true,
-			//booleans: true,
-			//if_return: true,
-			join_vars: true,
-			comparisons:true,
-			evaluate:true,
-		}
-	};
-	return gulp.src('./dist/*.js')
-				.pipe(rename({extname:'.min.js'}))
-				.pipe(uglify(options))
-				.on('error',function(e){
-					console.error(e);
-				})
-				.pipe(gulp.dest('./dist/compressed/'));
-});
-
-gulp.task('minAllScss',function(){
-	var sass = require("gulp-sass");
-	return gulp.src('./src/*.scss')
-			    .pipe(sass({
-			        outputStyle: 'compressed'
-			    }).on('error', sass.logError))
-				.pipe(rename({extname:'.min.css'}))
-			    .pipe(gulp.dest('./dist/compressed/'));
-});
-
-gulp.task('mincss',['minAllScss'],function(){
-	require('fs').unlinkSync('./dist/compressed/NyapCore.min.css');
-});
-
-
-gulp.task('build',['js','css']);
-
-gulp.task('min',['mincss','minjs']);
-
-gulp.task('default',['build'],function(cb){
-	gulp.start('min',cb);
-});
-
+gulp.task('build',gulp.parallel('js','css'));
+gulp.task('default',gulp.series('build'));

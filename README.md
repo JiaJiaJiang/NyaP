@@ -12,4 +12,7 @@ NyaP
 * [danmaku-frame](https://coding.net/u/luojia/p/danmaku-frame/git) : 弹幕框架
 * [danmaku-text](https://coding.net/u/luojia/p/danmaku-text/git) : 用于弹幕框架的文本弹幕模块
 
+## log
+* 2019/1/20 : 添加插件功能，插件样本请看`demo/plugin-demo.js`。更具体的用法还是有人想用我再写文档吧。
+
 要是有人想用我再写文档吧。

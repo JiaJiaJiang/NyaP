@@ -7992,7 +7992,7 @@ function (_NyaPEventEmitter) {
       var _this2 = this;
 
       //load a js plugin for NyaP
-      return fetch(url).then(function (res) {
+      var p = fetch(url).then(function (res) {
         return res.text();
       }).then(function (script) {
         'use strict';
@@ -8007,11 +8007,13 @@ function (_NyaPEventEmitter) {
         _this2.emit('pluginLoaded', plugin.name);
 
         return plugin.name;
-      }).catch(function (e) {
+      });
+      p.catch(function (e) {
         console.error('pluginLoadingError', e);
 
         _this2.emit('pluginLoadingError', e);
       });
+      return p;
     }
   }, {
     key: "danmakuFrame",
@@ -8412,7 +8414,7 @@ i18n.langs['zh-CN'] = {
   'settings': '设置',
   'wheeling': '滚轮',
   'hex color': 'Hex颜色',
-  'Core loaded': '核心已加载',
+  'Loading core': '加载核心',
   'Loading video': '加载视频',
   'Loading plugin': '加载插件',
   'full page(P)': '全页模式(P)',

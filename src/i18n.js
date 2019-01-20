@@ -23,7 +23,7 @@ i18n.langs['zh-CN']={
 	'settings':'设置',
 	'wheeling':'滚轮',
 	'hex color':'Hex颜色',
-	'Core loaded':'核心已加载',
+	'Loading core':'加载核心',
 	'Loading video':'加载视频',
 	'Loading plugin':'加载插件',
 	'full page(P)':'全页模式(P)',

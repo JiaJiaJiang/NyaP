@@ -229,7 +229,7 @@ class NyaPlayerCore extends NyaPEventEmitter{
 				==this.player;
 	}
 	loadPlugin(url){//load a js plugin for NyaP
-		return fetch(url)
+		let p=fetch(url)
 		.then(res=>res.text())
 		.then(script=>{
 			'use strict';
@@ -243,10 +243,12 @@ class NyaPlayerCore extends NyaPEventEmitter{
 			plugin.init(this);
 			this.emit('pluginLoaded',plugin.name);
 			return plugin.name;
-		}).catch(e=>{
+		});
+		p.catch(e=>{
 			console.error('pluginLoadingError',e);
 			this.emit('pluginLoadingError',e);
 		});
+		return p;
 	}
 	get danmakuFrame(){return this.Danmaku.danmakuFrame;}
 	get player(){return this._.player;}

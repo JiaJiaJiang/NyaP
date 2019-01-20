@@ -3558,7 +3558,7 @@ class NyaPlayerCore extends NyaPEventEmitter {
 
   loadPlugin(url) {
     //load a js plugin for NyaP
-    return fetch(url).then(res => res.text()).then(script => {
+    let p = fetch(url).then(res => res.text()).then(script => {
       'use strict';
 
       script = script.trim();
@@ -3569,10 +3569,12 @@ class NyaPlayerCore extends NyaPEventEmitter {
       plugin.init(this);
       this.emit('pluginLoaded', plugin.name);
       return plugin.name;
-    }).catch(e => {
+    });
+    p.catch(e => {
       console.error('pluginLoadingError', e);
       this.emit('pluginLoadingError', e);
     });
+    return p;
   }
 
   get danmakuFrame() {
@@ -4639,7 +4641,7 @@ i18n.langs['zh-CN'] = {
   'settings': '设置',
   'wheeling': '滚轮',
   'hex color': 'Hex颜色',
-  'Core loaded': '核心已加载',
+  'Loading core': '加载核心',
   'Loading video': '加载视频',
   'Loading plugin': '加载插件',
   'full page(P)': '全页模式(P)',

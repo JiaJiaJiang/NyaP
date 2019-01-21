@@ -59,7 +59,7 @@ class NyaP extends NyaPlayerCore{
 				innerHTML:`<svg height=${ico[1]} width=${ico[0]} id="icon_${name}"">${ico[2]}</svg>`}});
 		}
 		
-		let _licp=NP.loadingInfo(_('Creating player')+' -- ');
+		let _licp=NP.loadingInfo(_('Creating player'),true);
 		NP._.player=O2H({
 			_:'div',attr:{class:'NyaP',id:'NyaP',tabindex:0},child:[
 				NP.videoFrame,
@@ -305,7 +305,7 @@ class NyaP extends NyaPlayerCore{
 		if(opt.playerFrame instanceof HTMLElement)
 			opt.playerFrame.appendChild(NP.player);
 
-		_licp.append('done');
+		_licp.append(this.opt.loadingInfo.doneText);
 	}
 	_userActiveWatcher(active=false){
 		let delay=5000,t=Date.now();

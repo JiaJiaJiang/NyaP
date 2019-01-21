@@ -16,6 +16,7 @@ const i18n={
 i18n.langs['zh-CN']={
 	'play':'播放',
 	'Send':'发送',
+	'Done':'完成',
 	'loop':'循环',
 	'pause':'暂停',
 	'muted':'静音',

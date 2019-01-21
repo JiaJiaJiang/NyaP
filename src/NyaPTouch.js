@@ -59,7 +59,7 @@ class NyaPTouch extends NyaPlayerCore{
 				innerHTML:`<svg height="${NP.opt.bottomControlHeight}" width="${NP.opt.bottomControlHeight/ico[1]*ico[0]}" viewBox="0,0,${ico[0]},${ico[1]}" id="icon_${name}"">${ico[2]}</svg>`}});
 		}
 
-		let _licp=NP.loadingInfo(_('Creating player')+' -- ');
+		let _licp=NP.loadingInfo(_('Creating player'),true);
 		NP._.player=O2H({
 			_:'div',attr:{class:'NyaPTouch',id:'NyaPTouch'},child:[
 				NP.videoFrame,
@@ -359,7 +359,7 @@ class NyaPTouch extends NyaPlayerCore{
 		if(opt.playerFrame instanceof HTMLElement)
 			opt.playerFrame.appendChild(NP.player);
 
-		_licp.append('done');
+		_licp.append(this.opt.loadingInfo.doneText);
 	}
 	
 	send(){

@@ -25,6 +25,10 @@ const NyaPCoreOptions={
 			options:{},
 		}
 	},
+	loadingInfo:{
+		doneText:'ok',
+		contentSpliter:'...',
+	},
 	//for sending danmaku
 	defaultDanmakuColor:null,//a hex color(without #),when the color inputed is invalid,this color will be applied
 	defaultDanmakuMode:0,//right
@@ -106,16 +110,16 @@ class NyaPlayerCore extends NyaPEventEmitter{
 		this.collectEles(this.videoFrame);
 
 
-		let _lilc=this.loadingInfo(_('Loading core')+' -- ');
+		let _lilc=this.loadingInfo(_('Loading core'),true);
 
 
 		if(this._danmakuEnabled){
 			this.danmakuContainer=O2H({_:'div',prop:{id:'danmaku_container'}});
-			let _lildf=this.loadingInfo(_('Loading danmaku frame')+' -- ');
+			let _lildf=this.loadingInfo(_('Loading danmaku frame'),true);
 			this.Danmaku=new Danmaku(this);
 			this.videoFrame.insertBefore(this.danmakuContainer,$.loading_frame);
 			this.collectEles(this.danmakuContainer);
-			_lildf.append('done');
+			_lildf.append(this.opt.loadingInfo.doneText);
 		}
 		this._.loadingAnimeInterval=setInterval(()=>{
 			$.loading_anime.style.transform="translate("+rand(-20,20)+"px,"+rand(-20,20)+"px) rotate("+rand(-10,10)+"deg)";
@@ -163,17 +167,17 @@ class NyaPlayerCore extends NyaPEventEmitter{
 
 		this.on('coreLoad',()=>{
 			this.stats.coreLoaded=true;
-			_lilc.append('done');
+			_lilc.append(this.opt.loadingInfo.doneText);
 			//this.loadingInfo(_('Core loaded'));
 		});
 		if(Array.isArray(opt.plugins)){//load plugins,opt.plugins is a list of url for plugins
-			let _lilp=this.loadingInfo(_('Loading plugin')+' -- ');
+			let _lilp=this.loadingInfo(_('Loading plugin'),true);
 			let pluginList=[];
 			for(let url of opt.plugins){
 				pluginList.push(this.loadPlugin(url));
 			}
 			Promise.all(pluginList).then(()=>{
-				_lilp.append('done');
+				_lilp.append(this.opt.loadingInfo.doneText);
 				this.emit('coreLoad');
 			}).catch(e=>{
 				this.log('','error',e);
@@ -186,8 +190,9 @@ class NyaPlayerCore extends NyaPEventEmitter{
 	playToggle(Switch=this.video.paused){
 		this.video[Switch?'play':'pause']();
 	}
-	loadingInfo(text){
+	loadingInfo(text,spliter=false){
 		let d=O2H({_:'div',child:[text]});
+		if(spliter)d.append(this.opt.loadingInfo.contentSpliter);
 		this.$.loading_info.appendChild(d);
 		return d;
 	}

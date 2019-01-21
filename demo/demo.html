@@ -11,6 +11,10 @@
 <div id="player_container" style="position:relative;width:920px;height:550px;"></div>
 
 <script>
+if(location.protocol==='file:'){
+	alert('以本地文件打开演示无法加载插件\n请在NyaP根目录启动一个http服务后再访问/demo/demo.html')
+	throw(Error('not support'));
+}
 var touchMode=navigator.userAgent.match(/mobile/i) && ('ontouchstart' in window),//touch player
 	scriptVer=50;
 try{//es2016 version feature test
@@ -41,20 +45,10 @@ var tests=[
 	['"ipfs":Qma2HCKSLjyhRZezyUYrz7tNTQuG2yxZL24qHWV1kFjvKJ','https://hardbin.com/ipfs/QmYALufK7J7j7zgLSUEMkJKYBAsqc8gGtNpLM3qfJve1jm'],
 ]
 
-/*var number=location.hash.match(/\#(\d+)$/);
-number=(number)?Number(number[1]):1;
-
-var dm=document.createElement('script');
-dm.src=tests[number][0];
-document.head.appendChild(dm);*/
-
 if(touchMode)NyaP=NyaPTouch;
 
 //create player
 var NP=new NyaP({
-	//src:((location.protocol==='file:'))?tests[number][2]:tests[number][1],
-	//muted:true,
-	//enableDanmaku:false,
 	volume:0.3,
 	danmakuModuleArg:{
 		TextDanmaku:{
@@ -67,8 +61,8 @@ var NP=new NyaP({
 		}
 	},
 	plugins:[
-		'https://hardbin.com/ipfs/QmdRDA2cZHSNutkUUJEgoaWWTTnV65NGWsS4QPmtriYLAp',
-		'https://hardbin.com/ipfs/Qmc6C7Yz6GFxwYHPcU1otsiHU1rfo5XBPuMv5nbRwgzzpp'
+		'plugin-demo.js',
+		'ipfsLoader.js'
 	],
 	danmakuSend:function(d,callback){
 		console.log(d);
@@ -80,16 +74,6 @@ var NP=new NyaP({
 	},
 	playerFrame:document.querySelector('#player_container'),
 });
-
-/*window.addEventListener('load',function(){
-	var danmakus=[],textDM={_:'text'};
-	for(var i=0;i<rawDanmakuList.length;i++){
-		var item=rawDanmakuList[i];
-		item.s=item.s*0.85;
-		danmakus.push(Object.assign(Object.create(textDM),{text:item.c,time:item.t,mode:item.ty,style:{fontSize:item.s,color:'#'+(item.co||'fff')},date:item.d,id:item.id}));
-	}
-	NP.Danmaku&&NP.Danmaku.loadList(danmakus);
-});*/
 
 NP.msg('this is a tip')
 NP.msg('this is an info','info')

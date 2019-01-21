@@ -6742,7 +6742,7 @@ function () {
             }
           }
         } catch (e) {
-          console.error(e);
+          this.log('', 'error', e);
         }
       }
     }
@@ -6777,6 +6777,9 @@ function () {
     key: "globalHandle",
     value: function globalHandle(name) {} //所有事件会触发这个函数
 
+  }, {
+    key: "log",
+    value: function log() {}
   }]);
 
   return NyaPEventEmitter;
@@ -6793,6 +6796,11 @@ function (_NyaPEventEmitter) {
     _classCallCheck(this, NyaPlayerCore);
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(NyaPlayerCore).call(this));
+
+    _this.log('%c https://dev.tencent.com/u/luojia/p/NyaP/git ', 'log', "background:#6f8fa2;color:#ccc;padding:.3em");
+
+    _this.log('Language:' + _i18n.i18n.lang, 'debug');
+
     opt = _this.opt = Object.assign({}, NyaPCoreOptions, opt);
     var $ = _this.$ = {
       document: document,
@@ -6948,7 +6956,7 @@ function (_NyaPEventEmitter) {
 
         _this.emit('coreLoad');
       }).catch(function (e) {
-        console.error(e);
+        _this.log('', 'error', e);
 
         _this.emit('coreLoadingError', e);
       });
@@ -7052,11 +7060,24 @@ function (_NyaPEventEmitter) {
         return plugin.name;
       });
       p.catch(function (e) {
-        console.error('pluginLoadingError', e);
+        _this2.log('pluginLoadingError', 'error', e);
 
         _this2.emit('pluginLoadingError', e);
       });
       return p;
+    }
+  }, {
+    key: "log",
+    value: function log(content) {
+      var _console;
+
+      var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'log';
+
+      for (var _len3 = arguments.length, styles = new Array(_len3 > 2 ? _len3 - 2 : 0), _key3 = 2; _key3 < _len3; _key3++) {
+        styles[_key3 - 2] = arguments[_key3];
+      }
+
+      (_console = console)[type].apply(_console, ["%c NyaP %c".concat(content), "background:#e0e0e0;padding:.2em", "background:unset"].concat(styles));
     }
   }, {
     key: "danmakuFrame",
@@ -8225,7 +8246,7 @@ function () {
         this.danmakuFrame[bool ? 'enable' : 'disable'](name);
         this.core.emit('danmakuModuleToggle', name, this.module(name).enabled);
       } catch (e) {
-        console.error(e);
+        this.core.log('', 'error', e);
         return false;
       }
 
@@ -8386,8 +8407,6 @@ for (var _i = 0; _i < _arr.length; _i++) {
 
   if (i18n.lang) break;
 }
-
-console.debug('Language:' + i18n.lang);
 
 },{"core-js/modules/es6.array.from":108,"core-js/modules/es6.regexp.match":117,"core-js/modules/es6.regexp.replace":118,"core-js/modules/es6.regexp.to-string":120,"core-js/modules/es6.string.iterator":121,"core-js/modules/es6.string.starts-with":122,"core-js/modules/es6.symbol":123,"core-js/modules/es7.symbol.async-iterator":125,"core-js/modules/web.dom.iterable":126}]},{},[130])
 

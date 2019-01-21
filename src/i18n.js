@@ -59,6 +59,5 @@ for(let lang of [...navigator.languages]){
 	}
 	if(i18n.lang)break;
 }
-console.debug('Language:'+i18n.lang)
 
 export {i18n};

@@ -3318,7 +3318,7 @@ class NyaPEventEmitter {
           if (h.apply(this, arg) === false) return;
         }
       } catch (e) {
-        console.error(e);
+        this.log('', 'error', e);
       }
     }
   }
@@ -3349,11 +3349,15 @@ class NyaPEventEmitter {
   globalHandle(name, ...arg) {} //所有事件会触发这个函数
 
 
+  log() {}
+
 }
 
 class NyaPlayerCore extends NyaPEventEmitter {
   constructor(opt) {
     super();
+    this.log('%c https://dev.tencent.com/u/luojia/p/NyaP/git ', 'log', "background:#6f8fa2;color:#ccc;padding:.3em");
+    this.log('Language:' + _i18n.i18n.lang, 'debug');
     opt = this.opt = Object.assign({}, NyaPCoreOptions, opt);
     const $ = this.$ = {
       document,
@@ -3485,7 +3489,7 @@ class NyaPlayerCore extends NyaPEventEmitter {
 
         this.emit('coreLoad');
       }).catch(e => {
-        console.error(e);
+        this.log('', 'error', e);
         this.emit('coreLoadingError', e);
       });
       return;
@@ -3571,10 +3575,14 @@ class NyaPlayerCore extends NyaPEventEmitter {
       return plugin.name;
     });
     p.catch(e => {
-      console.error('pluginLoadingError', e);
+      this.log('pluginLoadingError', 'error', e);
       this.emit('pluginLoadingError', e);
     });
     return p;
+  }
+
+  log(content, type = 'log', ...styles) {
+    console[type](`%c NyaP %c${content}`, "background:#e0e0e0;padding:.2em", "background:unset", ...styles);
   }
 
   get danmakuFrame() {
@@ -4558,7 +4566,7 @@ class Danmaku {
       this.danmakuFrame[bool ? 'enable' : 'disable'](name);
       this.core.emit('danmakuModuleToggle', name, this.module(name).enabled);
     } catch (e) {
-      console.error(e);
+      this.core.log('', 'error', e);
       return false;
     }
 
@@ -4677,8 +4685,6 @@ for (let lang of [...navigator.languages]) {
 
   if (i18n.lang) break;
 }
-
-console.debug('Language:' + i18n.lang);
 
 },{"core-js/modules/web.dom.iterable":56}]},{},[60])
 

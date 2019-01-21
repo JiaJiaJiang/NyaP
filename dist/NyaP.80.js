@@ -6952,6 +6952,9 @@ function (_NyaPlayerCore) {
       NyaP: {
         keydown: function keydown(e) {
           return NP._playerKeyHandle(e);
+        },
+        mousemove: function mousemove(e) {
+          _this._userActiveWatcher(true);
         }
       },
       document: {
@@ -6960,9 +6963,6 @@ function (_NyaPlayerCore) {
         }
       },
       main_video: {
-        /*'play,playing,stalled,pause,seeking,seeked':e=>{
-        	console.log(e.type)
-        },*/
         playing: function playing(e) {
           return NP._iconActive('play', true);
         },
@@ -7000,6 +7000,11 @@ function (_NyaPlayerCore) {
         },
         contextmenu: function contextmenu(e) {
           return e.preventDefault();
+        },
+        error: function error(e) {
+          NP.msg("\u89C6\u9891\u52A0\u8F7D\u9519\u8BEF:".concat(e.message), 'error');
+
+          _this.log('video error', 'error', e);
         }
       },
       danmaku_container: {
@@ -7149,6 +7154,38 @@ function (_NyaPlayerCore) {
   }
 
   _createClass(NyaP, [{
+    key: "_userActiveWatcher",
+    value: function _userActiveWatcher() {
+      var _this2 = this;
+
+      var active = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+      var delay = 5000,
+          t = Date.now();
+
+      if (active) {
+        this.stats.lastUserActive = t;
+
+        if (this.stats.userInactive) {
+          this.stats.userInactive = false;
+          this.player.classList.remove('user-inactive');
+        }
+      }
+
+      if (this.stats.userActiveTimer) return;
+      this.stats.userActiveTimer = setTimeout(function () {
+        _this2.stats.userActiveTimer = 0;
+        var now = Date.now();
+
+        if (now - _this2.stats.lastUserActive < delay) {
+          _this2._userActiveWatcher();
+        } else {
+          _this2.player.classList.add('user-inactive');
+
+          _this2.stats.userInactive = true;
+        }
+      }, delay - t + this.stats.lastUserActive);
+    }
+  }, {
     key: "_iconActive",
     value: function _iconActive(name, bool) {
       this.$["icon_span_".concat(name)].classList[bool ? 'add' : 'remove']('active_icon');
@@ -7156,17 +7193,17 @@ function (_NyaPlayerCore) {
   }, {
     key: "_setTimeInfo",
     value: function _setTimeInfo() {
-      var _this2 = this;
+      var _this3 = this;
 
       var a = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
       var b = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
       requestAnimationFrame(function () {
         if (a !== null) {
-          _this2.$.current_time.innerHTML = a;
+          _this3.$.current_time.innerHTML = a;
         }
 
         if (b !== null) {
-          _this2.$.total_time.innerHTML = b;
+          _this3.$.total_time.innerHTML = b;
         }
       });
     }
@@ -7303,7 +7340,7 @@ function (_NyaPlayerCore) {
   }, {
     key: "send",
     value: function send() {
-      var _this3 = this;
+      var _this4 = this;
 
       var color = this._.danmakuColor || this.opt.defaultDanmakuColor,
           text = this.$.danmaku_input.value,
@@ -7318,13 +7355,13 @@ function (_NyaPlayerCore) {
         time: time
       };
       var S = this.Danmaku.send(d, function (danmaku) {
-        if (danmaku && danmaku._ === 'text') _this3.$.danmaku_input.value = '';
+        if (danmaku && danmaku._ === 'text') _this4.$.danmaku_input.value = '';
         danmaku.highlight = true;
 
-        _this3.danmakuFrame.load(danmaku, true);
+        _this4.danmakuFrame.load(danmaku, true);
 
-        if (_this3.opt.autoHideDanmakuInput) {
-          _this3.danmakuInput(false);
+        if (_this4.opt.autoHideDanmakuInput) {
+          _this4.danmakuInput(false);
         }
       });
 
@@ -7400,12 +7437,12 @@ function (_NyaPlayerCore) {
   }, {
     key: "drawProgress",
     value: function drawProgress() {
-      var _this4 = this;
+      var _this5 = this;
 
       if (this._.drawingProgress) return;
       this._.drawingProgress = true;
       requestAnimationFrame(function () {
-        return _this4._progressDrawer();
+        return _this5._progressDrawer();
       });
     }
   }, {
@@ -7427,7 +7464,7 @@ var MsgBox =
 /*#__PURE__*/
 function () {
   function MsgBox(text, type, parentNode) {
-    var _this5 = this;
+    var _this6 = this;
 
     _classCallCheck(this, MsgBox);
 
@@ -7439,7 +7476,7 @@ function () {
       }
     });
     msg.addEventListener('click', function () {
-      return _this5.remove();
+      return _this6.remove();
     });
     this.parentNode = parentNode;
     this.setText(text);
@@ -7458,11 +7495,11 @@ function () {
 
       return setTimeout;
     }(function (time) {
-      var _this6 = this;
+      var _this7 = this;
 
       if (this.timeout) clearTimeout(this.timeout);
       this.timeout = setTimeout(function () {
-        return _this6.remove();
+        return _this7.remove();
       }, time || Math.max((this.texts ? this.texts.length : 0) * 0.6 * 1000, 5000));
     })
   }, {
@@ -7486,7 +7523,7 @@ function () {
   }, {
     key: "show",
     value: function show() {
-      var _this7 = this;
+      var _this8 = this;
 
       if (this.using) return;
       this.msg.style.opacity = 0;
@@ -7496,15 +7533,15 @@ function () {
       }
 
       this.msg.parentNode && setTimeout(function () {
-        _this7.using = true;
-        _this7.msg.style.opacity = 1;
+        _this8.using = true;
+        _this8.msg.style.opacity = 1;
       }, 0);
       this.setTimeout();
     }
   }, {
     key: "remove",
     value: function remove() {
-      var _this8 = this;
+      var _this9 = this;
 
       if (!this.using) return;
       this.using = false;
@@ -7516,7 +7553,7 @@ function () {
       }
 
       setTimeout(function () {
-        _this8.msg.parentNode && _this8.msg.parentNode.removeChild(_this8.msg);
+        _this9.msg.parentNode && _this9.msg.parentNode.removeChild(_this9.msg);
       }, 600);
     }
   }]);
@@ -7699,7 +7736,7 @@ function () {
             }
           }
         } catch (e) {
-          console.error(e);
+          this.log('', 'error', e);
         }
       }
     }
@@ -7734,6 +7771,9 @@ function () {
     key: "globalHandle",
     value: function globalHandle(name) {} //所有事件会触发这个函数
 
+  }, {
+    key: "log",
+    value: function log() {}
   }]);
 
   return NyaPEventEmitter;
@@ -7750,6 +7790,11 @@ function (_NyaPEventEmitter) {
     _classCallCheck(this, NyaPlayerCore);
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(NyaPlayerCore).call(this));
+
+    _this.log('%c https://dev.tencent.com/u/luojia/p/NyaP/git ', 'log', "background:#6f8fa2;color:#ccc;padding:.3em");
+
+    _this.log('Language:' + _i18n.i18n.lang, 'debug');
+
     opt = _this.opt = Object.assign({}, NyaPCoreOptions, opt);
     var $ = _this.$ = {
       document: document,
@@ -7905,7 +7950,7 @@ function (_NyaPEventEmitter) {
 
         _this.emit('coreLoad');
       }).catch(function (e) {
-        console.error(e);
+        _this.log('', 'error', e);
 
         _this.emit('coreLoadingError', e);
       });
@@ -8009,11 +8054,24 @@ function (_NyaPEventEmitter) {
         return plugin.name;
       });
       p.catch(function (e) {
-        console.error('pluginLoadingError', e);
+        _this2.log('pluginLoadingError', 'error', e);
 
         _this2.emit('pluginLoadingError', e);
       });
       return p;
+    }
+  }, {
+    key: "log",
+    value: function log(content) {
+      var _console;
+
+      var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'log';
+
+      for (var _len3 = arguments.length, styles = new Array(_len3 > 2 ? _len3 - 2 : 0), _key3 = 2; _key3 < _len3; _key3++) {
+        styles[_key3 - 2] = arguments[_key3];
+      }
+
+      (_console = console)[type].apply(_console, ["%c NyaP %c".concat(content), "background:#e0e0e0;padding:.2em", "background:unset"].concat(styles));
     }
   }, {
     key: "danmakuFrame",
@@ -8293,7 +8351,7 @@ function () {
         this.danmakuFrame[bool ? 'enable' : 'disable'](name);
         this.core.emit('danmakuModuleToggle', name, this.module(name).enabled);
       } catch (e) {
-        console.error(e);
+        this.core.log('', 'error', e);
         return false;
       }
 
@@ -8454,8 +8512,6 @@ for (var _i = 0; _i < _arr.length; _i++) {
 
   if (i18n.lang) break;
 }
-
-console.debug('Language:' + i18n.lang);
 
 },{"core-js/modules/es6.array.from":109,"core-js/modules/es6.regexp.match":118,"core-js/modules/es6.regexp.replace":119,"core-js/modules/es6.regexp.to-string":121,"core-js/modules/es6.string.iterator":122,"core-js/modules/es6.string.starts-with":124,"core-js/modules/es6.symbol":125,"core-js/modules/es7.symbol.async-iterator":127,"core-js/modules/web.dom.iterable":128}]},{},[131])
 

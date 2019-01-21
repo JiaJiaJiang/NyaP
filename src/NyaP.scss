@@ -227,6 +227,11 @@ LGPL license
 			overflow: initial;
 		}
 	}
+
+	&.user-inactive{
+		*{cursor:none !important;}
+	}
+
 	#msg_box{
 		right: 0;
 		bottom: 0;

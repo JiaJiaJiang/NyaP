@@ -110,6 +110,6 @@ copyright 2018 luojia@luojia.me
 				return false;
 			}
 		},true);
-		console.log('ipfsLoader Loaded');
+		NP.log('ipfsLoader Loaded');
 	}
 })

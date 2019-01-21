@@ -158,6 +158,9 @@ class NyaP extends NyaPlayerCore{
 		const events={
 			NyaP:{
 				keydown:e=>NP._playerKeyHandle(e),
+				mousemove:e=>{
+					this._userActiveWatcher(true);
+				}
 			},
 			document:{
 				'fullscreenchange,mozfullscreenchange,webkitfullscreenchange,msfullscreenchange':e=>{
@@ -166,9 +169,6 @@ class NyaP extends NyaPlayerCore{
 				}
 			},
 			main_video:{
-				/*'play,playing,stalled,pause,seeking,seeked':e=>{
-					console.log(e.type)
-				},*/
 				playing:e=>NP._iconActive('play',true),
 				'pause,stalled':e=>{
 					NP._iconActive('play',false);
@@ -191,6 +191,10 @@ class NyaP extends NyaPlayerCore{
 				_loopChange:e=>NP._iconActive('loop',e.value),
 				click:e=>NP.playToggle(),
 				contextmenu:e=>e.preventDefault(),
+				error:e=>{
+					NP.msg(`视频加载错误:${e.message}`,'error');
+					this.log('video error','error',e);
+				}
 			},
 			danmaku_container:{
 				click:e=>NP.playToggle(),
@@ -302,6 +306,27 @@ class NyaP extends NyaPlayerCore{
 			opt.playerFrame.appendChild(NP.player);
 
 		_licp.append('done');
+	}
+	_userActiveWatcher(active=false){
+		let delay=5000,t=Date.now();
+		if(active){
+			this.stats.lastUserActive=t;
+			if(this.stats.userInactive){
+				this.stats.userInactive=false;
+				this.player.classList.remove('user-inactive');
+			}
+		}
+		if(this.stats.userActiveTimer)return;
+		this.stats.userActiveTimer=setTimeout(()=>{
+			this.stats.userActiveTimer=0;
+			let now=Date.now();
+			if(now-this.stats.lastUserActive<delay){
+				this._userActiveWatcher();
+			}else{
+				this.player.classList.add('user-inactive');
+				this.stats.userInactive=true;
+			}
+		},delay-t+this.stats.lastUserActive);
 	}
 	_iconActive(name,bool){
 		this.$[`icon_span_${name}`].classList[bool?'add':'remove']('active_icon');

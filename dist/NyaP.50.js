@@ -3532,7 +3532,10 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
 
     const events = {
       NyaP: {
-        keydown: e => NP._playerKeyHandle(e)
+        keydown: e => NP._playerKeyHandle(e),
+        mousemove: e => {
+          this._userActiveWatcher(true);
+        }
       },
       document: {
         'fullscreenchange,mozfullscreenchange,webkitfullscreenchange,msfullscreenchange': e => {
@@ -3540,9 +3543,6 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
         }
       },
       main_video: {
-        /*'play,playing,stalled,pause,seeking,seeked':e=>{
-        	console.log(e.type)
-        },*/
         playing: e => NP._iconActive('play', true),
         'pause,stalled': e => {
           NP._iconActive('play', false);
@@ -3570,7 +3570,11 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
         progress: e => NP.drawProgress(),
         _loopChange: e => NP._iconActive('loop', e.value),
         click: e => NP.playToggle(),
-        contextmenu: e => e.preventDefault()
+        contextmenu: e => e.preventDefault(),
+        error: e => {
+          NP.msg(`视频加载错误:${e.message}`, 'error');
+          this.log('video error', 'error', e);
+        }
       },
       danmaku_container: {
         click: e => NP.playToggle(),
@@ -3702,6 +3706,33 @@ class NyaP extends _NyaPCore.NyaPlayerCore {
     if (opt.playerFrame instanceof HTMLElement) opt.playerFrame.appendChild(NP.player);
 
     _licp.append('done');
+  }
+
+  _userActiveWatcher(active = false) {
+    let delay = 5000,
+        t = Date.now();
+
+    if (active) {
+      this.stats.lastUserActive = t;
+
+      if (this.stats.userInactive) {
+        this.stats.userInactive = false;
+        this.player.classList.remove('user-inactive');
+      }
+    }
+
+    if (this.stats.userActiveTimer) return;
+    this.stats.userActiveTimer = setTimeout(() => {
+      this.stats.userActiveTimer = 0;
+      let now = Date.now();
+
+      if (now - this.stats.lastUserActive < delay) {
+        this._userActiveWatcher();
+      } else {
+        this.player.classList.add('user-inactive');
+        this.stats.userInactive = true;
+      }
+    }, delay - t + this.stats.lastUserActive);
   }
 
   _iconActive(name, bool) {
@@ -4105,7 +4136,7 @@ class NyaPEventEmitter {
           if (h.apply(this, arg) === false) return;
         }
       } catch (e) {
-        console.error(e);
+        this.log('', 'error', e);
       }
     }
   }
@@ -4136,11 +4167,15 @@ class NyaPEventEmitter {
   globalHandle(name, ...arg) {} //所有事件会触发这个函数
 
 
+  log() {}
+
 }
 
 class NyaPlayerCore extends NyaPEventEmitter {
   constructor(opt) {
     super();
+    this.log('%c https://dev.tencent.com/u/luojia/p/NyaP/git ', 'log', "background:#6f8fa2;color:#ccc;padding:.3em");
+    this.log('Language:' + _i18n.i18n.lang, 'debug');
     opt = this.opt = Object.assign({}, NyaPCoreOptions, opt);
     const $ = this.$ = {
       document,
@@ -4272,7 +4307,7 @@ class NyaPlayerCore extends NyaPEventEmitter {
 
         this.emit('coreLoad');
       }).catch(e => {
-        console.error(e);
+        this.log('', 'error', e);
         this.emit('coreLoadingError', e);
       });
       return;
@@ -4358,10 +4393,14 @@ class NyaPlayerCore extends NyaPEventEmitter {
       return plugin.name;
     });
     p.catch(e => {
-      console.error('pluginLoadingError', e);
+      this.log('pluginLoadingError', 'error', e);
       this.emit('pluginLoadingError', e);
     });
     return p;
+  }
+
+  log(content, type = 'log', ...styles) {
+    console[type](`%c NyaP %c${content}`, "background:#e0e0e0;padding:.2em", "background:unset", ...styles);
   }
 
   get danmakuFrame() {
@@ -4593,7 +4632,7 @@ class Danmaku {
       this.danmakuFrame[bool ? 'enable' : 'disable'](name);
       this.core.emit('danmakuModuleToggle', name, this.module(name).enabled);
     } catch (e) {
-      console.error(e);
+      this.core.log('', 'error', e);
       return false;
     }
 
@@ -4712,8 +4751,6 @@ for (let lang of [...navigator.languages]) {
 
   if (i18n.lang) break;
 }
-
-console.debug('Language:' + i18n.lang);
 
 },{"core-js/modules/web.dom.iterable":56}]},{},[59])
 

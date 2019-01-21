@@ -51,7 +51,7 @@ class Danmaku{
 			this.danmakuFrame[bool?'enable':'disable'](name);
 			this.core.emit('danmakuModuleToggle',name,this.module(name).enabled);
 		}catch(e){
-			console.error(e);
+			this.core.log('','error',e);
 			return false;
 		}
 		return true;

@@ -51,7 +51,7 @@ class NyaPEventEmitter{
 					if(h.apply(this,arg)===false)return;
 				}
 			}catch(e){
-				console.error(e);
+				this.log('','error',e);
 			}
 		}
 	}
@@ -74,11 +74,15 @@ class NyaPEventEmitter{
 		if(this._events[e].length===0)delete this._events[e];
 	}
 	globalHandle(name,...arg){}//所有事件会触发这个函数
+	log(){}
 }
 
 class NyaPlayerCore extends NyaPEventEmitter{
 	constructor(opt){
 		super();
+		this.log('%c https://dev.tencent.com/u/luojia/p/NyaP/git ','log',"background:#6f8fa2;color:#ccc;padding:.3em");
+		this.log('Language:'+i18n.lang,'debug');
+
 		opt=this.opt=Object.assign({},NyaPCoreOptions,opt);
 		const $=this.$={document,window,NP:this};//for save elements that has an id
 		this.plugins={};
@@ -172,7 +176,7 @@ class NyaPlayerCore extends NyaPEventEmitter{
 				_lilp.append('done');
 				this.emit('coreLoad');
 			}).catch(e=>{
-				console.error(e);
+				this.log('','error',e);
 				this.emit('coreLoadingError',e);
 			})
 			return;
@@ -245,10 +249,13 @@ class NyaPlayerCore extends NyaPEventEmitter{
 			return plugin.name;
 		});
 		p.catch(e=>{
-			console.error('pluginLoadingError',e);
+			this.log('pluginLoadingError','error',e);
 			this.emit('pluginLoadingError',e);
 		});
 		return p;
+	}
+	log(content,type='log',...styles){
+		console[type](`%c NyaP %c${content}`,"background:#e0e0e0;padding:.2em","background:unset",...styles)
 	}
 	get danmakuFrame(){return this.Danmaku.danmakuFrame;}
 	get player(){return this._.player;}

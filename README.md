@@ -1,9 +1,11 @@
 NyaP
 ====
 
+一个HTML5播放器
+
 ![toDataURI-logo](https://jiajiajiang.github.io/staticRepo/NyaP/logo.png)
 
-一个HTML5播放器
+在线演示:[SimpleDanmakuSite](https://danmaku.luojia.me/player/?id=3)
 
 ## 功能
 * 播放视频

@@ -3,7 +3,7 @@ NyaP
 
 一个HTML5播放器
 
-![toDataURI-logo](https://jiajiajiang.github.io/staticRepo/NyaP/logo.png)
+![logo](https://jiajiajiang.github.io/staticRepo/NyaP/logo.png)
 
 在线演示:[SimpleDanmakuSite](https://danmaku.luojia.me/player/?id=3)
 

@@ -3,7 +3,7 @@ NyaP
 
 ![toDataURI-logo](https://jiajiajiang.github.io/staticRepo/NyaP/logo.png)
 
-一个HTML5弹幕播放器
+一个HTML5播放器
 
 ## 功能
 * 播放视频

@@ -6801,7 +6801,7 @@ function (_NyaPEventEmitter) {
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(NyaPlayerCore).call(this));
 
-    _this.log('%c https://dev.tencent.com/u/luojia/p/NyaP/git ', 'log', "background:#6f8fa2;color:#ccc;padding:.3em");
+    _this.log('%c https://github.com/JiaJiaJiang/NyaP ', 'log', "background:#6f8fa2;color:#ccc;padding:.3em");
 
     _this.log('Language:' + _i18n.i18n.lang, 'debug');
 

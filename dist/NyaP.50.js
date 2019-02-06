@@ -4178,7 +4178,7 @@ class NyaPEventEmitter {
 class NyaPlayerCore extends NyaPEventEmitter {
   constructor(opt) {
     super();
-    this.log('%c https://dev.tencent.com/u/luojia/p/NyaP/git ', 'log', "background:#6f8fa2;color:#ccc;padding:.3em");
+    this.log('%c https://github.com/JiaJiaJiang/NyaP ', 'log', "background:#6f8fa2;color:#ccc;padding:.3em");
     this.log('Language:' + _i18n.i18n.lang, 'debug');
     opt = this.opt = Object.assign({}, NyaPCoreOptions, opt);
     const $ = this.$ = {

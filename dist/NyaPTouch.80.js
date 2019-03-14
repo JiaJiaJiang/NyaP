@@ -1479,6 +1479,11 @@ function init(DanmakuFrame, DanmakuFrameModule) {
             d,
             time = D.frame.time;
         if (D.danmakuCheckTime === time || !D.danmakuCheckSwitch) return;
+
+        if (D.danmakuCheckTime < time - 5000) {
+          this.recheckIndexMark(time - 5000); //ignore danmakus expired over 5 sec
+        }
+
         if (D.list.length) for (; D.indexMark < D.list.length && (d = D.list[D.indexMark]) && d.time <= time; D.indexMark++) {
           //add new danmaku
           if (D.options.screenLimit > 0 && D.DanmakuText.length >= D.options.screenLimit) {
@@ -1708,12 +1713,12 @@ function init(DanmakuFrame, DanmakuFrameModule) {
       }
     }, {
       key: "resetTimeOfDanmakuOnScreen",
-      value: function resetTimeOfDanmakuOnScreen(cTime) {
+      value: function resetTimeOfDanmakuOnScreen() {
         var _this4 = this;
 
+        var cTime = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.frame.time;
         //cause the position of the danmaku is based on time
         //and if you don't want these danmaku on the screen to disappear after seeking,their time should be reset
-        if (cTime === undefined) cTime = this.frame.time;
         this.DanmakuText.forEach(function (t) {
           if (!t.danmaku) return;
           t.time = cTime - (_this4.danmakuMoveTime - t.time);

@@ -39,6 +39,7 @@ const NyaPCoreOptions={
 
 	//other common options
 	playerFrame:null,//the element for containing the player
+	plugins:[],//NyaP插件地址
 }
 
 

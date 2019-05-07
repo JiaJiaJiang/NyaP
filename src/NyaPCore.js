@@ -13,29 +13,32 @@ const _=i18n._;
 //default options
 const NyaPCoreOptions={
 	//for video
-	muted:false,
-	volume:1,
-	loop:false,
+	muted:false,//set video muted
+	volume:1,//set volume (0 ~ 1) 
+	loop:false,//set video loop
 	//for danmaku
-	enableDanmaku:true,
-	danmakuModule:['TextDanmaku'],
+	enableDanmaku:true,//set to false to disable danmaku feature (related buttons will not be created)
+	danmakuModule:['TextDanmaku'],//not your option now
 	danmakuModuleArg:{
 		TextDanmaku:{
 			defaultStyle:{},
 			options:{},
 		}
 	},
-	loadingInfo:{
+	loadingInfo:{//text replacement at loading time (for left-bottom message)
 		doneText:'ok',
 		contentSpliter:'...',
 	},
 	//for sending danmaku
 	defaultDanmakuColor:null,//a hex color(without #),when the color inputed is invalid,this color will be applied
-	defaultDanmakuMode:0,//right
+	defaultDanmakuMode:0,//0: right to left. see: https://github.com/JiaJiaJiang/danmaku-text#%E5%BC%B9%E5%B9%95%E5%AF%B9%E8%B1%A1%E6%A0%BC%E5%BC%8F
 	defaultDanmakuSize:24,
 	danmakuSend:(d,callback)=>{callback(false);},//the func for sending danmaku
 	//for player
 	source:(name,address,callback)=>callback(name,address),
+
+	//other common options
+	playerFrame:null,//the element for containing the player
 }
 
 

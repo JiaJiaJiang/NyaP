@@ -21,13 +21,13 @@ const _=i18n._;
 //NyaPTouch options
 const NyaPTouchOptions={
 	danmakuColors:['fff','6cf','ff0','f00','0f0','00f','f0f','000'],//colors in the danmaku style pannel
-	danmakuModes:[0,3,2,1],//0:right	1:left	2:bottom	3:top
-	danmakuSizes:[20,24,36],
-	dragToSeek:true,
-	dragToChangeVolume:true,
-	bottomControlHeight:50,
+	danmakuModes:[0,3,2,1],//0:right	1:left	2:bottom	3:top   ;; mode in the danmaku style pannel
+	danmakuSizes:[20,24,36],//danmaku size buttons in the danmaku style pannel
+	dragToSeek:true,//drag ←→ direction on the video to seek
+	dragToChangeVolume:true,//drag ↑↓ direction on the video to change volume
+	bottomControlHeight:50,//control bar height
 	progressBarHeight:14,
-	progressPad:10,
+	progressPad:10,//progress bar side margin
 }
 
 //touch player

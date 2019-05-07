@@ -24,8 +24,8 @@ const _=i18n._;
 const NyaPOptions={
 	autoHideDanmakuInput:true,//hide danmakuinput after danmaku sending
 	danmakuColors:['fff','6cf','ff0','f00','0f0','00f','f0f','000'],//colors in the danmaku style pannel
-	danmakuModes:[0,3,2,1],//0:right	1:left	2:bottom	3:top
-	danmakuSizes:[20,24,36],
+	danmakuModes:[0,3,2,1],//0:right	1:left	2:bottom	3:top  ;; mode in the danmaku style pannel
+	danmakuSizes:[20,24,36],//danmaku size buttons in the danmaku style pannel
 }
 
 //normal player

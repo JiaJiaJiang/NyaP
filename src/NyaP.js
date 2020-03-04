@@ -6,7 +6,7 @@ LGPL license
 
 import {i18n} from './i18n.js';
 import O2H from '../lib/Object2HTML/Object2HTML.js'
-import {NyaPlayerCore,
+import {NyaPCore,
 		addEvents,
 		requestFullscreen,
 		exitFullscreen,
@@ -14,7 +14,7 @@ import {NyaPlayerCore,
 		setAttrs,
 		padTime,
 		limitIn,
-		toArray} from './NyaPCore.js';
+		toArray} from './core.js';
 import ResizeSensor from '../lib/danmaku-frame/lib/ResizeSensor.js';
 
 const _=i18n._;
@@ -29,7 +29,7 @@ const NyaPOptions={
 }
 
 //normal player
-class NyaP extends NyaPlayerCore{
+class NyaP extends NyaPCore{
 	constructor(opt){
 		super(Object.assign({},NyaPOptions,opt));
 		opt=this.opt;

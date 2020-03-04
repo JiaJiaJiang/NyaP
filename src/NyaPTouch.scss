@@ -2,11 +2,11 @@
 Copyright luojia@luojia.me
 LGPL license
 */
-@import 'NyaPCore.scss';
+@import 'NyaPCommon.scss';
 
 .NyaPTouch{
 	@extend .NyaP_fullfill;
-	@include NyaPCoreStyles;
+	@include NyaPCommonStyles;
 
 	overflow: hidden;
 

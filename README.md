@@ -1,7 +1,7 @@
 NyaP
 ====
 
-一个HTML5播放器
+一个HTML5播放器框架
 
 ![logo](https://jiajiajiang.github.io/staticRepo/NyaP/logo.png)
 
@@ -29,3 +29,15 @@ NyaP
 * 2019/1/20 : 添加插件功能，插件样本请看`demo/plugin-demo.js`。更具体的用法还是有人想用我再写文档吧。
 
 
+用于被更外层播放器外壳引用
+核心
+	事件
+	配置
+	log
+	播放控制
+	i18n功能
+	UI接口信息提供
+		log
+	插件加载
+		多插件单文件加载
+	组件加载（编译时）

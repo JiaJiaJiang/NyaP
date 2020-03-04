@@ -2,11 +2,11 @@
 Copyright luojia@luojia.me
 LGPL license
 */
-@import 'NyaPCore.scss';
+@import 'NyaPCommon.scss';
 
 .NyaP{
 	@extend .NyaP_fullfill;
-	@include NyaPCoreStyles;
+	@include NyaPCommonStyles;
 
 	$control_bar_height:30px;
 

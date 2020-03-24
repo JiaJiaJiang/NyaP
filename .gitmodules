@@ -1,6 +1,0 @@
-[submodule "lib/NyaP-Core"]
-	path = lib/NyaP-Core
-	url = https://github.com/JiaJiaJiang/NyaP-Core.git
-[submodule "lib/NyaP-Danmaku"]
-	path = lib/NyaP-Danmaku
-	url = https://github.com/JiaJiaJiang/NyaP-Danmaku.git

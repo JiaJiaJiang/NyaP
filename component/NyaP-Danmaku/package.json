@@ -1,0 +1,24 @@
+{
+  "name": "nyap-danmaku",
+  "version": "0.1.0",
+  "description": "danmaku module for NyaP",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JiaJiaJiang/NyaP-Danmaku.git"
+  },
+  "keywords": [
+    "nyap",
+    "danmaku"
+  ],
+  "author": "luojia@luojia.me",
+  "license": "LGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/JiaJiaJiang/NyaP-Danmaku/issues"
+  },
+  "homepage": "https://github.com/JiaJiaJiang/NyaP-Danmaku#readme",
+  "dependencies": {}
+}

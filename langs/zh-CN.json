@@ -21,4 +21,11 @@
 	"Loading danmaku frame":"加载弹幕框架",
 	"danmaku input(Enter)":"弹幕输入框(回车)",
 	"Failed to change to fullscreen mode":"无法切换到全屏模式",
+
+	"loading_core":"加载核心",
+	"loading_plugin":"加载插件",
+	"loading_danmakuFrame":"加载弹幕框架",
+	"creating_player":"创建播放器",
+	"loading_danmaku":"加载弹幕",
+	"loading_video":"加载视频"
 }

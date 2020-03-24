@@ -1,0 +1,27 @@
+{
+  "name": "nyap-core",
+  "version": "0.1.1",
+  "description": "NyaPlayer core",
+  "main": "src/core.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JiaJiaJiang/NyaP-Core.git"
+  },
+  "keywords": [
+    "NyaP",
+    "player"
+  ],
+  "author": "luojia@luojia.me",
+  "license": "LGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/JiaJiaJiang/NyaP-Core/issues"
+  },
+  "homepage": "https://github.com/JiaJiaJiang/NyaP-Core#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "@juggle/resize-observer": "^3.1.1"
+  }
+}

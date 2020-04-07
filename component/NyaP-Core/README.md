@@ -15,6 +15,7 @@ Want to build a customized NyaP ? Take a look at project [NyaP](https://github.c
 * class : [NyaPlayerCore](#Class: NyaPlayerCore)
 * class : [DomTools](#Class: DomTools)
 * class : [i18n](#Class: i18n)
+* class: [Utils](#Class: Utils)
 
 
 ## Concepts
@@ -153,7 +154,17 @@ A debug message pushed.
 
 Default options for NyaP Core.
 
+#### static DomTools
 
+class : [DomTools](#Class: DomTools)
+
+#### static i18n
+
+class : [i18n](#Class: i18n)
+
+#### static Utils
+
+class: [Utils](#Class: Utils)
 
 #### debugs 
 
@@ -179,13 +190,15 @@ The entry for all plugins.
 
 **[i18n](file:///Users/luojia/Dev/GitHub/NyaP-Core/#Class: i18n) instanse**
 
-#### video : getter
+#### getter video
 
-**The video element**
+The video element
 
-#### src : getter
+#### getter videoSize
 
-**The raw src set by [setVideoSrc](#setVideoSrc(src))**
+#### getter videoSrc
+
+The raw src set by [setVideoSrc](#setVideoSrc(src))
 
 
 
@@ -375,7 +388,7 @@ DomTools.addEvents([window,document],{
 
 *Return current fullscreen element.*
 
-#### static requestFullscreen(element)
+#### static requestFullscreen(element=document)
 
 Request fullscreen for the element.
 
@@ -383,14 +396,63 @@ Request fullscreen for the element.
 
 *Return the promise returned by the requestFullscreen function.*
 
-#### static exitFullscreen()
+#### static exitFullscreen(element=document)
 
 Exit fullscreen.
 
+* element : Specify the element in some plantforms.
+
 *Return the promise returned by the exitFullscreen function.*
 
-#### static isFullscreen()
+#### static isFullscreen(element=document)
 
 Check if the broswer is in fullscreen mode.
 
+* element : Specify the element in some plantforms.
+
 *Return true or false.*
+
+#### static Object2HTML(o2hObj)
+
+See : (Object2HTML)[https://github.com/JiaJiaJiang/Object2HTML]
+
+## Class: Utils
+
+#### static clamp(num,min,max)
+
+Limit a number between the range.
+
+* num : Input number.
+* min : lower border.
+* max : higher border.
+
+*Return the result.*
+
+#### static isObject(obj)
+
+*Return if the input is an object, not null or other things.*
+
+#### static deepAssign(target,...args)
+
+Just like `Object.assign`, but also works with objects on properties.
+
+#### static setAttrs(ele,obj)
+
+Set multi attributes on an element.
+
+* ele : The element.
+* obj : Attributes in the object.
+
+*Return the element.*
+
+#### static rand(min, max)
+
+*Return an integer between `min` and `max`.*
+
+#### static animationFrameLoop(cb)
+
+Do a loop call to the cb using `requestAnimationFrame`, until the cb returns `false`.
+
+#### static requestIdleCallback(cb)
+
+A simple polyfill of global requestIdleCallback.

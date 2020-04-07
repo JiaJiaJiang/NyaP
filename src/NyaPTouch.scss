@@ -41,6 +41,9 @@ LGPL license
 			position: fixed;
 		}
 	}
+	&[playerMode="fullPage"]{
+		position: fixed;
+	}
 
 	#control_bottom{
 		top: 100%;

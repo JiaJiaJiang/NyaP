@@ -60,6 +60,7 @@ const NyaPCommonOptions={
 class NyaPCommon extends NyaPlayerCore{
 	get frame(){return this._.player||this.videoFrame;}
 	get player(){return this._.player;}
+	get currentPlayerMode(){return this.player.getAttribute('playerMode')||'normal';}
 	get _danmakuEnabled(){return this.opt.danmaku.enable;}
 	constructor(opt){
 		super(Utils.deepAssign({},NyaPCommonOptions,opt));
@@ -91,9 +92,10 @@ class NyaPCommon extends NyaPlayerCore{
 		);
 
 		//add private vars
-		this._.playerMode='normal';
 		this._.selectorCache={};
 		this._.volumeBox=new MsgBox('','info',this.$('#msg_box'));
+		this._.ios=!!navigator.userAgent.match(/i[A-z]+?; CPU .+?like Mac OS/);
+		this._.mobileX5=!!navigator.userAgent.match(/MQQBrowser/);
 
 		//receive stat requests
 		this.on('stat',stat=>{
@@ -117,7 +119,6 @@ class NyaPCommon extends NyaPlayerCore{
 			},80);
 		}
 		DomTools.addEvents(this.video,{
-			
 			loadedmetadata:e=>{
 				this.statResult('loading_video',null);
 				clearInterval(this._.loadingAnimationInterval);
@@ -126,10 +127,10 @@ class NyaPCommon extends NyaPlayerCore{
 					lf.parentNode.removeChild(lf);
 			},
 			error:e=>{
-				this.statResult('loading_video',e);
+				this.statResult('loading_video',e?.message);
 				clearInterval(this._.loadingAnimationInterval);
-				this.$('#loading_frame').style.transform="";
-				this.$('#loading_frame').innerHTML='(๑• . •๑)';
+				this.$('#loading_anime').innerHTML='(๑• . •๑)';
+				this.$('#loading_anime').style.transform="";
 			},
 		});
 
@@ -140,6 +141,16 @@ class NyaPCommon extends NyaPlayerCore{
 				this.Danmaku=new NyaPDanmaku(this);
 				this.videoFrame.insertBefore(this.danmakuContainer,this.$('#loading_frame'));
 			});
+		}
+
+		//stupid x5 core
+		if(this._.mobileX5){
+			try{
+				this.Danmaku.modules.TextDanmaku.setRendererMode(1);//force css mode
+				this.Danmaku.modules.TextDanmaku.text2d.supported=false;
+			}catch(e){
+				alert(e.message);
+			}
 		}
 	}
 	$(selector,useCache=true){//querySelector for the frame element
@@ -153,30 +164,34 @@ class NyaPCommon extends NyaPlayerCore{
 		return this.frame.querySelectorAll(selector);
 	}
 	playerMode(mode='normal'){
-		if(mode==='normal' && this._.playerMode===mode)return;
-		if(this._.playerMode==='fullPage'){
-			this.player.style.position='';
-		}else if(this._.playerMode==='fullScreen'){
-			DomTools.exitFullscreen();
+		let ios=this._.ios;
+		if(mode==='normal' && this.currentPlayerMode===mode)return;
+		if(this.currentPlayerMode==='fullScreen'){
+			ios||DomTools.exitFullscreen().catch(e=>{});
 		}
-		if(mode!=='normal' && this._.playerMode===mode)mode='normal';//back to normal mode
+		if(mode!=='normal' && this.currentPlayerMode===mode)mode='normal';//back to normal mode
 		switch(mode){
 			case 'fullPage':{
-				this.player.style.position='fixed';
 				this.player.setAttribute('playerMode','fullPage');
+				this.emit('playerModeChange',mode);
 				break;
 			}
 			case 'fullScreen':{
-				this.player.setAttribute('playerMode','fullScreen');
-				DomTools.requestFullscreen(this.player);
+				if(ios){//for ios, only fullscreen video, not the player
+					DomTools.requestFullscreen(this.video);
+					break;
+				}
+				DomTools.requestFullscreen(this.player).then(()=>{
+					this.player.setAttribute('playerMode','fullScreen');
+					this.emit('playerModeChange',mode);
+				}).catch(e=>{alert('Failed to enter screen mode')});
 				break;
 			}
 			default:{
 				this.player.setAttribute('playerMode','normal');
+				this.emit('playerModeChange',mode);
 			}
 		}
-		this._.playerMode=mode;
-		this.emit('playerModeChange',mode);
 	}
 	msg(text,type='tip'){//type:tip|info|error
 		let msg=new MsgBox(text,type,this.$('#msg_box'));

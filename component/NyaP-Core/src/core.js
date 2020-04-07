@@ -74,7 +74,16 @@ class NyaPlayerCore extends NyaPEventEmitter{
 	i18n=new i18n();//core i18n instanse
 	_={//for private variables, do not change vars here
 		videoSrc:'',
-		video:DomTools.Object2HTML({_:'video',attr:{id:'main_video'}}),
+		video:DomTools.Object2HTML({_:'video',attr:{id:'main_video',
+													'webkit-playsinline':'',
+													'playsinline':'',
+													'x5-playsinline':'',
+													'x-webkit-airplay':'allow',
+													'controlsList':"nodownload" ,
+													'x5-video-player-type':'h5',
+													'preload':'auto',
+													'poster':'',
+												}}),
 		urlResolvers:[],//functions to resolve urls. Item: [priority,func]
 	};
 	get video(){return this._.video;}//get video element

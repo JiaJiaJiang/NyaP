@@ -39,9 +39,8 @@ class DanmakuFrame{
 		this.media||(this.timeBase=Date.now()-t);
 		this.moduleFunction('time',t);//let all mods know when the time be set
 	}
-	get time(){
-		return this.media?(this.media.currentTime*1000)|0:(Date.now()-this.timeBase);
-	}
+	get time(){return this.media?(this.media.currentTime*1000):(Date.now()-this.timeBase);}
+	get area(){return this.width*this.height;}
 	_opt;
 	rate=1;
 	timeBase=0;//for no fixed duration evn
@@ -72,15 +71,15 @@ class DanmakuFrame{
 		},0);
 		
 		Utils.animationFrameLoop(()=>{//fps recorder
-			let rec=this.fpsRec,l1=rec.length,l2=l1-1;
+			let rec=this.fpsRec,length=rec.length;
 			//move left
 			rec.copyWithin(rec,1);
-			rec[l2]=Date.now();//set this frame's time
+			rec[length-1]=Date.now();//set this frame's time
 			let result=0;
-			for(let i=1;i<l1;i++){//weighted average
+			for(let i=1;i<length;i++){//weighted average
 				result+=i*(rec[i]-rec[i-1]);
 			}
-			result/=l2;
+			result/=length*(length-1)/2;
 			this.fps=1000/result;
 		});
 
@@ -95,6 +94,7 @@ class DanmakuFrame{
 			}
 			this.container.style.display='';
 			this.core.emit('danmakuFrameToggle',true);
+			this.core.debug('danmaku frame enabled');
 			return;
 		}else if(!name){
 			throw(new Error(`Wrong name: ${name}`));
@@ -110,10 +110,9 @@ class DanmakuFrame{
 			this.pause();
 			this.moduleFunction('clear');
 			this.enabled=false;
-			this.working=false;
 			this.container.style.display='none';
 			this.core.emit('danmakuFrameToggle',false);
-			console.warn(new Error('danmaku frame disabled'));
+			this.core.debug('danmaku frame disabled');
 			return;
 		}
 		let module=this.modules[name];

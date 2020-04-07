@@ -17,7 +17,7 @@ class textModuleTemplate{
 	enable(){}//this module is enabled
 	disable(){}//this module is disabled
 	newDanmaku(){}//add danmaku to the screen
-	deleteTextObject(){}
+	deleteRelatedTextObject(){}
 }
 
 export default textModuleTemplate;

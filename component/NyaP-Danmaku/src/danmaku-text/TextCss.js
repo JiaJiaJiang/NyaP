@@ -16,7 +16,6 @@ class TextCss extends Template{
 		this.container=document.createElement('div');//for text canvas
 		this.container.classList.add(`${dText.randomText}_fullfill`);
 		this.container.id=`${dText.randomText}_textCanvasContainer`;
-		// dText.container.appendChild(this.container);
 	}
 	_toggle(s){
 		let D=this.dText,T=D.frame.time;
@@ -26,6 +25,9 @@ class TextCss extends Template{
 			if(s){requestAnimationFrame(()=>this._move(t));}
 			else{this._move(t,T);}
 		}
+	}
+	clear(){
+		this.container.innerHTML='';
 	}
 	pause(){
 		this._toggle(false);
@@ -39,7 +41,7 @@ class TextCss extends Template{
 	_move(t,T){
 		if(!t.danmaku)return;
 		if(T===undefined)T=this.dText.frame.time+500000;
-		t._cache.style.transform=`translate3d(${(((this.dText._calcSideDanmakuPosition(t,T)-t.estimatePadding)*10)|0)/10}px,${t.style.y-t.estimatePadding}px,0)`;
+		t._cache.style.transform=`translate(${(((this.dText._calcSideDanmakuPosition(t,T)-t.estimatePadding)*10)|0)/10}px,${t.style.y-t.estimatePadding}px)`;
 	}
 	resetPos(){
 		this.pause();
@@ -52,6 +54,7 @@ class TextCss extends Template{
 		t._cache.parentNode&&this.container.removeChild(t._cache);
 	}
 	enable(){
+		this.dText.useImageBitmap=false;
 		requestAnimationFrame(()=>{
 			this.dText.DanmakuText.forEach(t=>this.newDanmaku(t));
 		});
@@ -60,7 +63,7 @@ class TextCss extends Template{
 		this.container.innerHTML='';
 	}
 	newDanmaku(t){
-		t._cache.style.transform=`translate3d(${t.style.x-t.estimatePadding}px,${t.style.y-t.estimatePadding}px,0)`;
+		t._cache.style.transform=`translate(${t.style.x-t.estimatePadding}px,${t.style.y-t.estimatePadding}px)`;
 		this.container.appendChild(t._cache);
 		t.danmaku.mode<2&&!this.dText.paused&&requestAnimationFrame(()=>this._move(t));
 	}

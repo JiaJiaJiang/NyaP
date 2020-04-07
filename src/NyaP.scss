@@ -23,6 +23,9 @@ LGPL license
 			}
 		}
 	}
+	&[playerMode="fullPage"]{
+		position: fixed;
+	}
 
 	.active_icon path{fill-opacity:1!important;}
 

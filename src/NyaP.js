@@ -239,7 +239,7 @@ class NyaP extends NyaPCommon{
 		});
 		DomTools.addEvents(document,{
 			'fullscreenchange,mozfullscreenchange,webkitfullscreenchange,msfullscreenchange':e=>{
-				if(NP._.playerMode=='fullScreen' && !DomTools.isFullscreen())
+				if(NP.currentPlayerMode=='fullScreen' && !DomTools.isFullscreen())
 					NP.playerMode('normal');
 			}
 		});
@@ -349,7 +349,7 @@ class NyaP extends NyaPCommon{
 				this._danmakuEnabled&&this.danmakuInput();break;
 			}
 			case 'Escape':{//exit full page mode
-				if(this._.playerMode==='fullPage'){
+				if(this.currentPlayerMode==='fullPage'){
 					this.playerMode('normal');break;
 				}
 				return;

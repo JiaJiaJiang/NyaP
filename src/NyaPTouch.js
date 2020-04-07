@@ -20,6 +20,7 @@ const NyaPTouchOptions={
 	bottomControlHeight:50,//control bar height
 	progressBarHeight:14,
 	progressPad:10,//progress bar side margin
+	fullScreenToFullPageIfNotSupported:true,
 }
 
 //touch player
@@ -41,6 +42,7 @@ class NyaPTouch extends NyaPCommon{
 
 		this.stat('creating_player');
 
+		let fullScreenToFullPage=opt.fullScreenToFullPageIfNotSupported&&this._.ios;
 		//create player elements
 		this._.player=O2H({
 			_:'div',attr:{class:'NyaPTouch',id:'NyaPTouch'},child:[
@@ -66,7 +68,7 @@ class NyaPTouch extends NyaPCommon{
 								]},
 							]},
 							{_:'span',prop:{id:'progress_rightside_button'},child:[
-								icon('fullScreen',{click:e=>this.playerMode('fullScreen')}),
+								icon(fullScreenToFullPage?'fullPage':'fullScreen',{click:e=>this.playerMode(fullScreenToFullPage?'fullPage':'fullScreen')}),
 							]},
 						]},
 						{_:'div',attr:{id:'control_bottom_second'},child:[
@@ -105,7 +107,8 @@ class NyaPTouch extends NyaPCommon{
 		});
 		$('#control_bottom').style.marginTop=`-${this.opt.bottomControlHeight}px`;
 
-		//add touch drag event to video
+		//add extra touch event to video
+		extendEvent.doubletouch($('#main_video'));
 		extendEvent.touchdrag($('#main_video'),{allowMultiTouch:false,preventDefaultX:true});
 		extendEvent.touchdrag($('#control_bottom'),{allowMultiTouch:false,preventDefaultY:true});
 
@@ -130,7 +133,7 @@ class NyaPTouch extends NyaPCommon{
 					e.preventDefault();
 					NP.controlsToggle();
 				},
-				dblclick:e=>NP.playToggle(),
+				doubletouch:e=>NP.playToggle(),
 				timeupdate:(e)=>{
 					let t=Date.now();
 					if(t-NP._.lastTimeUpdate <30)return;
@@ -295,7 +298,7 @@ class NyaPTouch extends NyaPCommon{
 		});
 		DomTools.addEvents(document,{
 			'fullscreenchange,mozfullscreenchange,webkitfullscreenchange,msfullscreenchange':e=>{
-				if(NP._.playerMode=='fullScreen' && !DomTools.isFullscreen())
+				if(NP.currentPlayerMode=='fullScreen' && !DomTools.isFullscreen())
 					NP.playerMode('normal');
 			},
 			visibilitychange:e=>{
@@ -419,45 +422,58 @@ var extendEvent={//扩展事件
 			}
 		});
 	},
-	doubletouch:function(element,opt){
-		let lastTouches=[],lastStartTime=0,fired=false,checking=false,started=false;
+	doubletouch:function(element,opt){//enable doubletouch event
+		//触摸中出现离开则开始定时
+		//定时400毫秒内出现离开事件后判断触点位置组，
+		let lastTouches=[],//store touches array of a previous event
+			currentTouches=[],//e.touches
+			checking=false,//checking if the event should be fired
+			checkTimeout=0;//setTimeout
+		function reset(){
+			clearTimeout(checkTimeout);
+			lastTouches=[];
+			currentTouches=[];
+			checking=false;
+		}
 		opt=Object.assign({},extendEventDefaultOpt.doubletouch,opt);
 		element.addEventListener('touchstart',function(e){
-			let Ts=(e.touches.length>1)?Utils.toArray(e.touches):[e.touches[0]],lT=lastTouches;
-			lastTouches=Ts;
-			if(!started){
-				lastStartTime=e.timeStamp;
-				started=true;
-			}else if(e.timeStamp-lastStartTime>400){
-				started=false;
-				return;
-			}
-			if(Ts.length!==lT.length || !checking)return;
-			let lP=[];
-			for(let i=Ts.length;i--;)
-				lP.push([lT[i].clientX,lT[i].clientY]);
-			for(let i=Ts.length;i--;){
-				for(let i2=lP.length;i2--;){
-					if(lineLength(Ts[i].clientX,Ts[i].clientY,lP[i2][0],lP[i2][1])<=6){
-						lP.splice(i2,1);
-					}
-				}
-			}
-			if(lP.length!==0)return;
-			if(opt.preventDefault)e.preventDefault();
-			let event=new TouchEvent('doubletouch',e);
-			event.points=Ts.length;
-			element.dispatchEvent(event);
-			started=checking=false;
-			fired=true;
+			currentTouches=e.touches;//touches of this touch event
 		});
 		element.addEventListener('touchend',function(e){
-			if(e.touches.length===0 && !fired){
+			if(e.touches.length!==0)return;
+			let _lastTouches=lastTouches;
+			lastTouches=currentTouches;
+			if(checking){
+				clearTimeout(checkTimeout);
+				do{
+					if(_lastTouches.length!==currentTouches.length)break;//points not match
+					//compare evert points' position
+					let lP=[];
+					for(let i=_lastTouches.length;i--;)//get points of last touches
+						lP.push([_lastTouches[i].clientX,_lastTouches[i].clientY]);
+					for(let i=currentTouches.length;i--;){
+						for(let i2=lP.length;i2--;){
+							//remove points that are not more than 6 pixels far from last point
+							if(lineLength(currentTouches[i].clientX,currentTouches[i].clientY,lP[i2][0],lP[i2][1])<=6){
+								lP.splice(i2,1);
+							}
+						}
+					}
+					if(lP.length!==0)break;//some points are not at the same place
+					//ok
+					if(opt.preventDefault)e.preventDefault();
+					let event=new TouchEvent('doubletouch',e);
+					event.points=currentTouches.length;
+					element.dispatchEvent(event);
+				}while(0);
+				reset();
+			}else{
 				checking=true;
+				checkTimeout=setTimeout(()=>{
+					checking=false;
+				},400);
 			}
-			fired=false;
 		});
-		return listeners;
 	}
 }
 

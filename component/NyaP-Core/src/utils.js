@@ -41,7 +41,8 @@ export class Utils{
     }
     static setAttrs(ele,obj){//set multi attrs to a Element
         for(let a in obj)
-            ele.setAttribute(a,obj[a])
+            ele.setAttribute(a,obj[a]);
+        return ele;
     }
     static rand(min, max) {
         return (min+Math.random()*(max-min)+0.5)|0;

@@ -23,29 +23,31 @@ export class DomTools{
 				||d.mozFullScreenElement
 				||d.fullscreenElement;
 	}
-	static requestFullscreen(d){
+	static requestFullscreen(d=document){
 		try{
 			return (d.requestFullscreen||
 			d.msRequestFullscreen||
 			d.mozRequestFullScreen||
-			d.webkitRequestFullscreen)
+			d.webkitRequestFullScreen||
+			d.webkitEnterFullScreen)
 			.call(d);
 		}catch(e){
-			// console.error(e)
 			return Promise.reject(e);
-			// alert(_('Failed to change to fullscreen mode'));
 		}
 	}
-	static exitFullscreen(){
-		const d=document;
-		return (d.exitFullscreen||
-		d.msExitFullscreen||
-		d.mozCancelFullScreen||
-		d.webkitCancelFullScreen).call(d);
+	static exitFullscreen(d=document){
+		try{
+			return (d.exitFullscreen||
+				d.msExitFullscreen||
+				d.mozCancelFullScreen||
+				d.webkitExitFullScreen||
+				d.webkitCancelFullScreen).call(d);
+		}catch(e){
+			return Promise.reject(e);
+		}
 	}
-	static isFullscreen(){
-		const d=document;
-		return !!(d.fullscreen || d.mozFullScreen || d.webkitIsFullScreen || d.msFullscreenElement);
+	static isFullscreen(d=document){
+		return !!(d.fullscreen || d.mozFullScreen || d.webkitIsFullScreen || d.msFullscreenElement || d.webkitDisplayingFullscreen);
 	}
 	static Object2HTML(...args){
 		return O2H(...args);

@@ -34,8 +34,7 @@ let useImageBitmap=false;
 class TextDanmaku extends DanmakuFrameModule{
 	get paused(){return !this.frame.working;}
 	list=[];//danmaku object array
-	indexMark=0;//to record the index of last danmaku in the list
-	tunnel=new TunnelManager();
+	indexMark=0;//to record the index of last danmaku loaded to screen in the DanmakuText
 	randomText=`danmaku_text_${(Math.random()*999999)|0}`;
 	lastRendererMode=0;
 	//time record
@@ -43,6 +42,8 @@ class TextDanmaku extends DanmakuFrameModule{
 	danmakuMoveTime=0;
 	danmakuCheckTime=0;
 	danmakuCheckSwitch=true;
+	GraphCache=[];//text graph cache, for reusable TextGraph obj
+	DanmakuText=[];//TextGraph on screen
 	defaultStyle={//these styles can be overwrote by the 'font' property of danmaku object
 		fontStyle: null,
 		fontWeight: 300,
@@ -61,7 +62,7 @@ class TextDanmaku extends DanmakuFrameModule{
 	};
 	options={
 		allowLines:false,//allow multi-line danmaku
-		screenLimit:0,//the most number of danmaku on the screen
+		screenLimit:0,//the most area% of danmaku on the screen
 		clearWhenTimeReset:true,//clear danmaku on screen when the time is reset
 		speed:6.5,
 		danmakuSizeScale:1,//scale for the default size
@@ -91,9 +92,8 @@ class TextDanmaku extends DanmakuFrameModule{
 			3:this.text3d=new TextWebGL(this),
 		};
 
-		this.GraphCache=[];//text graph cache
-		this.DanmakuText=[];
-		this.renderingDanmakuManager=new RenderingDanmakuManager(this);
+		
+		this.rendering=new RenderingDanmakuManager(this);
 
 		DomTools.addEvents(document,{
 			visibilitychange:e=>{
@@ -128,27 +128,27 @@ class TextDanmaku extends DanmakuFrameModule{
 		});
 	}
 	play(){
-		//this.recheckIndexMark();
+		this.recheckIndexMark();
 		this.activeRendererMode.play();
 	}
 	pause(){
 		this.activeRendererMode.pause();
 	}
 	load(d,autoAddToScreen){
-		if(!d || d._!=='text'){
+		if(d?._!=='text'){
 			return false;
 		}
 		if(typeof d.text !== 'string'){
 			console.error('wrong danmaku object:',d);
 			return false;
 		}
-		let t=d.time,ind,arr=this.list;
-		ind=dichotomy(arr,d.time,0,arr.length-1,false)
-		arr.splice(ind,0,d);
+		let ind,arr=this.list;
+		ind=dichotomy(arr,d.time,0,arr.length-1,false);//find a place for this obj in the list in time order
+		arr.splice(ind,0,d);//insert the obj
 		if(ind<this.indexMark)this.indexMark++;
 		//round d.style.fontSize to prevent Iifinity loop in tunnel
 		if(typeof d.style!=='object')d.style={};
-		d.style.fontSize=d.style.fontSize?((d.style.fontSize*this.options.danmakuSizeScale+0.5)|0):this.defaultStyle.fontSize*this.options.danmakuSizeScale;
+		d.style.fontSize=Math.round((d.style.fontSize||this.defaultStyle.fontSize)*this.options.danmakuSizeScale);
 		if(isNaN(d.style.fontSize)|| d.style.fontSize===Infinity || d.style.fontSize===0)d.style.fontSize=this.defaultStyle.fontSize*this.options.danmakuSizeScale;
 		if(typeof d.mode !== 'number')d.mode=0;
 		if(autoAddToScreen&&(ind<this.indexMark))this._addNewDanmaku(d);
@@ -159,10 +159,10 @@ class TextDanmaku extends DanmakuFrameModule{
 	}
 	unload(d){
 		if(!d || d._!=='text')return false;
-		const D=this,i=D.list.indexOf(d);
+		const i=this.list.indexOf(d);
 		if(i<0)return false;
-		D.list.splice(i,1);
-		if(i<D.indexMark)D.indexMark--;
+		this.list.splice(i,1);
+		if(i<this.indexMark)this.indexMark--;
 		return true;
 	}
 	_checkNewDanmaku(force){
@@ -171,7 +171,7 @@ class TextDanmaku extends DanmakuFrameModule{
 		if(this.danmakuCheckTime===time || !this.danmakuCheckSwitch)return;
 		if(this.list.length)
 		for(;(this.indexMark<this.list.length)&&(d=this.list[this.indexMark])&&(d.time<=time);this.indexMark++){//add new danmaku
-			if(this.options.screenLimit>0 && this.DanmakuText.length>=this.options.screenLimit){continue;}//continue if the number of danmaku on screen has up to limit or doc is not visible
+			if(this.options.screenLimit>0 && this.rendering.onScreenArea>=this.options.screenLimit/100*this.frame.area){continue;}//continue if the number of danmaku on screen has up to limit or doc is not visible
 			this._addNewDanmaku(d);
 		}
 		this.danmakuCheckTime=time;
@@ -179,23 +179,15 @@ class TextDanmaku extends DanmakuFrameModule{
 	_addNewDanmaku(d){
 		const cHeight=this.height,cWidth=this.width;
 		let t=this.GraphCache.length?this.GraphCache.shift():new TextGraph();
-		t.danmaku=d;
-		t.drawn=false;
-		t.text=this.options.allowLines?d.text:d.text.replace(/\n/g,' ');
-		t.time=d.time;
-		t.font=Object.create(this.defaultStyle);
-		Object.assign(t.font,d.style);
-		if(!t.font.lineHeight)t.font.lineHeight=(t.font.fontSize+2)||1;
-		if(d.style.color){
-			if(t.font.color && t.font.color[0]!=='#'){
-				t.font.color='#'+d.style.color;
-			}
+		if(!this.options.allowLines){
+			d=Object.create(d);
+			d.text=d.text.replace(/\n/g,' ');
 		}
-
-		if(d.mode>1)t.font.textAlign='center';
-		t.prepare(this.rendererMode===3?false:true);
+		let font=Object.create(this.defaultStyle);
+		t.init(d,Object.assign(font,d.style));
+		t.prepare(false);
 		//find tunnel number
-		const tnum=this.tunnel.getTunnel(t,cHeight);
+		const tnum=this.rendering.tunnelManager.getTunnel(t,cHeight);
 		//calc margin
 		let margin=(tnum<0?0:tnum)%cHeight;
 		switch(d.mode){
@@ -211,15 +203,12 @@ class TextDanmaku extends DanmakuFrameModule{
 			case 1:{t.style.x=-t.style.width;break;}
 			case 2:case 3:{t.style.x=(cWidth-t.style.width)/2;}
 		}
-		this.renderingDanmakuManager.add(t);
-		this.activeRendererMode.newDanmaku(t);
+		this.rendering.add(t);
 	}
 	_calcSideDanmakuPosition(t,T=this.frame.time){
 		let R=!t.danmaku.mode,style=t.style;//R:from right
-		let p=(R?this.frame.width:(-style.width))
+		return (R?this.frame.width:(-style.width))
 				+(R?-1:1)*this.frame.rate*(style.width+1024)*(T-t.time)*this.options.speed/60000;
-		debugger;
-		return p;
 	}
 	_calcDanmakusPosition(force){
 		let T=this.frame.time;
@@ -240,7 +229,7 @@ class TextDanmaku extends DanmakuFrameModule{
 					R=!t.danmaku.mode;
 					style.x=X=this._calcSideDanmakuPosition(t,T);
 					if(t.tunnelNumber>=0 && ((R&&(X+style.width)+10<cWidth) || (!R&&X>10)) ){
-						this.tunnel.removeMark(t);
+						this.rendering.tunnelManager.removeMark(t);
 					}else if( (R&&(X<-style.width-20)) || (!R&&(X>cWidth+style.width+20)) ){//go out the canvas
 						this.removeText(t);
 						continue;
@@ -256,11 +245,12 @@ class TextDanmaku extends DanmakuFrameModule{
 		}
 	}
 	_cleanCache(force){//clean text object cache
+		force&&this.frame.core.debug('force cleaning graph cache');
 		const now=Date.now();
-		if(this.GraphCache.length>30 || force){//save 20 cached danmaku
+		if(this.GraphCache.length>30 || force){//save 30 cached danmaku
 			for(let ti = 0;ti<this.GraphCache.length;ti++){
 				if(force || (now-this.GraphCache[ti].removeTime) > 10000){//delete cache which has not been used for 10s
-					this.activeRendererMode.deleteTextObject(this.GraphCache[ti]);
+					this.GraphCache[ti].destructor();
 					this.GraphCache.splice(ti,1);
 				}else{break;}
 			}
@@ -273,12 +263,7 @@ class TextDanmaku extends DanmakuFrameModule{
 		requestAnimationFrame(()=>{this._checkNewDanmaku(force)});
 	}
 	removeText(t){//remove the danmaku from screen
-		this.renderingDanmakuManager.remove(t);
-		this.tunnel.removeMark(t);
-		t._bitmap=t.danmaku=null;
-		t.removeTime=Date.now();
-		this.GraphCache.push(t);
-		this.activeRendererMode.remove(t);
+		this.rendering.remove(t);
 	}
 	resize(){
 		if(this.activeRendererMode)this.activeRendererMode.resize();
@@ -288,11 +273,7 @@ class TextDanmaku extends DanmakuFrameModule{
 		this.activeRendererMode&&this.activeRendererMode.clear(forceFull);
 	}
 	clear(){//clear danmaku on the screen
-		for(let i=this.DanmakuText.length,T;i--;){
-			T=this.DanmakuText[i];
-			if(T.danmaku)this.removeText(T);
-		}
-		this.tunnel.reset();
+		this.rendering.clear();
 		this._clearScreen(true);
 	}
 	recheckIndexMark(t=this.frame.time){
@@ -345,17 +326,39 @@ class TextDanmaku extends DanmakuFrameModule{
 
 class TextGraph{//code copied from CanvasObjLibrary
 	_fontString='';
-	_renderList=null;
-	style={};
+	_renderList;
+	_cache;
+	_bitmap;
 	font={};
-	constructor(text=''){
-		this.text=text;
+	time;
+	style={};
+	drawn=false;//bool: 
+	danmaku;
+	removeTime;//number: remove time of the danmaku
+	tunnelNumber;//number: tunnel number in the tunner manager
+	tunnelHeight;//number: tunnel height
+	estimatePadding;//number: padding of the canvas
+	get text(){return this.danmaku.text;}
+	constructor(danmakuObj,font){
 		this._renderToCache=this._renderToCache.bind(this);
-		defProp(this,'_cache',{configurable:true});
+		danmakuObj&&this.init(danmakuObj,font);
+	}
+	init(d,font){
+		this.danmaku=d;
+		this.drawn=false;
+		this.time=d.time;
+		this.font=font;
+		if(!this.font.lineHeight)this.font.lineHeight=(this.font.fontSize+2)||1;
+		if(d.style.color){
+			if(this.font.color && this.font.color[0]!=='#'){
+				this.font.color='#'+d.style.color;
+			}
+		}
+		if(d.mode>1)this.font.textAlign='center';
 	}
 	prepare(async=false){//prepare text details
 		if(!this._cache){
-			defProp(this,'_cache',{value:document.createElement("canvas")});
+			this._cache=document.createElement("canvas");
 		}
 		let ta=[];
 		(this.font.fontStyle)&&ta.push(this.font.fontStyle);
@@ -365,7 +368,8 @@ class TextGraph{//code copied from CanvasObjLibrary
 		(this.font.fontFamily)&&ta.push(this.font.fontFamily);
 		this._fontString = ta.join(' ');
 
-		const imgobj = this._cache,ct = (imgobj.ctx2d||(imgobj.ctx2d=imgobj.getContext("2d")));
+		const canvas = this._cache,
+			ct = (canvas.ctx2d||(canvas.ctx2d=canvas.getContext("2d")));
 		ct.font = this._fontString;
 		this._renderList = this.text.split(/\n/g);
 		this.estimatePadding=Math.max(
@@ -377,8 +381,8 @@ class TextGraph{//code copied from CanvasObjLibrary
 			tw = ct.measureText(this._renderList[i]).width;
 			(tw>w)&&(w=tw);//max
 		}
-		imgobj.width = (this.style.width = w) + this.estimatePadding*2;
-		imgobj.height = (this.style.height = this._renderList.length * lh)+ ((lh<this.font.fontSize)?this.font.fontSize*2:0) + this.estimatePadding*2;
+		canvas.width = (this.style.width = w) + this.estimatePadding*2;
+		canvas.height = (this.style.height = this._renderList.length * lh)+ ((lh<this.font.fontSize)?this.font.fontSize*2:0) + this.estimatePadding*2;
 
 		ct.translate(this.estimatePadding, this.estimatePadding);
 		if(async){
@@ -437,9 +441,22 @@ class TextGraph{//code copied from CanvasObjLibrary
 			this.font.fill&&ct.fillText(this._renderList[i],x, lh*(i+0.5));
 		}
 		ct.restore();
+		this._renderList=undefined;
+	}
+	destructor(){
+		this._fontString=undefined;
+		this._renderList=undefined;
+		this.danmaku=undefined;
+		this.style=undefined;
+		this.font=undefined;
+		if(this._bitmap){
+			this._bitmap.close();
+			this._bitmap=null;
+		}
 	}
 }
 
+const tunnels=['right','left','bottom','top'];
 class TunnelManager{
 	constructor(){
 		this.reset();
@@ -498,37 +515,54 @@ class TunnelManager{
 	}
 }
 
-const tunnels=['right','left','bottom','top'];
 
 class RenderingDanmakuManager{
+	totalArea=0;
+	onScreenArea=0;
+	limitArea=Infinity;//limit danmaku area on the screen(auto change)
+	tunnelManager=new TunnelManager();
 	constructor(dText){//dText:TextDanmaku
 		this.dText=dText;
-		this.totalArea=0;
-		this.limitArea=Infinity;//limit danmaku area on the screen
 		if(dText.text2d.supported)this.timer=setInterval(()=>this.rendererModeCheck(),1500);
 	}
 	add(t){
 		this.dText.DanmakuText.push(t);
 		this.totalArea+=t._cache.width*t._cache.height;//cumulate danmaku area
+		this.onScreenArea+=Math.min(t._cache.width,this.dText.frame.width)*Math.min(t._cache.height,this.dText.frame.height);
+		this.dText.activeRendererMode.newDanmaku(t);
 	}
 	remove(t){
 		let ind=this.dText.DanmakuText.indexOf(t);
 		if(ind>=0){
 			this.dText.DanmakuText.splice(ind,1);
 			this.totalArea-=t._cache.width*t._cache.height;
+			this.onScreenArea-=Math.min(t._cache.width,this.dText.frame.width)*Math.min(t._cache.height,this.dText.frame.height);
 		}
+		this.tunnelManager.removeMark(t);
+		this.dText.activeRendererMode.remove(t);
+		this.dText.activeRendererMode.deleteRelatedTextObject(t);
+		t.removeTime=Date.now();
+		t.danmaku=null;
+		this.dText.GraphCache.push(t);
+	}
+	clear(){
+		for(let i=0,T;i<this.dText.DanmakuText.length;i++){
+			T=this.dText.DanmakuText[i];
+			this.remove(T);
+		}
+		this.tunnelManager.reset();
 	}
 	rendererModeCheck(){//auto shift rendering mode
 		let D=this.dText;
 		if(!this.dText.options.autoShiftRenderingMode || D.paused)return;
 		if(D.frame.fps<(D.frame.fpsLimit||60)*0.9){//when frame rate low
-			if(this.limitArea>this.totalArea)this.limitArea=this.totalArea;//limit danmaku area
+			if(this.limitArea>this.totalArea)this.limitArea=this.totalArea;//reduce area limit
 		}else if(this.limitArea<this.totalArea){//increase area limit
 			this.limitArea=this.totalArea;
 		}
-		if(D.rendererMode==1 && this.totalArea>this.limitArea){//switch to canvas mode
+		if(D.rendererMode===1 && this.totalArea>this.limitArea){//switch to canvas mode when fps low
 			D.text2d.supported&&D.setRendererMode(2);
-		}else if(D.rendererMode==2&& this.totalArea<this.limitArea*0.5){//recover to css mode
+		}else if(D.rendererMode===2&& this.totalArea<this.limitArea*0.5){//recover to css mode when animation is fluent enough
 			D.textCss.supported&&D.setRendererMode(1);
 		}
 	}

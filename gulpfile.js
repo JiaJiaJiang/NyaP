@@ -64,7 +64,7 @@ function transjs(name,cover=90){
 						"targets":{ 
 							"browsers":`cover ${cover}%`,
 						},
-						"debug": false,
+						"debug": true,
 						"useBuiltIns": 'usage',
 						"corejs":3,
 					},
@@ -78,9 +78,9 @@ function transjs(name,cover=90){
 				// "regenerator-runtime",
 			]
 		}
-	)/* .transform(
+	).transform(
 		'uglifyify', { global: true }
-	) */
+	)
 	.bundle()
 	.pipe(source(`./${name}`))
 	.pipe(rename({extname:`.${cover}.js`}))

@@ -88,28 +88,31 @@ copyright 2018 luojia@luojia.me
 			"http://127.0.0.1:8080/"
 		];
 		let tester=new GatewayTester();
-		NP.on('setVideoSrc',src=>{
+		NP.addURLResolver((src)=>{
 			let r;
 			if(r=src.trim().match(/^"ipfs":(.*)$/)){
-				let _lifig=NP.loadingInfo('寻找ipfs网关 -- ');
-				let path=toIPFSPath(r[1]),hadResult=false
-				for(let g of defaultGatewayList){
-					tester.test(g,path)
-					.then(()=>{
-						_lifig.append('done');
-						hadResult=true;
-						tester.stop();
-						NP.video.src=`${g}/${path}`;
-						NP.loadingInfo(NP.i18n._('Loading video'));
-					}).catch(e=>{}).finally(()=>{
-						if(tester.testingFetch_c.size===0 && !hadResult){
-							_lifig.append('找不到可用ipfs网关');
-						}
-					});
-				}
-				return false;
+				NP.stat('寻找ipfs网关 -- ');
+				let path=toIPFSPath(r[1]),hadResult=false;
+				return new Promise((ok,no)=>{
+					for(let g of defaultGatewayList){
+						tester.test(g,path)
+						.then(()=>{
+							NP.statResult('寻找ipfs网关 -- ');
+							hadResult=true;
+							tester.stop();
+							ok(`${g}/${path}`);
+						}).catch(e=>{}).finally(()=>{
+							if(tester.testingFetch_c.size===0 && !hadResult){
+								NP.statResult('寻找ipfs网关 -- ','找不到可用ipfs网关');
+								no();
+							}
+						});
+					}
+				});
 			}
-		},true);
+			return undefined;//not resolved
+		},1);
+		
 		NP.log('ipfsLoader Loaded');
 	}
 })

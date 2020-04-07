@@ -14,7 +14,7 @@ NyaP
 
 ## 说明
 
-播放器创建方式见`demo/demo.html`，喂进NyaP对象的参数见[NyaP核心](https://github.com/JiaJiaJiang/NyaP/blob/master/src/NyaPCore.js#L14),[NyaP](https://github.com/JiaJiaJiang/NyaP/blob/master/src/NyaP.js#L24)与[NyaP触摸版](https://github.com/JiaJiaJiang/NyaP/blob/master/src/NyaPTouch.js#L22)
+播放器创建方式见`demo/demo.html`，喂进NyaP对象的参数见[NyaP核心](https://github.com/JiaJiaJiang/NyaP/blob/master/component/NyaP-Core/index.js#L14),[NyaP](https://github.com/JiaJiaJiang/NyaP/blob/master/src/NyaP.js#L24)与[NyaP触摸版](https://github.com/JiaJiaJiang/NyaP/blob/master/src/NyaPTouch.js#L22)
 
 创建好NyaP对象后该对象的`video`属性就是视频对象。
 

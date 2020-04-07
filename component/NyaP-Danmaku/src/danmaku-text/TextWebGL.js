@@ -121,9 +121,11 @@ class TextWebGL extends Template{
 	clear(){
 		this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 	}
-	deleteTextObject(t){
-		const gl=this.gl;
-		if(t.texture)gl.deleteTexture(t.texture);
+	deleteRelatedTextObject(t){
+		if(t.texture)this.gl.deleteTexture(t.texture);
+		t.texture=null;
+		t.vertCoord=null;
+		delete t.glDanmaku;
 	}
 	resize(w,h){
 		const gl=this.gl,C=this.c3d;
@@ -140,6 +142,10 @@ class TextWebGL extends Template{
 		requestAnimationFrame(()=>this.draw());
 	}
 	disable(){
+		//clean related objects
+		for(let tobj of this.dText.DanmakuText){
+			this.deleteRelatedTextObject(tobj);
+		}
 		this.clear();
 	}
 	newDanmaku(t,async=true){

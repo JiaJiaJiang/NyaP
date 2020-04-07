@@ -1,9 +1,0 @@
-[submodule "lib/danmaku-frame"]
-	path = lib/danmaku-frame
-url=git@github.com:JiaJiaJiang/danmaku-frame.git
-[submodule "lib/danmaku-text"]
-	path = lib/danmaku-text
-url=git@github.com:JiaJiaJiang/danmaku-text.git
-[submodule "lib/Object2HTML"]
-	path = lib/Object2HTML
-url=git@github.com:JiaJiaJiang/Object2HTML.git

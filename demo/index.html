@@ -15,7 +15,8 @@ if(location.protocol==='file:'){
 	alert('以本地文件打开演示无法加载插件\n请在NyaP根目录启动一个http服务后再访问/demo/demo.html')
 	throw(Error('not support'));
 }
-var touchMode=navigator.userAgent.match(/mobile/i) && ('ontouchstart' in window),//touch player
+var ua=navigator.userAgent,
+	touchMode=(ua.match(/mobile/i) || ua.match(/android/i))&& ('ontouchstart' in window),//touch player
 	scriptVer=50;
 try{//es2016 version feature test
 	'use strict';
@@ -29,8 +30,9 @@ try{//es2016 version feature test
 	].forEach(function(s){eval(s)});
 }catch(e){
 	console.log('not supported feature:',e);
-	scriptVer=80;
+	scriptVer=90;
 }
+scriptVer=50;
 var playerName='NyaP'+(touchMode?"Touch":"");
 console.log('load player',playerName,scriptVer);
 document.write(
@@ -41,38 +43,46 @@ document.write(
 
 <script>
 var tests=[
-	['"ipfs":QmNMFQdHo2HaYfWySgkk1rzfveSADDMLZYpM1y29oKbShN','https://hardbin.com/ipfs/QmXKrHA5wGiYv1dCh9aHEryZnqRwSLUxTZLV3Qm3xHFs5r'],
-	['"ipfs":Qma2HCKSLjyhRZezyUYrz7tNTQuG2yxZL24qHWV1kFjvKJ','https://hardbin.com/ipfs/QmYALufK7J7j7zgLSUEMkJKYBAsqc8gGtNpLM3qfJve1jm'],
-]
+	['"ipfs":QmNMFQdHo2HaYfWySgkk1rzfveSADDMLZYpM1y29oKbShN','https://io.luojia.me/ipfs/QmXaFKTSEdKyMzosa1XKqA93cSem1Tpk4YMt5uiF3MgpWc'],
+	// ['9.mp4','9.json'],
+	['"ipfs":Qma2HCKSLjyhRZezyUYrz7tNTQuG2yxZL24qHWV1kFjvKJ','https://io.luojia.me/ipfs/QmNwpLDxM7K1XPMk3SWGGAqCJAmiYNdJQsdyUG85Zz2qyc'],
+];
 
 if(touchMode)NyaP=NyaPTouch;
 
 //create player
 var NP=new NyaP({
 	volume:0.3,
-	danmakuModuleArg:{
-		TextDanmaku:{
-			defaultStyle:{},
-			options:{
-				allowLines:true,//allow multi-line danmaku
-				screenLimit:0,//danmaku limit on a screen
-				autoShiftRenderingMode:true //set true to enable auto rendering mode changing between css and canvas
+	danmaku:{
+		modules:{
+			TextDanmaku:{
+				defaultStyle:{},
+				options:{
+					allowLines:true,//allow multi-line danmaku
+					screenLimit:0,//danmaku limit on a screen
+					autoShiftRenderingMode:false, //set true to enable auto rendering mode changing between css and canvas
+					renderingMode:1,//css mode
+				},
 			},
-		}
+		},
+		send:function(d,callback){
+			console.log(d);
+			var d2={_:'text',text:d.text,time:d.time,mode:d.mode,style:{fontSize:d.size},date:Date.now(),id:0};
+			if(d.color){
+				d2.style.color=d.color;
+			}
+			callback(d2);
+		},
 	},
 	plugins:[
 		'plugin-demo.js',
 		'ipfsLoader.js'
 	],
-	danmakuSend:function(d,callback){
-		console.log(d);
-		var d2={_:'text',text:d.text,time:d.time,mode:d.mode,style:{fontSize:d.size},date:Date.now(),id:0};
-		if(d.color){
-			d2.style.color=d.color;
-		}
-		callback(d2);
+	loadingInfo:{
+		doneText:'吼',
 	},
-	playerFrame:document.querySelector('#player_container'),
+	playerContainer:document.querySelector('#player_container'),
+	fullScreenToFullPageIfNotSupported:true,
 });
 
 NP.msg('this is a tip')
@@ -80,7 +90,7 @@ NP.msg('this is an info','info')
 NP.msg('this is an error,and these messages\' time depends on the words\' count','error')
 
 function changeMode(n){
-	if(NP.danmakuFrame.modules.TextDanmaku.setRendererMode(n)){
+	if(NP.Danmaku.modules.TextDanmaku.setRendererMode(n)){
 		NP.msg('mode '+n,'info');
 	}else{
 		NP.msg('the browser does not support this mode or already on this mode.','info');
@@ -93,9 +103,16 @@ function changeMode(n){
 	没处理demo切换，要换demo前请刷新页面。<br>
 	演示视频将随机使用一个ipfs网关加载，缓冲可能较慢。
 	<div>
+	<script>document.write("UA:"+ua);</script><br>
+	<script>document.write("loading player:"+playerName+"."+scriptVer);</script><br>
+	<script>document.write("ios:"+NP._.ios);</script><br>
+	<script>document.write("mobileX5:"+NP._.mobileX5);</script><br>
+
+	</div>
+	<div>
 		<button onclick="changeMode(1)">CSS Transition</button>
 		<button onclick="changeMode(2)">Canvas2d</button>
-		<button disabled onclick="changeMode(3)">WebGL</button>
+		<button onclick="changeMode(3)">WebGL</button>
 	</div>
 	<div id="demoSelection">
 		videoSrc:<input type="text" id="videoSrc" style="width:40em;"><br>
@@ -117,16 +134,17 @@ tests.forEach(function(t,i){
 	demoSelection.appendChild(b);
 });
 loadButton.addEventListener('click',function(){
-	NP.src=videoSrc.value;
-	NP.loadingInfo(NP.i18n._('Loading danmaku'));
+	NP.setVideoSrc(videoSrc.value);
+	NP.stat(NP.i18n._('loading_danmaku'));
 	fetch(danmakuJSON.value)
 		.then(res=>res.json())
 		.then(json=>{
+			NP.statResult(NP.i18n._('loading_danmaku'));
 			var danmakus=[],textDM={_:'text'};
 			for(var i=0;i<json.length;i++){
 				var item=json[i];
 				item.s=item.s*0.85;
-				danmakus.push(Object.assign(Object.create(textDM),{text:item.c,time:item.t,mode:item.ty,style:{fontSize:item.s,color:'#'+(item.co||'fff')},date:item.d,id:item.id}));
+				danmakus.push(Object.assign(Object.create(textDM),{text:item.c,time:item.t,mode:item.m,style:{fontSize:item.s,color:'#'+(item.co||'fff')},date:item.d,id:item.did}));
 			}
 			NP.Danmaku&&NP.Danmaku.loadList(danmakus);
 		}).catch(function(e){

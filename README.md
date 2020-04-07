@@ -1,7 +1,7 @@
 NyaP
 ====
 
-一个HTML5播放器
+一个HTML5播放器框架
 
 ![logo](https://jiajiajiang.github.io/staticRepo/NyaP/logo.png)
 
@@ -14,7 +14,7 @@ NyaP
 
 ## 说明
 
-播放器创建方式见`demo/demo.html`，喂进NyaP对象的参数见[NyaP核心](https://github.com/JiaJiaJiang/NyaP/blob/master/src/NyaPCore.js#L14),[NyaP](https://github.com/JiaJiaJiang/NyaP/blob/master/src/NyaP.js#L24)与[NyaP触摸版](https://github.com/JiaJiaJiang/NyaP/blob/master/src/NyaPTouch.js#L22)
+播放器创建方式见`demo/demo.html`，喂进NyaP对象的参数见[NyaP核心](https://github.com/JiaJiaJiang/NyaP/blob/master/component/NyaP-Core/index.js#L14),[NyaP](https://github.com/JiaJiaJiang/NyaP/blob/master/src/NyaP.js#L24)与[NyaP触摸版](https://github.com/JiaJiaJiang/NyaP/blob/master/src/NyaPTouch.js#L22)
 
 创建好NyaP对象后该对象的`video`属性就是视频对象。
 
@@ -29,3 +29,15 @@ NyaP
 * 2019/1/20 : 添加插件功能，插件样本请看`demo/plugin-demo.js`。更具体的用法还是有人想用我再写文档吧。
 
 
+用于被更外层播放器外壳引用
+核心
+	事件
+	配置
+	log
+	播放控制
+	i18n功能
+	UI接口信息提供
+		log
+	插件加载
+		多插件单文件加载
+	组件加载（编译时）

@@ -2,11 +2,11 @@
 Copyright luojia@luojia.me
 LGPL license
 */
-@import 'NyaPCore.scss';
+@import 'NyaPCommon.scss';
 
 .NyaPTouch{
 	@extend .NyaP_fullfill;
-	@include NyaPCoreStyles;
+	@include NyaPCommonStyles;
 
 	overflow: hidden;
 
@@ -40,6 +40,9 @@ LGPL license
 		#control_bottom{
 			position: fixed;
 		}
+	}
+	&[playerMode="fullPage"]{
+		position: fixed;
 	}
 
 	#control_bottom{

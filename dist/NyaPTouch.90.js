@@ -10026,6 +10026,8 @@ var NyaPCommonOptions = {
         options: {}
       }
     },
+    defaultDanmakuColor: null,
+    //a hex color(without #),default when the color inputed is invalid
     send: function send(d) {
       return _promise.default.reject();
     } //the method for sending danmaku
@@ -10034,10 +10036,12 @@ var NyaPCommonOptions = {
   // for ui
   uiOptions: {
     danmakuColor: null,
-    //a hex color(without #),when the color inputed is invalid,this color will be applied
+    //default color to fill the color option input
     danmakuMode: 0,
     //0: right to left.
-    danmakuSize: 24
+    danmakuSize: 24,
+    autoHideDanmakuInput: true //hide danmakuinput after danmaku sending
+
   },
   loadingInfo: {
     //text replacement at loading time (for left-bottom message)
@@ -10417,6 +10421,39 @@ var MsgBox = /*#__PURE__*/function () {
       (0, _setTimeout3.default)(function () {
         _this6.msg.parentNode && _this6.msg.parentNode.removeChild(_this6.msg);
       }, 600);
+    }
+  }, {
+    key: "send",
+    value: function send() {
+      var _this7 = this;
+
+      var color = this._.danmakuColor || this.opt.danmaku.defaultDanmakuColor,
+          text = this.$('#danmaku_input').value,
+          size = this._.danmakuSize,
+          mode = this._.danmakuMode,
+          time = this.Danmaku.time,
+          d = {
+        color: color,
+        text: text,
+        size: size,
+        mode: mode,
+        time: time
+      };
+      var S = this.Danmaku.send(d, function (danmaku) {
+        if (danmaku && danmaku._ === 'text') _this7.$('#danmaku_input').value = '';
+        danmaku.highlight = true;
+
+        _this7.Danmaku.load(danmaku, true);
+
+        if (_this7.opt.uiOptions.autoHideDanmakuInput) {
+          _this7.danmakuInput(false);
+        }
+      });
+
+      if (!S) {
+        this.danmakuInput(false);
+        return;
+      }
     }
   }]);
   return MsgBox;
@@ -10887,7 +10924,7 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
               var _context11;
 
               NP._.danmakuColor = undefined;
-              c = NP.Danmaku.isVaildColor(NP.opt.defaultDanmakuColor);
+              c = NP.Danmaku.isVaildColor(NP.opt.danmaku.defaultDanmakuColor);
               (0, _forEach.default)(_context11 = _NyaPCommon2.Utils.toArray($('#danmaku_color_box').childNodes)).call(_context11, function (cp) {
                 return cp.classList.remove('active');
               });
@@ -10981,7 +11018,7 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
         var el = icon("danmakuMode".concat(m));
         $('#danmaku_mode_box').appendChild(el);
 
-        if ((0, _isInteger.default)(opt.defaultDanmakuMode) && m === ((_opt = opt) === null || _opt === void 0 ? void 0 : (_opt$uiOptions = _opt.uiOptions) === null || _opt$uiOptions === void 0 ? void 0 : _opt$uiOptions.danmakuMode)) {
+        if ((0, _isInteger.default)((_opt = opt) === null || _opt === void 0 ? void 0 : (_opt$uiOptions = _opt.uiOptions) === null || _opt$uiOptions === void 0 ? void 0 : _opt$uiOptions.danmakuMode) && m === opt.uiOptions.danmakuMode) {
           el.click();
         }
       });
@@ -11003,30 +11040,6 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
   }
 
   (0, _createClass2.default)(NyaPTouch, [{
-    key: "send",
-    value: function send() {
-      var _this2 = this;
-
-      var color = this._.danmakuColor || this.opt.defaultDanmakuColor,
-          text = this.$('#danmaku_input').value,
-          size = this._.danmakuSize,
-          mode = this._.danmakuMode,
-          time = this.time,
-          d = {
-        color: color,
-        text: text,
-        size: size,
-        mode: mode,
-        time: time
-      };
-      this.Danmaku.send(d, function (danmaku) {
-        if (danmaku && danmaku._ === 'text') _this2.$('#danmaku_input').value = '';
-        danmaku.highlight = true;
-
-        _this2.load(danmaku, true);
-      });
-    }
-  }, {
     key: "controlsToggle",
     value: function controlsToggle() {
       var bool = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.$('#controls').hidden;

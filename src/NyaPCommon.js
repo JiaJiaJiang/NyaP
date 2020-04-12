@@ -20,13 +20,15 @@ const NyaPCommonOptions={
 				options:{},
 			},
 		},
+		defaultDanmakuColor:null,//a hex color(without #),default when the color inputed is invalid
 		send:d=>{return Promise.reject();},//the method for sending danmaku
 	},
 	// for ui
 	uiOptions:{
-		danmakuColor:null,//a hex color(without #),when the color inputed is invalid,this color will be applied
+		danmakuColor:null,//default color to fill the color option input
 		danmakuMode:0,//0: right to left.
 		danmakuSize:24,
+		autoHideDanmakuInput:true,//hide danmakuinput after danmaku sending
 	},
 
 	loadingInfo:{//text replacement at loading time (for left-bottom message)
@@ -256,6 +258,27 @@ class MsgBox{
 		setTimeout(()=>{
 			this.msg.parentNode&&this.msg.parentNode.removeChild(this.msg);
 		},600);
+	}
+	send(){
+		let color=this._.danmakuColor||this.opt.danmaku.defaultDanmakuColor,
+			text=this.$('#danmaku_input').value,
+			size=this._.danmakuSize,
+			mode=this._.danmakuMode,
+			time=this.Danmaku.time,
+			d={color,text,size,mode,time};
+
+		let S=this.Danmaku.send(d,danmaku=>{
+			if(danmaku&&danmaku._==='text')
+				this.$('#danmaku_input').value='';
+			danmaku.highlight=true;
+			this.Danmaku.load(danmaku,true);
+			if(this.opt.uiOptions.autoHideDanmakuInput){this.danmakuInput(false);}
+		});
+
+		if(!S){
+			this.danmakuInput(false);
+			return;
+		}
 	}
 }
 

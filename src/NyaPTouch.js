@@ -269,7 +269,7 @@ class NyaPTouch extends NyaPCommon{
 							});
 						}else{
 							NP._.danmakuColor=undefined;
-							c=NP.Danmaku.isVaildColor(NP.opt.defaultDanmakuColor);
+							c=NP.Danmaku.isVaildColor(NP.opt.danmaku.defaultDanmakuColor);
 							Utils.toArray($('#danmaku_color_box').childNodes).forEach(cp=>cp.classList.remove('active'));
 						}
 					}
@@ -326,7 +326,7 @@ class NyaPTouch extends NyaPCommon{
 			opt.danmakuModes&&opt.danmakuModes.forEach(m=>{
 				let el=icon(`danmakuMode${m}`);
 				$('#danmaku_mode_box').appendChild(el);
-				if(Number.isInteger(opt.defaultDanmakuMode)&&(m===opt?.uiOptions?.danmakuMode)){
+				if(Number.isInteger(opt?.uiOptions?.danmakuMode)&&(m===opt.uiOptions.danmakuMode)){
 					el.click();
 				}
 			});
@@ -341,21 +341,6 @@ class NyaPTouch extends NyaPCommon{
 			opt.playerContainer.appendChild(NP.player);
 
 		this.statResult('creating_player');
-	}
-	send(){
-		let color=this._.danmakuColor||this.opt.defaultDanmakuColor,
-			text=this.$('#danmaku_input').value,
-			size=this._.danmakuSize,
-			mode=this._.danmakuMode,
-			time=this.time,
-			d={color,text,size,mode,time};
-
-		this.Danmaku.send(d,(danmaku)=>{
-			if(danmaku&&danmaku._==='text')
-				this.$('#danmaku_input').value='';
-			danmaku.highlight=true;
-			this.load(danmaku,true);
-		});
 	}
 
 	controlsToggle(bool=this.$('#controls').hidden){

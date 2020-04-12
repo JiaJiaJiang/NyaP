@@ -10018,8 +10018,6 @@ var _NyaPCommon2 = require("./NyaPCommon.js");
 var O2H = _NyaPCommon2.DomTools.Object2HTML; //NyaP options
 
 var NyaPOptions = {
-  autoHideDanmakuInput: true,
-  //hide danmakuinput after danmaku sending
   danmakuColors: ['fff', '6cf', 'ff0', 'f00', '0f0', '00f', 'f0f', '000'],
   //colors in the danmaku style pannel
   danmakuModes: [0, 3, 2, 1],
@@ -10349,7 +10347,7 @@ var NyaP = /*#__PURE__*/function (_NyaPCommon) {
             NP._.danmakuColor = c;
           } else {
             NP._.danmakuColor = undefined;
-            c = NP.Danmaku.isVaildColor(NP.opt.defaultDanmakuColor);
+            c = NP.Danmaku.isVaildColor(NP.opt.danmaku.defaultDanmakuColor);
             i.style.backgroundColor = c ? "#".concat(c) : '';
           }
         }
@@ -10701,39 +10699,6 @@ var NyaP = /*#__PURE__*/function (_NyaPCommon) {
       this.emit('progressRefresh');
     }
   }, {
-    key: "send",
-    value: function send() {
-      var _this4 = this;
-
-      var color = this._.danmakuColor || this.opt.defaultDanmakuColor,
-          text = this.$('#danmaku_input').value,
-          size = this._.danmakuSize,
-          mode = this._.danmakuMode,
-          time = this.time,
-          d = {
-        color: color,
-        text: text,
-        size: size,
-        mode: mode,
-        time: time
-      };
-      var S = this.Danmaku.send(d, function (danmaku) {
-        if (danmaku && danmaku._ === 'text') _this4.$('#danmaku_input').value = '';
-        danmaku.highlight = true;
-
-        _this4.Danmaku.load(danmaku, true);
-
-        if (_this4.opt.autoHideDanmakuInput) {
-          _this4.danmakuInput(false);
-        }
-      });
-
-      if (!S) {
-        this.danmakuInput(false);
-        return;
-      }
-    }
-  }, {
     key: "_progressDrawer",
     value: function _progressDrawer() {
       var ctx = this._.progressContext,
@@ -10800,12 +10765,12 @@ var NyaP = /*#__PURE__*/function (_NyaPCommon) {
   }, {
     key: "drawProgress",
     value: function drawProgress() {
-      var _this5 = this;
+      var _this4 = this;
 
       if (this._.drawingProgress) return;
       this._.drawingProgress = true;
       requestAnimationFrame(function () {
-        return _this5._progressDrawer();
+        return _this4._progressDrawer();
       }); //prevent progress bar drawing multi times in a frame
     }
   }]);
@@ -10878,6 +10843,8 @@ var NyaPCommonOptions = {
         options: {}
       }
     },
+    defaultDanmakuColor: null,
+    //a hex color(without #),default when the color inputed is invalid
     send: function send(d) {
       return _promise.default.reject();
     } //the method for sending danmaku
@@ -10886,10 +10853,12 @@ var NyaPCommonOptions = {
   // for ui
   uiOptions: {
     danmakuColor: null,
-    //a hex color(without #),when the color inputed is invalid,this color will be applied
+    //default color to fill the color option input
     danmakuMode: 0,
     //0: right to left.
-    danmakuSize: 24
+    danmakuSize: 24,
+    autoHideDanmakuInput: true //hide danmakuinput after danmaku sending
+
   },
   loadingInfo: {
     //text replacement at loading time (for left-bottom message)
@@ -11269,6 +11238,39 @@ var MsgBox = /*#__PURE__*/function () {
       (0, _setTimeout3.default)(function () {
         _this6.msg.parentNode && _this6.msg.parentNode.removeChild(_this6.msg);
       }, 600);
+    }
+  }, {
+    key: "send",
+    value: function send() {
+      var _this7 = this;
+
+      var color = this._.danmakuColor || this.opt.danmaku.defaultDanmakuColor,
+          text = this.$('#danmaku_input').value,
+          size = this._.danmakuSize,
+          mode = this._.danmakuMode,
+          time = this.Danmaku.time,
+          d = {
+        color: color,
+        text: text,
+        size: size,
+        mode: mode,
+        time: time
+      };
+      var S = this.Danmaku.send(d, function (danmaku) {
+        if (danmaku && danmaku._ === 'text') _this7.$('#danmaku_input').value = '';
+        danmaku.highlight = true;
+
+        _this7.Danmaku.load(danmaku, true);
+
+        if (_this7.opt.uiOptions.autoHideDanmakuInput) {
+          _this7.danmakuInput(false);
+        }
+      });
+
+      if (!S) {
+        this.danmakuInput(false);
+        return;
+      }
     }
   }]);
   return MsgBox;

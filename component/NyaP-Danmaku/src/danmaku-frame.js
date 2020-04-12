@@ -7,8 +7,7 @@ import {
 	DomTools,
 	Utils
 } from '../../NyaP-Core/index.js';//load from NyaP-Core project
-import { setImmediate } from 'core-js';
-//babel bug
+
 export {
 	DomTools,
 	Utils

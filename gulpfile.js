@@ -64,23 +64,33 @@ function transjs(name,cover=90){
 						"targets":{ 
 							"browsers":`cover ${cover}%`,
 						},
-						"debug": true,
-						"useBuiltIns": 'usage',
-						"corejs":3,
+						"debug": false,
+						// "useBuiltIns": 'usage',
+						// "corejs":3,
 					},
 				],
 			],
 			plugins:[
 				'@babel/plugin-proposal-class-properties',
-				"@babel/plugin-proposal-export-default-from"
+				"@babel/plugin-proposal-export-default-from",
+				[
+					"@babel/plugin-transform-runtime",
+					{
+					  "absoluteRuntime": false,
+					  "corejs": 3,
+					  "helpers": true,
+					  "regenerator": true,
+					  "useESModules": false,
+					}
+				],
 				//以下为cover依赖，不要从package.json里删除
 				// "@babel/plugin-transform-modules-commonjs",
 				// "regenerator-runtime",
 			]
 		}
-	).transform(
+	)/* .transform(
 		'uglifyify', { global: true }
-	)
+	) */
 	.bundle()
 	.pipe(source(`./${name}`))
 	.pipe(rename({extname:`.${cover}.js`}))

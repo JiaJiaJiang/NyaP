@@ -249,6 +249,8 @@ Add a url resolver to the core.
 
 About [URL Resolve](#URL Resolve).
 
+If `false` returned by `func`, the url will no further be resolved by other resolvers and the `setVideoSrc` method will not take effect.
+
 #### resolveURL(url)
 
 Resolve the url to another url using added url resolver.

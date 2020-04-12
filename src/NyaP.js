@@ -170,12 +170,9 @@ class NyaP extends NyaPCommon{
 				click:e=>video.muted=!video.muted,
 				wheel:e=>{
 					e.preventDefault();
-					if(e.deltaMode!==0)return;
-					let delta;
-					if(e.deltaY>10 || e.deltaY<-10)delta=-e.deltaY/10;
-					else{delta=e.deltaY;}
-					if(e.shiftKey)delta=delta>0?10:-10;
-					video.volume=Utils.clamp(video.volume+(delta/100),0,1);
+					let d=e.wheelDeltaY;
+					if(e.shiftKey)d=d>0?10:-10;
+					video.volume=Utils.clamp(video.volume+d/900,0,1);
 				}
 			},
 			danmaku_input:{
@@ -383,7 +380,7 @@ class NyaP extends NyaPCommon{
 			if(danmaku&&danmaku._==='text')
 				this.$('#danmaku_input').value='';
 			danmaku.highlight=true;
-			this.load(danmaku,true);
+			this.Danmaku.load(danmaku,true);
 			if(this.opt.autoHideDanmakuInput){this.danmakuInput(false);}
 		});
 

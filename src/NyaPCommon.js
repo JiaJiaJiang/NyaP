@@ -120,7 +120,7 @@ class NyaPCommon extends NyaPlayerCore{
 		}
 		DomTools.addEvents(this.video,{
 			loadedmetadata:e=>{
-				this.statResult('loading_video',null);
+				this.statResult('loading_video');
 				clearInterval(this._.loadingAnimationInterval);
 				let lf=this.$('#loading_frame');
 				if(lf.parentNode)//remove loading animation

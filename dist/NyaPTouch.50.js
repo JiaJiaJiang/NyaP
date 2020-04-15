@@ -2754,7 +2754,7 @@ class TextDanmaku extends _danmakuFrame.DanmakuFrameModule {
     d.style.fontSize = Math.round((d.style.fontSize || this.defaultStyle.fontSize) * this.options.danmakuSizeScale);
     if (isNaN(d.style.fontSize) || d.style.fontSize === Infinity || d.style.fontSize === 0) d.style.fontSize = this.defaultStyle.fontSize * this.options.danmakuSizeScale;
     if (typeof d.mode !== 'number') d.mode = 0;
-    if (autoAddToScreen && ind < this.indexMark) this._addNewDanmaku(d);
+    if (autoAddToScreen) this._addNewDanmaku(d);
     return d;
   }
 
@@ -7235,12 +7235,43 @@ class NyaPCommon extends _index.NyaPlayerCore {
   }
 
   _iconActive(name, bool) {
-    if (name === 'loop') this.$(`#icon_span_${name}`).classList[bool ? 'add' : 'remove']('active_icon');
+    var _this$$;
+
+    (_this$$ = this.$(`#icon_span_${name}`)) === null || _this$$ === void 0 ? void 0 : _this$$.classList[bool ? 'add' : 'remove']('active_icon');
   }
 
   _setDisplayTime(current = null, total = null) {
     if (current !== null) this.$('#current_time').innerHTML = current;
     if (total !== null) this.$('#total_time').innerHTML = total;
+  }
+
+  send() {
+    let color = this._.danmakuColor || this.opt.danmaku.defaultDanmakuColor,
+        text = this.$('#danmaku_input').value,
+        size = this._.danmakuSize,
+        mode = this._.danmakuMode,
+        time = this.Danmaku.time,
+        d = {
+      color,
+      text,
+      size,
+      mode,
+      time
+    };
+    let S = this.Danmaku.send(d, danmaku => {
+      if (danmaku && danmaku._ === 'text') this.$('#danmaku_input').value = '';
+      danmaku.highlight = true;
+      this.Danmaku.load(danmaku, true);
+
+      if (this.opt.uiOptions.autoHideDanmakuInput) {
+        this.danmakuInput(false);
+      }
+    });
+
+    if (!S) {
+      this.danmakuInput(false);
+      return;
+    }
   }
 
 }
@@ -7312,35 +7343,6 @@ class MsgBox {
     }, 600);
   }
 
-  send() {
-    let color = this._.danmakuColor || this.opt.danmaku.defaultDanmakuColor,
-        text = this.$('#danmaku_input').value,
-        size = this._.danmakuSize,
-        mode = this._.danmakuMode,
-        time = this.Danmaku.time,
-        d = {
-      color,
-      text,
-      size,
-      mode,
-      time
-    };
-    let S = this.Danmaku.send(d, danmaku => {
-      if (danmaku && danmaku._ === 'text') this.$('#danmaku_input').value = '';
-      danmaku.highlight = true;
-      this.Danmaku.load(danmaku, true);
-
-      if (this.opt.uiOptions.autoHideDanmakuInput) {
-        this.danmakuInput(false);
-      }
-    });
-
-    if (!S) {
-      this.danmakuInput(false);
-      return;
-    }
-  }
-
 }
 
 },{"../component/NyaP-Core/index.js":1,"../component/NyaP-Danmaku/index.js":8,"./langs.json":228,"@babel/runtime-corejs3/core-js-stable/instance/bind":19,"@babel/runtime-corejs3/core-js-stable/object/define-property":32,"@babel/runtime-corejs3/core-js-stable/promise":35,"@babel/runtime-corejs3/core-js-stable/set-interval":37,"@babel/runtime-corejs3/core-js-stable/set-timeout":38,"@babel/runtime-corejs3/helpers/interopRequireDefault":41}],227:[function(require,module,exports){
@@ -7353,6 +7355,8 @@ LGPL license
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
 var _splice = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/splice"));
+
+var _setImmediate2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-immediate"));
 
 var _isInteger = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/number/is-integer"));
 
@@ -7386,6 +7390,7 @@ const NyaPTouchOptions = {
   progressBarHeight: 14,
   progressPad: 10,
   //progress bar side margin
+  hideControlsBeforeVideoLoaded: true,
   fullScreenToFullPageIfNotSupported: true
 }; //touch player
 
@@ -7412,7 +7417,7 @@ class NyaPTouch extends _NyaPCommon.NyaPCommon {
     }
 
     this.stat('creating_player');
-    let fullScreenToFullPage = opt.fullScreenToFullPageIfNotSupported && this._.ios; //create player elements
+    this._.fullScreenToFullPage = opt.fullScreenToFullPageIfNotSupported && this._.ios; //create player elements
 
     this._.player = O2H({
       _: 'div',
@@ -7423,7 +7428,8 @@ class NyaPTouch extends _NyaPCommon.NyaPCommon {
       child: [this.videoFrame, {
         _: 'div',
         prop: {
-          id: 'controls'
+          id: 'controls',
+          hidden: opt.hideControlsBeforeVideoLoaded
         },
         child: [{
           _: 'div',
@@ -7500,8 +7506,8 @@ class NyaPTouch extends _NyaPCommon.NyaPCommon {
               prop: {
                 id: 'progress_rightside_button'
               },
-              child: [icon(fullScreenToFullPage ? 'fullPage' : 'fullScreen', {
-                click: e => this.playerMode(fullScreenToFullPage ? 'fullPage' : 'fullScreen')
+              child: [icon(this._.fullScreenToFullPage ? 'fullPage' : 'fullScreen', {
+                click: e => this.playerMode(this._.fullScreenToFullPage ? 'fullPage' : 'fullScreen')
               })]
             }]
           }, {
@@ -7582,12 +7588,18 @@ class NyaPTouch extends _NyaPCommon.NyaPCommon {
 
     const events = {
       main_video: {
-        playing: e => NP._iconActive('play', true),
+        playing: e => {
+          NP._setDisplayTime(null, _NyaPCommon.Utils.formatTime(video.duration, video.duration));
+
+          NP._iconActive('play', true);
+        },
         pause: e => {
           NP._iconActive('play', false);
         },
         loadedmetadata: e => {
           NP._setDisplayTime(null, _NyaPCommon.Utils.formatTime(video.duration, video.duration));
+
+          if (opt.hideControlsBeforeVideoLoaded) $('#controls').hidden = false;
         },
         volumechange: e => {
           //show volume msg
@@ -7790,7 +7802,7 @@ class NyaPTouch extends _NyaPCommon.NyaPCommon {
       playerModeChange: mode => {
         var _context5;
 
-        (0, _forEach.default)(_context5 = ['fullScreen']).call(_context5, m => {
+        (0, _forEach.default)(_context5 = ['fullScreen', 'fullPage']).call(_context5, m => {
           NP._iconActive(m, mode === m);
         });
       }
@@ -7878,6 +7890,18 @@ class NyaPTouch extends _NyaPCommon.NyaPCommon {
   _bottomControlTransformY(y = this._.bottomControlTransformY) {
     this._.bottomControlTransformY = y;
     this.$('#control_bottom').style.transform = `translate3d(0,-${y}px,0)`;
+    if (y === 0) this.danmakuStyleToggle(false);
+  }
+
+  danmakuInput(bool = this._.bottomControlTransformY === 0) {
+    //hide or show danmaku input
+    let $ = this.$;
+    if (bool) this._bottomControlTransformY(this.$('#control_bottom').offsetHeight - NP.opt.bottomControlHeight);else {
+      this._bottomControlTransformY(0);
+    }
+    (0, _setImmediate2.default)(() => {
+      bool ? $('#danmaku_input').focus() : this._.player.focus();
+    });
   }
 
   drawProgress() {
@@ -8019,7 +8043,7 @@ function lineLength(ax, ay, bx, by) {
 
 window.NyaPTouch = NyaPTouch;
 
-},{"./NyaPCommon.js":226,"@babel/runtime-corejs3/core-js-stable/date/now":18,"@babel/runtime-corejs3/core-js-stable/instance/for-each":22,"@babel/runtime-corejs3/core-js-stable/instance/splice":26,"@babel/runtime-corejs3/core-js-stable/instance/starts-with":27,"@babel/runtime-corejs3/core-js-stable/number/is-integer":29,"@babel/runtime-corejs3/core-js-stable/object/assign":30,"@babel/runtime-corejs3/core-js-stable/set-timeout":38,"@babel/runtime-corejs3/helpers/interopRequireDefault":41}],228:[function(require,module,exports){
+},{"./NyaPCommon.js":226,"@babel/runtime-corejs3/core-js-stable/date/now":18,"@babel/runtime-corejs3/core-js-stable/instance/for-each":22,"@babel/runtime-corejs3/core-js-stable/instance/splice":26,"@babel/runtime-corejs3/core-js-stable/instance/starts-with":27,"@babel/runtime-corejs3/core-js-stable/number/is-integer":29,"@babel/runtime-corejs3/core-js-stable/object/assign":30,"@babel/runtime-corejs3/core-js-stable/set-immediate":36,"@babel/runtime-corejs3/core-js-stable/set-timeout":38,"@babel/runtime-corejs3/helpers/interopRequireDefault":41}],228:[function(require,module,exports){
 module.exports={"zh-CN":{"play":"播放","Send":"发送","Done":"完成","loop":"循环","pause":"暂停","muted":"静音","volume":"音量","settings":"设置","wheeling":"滚轮","hex color":"Hex颜色","Loading core":"加载核心","Loading video":"加载视频","Loading plugin":"加载插件","full page(P)":"全页模式(P)","Loading danmaku":"加载弹幕","Creating player":"创建播放器","full screen(F)":"全屏模式(F)","danmaku toggle(D)":"弹幕开关(D)","Input danmaku here":"在这里输入弹幕","Loading danmaku frame":"加载弹幕框架","danmaku input(Enter)":"弹幕输入框(回车)","Failed to change to fullscreen mode":"无法切换到全屏模式","loading_core":"加载核心","loading_plugin":"加载插件","loading_danmakuFrame":"加载弹幕框架","creating_player":"创建播放器","loading_danmaku":"加载弹幕","loading_video":"加载视频"}}
 },{}]},{},[227])
 

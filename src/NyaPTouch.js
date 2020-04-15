@@ -20,6 +20,7 @@ const NyaPTouchOptions={
 	bottomControlHeight:50,//control bar height
 	progressBarHeight:14,
 	progressPad:10,//progress bar side margin
+	hideControlsBeforeVideoLoaded:true,
 	fullScreenToFullPageIfNotSupported:true,
 }
 
@@ -42,12 +43,12 @@ class NyaPTouch extends NyaPCommon{
 
 		this.stat('creating_player');
 
-		let fullScreenToFullPage=opt.fullScreenToFullPageIfNotSupported&&this._.ios;
+		this._.fullScreenToFullPage=opt.fullScreenToFullPageIfNotSupported&&this._.ios;
 		//create player elements
 		this._.player=O2H({
 			_:'div',attr:{class:'NyaPTouch',id:'NyaPTouch'},child:[
 				this.videoFrame,
-				{_:'div',prop:{id:'controls'},child:[
+				{_:'div',prop:{id:'controls',hidden:opt.hideControlsBeforeVideoLoaded},child:[
 					{_:'div',prop:{id:'control_bottom'},child:[
 						{_:'div',attr:{id:'control_bottom_first'},child:[
 							{_:'div',attr:{id:'progress_leftside_button'},child:[
@@ -68,7 +69,7 @@ class NyaPTouch extends NyaPCommon{
 								]},
 							]},
 							{_:'span',prop:{id:'progress_rightside_button'},child:[
-								icon(fullScreenToFullPage?'fullPage':'fullScreen',{click:e=>this.playerMode(fullScreenToFullPage?'fullPage':'fullScreen')}),
+								icon(this._.fullScreenToFullPage?'fullPage':'fullScreen',{click:e=>this.playerMode(this._.fullScreenToFullPage?'fullPage':'fullScreen')}),
 							]},
 						]},
 						{_:'div',attr:{id:'control_bottom_second'},child:[
@@ -115,12 +116,17 @@ class NyaPTouch extends NyaPCommon{
 		//events
 		const events={
 			main_video:{
-				playing:e=>NP._iconActive('play',true),
+				playing:e=>{
+					NP._setDisplayTime(null,Utils.formatTime(video.duration,video.duration));
+					NP._iconActive('play',true);
+				},
 				pause:e=>{
 					NP._iconActive('play',false);
 				},
 				loadedmetadata:e=>{
 					NP._setDisplayTime(null,Utils.formatTime(video.duration,video.duration));
+					if(opt.hideControlsBeforeVideoLoaded)
+						$('#controls').hidden=false;
 				},
 				volumechange:e=>{
 					//show volume msg
@@ -291,7 +297,7 @@ class NyaPTouch extends NyaPCommon{
 				NP._setDisplayTime(null,Utils.formatTime(t,video.duration));
 			},
 			playerModeChange:mode=>{
-				['fullScreen'].forEach(m=>{
+				['fullScreen','fullPage'].forEach(m=>{
 					NP._iconActive(m,mode===m);
 				});
 			},
@@ -352,6 +358,16 @@ class NyaPTouch extends NyaPCommon{
 	_bottomControlTransformY(y=this._.bottomControlTransformY){
 		this._.bottomControlTransformY=y;
 		this.$('#control_bottom').style.transform=`translate3d(0,-${y}px,0)`;
+		if(y===0)this.danmakuStyleToggle(false);
+	}
+	danmakuInput(bool=this._.bottomControlTransformY===0){//hide or show danmaku input
+		let $=this.$;
+		if(bool)
+			this._bottomControlTransformY(this.$('#control_bottom').offsetHeight-NP.opt.bottomControlHeight);
+		else{
+			this._bottomControlTransformY(0);
+		}
+		setImmediate(()=>{bool?$('#danmaku_input').focus():this._.player.focus();});
 	}
 	drawProgress(){
 		const V=this.video,

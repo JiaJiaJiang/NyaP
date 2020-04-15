@@ -3620,7 +3620,7 @@ var TextDanmaku = /*#__PURE__*/function (_DanmakuFrameModule) {
       d.style.fontSize = Math.round((d.style.fontSize || this.defaultStyle.fontSize) * this.options.danmakuSizeScale);
       if (isNaN(d.style.fontSize) || d.style.fontSize === Infinity || d.style.fontSize === 0) d.style.fontSize = this.defaultStyle.fontSize * this.options.danmakuSizeScale;
       if (typeof d.mode !== 'number') d.mode = 0;
-      if (autoAddToScreen && ind < this.indexMark) this._addNewDanmaku(d);
+      if (autoAddToScreen) this._addNewDanmaku(d);
       return d;
     }
   }, {
@@ -10313,7 +10313,9 @@ var NyaPCommon = /*#__PURE__*/function (_NyaPlayerCore) {
   }, {
     key: "_iconActive",
     value: function _iconActive(name, bool) {
-      if (name === 'loop') this.$("#icon_span_".concat(name)).classList[bool ? 'add' : 'remove']('active_icon');
+      var _this$$;
+
+      (_this$$ = this.$("#icon_span_".concat(name))) === null || _this$$ === void 0 ? void 0 : _this$$.classList[bool ? 'add' : 'remove']('active_icon');
     }
   }, {
     key: "_setDisplayTime",
@@ -10323,6 +10325,39 @@ var NyaPCommon = /*#__PURE__*/function (_NyaPlayerCore) {
       if (current !== null) this.$('#current_time').innerHTML = current;
       if (total !== null) this.$('#total_time').innerHTML = total;
     }
+  }, {
+    key: "send",
+    value: function send() {
+      var _this3 = this;
+
+      var color = this._.danmakuColor || this.opt.danmaku.defaultDanmakuColor,
+          text = this.$('#danmaku_input').value,
+          size = this._.danmakuSize,
+          mode = this._.danmakuMode,
+          time = this.Danmaku.time,
+          d = {
+        color: color,
+        text: text,
+        size: size,
+        mode: mode,
+        time: time
+      };
+      var S = this.Danmaku.send(d, function (danmaku) {
+        if (danmaku && danmaku._ === 'text') _this3.$('#danmaku_input').value = '';
+        danmaku.highlight = true;
+
+        _this3.Danmaku.load(danmaku, true);
+
+        if (_this3.opt.uiOptions.autoHideDanmakuInput) {
+          _this3.danmakuInput(false);
+        }
+      });
+
+      if (!S) {
+        this.danmakuInput(false);
+        return;
+      }
+    }
   }]);
   return NyaPCommon;
 }(_index.NyaPlayerCore);
@@ -10331,7 +10366,7 @@ exports.NyaPCommon = NyaPCommon;
 
 var MsgBox = /*#__PURE__*/function () {
   function MsgBox(text, type, parentNode) {
-    var _this3 = this;
+    var _this4 = this;
 
     (0, _classCallCheck2.default)(this, MsgBox);
     this.using = false;
@@ -10342,7 +10377,7 @@ var MsgBox = /*#__PURE__*/function () {
       }
     });
     msg.addEventListener('click', function () {
-      return _this3.remove();
+      return _this4.remove();
     });
     this.parentNode = parentNode;
     this.setText(text);
@@ -10361,11 +10396,11 @@ var MsgBox = /*#__PURE__*/function () {
 
       return setTimeout;
     }(function (time) {
-      var _this4 = this;
+      var _this5 = this;
 
       if (this.timeout) clearTimeout(this.timeout);
       this.timeout = (0, _setTimeout3.default)(function () {
-        return _this4.remove();
+        return _this5.remove();
       }, time || Math.max((this.texts ? this.texts.length : 0) * 0.6 * 1000, 5000));
     })
   }, {
@@ -10389,7 +10424,7 @@ var MsgBox = /*#__PURE__*/function () {
   }, {
     key: "show",
     value: function show() {
-      var _this5 = this;
+      var _this6 = this;
 
       if (this.using) return;
       this.msg.style.opacity = 0;
@@ -10399,15 +10434,15 @@ var MsgBox = /*#__PURE__*/function () {
       }
 
       this.msg.parentNode && (0, _setTimeout3.default)(function () {
-        _this5.using = true;
-        _this5.msg.style.opacity = 1;
+        _this6.using = true;
+        _this6.msg.style.opacity = 1;
       }, 0);
       this.setTimeout();
     }
   }, {
     key: "remove",
     value: function remove() {
-      var _this6 = this;
+      var _this7 = this;
 
       if (!this.using) return;
       this.using = false;
@@ -10419,41 +10454,8 @@ var MsgBox = /*#__PURE__*/function () {
       }
 
       (0, _setTimeout3.default)(function () {
-        _this6.msg.parentNode && _this6.msg.parentNode.removeChild(_this6.msg);
+        _this7.msg.parentNode && _this7.msg.parentNode.removeChild(_this7.msg);
       }, 600);
-    }
-  }, {
-    key: "send",
-    value: function send() {
-      var _this7 = this;
-
-      var color = this._.danmakuColor || this.opt.danmaku.defaultDanmakuColor,
-          text = this.$('#danmaku_input').value,
-          size = this._.danmakuSize,
-          mode = this._.danmakuMode,
-          time = this.Danmaku.time,
-          d = {
-        color: color,
-        text: text,
-        size: size,
-        mode: mode,
-        time: time
-      };
-      var S = this.Danmaku.send(d, function (danmaku) {
-        if (danmaku && danmaku._ === 'text') _this7.$('#danmaku_input').value = '';
-        danmaku.highlight = true;
-
-        _this7.Danmaku.load(danmaku, true);
-
-        if (_this7.opt.uiOptions.autoHideDanmakuInput) {
-          _this7.danmakuInput(false);
-        }
-      });
-
-      if (!S) {
-        this.danmakuInput(false);
-        return;
-      }
     }
   }]);
   return MsgBox;
@@ -10469,6 +10471,8 @@ LGPL license
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
 var _splice = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/splice"));
+
+var _setImmediate2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-immediate"));
 
 var _isInteger = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/number/is-integer"));
 
@@ -10516,6 +10520,7 @@ var NyaPTouchOptions = {
   progressBarHeight: 14,
   progressPad: 10,
   //progress bar side margin
+  hideControlsBeforeVideoLoaded: true,
   fullScreenToFullPageIfNotSupported: true
 }; //touch player
 
@@ -10551,7 +10556,7 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
 
     _this.stat('creating_player');
 
-    var fullScreenToFullPage = opt.fullScreenToFullPageIfNotSupported && _this._.ios; //create player elements
+    _this._.fullScreenToFullPage = opt.fullScreenToFullPageIfNotSupported && _this._.ios; //create player elements
 
     _this._.player = O2H({
       _: 'div',
@@ -10562,7 +10567,8 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
       child: [_this.videoFrame, {
         _: 'div',
         prop: {
-          id: 'controls'
+          id: 'controls',
+          hidden: opt.hideControlsBeforeVideoLoaded
         },
         child: [{
           _: 'div',
@@ -10641,9 +10647,9 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
               prop: {
                 id: 'progress_rightside_button'
               },
-              child: [icon(fullScreenToFullPage ? 'fullPage' : 'fullScreen', {
+              child: [icon(_this._.fullScreenToFullPage ? 'fullPage' : 'fullScreen', {
                 click: function click(e) {
-                  return _this.playerMode(fullScreenToFullPage ? 'fullPage' : 'fullScreen');
+                  return _this.playerMode(_this._.fullScreenToFullPage ? 'fullPage' : 'fullScreen');
                 }
               })]
             }]
@@ -10734,13 +10740,17 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
     var events = {
       main_video: {
         playing: function playing(e) {
-          return NP._iconActive('play', true);
+          NP._setDisplayTime(null, _NyaPCommon2.Utils.formatTime(video.duration, video.duration));
+
+          NP._iconActive('play', true);
         },
         pause: function pause(e) {
           NP._iconActive('play', false);
         },
         loadedmetadata: function loadedmetadata(e) {
           NP._setDisplayTime(null, _NyaPCommon2.Utils.formatTime(video.duration, video.duration));
+
+          if (opt.hideControlsBeforeVideoLoaded) $('#controls').hidden = false;
         },
         volumechange: function volumechange(e) {
           var _context6;
@@ -10959,7 +10969,7 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
       playerModeChange: function playerModeChange(mode) {
         var _context12;
 
-        (0, _forEach.default)(_context12 = ['fullScreen']).call(_context12, function (m) {
+        (0, _forEach.default)(_context12 = ['fullScreen', 'fullPage']).call(_context12, function (m) {
           NP._iconActive(m, mode === m);
         });
       }
@@ -11057,6 +11067,22 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
       var y = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this._.bottomControlTransformY;
       this._.bottomControlTransformY = y;
       this.$('#control_bottom').style.transform = "translate3d(0,-".concat(y, "px,0)");
+      if (y === 0) this.danmakuStyleToggle(false);
+    }
+  }, {
+    key: "danmakuInput",
+    value: function danmakuInput() {
+      var _this2 = this;
+
+      var bool = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this._.bottomControlTransformY === 0;
+      //hide or show danmaku input
+      var $ = this.$;
+      if (bool) this._bottomControlTransformY(this.$('#control_bottom').offsetHeight - NP.opt.bottomControlHeight);else {
+        this._bottomControlTransformY(0);
+      }
+      (0, _setImmediate2.default)(function () {
+        bool ? $('#danmaku_input').focus() : _this2._.player.focus();
+      });
     }
   }, {
     key: "drawProgress",
@@ -11202,7 +11228,7 @@ function lineLength(ax, ay, bx, by) {
 
 window.NyaPTouch = NyaPTouch;
 
-},{"./NyaPCommon.js":323,"@babel/runtime-corejs3/core-js-stable/date/now":18,"@babel/runtime-corejs3/core-js-stable/instance/concat":20,"@babel/runtime-corejs3/core-js-stable/instance/for-each":23,"@babel/runtime-corejs3/core-js-stable/instance/splice":27,"@babel/runtime-corejs3/core-js-stable/instance/starts-with":28,"@babel/runtime-corejs3/core-js-stable/number/is-integer":30,"@babel/runtime-corejs3/core-js-stable/object/assign":31,"@babel/runtime-corejs3/core-js-stable/set-timeout":39,"@babel/runtime-corejs3/helpers/assertThisInitialized":57,"@babel/runtime-corejs3/helpers/classCallCheck":59,"@babel/runtime-corejs3/helpers/createClass":60,"@babel/runtime-corejs3/helpers/getPrototypeOf":63,"@babel/runtime-corejs3/helpers/inherits":64,"@babel/runtime-corejs3/helpers/interopRequireDefault":65,"@babel/runtime-corejs3/helpers/possibleConstructorReturn":70}],325:[function(require,module,exports){
+},{"./NyaPCommon.js":323,"@babel/runtime-corejs3/core-js-stable/date/now":18,"@babel/runtime-corejs3/core-js-stable/instance/concat":20,"@babel/runtime-corejs3/core-js-stable/instance/for-each":23,"@babel/runtime-corejs3/core-js-stable/instance/splice":27,"@babel/runtime-corejs3/core-js-stable/instance/starts-with":28,"@babel/runtime-corejs3/core-js-stable/number/is-integer":30,"@babel/runtime-corejs3/core-js-stable/object/assign":31,"@babel/runtime-corejs3/core-js-stable/set-immediate":37,"@babel/runtime-corejs3/core-js-stable/set-timeout":39,"@babel/runtime-corejs3/helpers/assertThisInitialized":57,"@babel/runtime-corejs3/helpers/classCallCheck":59,"@babel/runtime-corejs3/helpers/createClass":60,"@babel/runtime-corejs3/helpers/getPrototypeOf":63,"@babel/runtime-corejs3/helpers/inherits":64,"@babel/runtime-corejs3/helpers/interopRequireDefault":65,"@babel/runtime-corejs3/helpers/possibleConstructorReturn":70}],325:[function(require,module,exports){
 module.exports={"zh-CN":{"play":"播放","Send":"发送","Done":"完成","loop":"循环","pause":"暂停","muted":"静音","volume":"音量","settings":"设置","wheeling":"滚轮","hex color":"Hex颜色","Loading core":"加载核心","Loading video":"加载视频","Loading plugin":"加载插件","full page(P)":"全页模式(P)","Loading danmaku":"加载弹幕","Creating player":"创建播放器","full screen(F)":"全屏模式(F)","danmaku toggle(D)":"弹幕开关(D)","Input danmaku here":"在这里输入弹幕","Loading danmaku frame":"加载弹幕框架","danmaku input(Enter)":"弹幕输入框(回车)","Failed to change to fullscreen mode":"无法切换到全屏模式","loading_core":"加载核心","loading_plugin":"加载插件","loading_danmakuFrame":"加载弹幕框架","creating_player":"创建播放器","loading_danmaku":"加载弹幕","loading_video":"加载视频"}}
 },{}]},{},[324])
 

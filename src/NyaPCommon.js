@@ -200,12 +200,33 @@ class NyaPCommon extends NyaPlayerCore{
 		requestAnimationFrame(()=>msg.show());
 	}
 	_iconActive(name,bool){
-		if(name==='loop')
-		this.$(`#icon_span_${name}`).classList[bool?'add':'remove']('active_icon');
+		this.$(`#icon_span_${name}`)?.classList[bool?'add':'remove']('active_icon');
 	}
 	_setDisplayTime(current=null,total=null){
 			if(current!==null)this.$('#current_time').innerHTML=current;
 			if(total!==null)this.$('#total_time').innerHTML=total;
+	}
+
+	send(){
+		let color=this._.danmakuColor||this.opt.danmaku.defaultDanmakuColor,
+			text=this.$('#danmaku_input').value,
+			size=this._.danmakuSize,
+			mode=this._.danmakuMode,
+			time=this.Danmaku.time,
+			d={color,text,size,mode,time};
+
+		let S=this.Danmaku.send(d,danmaku=>{
+			if(danmaku&&danmaku._==='text')
+				this.$('#danmaku_input').value='';
+			danmaku.highlight=true;
+			this.Danmaku.load(danmaku,true);
+			if(this.opt.uiOptions.autoHideDanmakuInput){this.danmakuInput(false);}
+		});
+
+		if(!S){
+			this.danmakuInput(false);
+			return;
+		}
 	}
 }
 
@@ -258,27 +279,6 @@ class MsgBox{
 		setTimeout(()=>{
 			this.msg.parentNode&&this.msg.parentNode.removeChild(this.msg);
 		},600);
-	}
-	send(){
-		let color=this._.danmakuColor||this.opt.danmaku.defaultDanmakuColor,
-			text=this.$('#danmaku_input').value,
-			size=this._.danmakuSize,
-			mode=this._.danmakuMode,
-			time=this.Danmaku.time,
-			d={color,text,size,mode,time};
-
-		let S=this.Danmaku.send(d,danmaku=>{
-			if(danmaku&&danmaku._==='text')
-				this.$('#danmaku_input').value='';
-			danmaku.highlight=true;
-			this.Danmaku.load(danmaku,true);
-			if(this.opt.uiOptions.autoHideDanmakuInput){this.danmakuInput(false);}
-		});
-
-		if(!S){
-			this.danmakuInput(false);
-			return;
-		}
 	}
 }
 

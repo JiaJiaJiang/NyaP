@@ -2754,7 +2754,7 @@ class TextDanmaku extends _danmakuFrame.DanmakuFrameModule {
     d.style.fontSize = Math.round((d.style.fontSize || this.defaultStyle.fontSize) * this.options.danmakuSizeScale);
     if (isNaN(d.style.fontSize) || d.style.fontSize === Infinity || d.style.fontSize === 0) d.style.fontSize = this.defaultStyle.fontSize * this.options.danmakuSizeScale;
     if (typeof d.mode !== 'number') d.mode = 0;
-    if (autoAddToScreen && ind < this.indexMark) this._addNewDanmaku(d);
+    if (autoAddToScreen) this._addNewDanmaku(d);
     return d;
   }
 
@@ -7964,12 +7964,43 @@ class NyaPCommon extends _index.NyaPlayerCore {
   }
 
   _iconActive(name, bool) {
-    if (name === 'loop') this.$(`#icon_span_${name}`).classList[bool ? 'add' : 'remove']('active_icon');
+    var _this$$;
+
+    (_this$$ = this.$(`#icon_span_${name}`)) === null || _this$$ === void 0 ? void 0 : _this$$.classList[bool ? 'add' : 'remove']('active_icon');
   }
 
   _setDisplayTime(current = null, total = null) {
     if (current !== null) this.$('#current_time').innerHTML = current;
     if (total !== null) this.$('#total_time').innerHTML = total;
+  }
+
+  send() {
+    let color = this._.danmakuColor || this.opt.danmaku.defaultDanmakuColor,
+        text = this.$('#danmaku_input').value,
+        size = this._.danmakuSize,
+        mode = this._.danmakuMode,
+        time = this.Danmaku.time,
+        d = {
+      color,
+      text,
+      size,
+      mode,
+      time
+    };
+    let S = this.Danmaku.send(d, danmaku => {
+      if (danmaku && danmaku._ === 'text') this.$('#danmaku_input').value = '';
+      danmaku.highlight = true;
+      this.Danmaku.load(danmaku, true);
+
+      if (this.opt.uiOptions.autoHideDanmakuInput) {
+        this.danmakuInput(false);
+      }
+    });
+
+    if (!S) {
+      this.danmakuInput(false);
+      return;
+    }
   }
 
 }
@@ -8039,35 +8070,6 @@ class MsgBox {
     (0, _setTimeout2.default)(() => {
       this.msg.parentNode && this.msg.parentNode.removeChild(this.msg);
     }, 600);
-  }
-
-  send() {
-    let color = this._.danmakuColor || this.opt.danmaku.defaultDanmakuColor,
-        text = this.$('#danmaku_input').value,
-        size = this._.danmakuSize,
-        mode = this._.danmakuMode,
-        time = this.Danmaku.time,
-        d = {
-      color,
-      text,
-      size,
-      mode,
-      time
-    };
-    let S = this.Danmaku.send(d, danmaku => {
-      if (danmaku && danmaku._ === 'text') this.$('#danmaku_input').value = '';
-      danmaku.highlight = true;
-      this.Danmaku.load(danmaku, true);
-
-      if (this.opt.uiOptions.autoHideDanmakuInput) {
-        this.danmakuInput(false);
-      }
-    });
-
-    if (!S) {
-      this.danmakuInput(false);
-      return;
-    }
   }
 
 }

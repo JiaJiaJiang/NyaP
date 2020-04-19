@@ -25,6 +25,9 @@ const NyaPCommonOptions={
 	},
 	// for ui
 	uiOptions:{
+		danmakuColors:['fff','6cf','ff0','f00','0f0','00f','f0f','000'],//colors in the danmaku style pannel
+		danmakuModes:[0,3,2,1],//0:right	1:left	2:bottom	3:top  ;; mode in the danmaku style pannel
+		danmakuSizes:[20,24,36],//danmaku size buttons in the danmaku style pannel
 		danmakuColor:null,//default color to fill the color option input
 		danmakuMode:0,//0: right to left.
 		danmakuSize:24,

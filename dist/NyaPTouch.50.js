@@ -761,7 +761,6 @@ class NyaPlayerCore extends NyaPEventEmitter {
       this.on('coreLoad', () => done());
       this.on('coreLoadError', e => done(e));
     }
-    this.log('%c https://github.com/JiaJiaJiang/NyaP-Core/ ', 'log', "background:#6f8fa2;color:#ccc;padding:.3em");
     this.debug('Languages:' + this.i18n.langsArr.join(','));
     opt = this.opt = _utils.Utils.deepAssign({}, NyaPCoreOptions, opt); //add events
 
@@ -6996,6 +6995,12 @@ const NyaPCommonOptions = {
   },
   // for ui
   uiOptions: {
+    danmakuColors: ['fff', '6cf', 'ff0', 'f00', '0f0', '00f', 'f0f', '000'],
+    //colors in the danmaku style pannel
+    danmakuModes: [0, 3, 2, 1],
+    //0:right	1:left	2:bottom	3:top  ;; mode in the danmaku style pannel
+    danmakuSizes: [20, 24, 36],
+    //danmaku size buttons in the danmaku style pannel
     danmakuColor: null,
     //default color to fill the color option input
     danmakuMode: 0,
@@ -7375,12 +7380,6 @@ var _NyaPCommon = require("./NyaPCommon.js");
 const O2H = _NyaPCommon.DomTools.Object2HTML; //NyaPTouch options
 
 const NyaPTouchOptions = {
-  danmakuColors: ['fff', '6cf', 'ff0', 'f00', '0f0', '00f', 'f0f', '000'],
-  //colors in the danmaku style pannel
-  danmakuModes: [0, 3, 2, 1],
-  //0:right	1:left	2:bottom	3:top   ;; mode in the danmaku style pannel
-  danmakuSizes: [20, 24, 36],
-  //danmaku size buttons in the danmaku style pannel
   dragToSeek: true,
   //drag ←→ direction on the video to seek
   dragToChangeVolume: true,
@@ -7519,6 +7518,7 @@ class NyaPTouch extends _NyaPCommon.NyaPCommon {
               _: 'span',
               attr: {
                 id: 'danmakuStyleEditor',
+                class: 'NyaP_hideNotFirstChildren',
                 tabindex: 0
               },
               child: [icon('danmakuStyle', {
@@ -7597,8 +7597,12 @@ class NyaPTouch extends _NyaPCommon.NyaPCommon {
           NP._iconActive('play', false);
         },
         loadedmetadata: e => {
-          NP._setDisplayTime(null, _NyaPCommon.Utils.formatTime(video.duration, video.duration));
+          console.log('视频时间1', video.duration);
+          requestAnimationFrame(() => {
+            console.log('视频时间2', video.duration);
 
+            NP._setDisplayTime(null, _NyaPCommon.Utils.formatTime(video.duration, video.duration));
+          });
           if (opt.hideControlsBeforeVideoLoaded) $('#controls').hidden = false;
         },
         volumechange: e => {
@@ -7822,7 +7826,7 @@ class NyaPTouch extends _NyaPCommon.NyaPCommon {
       var _context6, _context7, _context8;
 
       //danmaku sizes
-      opt.danmakuSizes && (0, _forEach.default)(_context6 = opt.danmakuSizes).call(_context6, (s, ind) => {
+      opt.uiOptions.danmakuSizes && (0, _forEach.default)(_context6 = opt.uiOptions.danmakuSizes).call(_context6, (s, ind) => {
         let el = O2H({
           _: 'span',
           attr: {
@@ -7836,12 +7840,12 @@ class NyaPTouch extends _NyaPCommon.NyaPCommon {
         });
         $('#danmaku_size_box').appendChild(el);
 
-        if (typeof opt.defaultDanmakuSize === 'number' && s === opt.defaultDanmakuSize) {
+        if (typeof opt.uiOptions.danmakuSize === 'number' && s === opt.uiOptions.danmakuSize) {
           el.click();
         }
       }); //danmaku colors
 
-      opt.danmakuColors && (0, _forEach.default)(_context7 = opt.danmakuColors).call(_context7, c => {
+      opt.uiOptions.danmakuColors && (0, _forEach.default)(_context7 = opt.uiOptions.danmakuColors).call(_context7, c => {
         let el = O2H({
           _: 'span',
           attr: {
@@ -7855,13 +7859,13 @@ class NyaPTouch extends _NyaPCommon.NyaPCommon {
         $('#danmaku_color_box').appendChild(el);
       }); //danmaku modes
 
-      opt.danmakuModes && (0, _forEach.default)(_context8 = opt.danmakuModes).call(_context8, m => {
-        var _opt, _opt$uiOptions;
+      opt.uiOptions.danmakuModes && (0, _forEach.default)(_context8 = opt.uiOptions.danmakuModes).call(_context8, m => {
+        var _opt$uiOptions;
 
         let el = icon(`danmakuMode${m}`);
         $('#danmaku_mode_box').appendChild(el);
 
-        if ((0, _isInteger.default)((_opt = opt) === null || _opt === void 0 ? void 0 : (_opt$uiOptions = _opt.uiOptions) === null || _opt$uiOptions === void 0 ? void 0 : _opt$uiOptions.danmakuMode) && m === opt.uiOptions.danmakuMode) {
+        if ((0, _isInteger.default)((_opt$uiOptions = opt.uiOptions) === null || _opt$uiOptions === void 0 ? void 0 : _opt$uiOptions.danmakuMode) && m === opt.uiOptions.danmakuMode) {
           el.click();
         }
       });
@@ -7883,8 +7887,8 @@ class NyaPTouch extends _NyaPCommon.NyaPCommon {
     this.$('#controls').hidden = !bool;
   }
 
-  danmakuStyleToggle(bool = !this.$('#danmakuStyleEditor').style.overflow) {
-    this.$('#danmakuStyleEditor').style.overflow = bool ? 'initial' : '';
+  danmakuStyleToggle(bool = this.$('#danmakuStyleEditor').classList.contains('NyaP_hideNotFirstChildren')) {
+    this.$('#danmakuStyleEditor').classList[bool ? 'remove' : 'add']('NyaP_hideNotFirstChildren');
   }
 
   _bottomControlTransformY(y = this._.bottomControlTransformY) {

@@ -19,6 +19,7 @@ LGPL license
 	}
 	span[id^="icon_span_"]{
 		display: inline-block;
+		flex-shrink: 0;
 		background-color: inherit;
 		svg{
 			pointer-events: none;
@@ -59,7 +60,7 @@ LGPL license
 			width: 100%;
 			display: flex;
 			position: relative;
-		    justify-content: flex-end;
+		    justify-content: center;
 			&>div{
 				display: inline-block;
 			}
@@ -70,13 +71,13 @@ LGPL license
 
 		#danmakuStyleEditor{
 			position: relative;
-			overflow: hidden;
 			outline: 0;
+			flex-shrink: 0;
 
 			#danmaku_mode_box,#danmaku_size_box,#danmaku_color_box{
 				font-size: 0;
 				position: absolute;
-				background-color: #fbfbfb;
+				background-color: #eaeaea;
 				display: flex;
 
 				span.active{
@@ -87,9 +88,9 @@ LGPL license
 				}
 			}
 			#danmaku_size_box{
-				bottom: 100%;
-				width: 100%;
-				flex-direction:column;
+				left:0;
+				bottom: 400%;
+				width: 400%;
 				span{
 				    width: 100%;
 				    height: 50px;
@@ -102,13 +103,13 @@ LGPL license
 				}
 			}
 			#danmaku_mode_box{
-				bottom: 100%;
-				left: 100%;
+				bottom: 300%;
+				left: 0;
 			}
 			#danmaku_color_box{
 				height: 100%;
-				left: 100%;
-				top:0;
+				left: 0;
+				bottom: 200%;
 				align-items:center;
 			    padding-right: 6px;
 				&>span{
@@ -117,14 +118,14 @@ LGPL license
 					margin-left: 6px;
 					border-radius: 15px;
 					display: inline-block;
-					border: 1px solid #ddd;
+					border: 1px solid #5f5e5e;
 				}
 			}
 		}
 		#danmaku_input{
 		    outline: 0;
 		    flex-grow: 1;
-		    padding: 0 7px;
+			padding: 9px 4px;
 		    border: 1px solid #ccc;
 		    box-sizing: border-box;
 		    user-select: initial;

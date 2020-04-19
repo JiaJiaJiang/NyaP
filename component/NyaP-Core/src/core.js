@@ -98,7 +98,6 @@ class NyaPlayerCore extends NyaPEventEmitter{
 			this.on('coreLoad',()=>done());
 			this.on('coreLoadError',e=>done(e));
 		}
-		this.log('%c https://github.com/JiaJiaJiang/NyaP-Core/ ','log',"background:#6f8fa2;color:#ccc;padding:.3em");
 		this.debug('Languages:'+this.i18n.langsArr.join(','));
 
 		opt=this.opt=Utils.deepAssign({},NyaPCoreOptions,opt);

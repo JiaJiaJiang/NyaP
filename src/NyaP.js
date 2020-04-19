@@ -13,9 +13,7 @@ const O2H=DomTools.Object2HTML;
 
 //NyaP options
 const NyaPOptions={
-	danmakuColors:['fff','6cf','ff0','f00','0f0','00f','f0f','000'],//colors in the danmaku style pannel
-	danmakuModes:[0,3,2,1],//0:right	1:left	2:bottom	3:top  ;; mode in the danmaku style pannel
-	danmakuSizes:[20,24,36],//danmaku size buttons in the danmaku style pannel
+	
 }
 
 //normal player
@@ -69,7 +67,7 @@ class NyaP extends NyaPCommon{
 								]},
 								{_:'input',attr:{id:'danmaku_input',placeholder:_t('Input danmaku here')}},
 								{_:'span',prop:{id:'danmaku_submit',innerHTML:_t('Send')}},
-							]}
+							]},
 						]},
 						{_:'span',attr:{id:'control_right'},child:[
 							icon('addDanmaku',{click:e=>NP.danmakuInput()},{title:_t('danmaku input(Enter)')}),
@@ -245,7 +243,7 @@ class NyaP extends NyaPCommon{
 		//danmaku ui
 		if(this._danmakuEnabled){
 			//danmaku sizes
-			opt.danmakuSizes&&opt.danmakuSizes.forEach((s,ind)=>{
+			opt.uiOptions.danmakuSizes&&opt.uiOptions.danmakuSizes.forEach((s,ind)=>{
 				let e=O2H({_:'span',attr:{style:`font-size:${12+ind*3}px;`,title:s},prop:{size:s},child:['A']});
 				$('#danmaku_size_box').appendChild(e);
 				if(s===opt?.uiOptions?.danmakuSize){//click specified button
@@ -253,15 +251,15 @@ class NyaP extends NyaPCommon{
 				}
 			});
 			//danmaku colors
-			opt.danmakuColors&&opt.danmakuColors.forEach(c=>{
+			opt.uiOptions.danmakuColors&&opt.uiOptions.danmakuColors.forEach(c=>{
 				let e=O2H({_:'span',attr:{style:`background-color:#${c};`,title:c},prop:{color:c}});
 				$('#danmaku_color_box').appendChild(e);
 			});
-			if(opt?.uiOptions?.danmakuColor){//set default color
+			if(opt.uiOptions?.danmakuColor){//set default color
 				$('#danmaku_color').value=opt.uiOptions.danmakuColor;
 			}
 			//danmaku modes
-			opt.danmakuModes&&opt.danmakuModes.forEach(m=>{
+			opt.uiOptions.danmakuModes&&opt.uiOptions.danmakuModes.forEach(m=>{
 				let e=icon(`danmakuMode${m}`);
 				$('#danmaku_mode_box').appendChild(e);
 				if(m===opt?.uiOptions?.danmakuMode){//click specified button

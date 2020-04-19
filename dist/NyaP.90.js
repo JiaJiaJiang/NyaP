@@ -883,8 +883,6 @@ var NyaPlayerCore = /*#__PURE__*/function (_NyaPEventEmitter) {
       });
     }
 
-    _this.log('%c https://github.com/JiaJiaJiang/NyaP-Core/ ', 'log', "background:#6f8fa2;color:#ccc;padding:.3em");
-
     _this.debug('Languages:' + _this.i18n.langsArr.join(','));
 
     opt = _this.opt = _utils.Utils.deepAssign({}, NyaPCoreOptions, opt); //add events
@@ -10017,14 +10015,7 @@ var _NyaPCommon2 = require("./NyaPCommon.js");
 
 var O2H = _NyaPCommon2.DomTools.Object2HTML; //NyaP options
 
-var NyaPOptions = {
-  danmakuColors: ['fff', '6cf', 'ff0', 'f00', '0f0', '00f', 'f0f', '000'],
-  //colors in the danmaku style pannel
-  danmakuModes: [0, 3, 2, 1],
-  //0:right	1:left	2:bottom	3:top  ;; mode in the danmaku style pannel
-  danmakuSizes: [20, 24, 36] //danmaku size buttons in the danmaku style pannel
-
-}; //normal player
+var NyaPOptions = {}; //normal player
 
 var NyaP = /*#__PURE__*/function (_NyaPCommon) {
   (0, _inherits2.default)(NyaP, _NyaPCommon);
@@ -10456,10 +10447,10 @@ var NyaP = /*#__PURE__*/function (_NyaPCommon) {
 
 
     if (_this._danmakuEnabled) {
-      var _context12, _context13, _opt2, _opt2$uiOptions, _context14;
+      var _context12, _context13, _opt$uiOptions2, _context14;
 
       //danmaku sizes
-      opt.danmakuSizes && (0, _forEach.default)(_context12 = opt.danmakuSizes).call(_context12, function (s, ind) {
+      opt.uiOptions.danmakuSizes && (0, _forEach.default)(_context12 = opt.uiOptions.danmakuSizes).call(_context12, function (s, ind) {
         var _opt, _opt$uiOptions;
 
         var e = O2H({
@@ -10481,7 +10472,7 @@ var NyaP = /*#__PURE__*/function (_NyaPCommon) {
         }
       }); //danmaku colors
 
-      opt.danmakuColors && (0, _forEach.default)(_context13 = opt.danmakuColors).call(_context13, function (c) {
+      opt.uiOptions.danmakuColors && (0, _forEach.default)(_context13 = opt.uiOptions.danmakuColors).call(_context13, function (c) {
         var e = O2H({
           _: 'span',
           attr: {
@@ -10495,19 +10486,19 @@ var NyaP = /*#__PURE__*/function (_NyaPCommon) {
         $('#danmaku_color_box').appendChild(e);
       });
 
-      if ((_opt2 = opt) === null || _opt2 === void 0 ? void 0 : (_opt2$uiOptions = _opt2.uiOptions) === null || _opt2$uiOptions === void 0 ? void 0 : _opt2$uiOptions.danmakuColor) {
+      if ((_opt$uiOptions2 = opt.uiOptions) === null || _opt$uiOptions2 === void 0 ? void 0 : _opt$uiOptions2.danmakuColor) {
         //set default color
         $('#danmaku_color').value = opt.uiOptions.danmakuColor;
       } //danmaku modes
 
 
-      opt.danmakuModes && (0, _forEach.default)(_context14 = opt.danmakuModes).call(_context14, function (m) {
-        var _opt3, _opt3$uiOptions;
+      opt.uiOptions.danmakuModes && (0, _forEach.default)(_context14 = opt.uiOptions.danmakuModes).call(_context14, function (m) {
+        var _opt2, _opt2$uiOptions;
 
         var e = icon("danmakuMode".concat(m));
         $('#danmaku_mode_box').appendChild(e);
 
-        if (m === ((_opt3 = opt) === null || _opt3 === void 0 ? void 0 : (_opt3$uiOptions = _opt3.uiOptions) === null || _opt3$uiOptions === void 0 ? void 0 : _opt3$uiOptions.danmakuMode)) {
+        if (m === ((_opt2 = opt) === null || _opt2 === void 0 ? void 0 : (_opt2$uiOptions = _opt2.uiOptions) === null || _opt2$uiOptions === void 0 ? void 0 : _opt2$uiOptions.danmakuMode)) {
           //click specified button
           e.click();
         }
@@ -10852,6 +10843,12 @@ var NyaPCommonOptions = {
   },
   // for ui
   uiOptions: {
+    danmakuColors: ['fff', '6cf', 'ff0', 'f00', '0f0', '00f', 'f0f', '000'],
+    //colors in the danmaku style pannel
+    danmakuModes: [0, 3, 2, 1],
+    //0:right	1:left	2:bottom	3:top  ;; mode in the danmaku style pannel
+    danmakuSizes: [20, 24, 36],
+    //danmaku size buttons in the danmaku style pannel
     danmakuColor: null,
     //default color to fill the color option input
     danmakuMode: 0,

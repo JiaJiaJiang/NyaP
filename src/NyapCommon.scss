@@ -14,6 +14,9 @@ LGPL license
 .NyaP_fullfill{
 	@include NyaP_fullfill;
 }
+.NyaP_hideNotFirstChildren *:not(:first-child){
+	display: none!important;
+}
 
 @mixin text_stroke($value) {
 	-webkit-text-stroke: $value;

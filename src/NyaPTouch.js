@@ -12,14 +12,12 @@ const O2H=DomTools.Object2HTML;
 
 //NyaPTouch options
 const NyaPTouchOptions={
-	danmakuColors:['fff','6cf','ff0','f00','0f0','00f','f0f','000'],//colors in the danmaku style pannel
-	danmakuModes:[0,3,2,1],//0:right	1:left	2:bottom	3:top   ;; mode in the danmaku style pannel
-	danmakuSizes:[20,24,36],//danmaku size buttons in the danmaku style pannel
 	dragToSeek:true,//drag ←→ direction on the video to seek
 	dragToChangeVolume:true,//drag ↑↓ direction on the video to change volume
 	bottomControlHeight:50,//control bar height
 	progressBarHeight:14,
 	progressPad:10,//progress bar side margin
+	hideControlsBeforeVideoLoaded:true,
 	fullScreenToFullPageIfNotSupported:true,
 }
 
@@ -42,46 +40,46 @@ class NyaPTouch extends NyaPCommon{
 
 		this.stat('creating_player');
 
-		let fullScreenToFullPage=opt.fullScreenToFullPageIfNotSupported&&this._.ios;
+		this._.fullScreenToFullPage=opt.fullScreenToFullPageIfNotSupported&&this._.ios;
 		//create player elements
 		this._.player=O2H({
 			_:'div',attr:{class:'NyaPTouch',id:'NyaPTouch'},child:[
 				this.videoFrame,
-				{_:'div',prop:{id:'controls'},child:[
+				{_:'div',prop:{id:'controls',hidden:opt.hideControlsBeforeVideoLoaded},child:[
 					{_:'div',prop:{id:'control_bottom'},child:[
 						{_:'div',attr:{id:'control_bottom_first'},child:[
-							{_:'div',attr:{id:'progress_leftside_button'},child:[
-								icon('play',{click:e=>this.playToggle()})
-							]},
-							{_:'div',prop:{id:'progress_info'},child:[
-								{_:'span',attr:{id:'progress_frame'},child:[
-									{_:'div',prop:{id:'progress_wrap'},child:[
-										{_:'div',prop:{id:'buffed_bar'}},
-										{_:'div',prop:{id:'progress_bar'}},
-										{_:'div',prop:{id:'seekTo_bar',hidden:true}},
+							{_:'div',attr:{id:'progress_area'},child:[
+								{_:'div',prop:{id:'progress_info'},child:[
+									{_:'span',attr:{id:'progress_frame'},child:[
+										{_:'div',prop:{id:'progress_wrap'},child:[
+											{_:'div',prop:{id:'buffed_bar'}},
+											{_:'div',prop:{id:'progress_bar'}},
+											{_:'div',prop:{id:'seekTo_bar',hidden:true}},
+										]},
+									]},
+									{_:'span',prop:{id:'time'},child:[
+										{_:'span',prop:{id:'current_time'},child:['00:00']},
+										'/',
+										{_:'span',prop:{id:'total_time'},child:['00:00']},
 									]},
 								]},
-								{_:'span',prop:{id:'time'},child:[
-									{_:'span',prop:{id:'current_time'},child:['00:00']},
-									'/',
-									{_:'span',prop:{id:'total_time'},child:['00:00']},
-								]},
 							]},
-							{_:'span',prop:{id:'progress_rightside_button'},child:[
-								icon(fullScreenToFullPage?'fullPage':'fullScreen',{click:e=>this.playerMode(fullScreenToFullPage?'fullPage':'fullScreen')}),
+							{_:'span',prop:{id:'button_area'},child:[
+								icon('play',{click:e=>this.playToggle()}),
+								icon('danmakuToggle',{click:e=>this.Danmaku.toggle()},{class:'active_icon'}),
+								icon('loop',{click:e=>video.loop=!video.loop}),
+								icon('volume',{click:e=>video.muted=!video.muted}),
+								icon(this._.fullScreenToFullPage?'fullPage':'fullScreen',{click:e=>this.playerMode(this._.fullScreenToFullPage?'fullPage':'fullScreen')}),
 							]},
 						]},
 						{_:'div',attr:{id:'control_bottom_second'},child:[
-							{_:'span',attr:{id:'danmakuStyleEditor',tabindex:0},child:[
+							{_:'span',attr:{id:'danmakuStyleEditor',class:'NyaP_hideNotFirstChildren',tabindex:0},child:[
 								icon('danmakuStyle',{click:e=>this.danmakuStyleToggle()}),
 								{_:'div',attr:{id:'danmaku_size_box'}},
 								{_:'div',attr:{id:'danmaku_mode_box'}},
 								{_:'div',attr:{id:'danmaku_color_box'}},
 							]},
 							{_:'input',attr:{id:'danmaku_input',placeholder:_t('Input danmaku here')}},
-							icon('danmakuToggle',{click:e=>this.Danmaku.toggle()},{class:'active_icon'}),
-							icon('loop',{click:e=>video.loop=!video.loop}),
-							icon('volume',{click:e=>video.muted=!video.muted}),
 						]},
 					]},
 				]},
@@ -105,7 +103,7 @@ class NyaPTouch extends NyaPCommon{
 			height:this.opt.progressBarHeight+'px',
 			marginTop:(-this.opt.progressBarHeight/2+1)+'px',
 		});
-		$('#control_bottom').style.marginTop=`-${this.opt.bottomControlHeight}px`;
+		// $('#control_bottom').style.marginBottom=`-${this.opt.bottomControlHeight}px`;
 
 		//add extra touch event to video
 		extendEvent.doubletouch($('#main_video'));
@@ -115,18 +113,27 @@ class NyaPTouch extends NyaPCommon{
 		//events
 		const events={
 			main_video:{
-				playing:e=>NP._iconActive('play',true),
+				playing:e=>{
+					NP._setDisplayTime(null,Utils.formatTime(video.duration,video.duration));
+					NP._iconActive('play',true);
+				},
 				pause:e=>{
 					NP._iconActive('play',false);
 				},
 				loadedmetadata:e=>{
-					NP._setDisplayTime(null,Utils.formatTime(video.duration,video.duration));
+					console.log('视频时间1',video.duration)
+					requestAnimationFrame(()=>{
+						console.log('视频时间2',video.duration)
+						NP._setDisplayTime(null,Utils.formatTime(video.duration,video.duration));
+					});
+					if(opt.hideControlsBeforeVideoLoaded)
+						$('#controls').hidden=false;
 				},
 				volumechange:e=>{
 					//show volume msg
 					NP._.volumeBox.renew(`${_t('volume')}:${(video.volume*100).toFixed(0)}%`+`${video.muted?('('+_t('muted')+')'):''}`,3000);
 					//change icon style
-					Utils.setAttrs($('#volume_circle'),{'stroke-dasharray':`${video.volume*12*Math.PI} 90`,style:`fill-opacity:${video.muted?.2:.6}!important`});
+					DomTools.setAttrs($('#volume_circle'),{'stroke-dasharray':`${video.volume*12*Math.PI} 90`,style:`fill-opacity:${video.muted?.2:.6}!important`});
 				},
 				progress:e=>NP.drawProgress(),
 				click:e=>{
@@ -191,19 +198,13 @@ class NyaPTouch extends NyaPCommon{
 						NP._.bottomControlDraging=(Math.abs(e.deltaY)>Math.abs(e.deltaX));
 					}
 					if(NP._.bottomControlDraging)
-						NP._bottomControlTransformY(
-							Utils.clamp(
-								NP._.bottomControlTransformY-e.deltaY,
-								0,
-								$('#control_bottom').offsetHeight-NP.opt.bottomControlHeight
-							)
-						);
+						NP._bottomControlTransformY(NP._.bottomControlTransformY-e.deltaY);
 				},
 				touchend:e=>{
 					if(NP._.bottomControlDraging==undefined)return;
 					NP._.bottomControlDraging=undefined;
-					let R=$('#control_bottom').offsetHeight-NP.opt.bottomControlHeight;
-					NP._bottomControlTransformY(NP._.bottomControlTransformY<(R/2)?0:R);
+					let R=$('#control_bottom').offsetHeight/2;
+					NP._bottomControlTransformY(NP._.bottomControlTransformY<R?0:NP.opt.bottomControlHeight);
 				},
 			},
 			progress_frame:{
@@ -269,7 +270,7 @@ class NyaPTouch extends NyaPCommon{
 							});
 						}else{
 							NP._.danmakuColor=undefined;
-							c=NP.Danmaku.isVaildColor(NP.opt.defaultDanmakuColor);
+							c=NP.Danmaku.isVaildColor(NP.opt.danmaku.defaultDanmakuColor);
 							Utils.toArray($('#danmaku_color_box').childNodes).forEach(cp=>cp.classList.remove('active'));
 						}
 					}
@@ -291,7 +292,7 @@ class NyaPTouch extends NyaPCommon{
 				NP._setDisplayTime(null,Utils.formatTime(t,video.duration));
 			},
 			playerModeChange:mode=>{
-				['fullScreen'].forEach(m=>{
+				['fullScreen','fullPage'].forEach(m=>{
 					NP._iconActive(m,mode===m);
 				});
 			},
@@ -310,23 +311,23 @@ class NyaPTouch extends NyaPCommon{
 		//danmaku ui
 		if(this._danmakuEnabled){
 			//danmaku sizes
-			opt.danmakuSizes&&opt.danmakuSizes.forEach((s,ind)=>{
+			opt.uiOptions.danmakuSizes&&opt.uiOptions.danmakuSizes.forEach((s,ind)=>{
 				let el=O2H({_:'span',attr:{style:`font-size:${16+ind*3}px;`,title:s},prop:{size:s},child:['A']});
 				$('#danmaku_size_box').appendChild(el);
-				if(typeof opt.defaultDanmakuSize === 'number' && s===opt.defaultDanmakuSize){
+				if(typeof opt.uiOptions.danmakuSize === 'number' && s===opt.uiOptions.danmakuSize){
 					el.click();
 				}
 			});
 			//danmaku colors
-			opt.danmakuColors&&opt.danmakuColors.forEach(c=>{
+			opt.uiOptions.danmakuColors&&opt.uiOptions.danmakuColors.forEach(c=>{
 				let el=O2H({_:'span',attr:{style:`background-color:#${c};`,title:c},prop:{color:c}});
 				$('#danmaku_color_box').appendChild(el);
 			});
 			//danmaku modes
-			opt.danmakuModes&&opt.danmakuModes.forEach(m=>{
+			opt.uiOptions.danmakuModes&&opt.uiOptions.danmakuModes.forEach(m=>{
 				let el=icon(`danmakuMode${m}`);
 				$('#danmaku_mode_box').appendChild(el);
-				if(Number.isInteger(opt.defaultDanmakuMode)&&(m===opt?.uiOptions?.danmakuMode)){
+				if(Number.isInteger(opt.uiOptions?.danmakuMode)&&(m===opt.uiOptions.danmakuMode)){
 					el.click();
 				}
 			});
@@ -342,31 +343,30 @@ class NyaPTouch extends NyaPCommon{
 
 		this.statResult('creating_player');
 	}
-	send(){
-		let color=this._.danmakuColor||this.opt.defaultDanmakuColor,
-			text=this.$('#danmaku_input').value,
-			size=this._.danmakuSize,
-			mode=this._.danmakuMode,
-			time=this.time,
-			d={color,text,size,mode,time};
-
-		this.Danmaku.send(d,(danmaku)=>{
-			if(danmaku&&danmaku._==='text')
-				this.$('#danmaku_input').value='';
-			danmaku.highlight=true;
-			this.load(danmaku,true);
-		});
-	}
 
 	controlsToggle(bool=this.$('#controls').hidden){
 		this.$('#controls').hidden=!bool;
 	}
-	danmakuStyleToggle(bool=!this.$('#danmakuStyleEditor').style.overflow){
-		this.$('#danmakuStyleEditor').style.overflow=bool?'initial':'';
+	danmakuStyleToggle(bool=this.$('#danmakuStyleEditor').classList.contains('NyaP_hideNotFirstChildren')){
+		this.$('#danmakuStyleEditor').classList[bool?'remove':'add']('NyaP_hideNotFirstChildren');
 	}
 	_bottomControlTransformY(y=this._.bottomControlTransformY){
-		this._.bottomControlTransformY=y;
-		this.$('#control_bottom').style.transform=`translate3d(0,-${y}px,0)`;
+		this._.bottomControlTransformY=Utils.clamp(
+			y,
+			0,
+			NP.opt.bottomControlHeight
+		);
+		this.$('#control_bottom').style.transform=`translate3d(0,-${this._.bottomControlTransformY}px,0)`;
+		if(y===0)this.danmakuStyleToggle(false);
+	}
+	danmakuInput(bool=this._.bottomControlTransformY===0){//hide or show danmaku input
+		let $=this.$;
+		if(bool)
+			this._bottomControlTransformY(this.$('#control_bottom_first').offsetHeight-NP.opt.bottomControlHeight);
+		else{
+			this._bottomControlTransformY(0);
+		}
+		setImmediate(()=>{bool?$('#danmaku_input').focus():this._.player.focus();});
 	}
 	drawProgress(){
 		const V=this.video,

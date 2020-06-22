@@ -98,11 +98,9 @@ class NyaPlayerCore extends NyaPEventEmitter{
 			this.on('coreLoad',()=>done());
 			this.on('coreLoadError',e=>done(e));
 		}
-		this.log('%c https://github.com/JiaJiaJiang/NyaP-Core/ ','log',"background:#6f8fa2;color:#ccc;padding:.3em");
 		this.debug('Languages:'+this.i18n.langsArr.join(','));
 
 		opt=this.opt=Utils.deepAssign({},NyaPCoreOptions,opt);
-
 		//add events
 		{
 			//video:video_loopChange
@@ -116,14 +114,16 @@ class NyaPlayerCore extends NyaPEventEmitter{
 				}
 			});
 		};
+		DomTools.addEvents(this.video,{
+			loadedmetadata:e=>this.debug('Video loadded'),
+			error:e=>this.debug('Video error:',e),
+			loadstart:e=>{this.stat('loading_video')},
+		});
 		
-
 		//define default src resolver
 		this.addURLResolver((url)=>{
 			return Promise.resolve(url);//return the url
 		},999);//most lower priority
-
-		
 
 		/*opts*/
 		requestAnimationFrame(()=>{//active after events are attached
@@ -132,6 +132,7 @@ class NyaPlayerCore extends NyaPEventEmitter{
 			});
 			if(opt.videoSrc)this.setVideoSrc(opt.videoSrc);//videoSrc
 		});
+
 
 		if(Array.isArray(opt.plugins)){//load plugins,opt.plugins is a list of url for plugins
 			let done=this.stat('loading_plugin');
@@ -150,10 +151,6 @@ class NyaPlayerCore extends NyaPEventEmitter{
 			return;
 		}
 
-		DomTools.addEvents(this.video,{
-			loadedmetadata:e=>this.debug('Video loadded:',e),
-			error:e=>this.debug('Video error:',e),
-		});
 		
 		this.emit('coreLoad');
 	}
@@ -210,6 +207,10 @@ class NyaPlayerCore extends NyaPEventEmitter{
 		for(let n of this._.urlResolvers){
 			let func=n[1];
 			let r=await func(url);
+			if(r===false){
+				this.debug(`Stop resolving url: ${url}`);
+				return false;//stop resolving the url
+			}
 			if(r){
 				this.debug('URL resolver: ['+url+'] => ['+r+']');
 				return r;
@@ -219,11 +220,11 @@ class NyaPlayerCore extends NyaPEventEmitter{
 	}
 	async setVideoSrc(s){
 		s=s.trim();
+		let url=await this.resolveURL(s);
+		if(url===false)return;//won't change the url if false returned
 		this._.videoSrc=s;
 		this.emit('srcChanged',s);
-		let url=await this.resolveURL(s);
 		this.video.src=url;
-		this.stat('loading_video');
 		return;
 	}
 	playToggle(Switch=this.video.paused){

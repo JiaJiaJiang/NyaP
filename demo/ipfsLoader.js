@@ -91,19 +91,19 @@ copyright 2018 luojia@luojia.me
 		NP.addURLResolver((src)=>{
 			let r;
 			if(r=src.trim().match(/^"ipfs":(.*)$/)){
-				NP.stat('寻找ipfs网关 -- ');
+				NP.stat('寻找ipfs网关');
 				let path=toIPFSPath(r[1]),hadResult=false;
 				return new Promise((ok,no)=>{
 					for(let g of defaultGatewayList){
 						tester.test(g,path)
 						.then(()=>{
-							NP.statResult('寻找ipfs网关 -- ');
+							NP.statResult('寻找ipfs网关');
 							hadResult=true;
 							tester.stop();
 							ok(`${g}/${path}`);
 						}).catch(e=>{}).finally(()=>{
 							if(tester.testingFetch_c.size===0 && !hadResult){
-								NP.statResult('寻找ipfs网关 -- ','找不到可用ipfs网关');
+								NP.statResult('寻找ipfs网关','找不到可用ipfs网关');
 								no();
 							}
 						});

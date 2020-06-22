@@ -39,11 +39,6 @@ export class Utils{
         (total>=3600)&&r.unshift(h);
         return r.join(':');
     }
-    static setAttrs(ele,obj){//set multi attrs to a Element
-        for(let a in obj)
-            ele.setAttribute(a,obj[a]);
-        return ele;
-    }
     static rand(min, max) {
         return (min+Math.random()*(max-min)+0.5)|0;
     }

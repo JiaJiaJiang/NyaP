@@ -20,13 +20,18 @@ const NyaPCommonOptions={
 				options:{},
 			},
 		},
+		defaultDanmakuColor:null,//a hex color(without #),default when the color inputed is invalid
 		send:d=>{return Promise.reject();},//the method for sending danmaku
 	},
 	// for ui
 	uiOptions:{
-		danmakuColor:null,//a hex color(without #),when the color inputed is invalid,this color will be applied
+		danmakuColors:['fff','6cf','ff0','f00','0f0','00f','f0f','000'],//colors in the danmaku style pannel
+		danmakuModes:[0,3,2,1],//0:right	1:left	2:bottom	3:top  ;; mode in the danmaku style pannel
+		danmakuSizes:[20,24,36],//danmaku size buttons in the danmaku style pannel
+		danmakuColor:null,//default color to fill the color option input
 		danmakuMode:0,//0: right to left.
 		danmakuSize:24,
+		autoHideDanmakuInput:true,//hide danmakuinput after danmaku sending
 	},
 
 	loadingInfo:{//text replacement at loading time (for left-bottom message)
@@ -40,10 +45,10 @@ const NyaPCommonOptions={
 	playerContainer:null,//the element for containing the player
 	icons:{
 		play:[30,30,'<path d="m10.063,8.856l9.873,6.143l-9.873,6.143v-12.287z" stroke-width="3" stroke-linejoin="round"/>'],
-		addDanmaku:[30,30,'<path style="fill-opacity:0!important;" stroke-width="1.4" d="m21.004,8.995c-0.513,-0.513 -1.135,-0.770 -1.864,-0.770l-8.281,0c-0.729,0 -1.350,0.256 -1.864,0.770c-0.513,0.513 -0.770,1.135 -0.770,1.864l0,8.281c0,0.721 0.256,1.341 0.770,1.858c0.513,0.517 1.135,0.776 1.864,0.776l8.281,0c0.729,0 1.350,-0.258 1.864,-0.776c0.513,-0.517 0.770,-1.136 0.770,-1.858l0,-8.281c0,-0.729 -0.257,-1.350 -0.770,-1.864z" stroke-linejoin="round"/>'
+		danmakuStyle:[30,30,'<path style="fill-opacity:0!important;" stroke-width="1.4" d="m21.004,8.995c-0.513,-0.513 -1.135,-0.770 -1.864,-0.770l-8.281,0c-0.729,0 -1.350,0.256 -1.864,0.770c-0.513,0.513 -0.770,1.135 -0.770,1.864l0,8.281c0,0.721 0.256,1.341 0.770,1.858c0.513,0.517 1.135,0.776 1.864,0.776l8.281,0c0.729,0 1.350,-0.258 1.864,-0.776c0.513,-0.517 0.770,-1.136 0.770,-1.858l0,-8.281c0,-0.729 -0.257,-1.350 -0.770,-1.864z" stroke-linejoin="round"/>'
 							+'<path d="m12.142,14.031l1.888,0l0,-1.888l1.937,0l0,1.888l1.888,0l0,1.937l-1.888,0l0,1.888l-1.937,0l0,-1.888l-1.888,0l0,-1.937z" stroke-width="1"/>'],
 		danmakuToggle:[30,30,'<path d="m8.569,10.455l0,0c0,-0.767 0.659,-1.389 1.473,-1.389l0.669,0l0,0l3.215,0l6.028,0c0.390,0 0.765,0.146 1.041,0.406c0.276,0.260 0.431,0.613 0.431,0.982l0,3.473l0,0l0,2.083l0,0c0,0.767 -0.659,1.389 -1.473,1.389l-6.028,0l-4.200,3.532l0.985,-3.532l-0.669,0c-0.813,0 -1.473,-0.621 -1.473,-1.389l0,0l0,-2.083l0,0l0,-3.473z"/>'],
-		danmakuStyle:[30,30,'<path style="fill-opacity:1!important" d="m21.781,9.872l-1.500,-1.530c-0.378,-0.385 -0.997,-0.391 -1.384,-0.012l-0.959,0.941l2.870,2.926l0.960,-0.940c0.385,-0.379 0.392,-0.998 0.013,-1.383zm-12.134,7.532l2.871,2.926l7.593,-7.448l-2.872,-2.927l-7.591,7.449l0.000,0.000zm-1.158,2.571l-0.549,1.974l1.984,-0.511l1.843,-0.474l-2.769,-2.824l-0.509,1.835z" stroke-width="0"/>'],
+		addDanmaku:[30,30,'<path style="fill-opacity:1!important" d="m21.781,9.872l-1.500,-1.530c-0.378,-0.385 -0.997,-0.391 -1.384,-0.012l-0.959,0.941l2.870,2.926l0.960,-0.940c0.385,-0.379 0.392,-0.998 0.013,-1.383zm-12.134,7.532l2.871,2.926l7.593,-7.448l-2.872,-2.927l-7.591,7.449l0.000,0.000zm-1.158,2.571l-0.549,1.974l1.984,-0.511l1.843,-0.474l-2.769,-2.824l-0.509,1.835z" stroke-width="0"/>'],
 		fullScreen:[30,30,'<path stroke-linejoin="round" d="m11.166,9.761l-5.237,5.239l5.237,5.238l1.905,-1.905l-3.333,-3.333l3.332,-3.333l-1.904,-1.906zm7.665,0l-1.903,1.905l3.332,3.333l-3.332,3.332l1.903,1.905l5.238,-5.238l-5.238,-5.237z" stroke-width="1.3" />'],
 		fullPage:[30,30,'<rect stroke-linejoin="round" height="11.169" width="17.655" y="9.415" x="6.172" stroke-width="1.5"/>'
 						  +'<path stroke-linejoin="round" d="m12.361,11.394l-3.604,3.605l3.605,3.605l1.311,-1.311l-2.294,-2.294l2.293,-2.294l-1.311,-1.311zm5.275,0l-1.310,1.311l2.293,2.294l-2.293,2.293l1.310,1.311l3.605,-3.605l-3.605,-3.605z"/>'],
@@ -120,7 +125,7 @@ class NyaPCommon extends NyaPlayerCore{
 		}
 		DomTools.addEvents(this.video,{
 			loadedmetadata:e=>{
-				this.statResult('loading_video',null);
+				this.statResult('loading_video');
 				clearInterval(this._.loadingAnimationInterval);
 				let lf=this.$('#loading_frame');
 				if(lf.parentNode)//remove loading animation
@@ -198,12 +203,33 @@ class NyaPCommon extends NyaPlayerCore{
 		requestAnimationFrame(()=>msg.show());
 	}
 	_iconActive(name,bool){
-		if(name==='loop')
-		this.$(`#icon_span_${name}`).classList[bool?'add':'remove']('active_icon');
+		this.$(`#icon_span_${name}`)?.classList[bool?'add':'remove']('active_icon');
 	}
 	_setDisplayTime(current=null,total=null){
 			if(current!==null)this.$('#current_time').innerHTML=current;
 			if(total!==null)this.$('#total_time').innerHTML=total;
+	}
+
+	send(){
+		let color=this._.danmakuColor||this.opt.danmaku.defaultDanmakuColor,
+			text=this.$('#danmaku_input').value,
+			size=this._.danmakuSize,
+			mode=this._.danmakuMode,
+			time=this.Danmaku.time,
+			d={color,text,size,mode,time};
+
+		let S=this.Danmaku.send(d,danmaku=>{
+			if(danmaku&&danmaku._==='text')
+				this.$('#danmaku_input').value='';
+			danmaku.highlight=true;
+			this.Danmaku.load(danmaku,true);
+			if(this.opt.uiOptions.autoHideDanmakuInput){this.danmakuInput(false);}
+		});
+
+		if(!S){
+			this.danmakuInput(false);
+			return;
+		}
 	}
 }
 

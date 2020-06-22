@@ -27,16 +27,17 @@ LGPL license
 		position: fixed;
 	}
 
-	.active_icon path{fill-opacity:1!important;}
+	
 
 	svg[id^='icon']>*{
 		fill:#5f3c2c;
-		fill-opacity:0;
+		fill-opacity:1;
 		stroke: #5f3c2c;
 		transition:fill-opacity .2s;
 	}
 	span[id^="icon_span_"]{
 		cursor: pointer;
+		box-sizing: border-box;
 		display: inline-block;
 		background-color: inherit;
 
@@ -117,23 +118,34 @@ LGPL license
 		}
 	}
 	#danmaku_input_frame{
-		@extend .NyaP_fullfill;
-		display:none;
-		font-size: 13px;
-		background-color:inherit;
+		// @extend .NyaP_fullfill;
+		display: flex;
+		font-size: 20px;
+		bottom: 30%;
+		position: absolute;
+		background-color: #ccccccd6;
+		box-shadow: 0.2em 0.2em 1em 0px;
+		width: 50%;
+		min-width: 300px;
+		max-width: 400px;
+		height: 2em;
+		padding: 2em;
+		border-radius: 1.3em;
+		left: 50%;
+		transform: translateX(-50%);
 
 		input#danmaku_input{
 			border: 0;
 			outline: 0;
 			flex-grow: 1;
 			padding: 0 7px;
+			font-size: 1em;
 			user-select: initial;
-			background-color: inherit;
+			background-color: transparent;
 		}
 	}
 	#danmaku_style{
 		display: flex;
-		background-color: inherit;
 		&:hover{
 			#danmaku_style_pannel{
 				display: block;
@@ -141,14 +153,15 @@ LGPL license
 		}
 	}
 	#danmaku_style_pannel{
-		left: -25px;
+		left: -10px;
 		bottom: 67%;
 		padding: 8px;
 		display: none;
 		position: absolute;
 		border-radius: 2px;
 		border: 1px solid #ccc;
-		background-color: inherit;
+		background-color: #f7f7f7;
+		border-radius: 0.2em;
 	}
 	input#danmaku_color{
 		width: 58px;
@@ -158,8 +171,8 @@ LGPL license
 		border-radius: 3px;
 		border: 1px solid #ccc;
 		font-family: monospace;
-		text-shadow: 0px 0px 2px #fff;
-		@include text_stroke(0.1px #fff);
+		text-shadow: 0px 0px 5px #fff;
+		// @include text_stroke(0.1px #fff);
 	}
 	#danmaku_mode_box,#danmaku_size_box{
 		font-size: 0;
@@ -206,6 +219,7 @@ LGPL license
 		color: #fff;
 		display: flex;					//set layout of text to center
 		cursor: pointer;
+		border-radius: 0 0.5em 0.5em 0;
 		padding: 0 14px;
 		text-align: center;
 		align-items: center;

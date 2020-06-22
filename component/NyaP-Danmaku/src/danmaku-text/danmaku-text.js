@@ -19,7 +19,8 @@ danmaku obj struct
 	time:(number)msec time,
 	text:(string),
 	style:(object)to be combined whit default style,
-	mode:(number)
+	mode:(number),
+	onScreen:(bool)on the screen
 }
 
 danmaku mode
@@ -151,7 +152,7 @@ class TextDanmaku extends DanmakuFrameModule{
 		d.style.fontSize=Math.round((d.style.fontSize||this.defaultStyle.fontSize)*this.options.danmakuSizeScale);
 		if(isNaN(d.style.fontSize)|| d.style.fontSize===Infinity || d.style.fontSize===0)d.style.fontSize=this.defaultStyle.fontSize*this.options.danmakuSizeScale;
 		if(typeof d.mode !== 'number')d.mode=0;
-		if(autoAddToScreen&&(ind<this.indexMark))this._addNewDanmaku(d);
+		if(autoAddToScreen)this._addNewDanmaku(d);
 		return d;
 	}
 	loadList(danmakuArray){
@@ -526,12 +527,15 @@ class RenderingDanmakuManager{
 		if(dText.text2d.supported)this.timer=setInterval(()=>this.rendererModeCheck(),1500);
 	}
 	add(t){
+		if(t.danmaku.onScreen)return;
+		t.danmaku.onScreen=true;
 		this.dText.DanmakuText.push(t);
 		this.totalArea+=t._cache.width*t._cache.height;//cumulate danmaku area
 		this.onScreenArea+=Math.min(t._cache.width,this.dText.frame.width)*Math.min(t._cache.height,this.dText.frame.height);
 		this.dText.activeRendererMode.newDanmaku(t);
 	}
 	remove(t){
+		t.danmaku.onScreen=false;
 		let ind=this.dText.DanmakuText.indexOf(t);
 		if(ind>=0){
 			this.dText.DanmakuText.splice(ind,1);

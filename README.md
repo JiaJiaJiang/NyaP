@@ -21,23 +21,9 @@ NyaP
 之后可能还会有结构上的变动，所以目前还不会写文档。
 
 ## 子模块
-* [Object2HTML](https://github.com/JiaJiaJiang/Object2HTML) : 把js对象转换为DOM对象
-* [danmaku-frame](https://github.com/JiaJiaJiang/danmaku-frame) : 弹幕框架
-* [danmaku-text](https://github.com/JiaJiaJiang/danmaku-text) : 用于弹幕框架的文本弹幕模块
+* NyaP-Core : 播放器核心，实现组合各个插件的功能
+* NyaP-Danmaku : 弹幕功能组件
 
 ## log
 * 2019/1/20 : 添加插件功能，插件样本请看`demo/plugin-demo.js`。更具体的用法还是有人想用我再写文档吧。
-
-
-用于被更外层播放器外壳引用
-核心
-	事件
-	配置
-	log
-	播放控制
-	i18n功能
-	UI接口信息提供
-		log
-	插件加载
-		多插件单文件加载
-	组件加载（编译时）
+* 2020/3/3	: 改变文件结构，核心和弹幕部分从外部模块转换为功能组件

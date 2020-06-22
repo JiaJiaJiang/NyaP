@@ -42,7 +42,9 @@ class i18n{
 		return text;
 	}
 	add(langCode,texts){
-		this.langs[langCode]=texts;
+		if(!this.langs[langCode])
+			this.langs[langCode]={};
+		Object.assign(this.langs[langCode],texts);
 	}
 }
 

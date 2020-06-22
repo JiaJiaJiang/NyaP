@@ -9,28 +9,28 @@ _Object$defineProperty(exports, "__esModule", {
 
 _Object$defineProperty(exports, "NyaPlayerCore", {
   enumerable: true,
-  get: function () {
+  get: function get() {
     return _core.NyaPlayerCore;
   }
 });
 
 _Object$defineProperty(exports, "DomTools", {
   enumerable: true,
-  get: function () {
+  get: function get() {
     return _domTools.DomTools;
   }
 });
 
 _Object$defineProperty(exports, "i18n", {
   enumerable: true,
-  get: function () {
+  get: function get() {
     return _i18n.i18n;
   }
 });
 
 _Object$defineProperty(exports, "Utils", {
   enumerable: true,
-  get: function () {
+  get: function get() {
     return _utils.Utils;
   }
 });
@@ -46,6 +46,16 @@ var _utils = require("./src/utils.js");
 },{"./src/core.js":3,"./src/domTools.js":4,"./src/i18n.js":5,"./src/utils.js":6,"@babel/runtime-corejs3/core-js-stable/object/define-property":31}],2:[function(require,module,exports){
 "use strict";
 
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+
+function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) { return; } var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
 var _Object$defineProperty = require("@babel/runtime-corejs3/core-js-stable/object/define-property");
@@ -55,36 +65,134 @@ _Object$defineProperty(exports, "__esModule", {
 });
 
 exports.Object2HTML = Object2HTML;
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _entries = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/object/entries"));
-
 /*
 Copyright luojia@luojia.me
 LGPL license
 */
+
+
 function Object2HTML(obj, func) {
-  let ele,
+  var ele,
       o = {},
       a = [];
-  if (obj === null || typeof obj !== 'object') ele = document.createTextNode(String(obj)); //text node
+  if (obj === null || _typeof(obj) !== 'object') ele = document.createTextNode(String(obj)); //text node
   else if (obj instanceof Node) ele = obj;else {
-      if (obj === undefined) throw new TypeError(`'undefined' received, object or string expect.`);
+      if (obj === undefined) throw new TypeError("'undefined' received, object or string expect.");
       if (!obj._) obj._ = 'div';
       ele || (ele = document.createElement(obj._)); //attributes
 
-      for (let [attr, value] of (0, _entries.default)(obj.attr || obj.a || o)) ele.setAttribute(attr, value); //properties
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
 
+      try {
+        for (var _iterator = (0, _entries["default"])(obj.attr || obj.a || o)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var _step$value = _slicedToArray(_step.value, 2),
+              attr = _step$value[0],
+              value = _step$value[1];
 
-      for (let [prop, value] of (0, _entries.default)(obj.prop || obj.p || o)) ele[prop] = value; //events
+          ele.setAttribute(attr, value);
+        } //properties
 
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+            _iterator["return"]();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
 
-      for (let [e, cb] of (0, _entries.default)(obj.event || obj.e || o)) ele.addEventListener(e, cb); //childNodes
+      var _iteratorNormalCompletion2 = true;
+      var _didIteratorError2 = false;
+      var _iteratorError2 = undefined;
 
+      try {
+        for (var _iterator2 = (0, _entries["default"])(obj.prop || obj.p || o)[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var _step2$value = _slicedToArray(_step2.value, 2),
+              prop = _step2$value[0],
+              _value = _step2$value[1];
 
-      for (let c of obj.child || obj.c || a) {
-        let e = Object2HTML(c, func);
-        e instanceof Node && ele.appendChild(e);
+          ele[prop] = _value;
+        } //events
+
+      } catch (err) {
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
+            _iterator2["return"]();
+          }
+        } finally {
+          if (_didIteratorError2) {
+            throw _iteratorError2;
+          }
+        }
+      }
+
+      var _iteratorNormalCompletion3 = true;
+      var _didIteratorError3 = false;
+      var _iteratorError3 = undefined;
+
+      try {
+        for (var _iterator3 = (0, _entries["default"])(obj.event || obj.e || o)[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var _step3$value = _slicedToArray(_step3.value, 2),
+              e = _step3$value[0],
+              cb = _step3$value[1];
+
+          ele.addEventListener(e, cb);
+        } //childNodes
+
+      } catch (err) {
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion3 && _iterator3["return"] != null) {
+            _iterator3["return"]();
+          }
+        } finally {
+          if (_didIteratorError3) {
+            throw _iteratorError3;
+          }
+        }
+      }
+
+      var _iteratorNormalCompletion4 = true;
+      var _didIteratorError4 = false;
+      var _iteratorError4 = undefined;
+
+      try {
+        for (var _iterator4 = (obj.child || obj.c || a)[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+          var c = _step4.value;
+
+          var _e2 = Object2HTML(c, func);
+
+          _e2 instanceof Node && ele.appendChild(_e2);
+        }
+      } catch (err) {
+        _didIteratorError4 = true;
+        _iteratorError4 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion4 && _iterator4["return"] != null) {
+            _iterator4["return"]();
+          }
+        } finally {
+          if (_didIteratorError4) {
+            throw _iteratorError4;
+          }
+        }
       }
     }
   func && func(ele);
@@ -92,7 +200,7 @@ function Object2HTML(obj, func) {
 }
 
 var _default = Object2HTML;
-exports.default = _default;
+exports["default"] = _default;
 
 },{"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/core-js-stable/object/entries":32,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],3:[function(require,module,exports){
 /*
@@ -100,6 +208,28 @@ Copyright luojia@luojia.me
 LGPL license
 */
 'use strict';
+
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
@@ -139,10 +269,10 @@ var _i18n = require("./i18n.js");
 
 var _domTools = require("./domTools.js");
 
-var _utils = require("./utils.js");
+var _utils = require("./utils.js"); //default options
 
-//default options
-const NyaPCoreOptions = {
+
+var NyaPCoreOptions = {
   //for video
   muted: false,
   //set video muted
@@ -155,90 +285,141 @@ const NyaPCoreOptions = {
 
 };
 
-class NyaPEventEmitter {
-  constructor() {
+var NyaPEventEmitter = /*#__PURE__*/function () {
+  function NyaPEventEmitter() {
+    _classCallCheck(this, NyaPEventEmitter);
+
     this._events = {};
   }
 
-  emit(e, ...args) {
-    this._resolve(e, ...args);
-
-    this.globalListener(e, ...args);
-    return this;
-  }
-
-  _resolve(e, ...args) {
-    if (e in this._events) {
-      const hs = this._events[e];
-
-      try {
-        for (let h of hs) {
-          if (h.apply(this, args) === false) return;
-        }
-      } catch (err) {
-        console.error(`NyaP event callback error for "${e}"`, err);
+  _createClass(NyaPEventEmitter, [{
+    key: "emit",
+    value: function emit(e) {
+      for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        args[_key - 1] = arguments[_key];
       }
-    }
-  }
 
-  addEventListener(...args) {
-    return this.on(...args);
-  }
+      this._resolve.apply(this, [e].concat(args));
 
-  on(e, handle, top = false) {
-    if (!(handle instanceof Function)) return this;
-    if (!(e in this._events)) this._events[e] = [];
-    if (top) this._events[e].unshift(handle);else this._events[e].push(handle);
-    return this;
-  }
-
-  removeEvent(e, handle) {
-    var _context, _context2;
-
-    if (!(e in this._events)) return this;
-
-    if (arguments.length === 1) {
-      delete this._events[e];
+      this.globalListener.apply(this, [e].concat(args));
       return this;
     }
+  }, {
+    key: "_resolve",
+    value: function _resolve(e) {
+      if (e in this._events) {
+        var hs = this._events[e];
 
-    let ind;
-    if (ind = (0, _indexOf.default)(_context = this._events[e]).call(_context, handle) >= 0) (0, _splice.default)(_context2 = this._events[e]).call(_context2, ind, 1);
-    if (this._events[e].length === 0) delete this._events[e];
-    return this;
-  }
+        try {
+          for (var _len2 = arguments.length, args = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+            args[_key2 - 1] = arguments[_key2];
+          }
 
-  globalListener(name, ...args) {} //all events will be passed to this function
+          var _iteratorNormalCompletion = true;
+          var _didIteratorError = false;
+          var _iteratorError = undefined;
 
+          try {
+            for (var _iterator = hs[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+              var h = _step.value;
+              if (h.apply(this, args) === false) return;
+            }
+          } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+                _iterator["return"]();
+              }
+            } finally {
+              if (_didIteratorError) {
+                throw _iteratorError;
+              }
+            }
+          }
+        } catch (err) {
+          console.error("NyaP event callback error for \"".concat(e, "\""), err);
+        }
+      }
+    }
+  }, {
+    key: "addEventListener",
+    value: function addEventListener() {
+      return this.on.apply(this, arguments);
+    }
+  }, {
+    key: "on",
+    value: function on(e, handle) {
+      var top = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+      if (!(handle instanceof Function)) return this;
+      if (!(e in this._events)) this._events[e] = [];
+      if (top) this._events[e].unshift(handle);else this._events[e].push(handle);
+      return this;
+    }
+  }, {
+    key: "removeEvent",
+    value: function removeEvent(e, handle) {
+      var _context, _context2;
 
-}
+      if (!(e in this._events)) return this;
 
-class NyaPlayerCore extends NyaPEventEmitter {
-  //stats of the player. Item: [[time,name,promise or result],...]
-  //debug messages. Item: [[time,...msgs],...]
-  //loaded core plugins. name=>plugin object
-  //core i18n instanse
-  get video() {
-    return this._.video;
-  } //get video element
+      if (arguments.length === 1) {
+        delete this._events[e];
+        return this;
+      }
 
+      var ind;
+      if (ind = (0, _indexOf["default"])(_context = this._events[e]).call(_context, handle) >= 0) (0, _splice["default"])(_context2 = this._events[e]).call(_context2, ind, 1);
+      if (this._events[e].length === 0) delete this._events[e];
+      return this;
+    }
+  }, {
+    key: "globalListener",
+    value: function globalListener(name) {} //all events will be passed to this function
 
-  get videoSize() {
-    return [this.video.videoWidth, this.video.videoHeight];
-  }
+  }]);
 
-  get videoSrc() {
-    return this._.videoSrc;
-  } //get current video src
+  return NyaPEventEmitter;
+}();
 
+var NyaPlayerCore = /*#__PURE__*/function (_NyaPEventEmitter) {
+  _inherits(NyaPlayerCore, _NyaPEventEmitter);
 
-  constructor(opt) {
-    super();
-    (0, _defineProperty3.default)(this, "stats", []);
-    (0, _defineProperty3.default)(this, "debugs", []);
-    (0, _defineProperty3.default)(this, "plugins", {});
-    (0, _defineProperty3.default)(this, "i18n", new _i18n.i18n());
-    (0, _defineProperty3.default)(this, "_", {
+  _createClass(NyaPlayerCore, [{
+    key: "video",
+    //stats of the player. Item: [[time,name,promise or result],...]
+    //debug messages. Item: [[time,...msgs],...]
+    //loaded core plugins. name=>plugin object
+    //core i18n instanse
+    get: function get() {
+      return this._.video;
+    } //get video element
+
+  }, {
+    key: "videoSize",
+    get: function get() {
+      return [this.video.videoWidth, this.video.videoHeight];
+    }
+  }, {
+    key: "videoSrc",
+    get: function get() {
+      return this._.videoSrc;
+    } //get current video src
+
+  }]);
+
+  function NyaPlayerCore(opt) {
+    var _this;
+
+    _classCallCheck(this, NyaPlayerCore);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(NyaPlayerCore).call(this));
+    (0, _defineProperty3["default"])(_assertThisInitialized(_this), "stats", []);
+    (0, _defineProperty3["default"])(_assertThisInitialized(_this), "debugs", []);
+    (0, _defineProperty3["default"])(_assertThisInitialized(_this), "plugins", {});
+    (0, _defineProperty3["default"])(_assertThisInitialized(_this), "i18n", new _i18n.i18n());
+    (0, _defineProperty3["default"])(_assertThisInitialized(_this), "_", {
       //for private variables, do not change vars here
       videoSrc: '',
       video: _domTools.DomTools.Object2HTML({
@@ -258,230 +439,494 @@ class NyaPlayerCore extends NyaPEventEmitter {
       urlResolvers: [] //functions to resolve urls. Item: [priority,func]
 
     });
-    let _ = this.i18n;
+    var _ = _this.i18n;
     {
-      let done = this.stat('loading_core');
-      this.on('coreLoad', () => done());
-      this.on('coreLoadError', e => done(e));
+      var done = _this.stat('loading_core');
+
+      _this.on('coreLoad', function () {
+        return done();
+      });
+
+      _this.on('coreLoadError', function (e) {
+        return done(e);
+      });
     }
-    this.debug('Languages:' + this.i18n.langsArr.join(','));
-    opt = this.opt = _utils.Utils.deepAssign({}, NyaPCoreOptions, opt); //add events
+
+    _this.debug('Languages:' + _this.i18n.langsArr.join(','));
+
+    opt = _this.opt = _utils.Utils.deepAssign({}, NyaPCoreOptions, opt); //add events
 
     {
       //video:video_loopChange
-      let LoopDesc = (0, _getOwnPropertyDescriptor.default)(HTMLMediaElement.prototype, 'loop');
-      (0, _defineProperty2.default)(this.video, 'loop', {
+      var LoopDesc = (0, _getOwnPropertyDescriptor["default"])(HTMLMediaElement.prototype, 'loop');
+      (0, _defineProperty2["default"])(_this.video, 'loop', {
         get: LoopDesc.get,
-        set: bool => {
-          if (bool === this.video.loop) return;
-          this.emit('video_loopChange', bool);
-          LoopDesc.set.call(this.video, bool);
+        set: function set(bool) {
+          if (bool === _this.video.loop) return;
+
+          _this.emit('video_loopChange', bool);
+
+          LoopDesc.set.call(_this.video, bool);
         }
       });
     }
     ;
 
-    _domTools.DomTools.addEvents(this.video, {
-      loadedmetadata: e => this.debug('Video loadded'),
-      error: e => this.debug('Video error:', e),
-      loadstart: e => {
-        this.stat('loading_video');
+    _domTools.DomTools.addEvents(_this.video, {
+      loadedmetadata: function loadedmetadata(e) {
+        return _this.debug('Video loadded');
+      },
+      error: function error(e) {
+        return _this.debug('Video error:', e);
+      },
+      loadstart: function loadstart(e) {
+        _this.stat('loading_video');
       }
     }); //define default src resolver
 
 
-    this.addURLResolver(url => {
-      return _promise.default.resolve(url); //return the url
+    _this.addURLResolver(function (url) {
+      return _promise["default"].resolve(url); //return the url
     }, 999); //most lower priority
 
     /*opts*/
 
-    requestAnimationFrame(() => {
-      var _context3;
 
-      //active after events are attached
-      (0, _forEach.default)(_context3 = ['muted', 'volume', 'loop']).call(_context3, o => {
+    requestAnimationFrame(function () {
+      var _context3; //active after events are attached
+
+
+      (0, _forEach["default"])(_context3 = ['muted', 'volume', 'loop']).call(_context3, function (o) {
         //dont change the order
-        opt[o] !== undefined && (this.video[o] = opt[o]);
+        opt[o] !== undefined && (_this.video[o] = opt[o]);
       });
-      if (opt.videoSrc) this.setVideoSrc(opt.videoSrc); //videoSrc
+      if (opt.videoSrc) _this.setVideoSrc(opt.videoSrc); //videoSrc
     });
 
-    if ((0, _isArray.default)(opt.plugins)) {
+    if ((0, _isArray["default"])(opt.plugins)) {
       //load plugins,opt.plugins is a list of url for plugins
-      let done = this.stat('loading_plugin');
-      let pluginList = [];
+      var _done = _this.stat('loading_plugin');
 
-      for (let url of opt.plugins) {
-        pluginList.push(this.loadPlugin(url));
+      var pluginList = [];
+      var _iteratorNormalCompletion2 = true;
+      var _didIteratorError2 = false;
+      var _iteratorError2 = undefined;
+
+      try {
+        for (var _iterator2 = opt.plugins[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var url = _step2.value;
+          pluginList.push(_this.loadPlugin(url));
+        }
+      } catch (err) {
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
+            _iterator2["return"]();
+          }
+        } finally {
+          if (_didIteratorError2) {
+            throw _iteratorError2;
+          }
+        }
       }
 
-      _promise.default.all(pluginList).then(() => {
-        done();
-        this.emit('coreLoad');
-      }).catch(e => {
-        done(e);
-        this.debug('coreLoadError', e);
-        this.emit('coreLoadError', e);
+      _promise["default"].all(pluginList).then(function () {
+        _done();
+
+        _this.emit('coreLoad');
+      })["catch"](function (e) {
+        _done(e);
+
+        _this.debug('coreLoadError', e);
+
+        _this.emit('coreLoadError', e);
       });
 
-      return;
+      return _possibleConstructorReturn(_this);
     }
 
-    this.emit('coreLoad');
+    _this.emit('coreLoad');
+
+    return _this;
   }
 
-  stat(statusName, cb) {
-    let doneFunc, failFunc;
+  _createClass(NyaPlayerCore, [{
+    key: "stat",
+    value: function stat(statusName, cb) {
+      var _this2 = this;
 
-    let resultFunc = r => {
-      if (r instanceof Error) {
-        this.debug(r);
-        failFunc(r.message);
-      } else {
-        doneFunc(r);
-      }
-    };
+      var doneFunc, failFunc;
 
-    let p = new _promise.default((ok, no) => {
-      doneFunc = ok;
-      failFunc = no;
-    });
-    p.catch(e => {
-      this.debug(`fail stat:${e}`);
-    });
-    let s = [(0, _now.default)(), statusName, p, doneFunc, failFunc];
-    this.stats.push(s); //add to core debug log
+      var resultFunc = function resultFunc(r) {
+        if (r instanceof Error) {
+          _this2.debug(r);
 
-    if (cb) {
-      (async () => {
-        try {
-          resultFunc((await cb()));
-        } catch (err) {
-          resultFunc(err);
-        }
-      })();
-    }
-
-    (0, _setTimeout2.default)(() => this.emit('stat', s), 0);
-    return resultFunc;
-  }
-
-  statResult(statusName, result) {
-    for (let i = this.stats.length, s; i--;) {
-      s = this.stats[i];
-
-      if (s[1] === statusName) {
-        if (result instanceof Error) {
-          s[4](result.message);
+          failFunc(r.message);
         } else {
-          s[3](result);
+          doneFunc(r);
         }
+      };
 
-        return true;
+      var p = new _promise["default"](function (ok, no) {
+        doneFunc = ok;
+        failFunc = no;
+      });
+      p["catch"](function (e) {
+        _this2.debug("fail stat:".concat(e));
+      });
+      var s = [(0, _now["default"])(), statusName, p, doneFunc, failFunc];
+      this.stats.push(s); //add to core debug log
+
+      if (cb) {
+        _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+          return regeneratorRuntime.wrap(function _callee$(_context5) {
+            while (1) {
+              switch (_context5.prev = _context5.next) {
+                case 0:
+                  _context5.prev = 0;
+                  _context5.t0 = resultFunc;
+                  _context5.next = 4;
+                  return cb();
+
+                case 4:
+                  _context5.t1 = _context5.sent;
+                  (0, _context5.t0)(_context5.t1);
+                  _context5.next = 11;
+                  break;
+
+                case 8:
+                  _context5.prev = 8;
+                  _context5.t2 = _context5["catch"](0);
+                  resultFunc(_context5.t2);
+
+                case 11:
+                case "end":
+                  return _context5.stop();
+              }
+            }
+          }, _callee, null, [[0, 8]]);
+        }))();
       }
+
+      (0, _setTimeout2["default"])(function () {
+        return _this2.emit('stat', s);
+      }, 0);
+      return resultFunc;
     }
+  }, {
+    key: "statResult",
+    value: function statResult(statusName, result) {
+      for (var i = this.stats.length, s; i--;) {
+        s = this.stats[i];
 
-    return false;
-  }
+        if (s[1] === statusName) {
+          if (result instanceof Error) {
+            s[4](result.message);
+          } else {
+            s[3](result);
+          }
 
-  addURLResolver(func, priority = 0) {
-    var _context4;
-
-    this._.urlResolvers.push([priority, func]);
-
-    (0, _sort.default)(_context4 = this._.urlResolvers).call(_context4, (a, b) => a[0] - b[0]); //sort by priority
-  }
-
-  async resolveURL(url) {
-    //resolve the url by url resolvers
-    for (let n of this._.urlResolvers) {
-      let func = n[1];
-      let r = await func(url);
-
-      if (r === false) {
-        this.debug(`Stop resolving url: ${url}`);
-        return false; //stop resolving the url
+          return true;
+        }
       }
 
-      if (r) {
-        this.debug('URL resolver: [' + url + '] => [' + r + ']');
-        return r;
+      return false;
+    }
+  }, {
+    key: "addURLResolver",
+    value: function addURLResolver(func) {
+      var priority = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+
+      var _context4;
+
+      this._.urlResolvers.push([priority, func]);
+
+      (0, _sort["default"])(_context4 = this._.urlResolvers).call(_context4, function (a, b) {
+        return a[0] - b[0];
+      }); //sort by priority
+    }
+  }, {
+    key: "resolveURL",
+    value: function () {
+      var _resolveURL = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(url) {
+        var _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, n, func, r;
+
+        return regeneratorRuntime.wrap(function _callee2$(_context6) {
+          while (1) {
+            switch (_context6.prev = _context6.next) {
+              case 0:
+                //resolve the url by url resolvers
+                _iteratorNormalCompletion3 = true;
+                _didIteratorError3 = false;
+                _iteratorError3 = undefined;
+                _context6.prev = 3;
+                _iterator3 = this._.urlResolvers[Symbol.iterator]();
+
+              case 5:
+                if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
+                  _context6.next = 20;
+                  break;
+                }
+
+                n = _step3.value;
+                func = n[1];
+                _context6.next = 10;
+                return func(url);
+
+              case 10:
+                r = _context6.sent;
+
+                if (!(r === false)) {
+                  _context6.next = 14;
+                  break;
+                }
+
+                this.debug("Stop resolving url: ".concat(url));
+                return _context6.abrupt("return", false);
+
+              case 14:
+                if (!r) {
+                  _context6.next = 17;
+                  break;
+                }
+
+                this.debug('URL resolver: [' + url + '] => [' + r + ']');
+                return _context6.abrupt("return", r);
+
+              case 17:
+                _iteratorNormalCompletion3 = true;
+                _context6.next = 5;
+                break;
+
+              case 20:
+                _context6.next = 26;
+                break;
+
+              case 22:
+                _context6.prev = 22;
+                _context6.t0 = _context6["catch"](3);
+                _didIteratorError3 = true;
+                _iteratorError3 = _context6.t0;
+
+              case 26:
+                _context6.prev = 26;
+                _context6.prev = 27;
+
+                if (!_iteratorNormalCompletion3 && _iterator3["return"] != null) {
+                  _iterator3["return"]();
+                }
+
+              case 29:
+                _context6.prev = 29;
+
+                if (!_didIteratorError3) {
+                  _context6.next = 32;
+                  break;
+                }
+
+                throw _iteratorError3;
+
+              case 32:
+                return _context6.finish(29);
+
+              case 33:
+                return _context6.finish(26);
+
+              case 34:
+                return _context6.abrupt("return", _promise["default"].reject('No url resolver hit'));
+
+              case 35:
+              case "end":
+                return _context6.stop();
+            }
+          }
+        }, _callee2, this, [[3, 22, 26, 34], [27,, 29, 33]]);
+      }));
+
+      function resolveURL(_x) {
+        return _resolveURL.apply(this, arguments);
       }
+
+      return resolveURL;
+    }()
+  }, {
+    key: "setVideoSrc",
+    value: function () {
+      var _setVideoSrc = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(s) {
+        var url;
+        return regeneratorRuntime.wrap(function _callee3$(_context7) {
+          while (1) {
+            switch (_context7.prev = _context7.next) {
+              case 0:
+                s = (0, _trim["default"])(s).call(s);
+                _context7.next = 3;
+                return this.resolveURL(s);
+
+              case 3:
+                url = _context7.sent;
+
+                if (!(url === false)) {
+                  _context7.next = 6;
+                  break;
+                }
+
+                return _context7.abrupt("return");
+
+              case 6:
+                //won't change the url if false returned
+                this._.videoSrc = s;
+                this.emit('srcChanged', s);
+                this.video.src = url;
+                return _context7.abrupt("return");
+
+              case 10:
+              case "end":
+                return _context7.stop();
+            }
+          }
+        }, _callee3, this);
+      }));
+
+      function setVideoSrc(_x2) {
+        return _setVideoSrc.apply(this, arguments);
+      }
+
+      return setVideoSrc;
+    }()
+  }, {
+    key: "playToggle",
+    value: function playToggle() {
+      var Switch = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.video.paused;
+      return this.video[Switch ? 'play' : 'pause']();
     }
+  }, {
+    key: "loadPlugin",
+    value: function loadPlugin(url, name) {
+      var _this3 = this;
 
-    return _promise.default.reject('No url resolver hit');
-  }
-
-  async setVideoSrc(s) {
-    s = (0, _trim.default)(s).call(s);
-    let url = await this.resolveURL(s);
-    if (url === false) return; //won't change the url if false returned
-
-    this._.videoSrc = s;
-    this.emit('srcChanged', s);
-    this.video.src = url;
-    return;
-  }
-
-  playToggle(Switch = this.video.paused) {
-    return this.video[Switch ? 'play' : 'pause']();
-  }
-
-  loadPlugin(url, name) {
-    //load js plugins for NyaP
-    if (name && this.plugins[name]) {
-      //check if exists
-      this.debug(`Plugin already loaded: ${name}`);
-      return this.plugins[name];
-    }
-
-    let p = fetch(url).then(res => res.text()).then(async script => {
-      script = (0, _trim.default)(script).call(script);
-      let plugin = eval(script);
-      if (typeof plugin.name !== 'string' || !plugin.name) throw new TypeError('Invalid plugin name');
-
-      if (this.plugins[plugin.name]) {
+      //load js plugins for NyaP
+      if (name && this.plugins[name]) {
         //check if exists
-        this.debug(`Plugin already loaded: ${plugin.name}`);
-        return plugin;
+        this.debug("Plugin already loaded: ".concat(name));
+        return this.plugins[name];
       }
 
-      if (typeof plugin.init === 'function') await plugin.init(this); //init the plugin
+      var p = fetch(url).then(function (res) {
+        return res.text();
+      }).then( /*#__PURE__*/function () {
+        var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(script) {
+          var plugin;
+          return regeneratorRuntime.wrap(function _callee4$(_context8) {
+            while (1) {
+              switch (_context8.prev = _context8.next) {
+                case 0:
+                  script = (0, _trim["default"])(script).call(script);
+                  plugin = eval(script);
 
-      this.plugins[plugin.name] = plugin;
-      this.debug('Plugin loaded', plugin.name);
-      return plugin;
-    });
-    p.catch(e => {
-      this.debug('Plugin loading error:', e); // this.emit('pluginLoadError',e);
-    });
-    return p;
-  }
+                  if (!(typeof plugin.name !== 'string' || !plugin.name)) {
+                    _context8.next = 4;
+                    break;
+                  }
 
-  log(content, type = 'log', ...styles) {
-    //log to console
-    console[type](`%c NyaP %c${content}`, "background:#e0e0e0;padding:.2em", "background:unset", ...styles);
-  }
+                  throw new TypeError('Invalid plugin name');
 
-  debug(...msg) {
-    //debug messages
-    console.debug('NyaP[debug]', ...msg);
-    msg.unshift((0, _now.default)());
-    this.debugs.push(msg);
-    this.emit('debug', msg);
-  }
+                case 4:
+                  if (!_this3.plugins[plugin.name]) {
+                    _context8.next = 7;
+                    break;
+                  }
 
-}
+                  //check if exists
+                  _this3.debug("Plugin already loaded: ".concat(plugin.name));
+
+                  return _context8.abrupt("return", plugin);
+
+                case 7:
+                  if (!(typeof plugin.init === 'function')) {
+                    _context8.next = 10;
+                    break;
+                  }
+
+                  _context8.next = 10;
+                  return plugin.init(_this3);
+
+                case 10:
+                  //init the plugin
+                  _this3.plugins[plugin.name] = plugin;
+
+                  _this3.debug('Plugin loaded', plugin.name);
+
+                  return _context8.abrupt("return", plugin);
+
+                case 13:
+                case "end":
+                  return _context8.stop();
+              }
+            }
+          }, _callee4);
+        }));
+
+        return function (_x3) {
+          return _ref2.apply(this, arguments);
+        };
+      }());
+      p["catch"](function (e) {
+        _this3.debug('Plugin loading error:', e); // this.emit('pluginLoadError',e);
+
+      });
+      return p;
+    }
+  }, {
+    key: "log",
+    value: function log(content) {
+      var _console;
+
+      var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'log';
+
+      for (var _len3 = arguments.length, styles = new Array(_len3 > 2 ? _len3 - 2 : 0), _key3 = 2; _key3 < _len3; _key3++) {
+        styles[_key3 - 2] = arguments[_key3];
+      }
+
+      //log to console
+      (_console = console)[type].apply(_console, ["%c NyaP %c".concat(content), "background:#e0e0e0;padding:.2em", "background:unset"].concat(styles));
+    }
+  }, {
+    key: "debug",
+    value: function debug() {
+      var _console2;
+
+      for (var _len4 = arguments.length, msg = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+        msg[_key4] = arguments[_key4];
+      }
+
+      //debug messages
+      (_console2 = console).debug.apply(_console2, ['NyaP[debug]'].concat(msg));
+
+      msg.unshift((0, _now["default"])());
+      this.debugs.push(msg);
+      this.emit('debug', msg);
+    }
+  }]);
+
+  return NyaPlayerCore;
+}(NyaPEventEmitter);
 
 exports.NyaPlayerCore = NyaPlayerCore;
-(0, _defineProperty3.default)(NyaPlayerCore, "i18n", _i18n.i18n);
-(0, _defineProperty3.default)(NyaPlayerCore, "Utils", _utils.Utils);
-(0, _defineProperty3.default)(NyaPlayerCore, "DomTools", _domTools.DomTools);
-(0, _defineProperty3.default)(NyaPlayerCore, "NyaPCoreOptions", NyaPCoreOptions);
+(0, _defineProperty3["default"])(NyaPlayerCore, "i18n", _i18n.i18n);
+(0, _defineProperty3["default"])(NyaPlayerCore, "Utils", _utils.Utils);
+(0, _defineProperty3["default"])(NyaPlayerCore, "DomTools", _domTools.DomTools);
+(0, _defineProperty3["default"])(NyaPlayerCore, "NyaPCoreOptions", NyaPCoreOptions);
 
 },{"./domTools.js":4,"./i18n.js":5,"./utils.js":6,"@babel/runtime-corejs3/core-js-stable/array/is-array":16,"@babel/runtime-corejs3/core-js-stable/date/now":17,"@babel/runtime-corejs3/core-js-stable/instance/for-each":21,"@babel/runtime-corejs3/core-js-stable/instance/index-of":22,"@babel/runtime-corejs3/core-js-stable/instance/sort":25,"@babel/runtime-corejs3/core-js-stable/instance/splice":26,"@babel/runtime-corejs3/core-js-stable/instance/trim":28,"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptor":33,"@babel/runtime-corejs3/core-js-stable/promise":34,"@babel/runtime-corejs3/core-js-stable/set-timeout":37,"@babel/runtime-corejs3/helpers/defineProperty":39,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],4:[function(require,module,exports){
 "use strict";
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
@@ -507,101 +952,157 @@ var _Object2HTML = require("../lib/Object2HTML.js");
 
 var _utils = require("./utils.js");
 
-class DomTools {
-  static addEvents(target, events) {
-    if (!(0, _isArray.default)(target)) target = [target];
-    (0, _forEach.default)(target).call(target, function (t) {
-      if (!_utils.Utils.isObject(t.__NyaPEvents__)) {
-        t.__NyaPEvents__ = [];
+var DomTools = /*#__PURE__*/function () {
+  function DomTools() {
+    _classCallCheck(this, DomTools);
+  }
+
+  _createClass(DomTools, null, [{
+    key: "addEvents",
+    value: function addEvents(target, events) {
+      if (!(0, _isArray["default"])(target)) target = [target];
+      (0, _forEach["default"])(target).call(target, function (t) {
+        if (!_utils.Utils.isObject(t.__NyaPEvents__)) {
+          t.__NyaPEvents__ = [];
+        }
+
+        var _loop = function _loop(e) {
+          (0, _forEach["default"])(_context = e.split(/\,/g)).call(_context, function (e2) {
+            t.addEventListener(e2, events[e]);
+
+            t.__NyaPEvents__.push([e2, events[e]]);
+          });
+        };
+
+        for (var e in events) {
+          var _context;
+
+          _loop(e);
+        }
+      });
+    }
+  }, {
+    key: "setAttrs",
+    value: function setAttrs(ele, obj) {
+      //set multi attrs to a Element
+      for (var a in obj) {
+        ele.setAttribute(a, obj[a]);
       }
 
-      for (let e in events) {
-        var _context;
+      return ele;
+    }
+  }, {
+    key: "fullscreenElement",
+    value: function fullscreenElement() {
+      var d = document;
+      return d.webkitFullscreenElement || d.msFullscreenElement || d.mozFullScreenElement || d.fullscreenElement;
+    }
+  }, {
+    key: "requestFullscreen",
+    value: function requestFullscreen() {
+      var d = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document;
 
-        (0, _forEach.default)(_context = e.split(/\,/g)).call(_context, function (e2) {
-          t.addEventListener(e2, events[e]);
-
-          t.__NyaPEvents__.push([e2, events[e]]);
-        });
+      try {
+        return (d.requestFullscreen || d.msRequestFullscreen || d.mozRequestFullScreen || d.webkitRequestFullScreen || d.webkitEnterFullScreen).call(d);
+      } catch (e) {
+        return _promise["default"].reject(e);
       }
-    });
-  }
-
-  static setAttrs(ele, obj) {
-    //set multi attrs to a Element
-    for (let a in obj) ele.setAttribute(a, obj[a]);
-
-    return ele;
-  }
-
-  static fullscreenElement() {
-    const d = document;
-    return d.webkitFullscreenElement || d.msFullscreenElement || d.mozFullScreenElement || d.fullscreenElement;
-  }
-
-  static requestFullscreen(d = document) {
-    try {
-      return (d.requestFullscreen || d.msRequestFullscreen || d.mozRequestFullScreen || d.webkitRequestFullScreen || d.webkitEnterFullScreen).call(d);
-    } catch (e) {
-      return _promise.default.reject(e);
     }
-  }
+  }, {
+    key: "exitFullscreen",
+    value: function exitFullscreen() {
+      var d = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document;
 
-  static exitFullscreen(d = document) {
-    try {
-      return (d.exitFullscreen || d.msExitFullscreen || d.mozCancelFullScreen || d.webkitExitFullScreen || d.webkitCancelFullScreen).call(d);
-    } catch (e) {
-      return _promise.default.reject(e);
+      try {
+        return (d.exitFullscreen || d.msExitFullscreen || d.mozCancelFullScreen || d.webkitExitFullScreen || d.webkitCancelFullScreen).call(d);
+      } catch (e) {
+        return _promise["default"].reject(e);
+      }
     }
-  }
+  }, {
+    key: "isFullscreen",
+    value: function isFullscreen() {
+      var d = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document;
+      return !!(d.fullscreen || d.mozFullScreen || d.webkitIsFullScreen || d.msFullscreenElement || d.webkitDisplayingFullscreen);
+    }
+  }, {
+    key: "Object2HTML",
+    value: function Object2HTML() {
+      return (0, _Object2HTML.Object2HTML).apply(void 0, arguments);
+    }
+  }]);
 
-  static isFullscreen(d = document) {
-    return !!(d.fullscreen || d.mozFullScreen || d.webkitIsFullScreen || d.msFullscreenElement || d.webkitDisplayingFullscreen);
-  }
-
-  static Object2HTML(...args) {
-    return (0, _Object2HTML.Object2HTML)(...args);
-  }
-
-}
+  return DomTools;
+}();
 
 exports.DomTools = DomTools;
-(0, _defineProperty2.default)(DomTools, "resizeEvent", {
+(0, _defineProperty2["default"])(DomTools, "resizeEvent", {
   resizeObserverInstance: null,
-
-  observe(dom) {
+  observe: function observe(dom) {
     if (!this.resizeObserverInstance) {
-      let ResizeObserver = window.ResizeObserver;
+      var ResizeObserver = window.ResizeObserver;
 
       if (typeof ResizeObserver !== 'function') {
         ResizeObserver = _resizeObserver.ResizeObserver;
       }
 
-      this.resizeObserverInstance = new ResizeObserver(entries => {
-        for (let entry of entries) {
-          let el = entry.target;
-          let e = new Event('resize', {
-            bubbles: false,
-            cancelable: true
-          });
-          e.contentRect = entry.contentRect;
-          el.dispatchEvent(e);
+      this.resizeObserverInstance = new ResizeObserver(function (entries) {
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
+
+        try {
+          for (var _iterator = entries[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var entry = _step.value;
+            var el = entry.target;
+            var e = new Event('resize', {
+              bubbles: false,
+              cancelable: true
+            });
+            e.contentRect = entry.contentRect;
+            el.dispatchEvent(e);
+          }
+        } catch (err) {
+          _didIteratorError = true;
+          _iteratorError = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+              _iterator["return"]();
+            }
+          } finally {
+            if (_didIteratorError) {
+              throw _iteratorError;
+            }
+          }
         }
       });
     }
 
     this.resizeObserverInstance.observe(dom);
   },
-
-  unobserve(dom) {
+  unobserve: function unobserve(dom) {
     if (!this.resizeObserverInstance) throw new Error('resizeObserver not initialized');
     this.resizeObserverInstance.unobserve(dom);
   }
-
 });
 
 },{"../lib/Object2HTML.js":2,"./utils.js":6,"@babel/runtime-corejs3/core-js-stable/array/is-array":16,"@babel/runtime-corejs3/core-js-stable/instance/for-each":21,"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/core-js-stable/promise":34,"@babel/runtime-corejs3/helpers/defineProperty":39,"@babel/runtime-corejs3/helpers/interopRequireDefault":40,"@juggle/resize-observer":41}],5:[function(require,module,exports){
 "use strict";
+
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
+function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
@@ -613,75 +1114,132 @@ _Object$defineProperty(exports, "__esModule", {
 
 exports.i18n = void 0;
 
+var _assign = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/object/assign"));
+
 var _startsWith = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/starts-with"));
 
 var _forEach = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/for-each"));
 
 var _defineProperty2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/defineProperty"));
-
 /*
 Copyright luojia@luojia.me
 LGPL license
 */
 //polyfill
+
+
 if (!navigator.languages) {
   navigator.languages = [navigator.language || navigator.browserLanguage];
 }
 
-class i18n {
+var i18n = /*#__PURE__*/function () {
   /*
   *@param{object}langs Language text object indexed by language code
   *@param{array}langsArr Language priority array
   */
-  constructor(langs = {}, langsArr = [...navigator.languages]) {
-    (0, _defineProperty2.default)(this, "langsArr", []);
+  function i18n() {
+    var langs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var langsArr = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _toConsumableArray(navigator.languages);
+
+    _classCallCheck(this, i18n);
+
+    (0, _defineProperty2["default"])(this, "langsArr", []);
     this.langs = langs; //defines texts
 
     this.langsArr = langsArr;
     this.langsArr.push('zh-CN'); //add zh-CN as default language
-  }
-
-  //language priority array
-  _(str, ...args) {
-    //translate
-    let s = this.findTranslation(str);
-    args.length && (0, _forEach.default)(args).call(args, (arg, ind) => {
-      s = s.replace(`$${ind}`, arg);
-    }); //fill args in the string
-
-    return s;
-  }
-
-  findTranslation(text) {
-    for (let lang of this.langsArr) {
-      //find by language priority
-      if (lang in this.langs && text in this.langs[lang]) {
-        return this.langs[lang][text];
-      } //fallback to other same main code
+  } //language priority array
 
 
-      let code = lang.match(/^\w+/)[0];
+  _createClass(i18n, [{
+    key: "_",
+    value: function _(str) {
+      //translate
+      var s = this.findTranslation(str);
 
-      for (let c in this.langs) {
-        if ((0, _startsWith.default)(c).call(c, code) && text in this.langs[c]) {
-          return this.langs[c][text];
+      for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        args[_key - 1] = arguments[_key];
+      }
+
+      args.length && (0, _forEach["default"])(args).call(args, function (arg, ind) {
+        s = s.replace("$".concat(ind), arg);
+      }); //fill args in the string
+
+      return s;
+    }
+  }, {
+    key: "findTranslation",
+    value: function findTranslation(text) {
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = this.langsArr[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var lang = _step.value;
+
+          //find by language priority
+          if (lang in this.langs && text in this.langs[lang]) {
+            return this.langs[lang][text];
+          } //fallback to other same main code
+
+
+          var code = lang.match(/^\w+/)[0];
+
+          for (var c in this.langs) {
+            if ((0, _startsWith["default"])(c).call(c, code) && text in this.langs[c]) {
+              return this.langs[c][text];
+            }
+          }
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+            _iterator["return"]();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
         }
       }
+
+      return text;
     }
+  }, {
+    key: "add",
+    value: function add(langCode, texts) {
+      if (!this.langs[langCode]) this.langs[langCode] = {};
+      (0, _assign["default"])(this.langs[langCode], texts);
+    }
+  }]);
 
-    return text;
-  }
-
-  add(langCode, texts) {
-    this.langs[langCode] = texts;
-  }
-
-}
+  return i18n;
+}();
 
 exports.i18n = i18n;
 
-},{"@babel/runtime-corejs3/core-js-stable/instance/for-each":21,"@babel/runtime-corejs3/core-js-stable/instance/starts-with":27,"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/helpers/defineProperty":39,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],6:[function(require,module,exports){
+},{"@babel/runtime-corejs3/core-js-stable/instance/for-each":21,"@babel/runtime-corejs3/core-js-stable/instance/starts-with":27,"@babel/runtime-corejs3/core-js-stable/object/assign":29,"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/helpers/defineProperty":39,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],6:[function(require,module,exports){
 "use strict";
+
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
+function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
@@ -705,81 +1263,99 @@ var _window$requestIdleCa;
 
 function padTime(n) {
   //pad number to 2 chars
-  return n > 9 && n || `0${n}`;
+  return n > 9 && n || "0".concat(n);
 }
 
-class Utils {
-  static clamp(num, min, max) {
-    return num < min ? min : num > max ? max : num;
+var Utils = /*#__PURE__*/function () {
+  function Utils() {
+    _classCallCheck(this, Utils);
   }
 
-  static isObject(obj) {
-    return Object.prototype.toString.call(obj) === '[object Object]';
-  }
-
-  static deepAssign(target, ...args) {
-    //本函数不处理循环引用
-    let obj = args.shift();
-
-    if (target === null || target === undefined || typeof target !== 'object') {
-      throw new TypeError('target should be an object');
+  _createClass(Utils, null, [{
+    key: "clamp",
+    value: function clamp(num, min, max) {
+      return num < min ? min : num > max ? max : num;
     }
-
-    if (!Utils.isObject(obj)) {
-      //obj不是对象则跳过
-      if (args.length === 0) return target; //没有参数了就返回结果
-
-      return Utils.deepAssign(target, ...args); //提取一个参数出来继续
+  }, {
+    key: "isObject",
+    value: function isObject(obj) {
+      return Object.prototype.toString.call(obj) === '[object Object]';
     }
-
-    for (let i in obj) {
-      //遍历obj
-      if (Utils.isObject(obj[i])) {
-        //是个子对象
-        if (!Utils.isObject(target[i])) target[i] = {};
-        Utils.deepAssign(target[i], obj[i]); //递归
-      } else {
-        target[i] = obj[i]; //直接赋值
+  }, {
+    key: "deepAssign",
+    value: function deepAssign(target) {
+      for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        args[_key - 1] = arguments[_key];
       }
+
+      //本函数不处理循环引用
+      var obj = args.shift();
+
+      if (target === null || target === undefined || _typeof(target) !== 'object') {
+        throw new TypeError('target should be an object');
+      }
+
+      if (!Utils.isObject(obj)) {
+        //obj不是对象则跳过
+        if (args.length === 0) return target; //没有参数了就返回结果
+
+        return Utils.deepAssign.apply(Utils, [target].concat(args)); //提取一个参数出来继续
+      }
+
+      for (var i in obj) {
+        //遍历obj
+        if (Utils.isObject(obj[i])) {
+          //是个子对象
+          if (!Utils.isObject(target[i])) target[i] = {};
+          Utils.deepAssign(target[i], obj[i]); //递归
+        } else {
+          target[i] = obj[i]; //直接赋值
+        }
+      }
+
+      if (args.length === 0) return target;
+      return Utils.deepAssign.apply(Utils, [target].concat(args));
     }
+  }, {
+    key: "formatTime",
+    value: function formatTime(sec, total) {
+      if (total == undefined) total = sec;
+      var r,
+          s = sec | 0,
+          h = s / 3600 | 0;
+      if (total >= 3600) s = s % 3600;
+      r = [padTime(s / 60 | 0), padTime(s % 60)];
+      total >= 3600 && r.unshift(h);
+      return r.join(':');
+    }
+  }, {
+    key: "rand",
+    value: function rand(min, max) {
+      return min + Math.random() * (max - min) + 0.5 | 0;
+    }
+  }, {
+    key: "toArray",
+    value: function toArray(obj) {
+      if (obj instanceof Array) return (0, _slice["default"])(obj).call(obj);
+      if (obj.length !== undefined) return (0, _slice["default"])(Array.prototype).call(obj);
+      return _toConsumableArray(obj);
+    }
+  }, {
+    key: "animationFrameLoop",
+    value: function animationFrameLoop(cb) {
+      requestAnimationFrame(function () {
+        if (cb() === false) return;
+        ;
+        Utils.animationFrameLoop(cb);
+      });
+    }
+  }]);
 
-    if (args.length === 0) return target;
-    return Utils.deepAssign(target, ...args);
-  }
-
-  static formatTime(sec, total) {
-    if (total == undefined) total = sec;
-    let r,
-        s = sec | 0,
-        h = s / 3600 | 0;
-    if (total >= 3600) s = s % 3600;
-    r = [padTime(s / 60 | 0), padTime(s % 60)];
-    total >= 3600 && r.unshift(h);
-    return r.join(':');
-  }
-
-  static rand(min, max) {
-    return min + Math.random() * (max - min) + 0.5 | 0;
-  }
-
-  static toArray(obj) {
-    if (obj instanceof Array) return (0, _slice.default)(obj).call(obj);
-    if (obj.length !== undefined) return (0, _slice.default)(Array.prototype).call(obj);
-    return [...obj];
-  }
-
-  static animationFrameLoop(cb) {
-    requestAnimationFrame(() => {
-      if (cb() === false) return;
-      ;
-      Utils.animationFrameLoop(cb);
-    });
-  }
-
-}
+  return Utils;
+}();
 
 exports.Utils = Utils;
-(0, _defineProperty2.default)(Utils, "requestIdleCallback", ((_window$requestIdleCa = window.requestIdleCallback) === null || _window$requestIdleCa === void 0 ? void 0 : (0, _bind.default)(_window$requestIdleCa).call(_window$requestIdleCa, window)) || _setImmediate2.default);
+(0, _defineProperty2["default"])(Utils, "requestIdleCallback", ((_window$requestIdleCa = window.requestIdleCallback) === null || _window$requestIdleCa === void 0 ? void 0 : (0, _bind["default"])(_window$requestIdleCa).call(_window$requestIdleCa, window)) || _setImmediate2["default"]);
 
 },{"@babel/runtime-corejs3/core-js-stable/instance/bind":18,"@babel/runtime-corejs3/core-js-stable/instance/slice":24,"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/core-js-stable/set-immediate":35,"@babel/runtime-corejs3/helpers/defineProperty":39,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],7:[function(require,module,exports){
 /*
@@ -787,6 +1363,28 @@ Copyright luojia@luojia.me
 LGPL license
 */
 'use strict';
+
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _get(target, property, receiver) { if (typeof Reflect !== "undefined" && Reflect.get) { _get = Reflect.get; } else { _get = function _get(target, property, receiver) { var base = _superPropBase(target, property); if (!base) return; var desc = Object.getOwnPropertyDescriptor(base, property); if (desc.get) { return desc.get.call(receiver); } return desc.value; }; } return _get(target, property, receiver || target); }
+
+function _superPropBase(object, property) { while (!Object.prototype.hasOwnProperty.call(object, property)) { object = _getPrototypeOf(object); if (object === null) break; } return object; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
@@ -796,96 +1394,137 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _index = require("../NyaP-Core/index.js");
 
 var _danmakuFrame = require("./src/danmaku-frame.js");
 
-var _danmakuText = _interopRequireDefault(require("./src/danmaku-text/danmaku-text.js"));
+var _danmakuText = _interopRequireDefault(require("./src/danmaku-text/danmaku-text.js")); //load DomTools from NyaP-Core project
 
-//load DomTools from NyaP-Core project
-(0, _danmakuText.default)(_danmakuFrame.DanmakuFrame); //init TextDanmaku mod
 
-const colorChars = '0123456789abcdef';
-const danmakuProp = ['color', 'text', 'size', 'mode', 'time'];
+(0, _danmakuText["default"])(_danmakuFrame.DanmakuFrame); //init TextDanmaku mod
 
-class NyaPDanmaku extends _danmakuFrame.DanmakuFrame {
-  get opt() {
-    return this.core.opt.danmaku;
-  }
+var colorChars = '0123456789abcdef';
+var danmakuProp = ['color', 'text', 'size', 'mode', 'time'];
 
-  constructor(core) {
-    super(core, core.opt.danmaku); //init mods
+var NyaPDanmaku = /*#__PURE__*/function (_danmakuFrame$Danmaku) {
+  _inherits(NyaPDanmaku, _danmakuFrame$Danmaku);
 
-    for (let mod in _danmakuFrame.DanmakuFrame.availableModules) {
+  _createClass(NyaPDanmaku, [{
+    key: "opt",
+    get: function get() {
+      return this.core.opt.danmaku;
+    }
+  }]);
+
+  function NyaPDanmaku(core) {
+    var _this;
+
+    _classCallCheck(this, NyaPDanmaku);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(NyaPDanmaku).call(this, core, core.opt.danmaku)); //init mods
+
+    for (var mod in _danmakuFrame.DanmakuFrame.availableModules) {
       var _this$opt$modules$mod;
 
-      if (((_this$opt$modules$mod = this.opt.modules[mod]) === null || _this$opt$modules$mod === void 0 ? void 0 : _this$opt$modules$mod.enable) === true) this.initModule(mod);
-      this.enable(mod);
+      if (((_this$opt$modules$mod = _this.opt.modules[mod]) === null || _this$opt$modules$mod === void 0 ? void 0 : _this$opt$modules$mod.enable) === true) _this.initModule(mod);
+
+      _this.enable(mod);
     }
 
-    this.setMedia(core.video);
+    _this.setMedia(core.video);
+
+    return _this;
   }
 
-  toggle(name, bool) {
-    if (typeof name === 'boolean' || name == undefined) {
-      //danmaku frame switch mode
-      bool = name != undefined ? name : !this.enabled;
-      this[bool ? 'enable' : 'disable']();
-      return bool;
-    }
+  _createClass(NyaPDanmaku, [{
+    key: "toggle",
+    value: function toggle(name, bool) {
+      if (typeof name === 'boolean' || name == undefined) {
+        //danmaku frame switch mode
+        bool = name != undefined ? name : !this.enabled;
+        this[bool ? 'enable' : 'disable']();
+        return bool;
+      }
 
-    try {
-      var _this$module;
+      try {
+        var _this$module; //module switch mode
 
-      //module switch mode
-      if (bool == undefined) bool = !this.module(name).enabled;
-      this[bool ? 'enable' : 'disable'](name);
-      this.core.emit('danmakuModuleToggle', name, (_this$module = this.module(name)) === null || _this$module === void 0 ? void 0 : _this$module.enabled);
-    } catch (e) {
-      this.core.log('', 'error', e);
-      return false;
-    }
 
-    return true;
-  }
+        if (bool == undefined) bool = !this.module(name).enabled;
+        this[bool ? 'enable' : 'disable'](name);
+        this.core.emit('danmakuModuleToggle', name, (_this$module = this.module(name)) === null || _this$module === void 0 ? void 0 : _this$module.enabled);
+      } catch (e) {
+        this.core.log('', 'error', e);
+        return false;
+      }
 
-  module(name) {
-    return super.modules[name];
-  }
-
-  send(obj, callback) {
-    for (let i of danmakuProp) if (i in obj === false) return false;
-
-    if ((obj.text || '').match(/^\s*$/)) return false;
-    obj.color = this.isVaildColor(obj.color);
-
-    if (obj.color) {
-      obj.color = obj.color.replace(/\$/g, () => {
-        return colorChars[_index.Utils.clamp(16 * Math.random() | 0, 0, 15)];
-      });
-    } else {
-      obj.color = null;
-    }
-
-    if (this.opt.send instanceof Function) {
-      this.opt.send(obj, callback || (() => {}));
       return true;
     }
+  }, {
+    key: "module",
+    value: function module(name) {
+      return _get(_getPrototypeOf(NyaPDanmaku.prototype), "modules", this)[name];
+    }
+  }, {
+    key: "send",
+    value: function send(obj, callback) {
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
 
-    return false;
-  }
+      try {
+        for (var _iterator = danmakuProp[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var i = _step.value;
+          if (i in obj === false) return false;
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+            _iterator["return"]();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
 
-  isVaildColor(co) {
-    if (typeof co !== 'string') return false;
-    return (co = co.match(/^\#?(([\da-f\$]{3}){1,2})$/i)) ? co[1] : false;
-  }
+      if ((obj.text || '').match(/^\s*$/)) return false;
+      obj.color = this.isVaildColor(obj.color);
 
-}
+      if (obj.color) {
+        obj.color = obj.color.replace(/\$/g, function () {
+          return colorChars[_index.Utils.clamp(16 * Math.random() | 0, 0, 15)];
+        });
+      } else {
+        obj.color = null;
+      }
+
+      if (this.opt.send instanceof Function) {
+        this.opt.send(obj, callback || function () {});
+        return true;
+      }
+
+      return false;
+    }
+  }, {
+    key: "isVaildColor",
+    value: function isVaildColor(co) {
+      if (typeof co !== 'string') return false;
+      return (co = co.match(/^\#?(([\da-f\$]{3}){1,2})$/i)) ? co[1] : false;
+    }
+  }]);
+
+  return NyaPDanmaku;
+}(_danmakuFrame.DanmakuFrame);
 
 var _default = NyaPDanmaku;
-exports.default = _default;
+exports["default"] = _default;
 
 },{"../NyaP-Core/index.js":1,"./src/danmaku-frame.js":9,"./src/danmaku-text/danmaku-text.js":14,"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],8:[function(require,module,exports){
 /*
@@ -893,6 +1532,14 @@ Copyright luojia@luojia.me
 LGPL license
 */
 'use strict';
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass2(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
@@ -903,23 +1550,27 @@ var _defineProperty = _interopRequireDefault(require("@babel/runtime-corejs3/cor
 (function (f) {
   if (typeof define === "function" && define.amd) {
     define(f);
-  } else if (typeof exports === "object") {
+  } else if ((typeof exports === "undefined" ? "undefined" : _typeof(exports)) === "object") {
     module.exports = f();
   } else {
     (0, eval)('this').Mat = f();
   }
 })(function () {
-  const global = (0, eval)('this');
-  const TypedArray = global.Float32Array && global.Float32Array.prototype;
+  var global = (0, eval)('this');
+  var TypedArray = global.Float32Array && global.Float32Array.prototype;
 
-  function createClass(Constructor) {
-    class Matrix {
-      constructor(l, c, fill = 0) {
+  function _createClass(Constructor) {
+    var Matrix = /*#__PURE__*/function () {
+      function Matrix(l, c) {
+        var fill = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+
+        _classCallCheck(this, Matrix);
+
         this.array = new Constructor(l * c);
-        (0, _defineProperty.default)(this.array, 'row', {
+        (0, _defineProperty["default"])(this.array, 'row', {
           value: l
         });
-        (0, _defineProperty.default)(this.array, 'column', {
+        (0, _defineProperty["default"])(this.array, 'column', {
           value: c
         });
 
@@ -927,299 +1578,349 @@ var _defineProperty = _interopRequireDefault(require("@babel/runtime-corejs3/cor
           if (Matrix._instanceofTypedArray && fill === 0) {} else if (typeof fill === 'number') {
             var _context;
 
-            (0, _fill.default)(_context = this).call(_context, fill);
+            (0, _fill["default"])(_context = this).call(_context, fill);
           } else if (fill.length) {
             this.set(fill);
           }
         }
       }
 
-      get length() {
-        return this.array.length;
-      }
+      _createClass2(Matrix, [{
+        key: "leftMultiply",
+        value: function leftMultiply(m) {
+          return this.set(Matrix.multiply(m, this, new Matrix(m.row, this.column)));
+        }
+      }, {
+        key: "rightMultiply",
+        value: function rightMultiply(m) {
+          return this.set(Matrix.multiply(this, m, new Matrix(this.row, m, column)));
+        }
+      }, {
+        key: "fill",
+        value: function fill(n) {
+          arguments.length || (n = 0);
 
-      get row() {
-        return this.array.row;
-      }
-
-      get column() {
-        return this.array.column;
-      }
-
-      leftMultiply(m) {
-        return this.set(Matrix.multiply(m, this, new Matrix(m.row, this.column)));
-      }
-
-      rightMultiply(m) {
-        return this.set(Matrix.multiply(this, m, new Matrix(this.row, m, column)));
-      }
-
-      fill(n) {
-        arguments.length || (n = 0);
-
-        for (let i = this.length; i--;) this.array[i] = n;
-
-        return this;
-      }
-
-      set(arr, offset) {
-        offset || (offset = 0);
-        arr instanceof Matrix && (arr = arr.array);
-
-        for (let i = arr.length + offset <= this.length ? arr.length : this.length - offset; i--;) this.array[offset + i] = arr[i];
-
-        return this;
-      }
-
-      put(m, row, column) {
-        Matrix.put(this, m, row || 0, column || 0);
-        return this;
-      }
-
-      rotate2d(t) {
-        return this.set(Matrix.rotate2d(this, t, Matrix.Matrixes.T3));
-      }
-
-      translate2d(x, y) {
-        return this.set(Matrix.translate2d(this, x, y, Matrix.Matrixes.T3));
-      }
-
-      scale2d(x, y) {
-        return this.set(Matrix.scale2d(this, x, y, Matrix.Matrixes.T3));
-      }
-
-      rotate3d(tx, ty, tz) {
-        return this.set(Matrix.rotate3d(this, tx, ty, tz, Matrix.Matrixes.T4));
-      }
-
-      scale3d(x, y, z) {
-        return this.set(Matrix.scale3d(this, x, y, z, Matrix.Matrixes.T4));
-      }
-
-      translate3d(x, y, z) {
-        return this.set(Matrix.translate3d(this, x, y, z, Matrix.Matrixes.T4));
-      }
-
-      rotateX(t) {
-        return this.set(Matrix.rotateX(this, t, Matrix.Matrixes.T4));
-      }
-
-      rotateY(t) {
-        return this.set(Matrix.rotateY(this, t, Matrix.Matrixes.T4));
-      }
-
-      rotateZ(t) {
-        return this.set(Matrix.rotateZ(this, t, Matrix.Matrixes.T4));
-      }
-
-      clone() {
-        return new Matrix(this.row, this.column, this);
-      }
-
-      toString() {
-        if (this.length === 0) return '';
-
-        for (var i = 0, lines = [], tmp = []; i < this.length; i++) {
-          if (i && i % this.column === 0) {
-            lines.push(tmp.join('\t'));
-            tmp.length = 0;
+          for (var i = this.length; i--;) {
+            this.array[i] = n;
           }
 
-          tmp.push(this.array[i] || 0);
+          return this;
         }
+      }, {
+        key: "set",
+        value: function set(arr, offset) {
+          offset || (offset = 0);
+          arr instanceof Matrix && (arr = arr.array);
 
-        lines.push(tmp.join('	'));
-        return lines.join('\n');
-      } //static methods
+          for (var i = arr.length + offset <= this.length ? arr.length : this.length - offset; i--;) {
+            this.array[offset + i] = arr[i];
+          }
 
+          return this;
+        }
+      }, {
+        key: "put",
+        value: function put(m, row, column) {
+          Matrix.put(this, m, row || 0, column || 0);
+          return this;
+        }
+      }, {
+        key: "rotate2d",
+        value: function rotate2d(t) {
+          return this.set(Matrix.rotate2d(this, t, Matrix.Matrixes.T3));
+        }
+      }, {
+        key: "translate2d",
+        value: function translate2d(x, y) {
+          return this.set(Matrix.translate2d(this, x, y, Matrix.Matrixes.T3));
+        }
+      }, {
+        key: "scale2d",
+        value: function scale2d(x, y) {
+          return this.set(Matrix.scale2d(this, x, y, Matrix.Matrixes.T3));
+        }
+      }, {
+        key: "rotate3d",
+        value: function rotate3d(tx, ty, tz) {
+          return this.set(Matrix.rotate3d(this, tx, ty, tz, Matrix.Matrixes.T4));
+        }
+      }, {
+        key: "scale3d",
+        value: function scale3d(x, y, z) {
+          return this.set(Matrix.scale3d(this, x, y, z, Matrix.Matrixes.T4));
+        }
+      }, {
+        key: "translate3d",
+        value: function translate3d(x, y, z) {
+          return this.set(Matrix.translate3d(this, x, y, z, Matrix.Matrixes.T4));
+        }
+      }, {
+        key: "rotateX",
+        value: function rotateX(t) {
+          return this.set(Matrix.rotateX(this, t, Matrix.Matrixes.T4));
+        }
+      }, {
+        key: "rotateY",
+        value: function rotateY(t) {
+          return this.set(Matrix.rotateY(this, t, Matrix.Matrixes.T4));
+        }
+      }, {
+        key: "rotateZ",
+        value: function rotateZ(t) {
+          return this.set(Matrix.rotateZ(this, t, Matrix.Matrixes.T4));
+        }
+      }, {
+        key: "clone",
+        value: function clone() {
+          return new Matrix(this.row, this.column, this);
+        }
+      }, {
+        key: "toString",
+        value: function toString() {
+          if (this.length === 0) return '';
 
-      static Identity(n) {
-        //return a new Identity Matrix
-        let m = new Matrix(n, n, 0);
+          for (var i = 0, lines = [], tmp = []; i < this.length; i++) {
+            if (i && i % this.column === 0) {
+              lines.push(tmp.join('\t'));
+              tmp.length = 0;
+            }
 
-        for (let i = n; i--;) m.array[i * n + i] = 1;
+            tmp.push(this.array[i] || 0);
+          }
 
-        return m;
-      }
+          lines.push(tmp.join('	'));
+          return lines.join('\n');
+        } //static methods
 
-      static Perspective(fovy, aspect, znear, zfar, result) {
-        var y1 = znear * Math.tan(fovy * Math.PI / 360.0),
-            x1 = y1 * aspect,
-            m = result || new Matrix(4, 4, 0),
-            arr = m.array;
-        arr[0] = 2 * znear / (x1 + x1);
-        arr[5] = 2 * znear / (y1 + y1);
-        arr[10] = -(zfar + znear) / (zfar - znear);
-        arr[14] = -2 * zfar * znear / (zfar - znear);
-        arr[11] = -1;
-        if (result) arr[1] = arr[2] = arr[3] = arr[4] = arr[6] = arr[7] = arr[8] = arr[9] = arr[12] = arr[13] = arr[15] = 0;
-        return m;
-      }
+      }, {
+        key: "length",
+        get: function get() {
+          return this.array.length;
+        }
+      }, {
+        key: "row",
+        get: function get() {
+          return this.array.row;
+        }
+      }, {
+        key: "column",
+        get: function get() {
+          return this.array.column;
+        }
+      }], [{
+        key: "Identity",
+        value: function Identity(n) {
+          //return a new Identity Matrix
+          var m = new Matrix(n, n, 0);
 
-      static multiply(a, b, result) {
-        if (a.column !== b.row) throw 'wrong matrix';
-        let row = a.row,
-            column = Math.min(a.column, b.column),
-            r = result || new Matrix(row, column),
-            c,
-            i,
-            ind;
+          for (var i = n; i--;) {
+            m.array[i * n + i] = 1;
+          }
 
-        for (let l = row; l--;) {
-          for (c = column; c--;) {
-            r.array[ind = l * r.column + c] = 0;
+          return m;
+        }
+      }, {
+        key: "Perspective",
+        value: function Perspective(fovy, aspect, znear, zfar, result) {
+          var y1 = znear * Math.tan(fovy * Math.PI / 360.0),
+              x1 = y1 * aspect,
+              m = result || new Matrix(4, 4, 0),
+              arr = m.array;
+          arr[0] = 2 * znear / (x1 + x1);
+          arr[5] = 2 * znear / (y1 + y1);
+          arr[10] = -(zfar + znear) / (zfar - znear);
+          arr[14] = -2 * zfar * znear / (zfar - znear);
+          arr[11] = -1;
+          if (result) arr[1] = arr[2] = arr[3] = arr[4] = arr[6] = arr[7] = arr[8] = arr[9] = arr[12] = arr[13] = arr[15] = 0;
+          return m;
+        }
+      }, {
+        key: "multiply",
+        value: function multiply(a, b, result) {
+          if (a.column !== b.row) throw 'wrong matrix';
+          var row = a.row,
+              column = Math.min(a.column, b.column),
+              r = result || new Matrix(row, column),
+              c,
+              i,
+              ind;
 
-            for (i = a.column; i--;) {
-              r.array[ind] += a.array[l * a.column + i] * b.array[c + i * b.column];
+          for (var l = row; l--;) {
+            for (c = column; c--;) {
+              r.array[ind = l * r.column + c] = 0;
+
+              for (i = a.column; i--;) {
+                r.array[ind] += a.array[l * a.column + i] * b.array[c + i * b.column];
+              }
             }
           }
+
+          return r;
         }
+      }, {
+        key: "multiplyString",
+        value: function multiplyString(a, b, array) {
+          var ignoreZero = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
+          //work out the equation for every elements,only for debug and only works with Array matrixes
+          if (a.column !== b.row) throw 'wrong matrix';
+          var r = array || new Matrix(a.row, b.column),
+              l,
+              c,
+              i,
+              ind;
 
-        return r;
-      }
+          for (l = a.row; l--;) {
+            for (c = b.column; c--;) {
+              r.array[ind = l * b.column + c] = '';
 
-      static multiplyString(a, b, array, ignoreZero = true) {
-        //work out the equation for every elements,only for debug and only works with Array matrixes
-        if (a.column !== b.row) throw 'wrong matrix';
-        var r = array || new Matrix(a.row, b.column),
-            l,
-            c,
-            i,
-            ind;
-
-        for (l = a.row; l--;) {
-          for (c = b.column; c--;) {
-            r.array[ind = l * b.column + c] = '';
-
-            for (i = 0; i < a.column; i++) {
-              if (ignoreZero && (a.array[l * a.column + i] == 0 || b.array[c + i * b.column] == 0)) continue;
-              r.array[ind] += (i && r.array[ind] ? '+' : '') + '(' + a.array[l * a.column + i] + ')*(' + b.array[c + i * b.column] + ')';
+              for (i = 0; i < a.column; i++) {
+                if (ignoreZero && (a.array[l * a.column + i] == 0 || b.array[c + i * b.column] == 0)) continue;
+                r.array[ind] += (i && r.array[ind] ? '+' : '') + '(' + a.array[l * a.column + i] + ')*(' + b.array[c + i * b.column] + ')';
+              }
             }
           }
+
+          return r;
         }
+      }, {
+        key: "add",
+        value: function add(a, b, result) {
+          if (a.column !== b.column || a.row !== b.row) throw 'wrong matrix';
+          var r = result || new Matrix(a.row, b.column);
 
-        return r;
-      }
+          for (var i = a.length; i--;) {
+            r.array[i] = a.array[i] + b.array[i];
+          }
 
-      static add(a, b, result) {
-        if (a.column !== b.column || a.row !== b.row) throw 'wrong matrix';
-        let r = result || new Matrix(a.row, b.column);
+          return r;
+        }
+      }, {
+        key: "minus",
+        value: function minus(a, b, result) {
+          if (a.column !== b.column || a.row !== b.row) throw 'wrong matrix';
+          var r = result || new Matrix(a.row, b.column);
 
-        for (let i = a.length; i--;) r.array[i] = a.array[i] + b.array[i];
+          for (var i = a.length; i--;) {
+            r.array[i] = a.array[i] - b.array[i];
+          }
 
-        return r;
-      }
-
-      static minus(a, b, result) {
-        if (a.column !== b.column || a.row !== b.row) throw 'wrong matrix';
-        let r = result || new Matrix(a.row, b.column);
-
-        for (let i = a.length; i--;) r.array[i] = a.array[i] - b.array[i];
-
-        return r;
-      }
-
-      static rotate2d(m, t, result) {
-        const Mr = Matrix.Matrixes.rotate2d;
-        Mr.array[0] = Mr.array[4] = Math.cos(t);
-        Mr.array[1] = -(Mr.array[3] = Math.sin(t));
-        return Matrix.multiply(Mr, m, result || new Matrix(3, 3));
-      }
-
-      static scale2d(m, x, y, result) {
-        const Mr = Matrix.Matrixes.scale2d;
-        Mr.array[0] = x;
-        Mr.array[4] = y;
-        return Matrix.multiply(Mr, m, result || new Matrix(3, 3));
-      }
-
-      static translate2d(m, x, y, result) {
-        const Mr = Matrix.Matrixes.translate2d;
-        Mr.array[2] = x;
-        Mr.array[5] = y;
-        return Matrix.multiply(Mr, m, result || new Matrix(3, 3));
-      }
-
-      static rotate3d(m, tx, ty, tz, result) {
-        const Xc = Math.cos(tx),
+          return r;
+        }
+      }, {
+        key: "rotate2d",
+        value: function rotate2d(m, t, result) {
+          var Mr = Matrix.Matrixes.rotate2d;
+          Mr.array[0] = Mr.array[4] = Math.cos(t);
+          Mr.array[1] = -(Mr.array[3] = Math.sin(t));
+          return Matrix.multiply(Mr, m, result || new Matrix(3, 3));
+        }
+      }, {
+        key: "scale2d",
+        value: function scale2d(m, x, y, result) {
+          var Mr = Matrix.Matrixes.scale2d;
+          Mr.array[0] = x;
+          Mr.array[4] = y;
+          return Matrix.multiply(Mr, m, result || new Matrix(3, 3));
+        }
+      }, {
+        key: "translate2d",
+        value: function translate2d(m, x, y, result) {
+          var Mr = Matrix.Matrixes.translate2d;
+          Mr.array[2] = x;
+          Mr.array[5] = y;
+          return Matrix.multiply(Mr, m, result || new Matrix(3, 3));
+        }
+      }, {
+        key: "rotate3d",
+        value: function rotate3d(m, tx, ty, tz, result) {
+          var Xc = Math.cos(tx),
               Xs = Math.sin(tx),
               Yc = Math.cos(ty),
               Ys = Math.sin(ty),
               Zc = Math.cos(tz),
               Zs = Math.sin(tz),
               Mr = Matrix.Matrixes.rotate3d;
-        Mr.array[0] = Zc * Yc;
-        Mr.array[1] = Zc * Ys * Xs - Zs * Xc;
-        Mr.array[2] = Zc * Ys * Xc + Zs * Xs;
-        Mr.array[4] = Zs * Yc;
-        Mr.array[5] = Zs * Ys * Xs + Zc * Xc;
-        Mr.array[6] = Zs * Ys * Xc - Zc * Xs;
-        Mr.array[8] = -Ys;
-        Mr.array[9] = Yc * Xs;
-        Mr.array[10] = Yc * Xc;
-        return Matrix.multiply(Mr, m, result || new Matrix(4, 4));
-      }
+          Mr.array[0] = Zc * Yc;
+          Mr.array[1] = Zc * Ys * Xs - Zs * Xc;
+          Mr.array[2] = Zc * Ys * Xc + Zs * Xs;
+          Mr.array[4] = Zs * Yc;
+          Mr.array[5] = Zs * Ys * Xs + Zc * Xc;
+          Mr.array[6] = Zs * Ys * Xc - Zc * Xs;
+          Mr.array[8] = -Ys;
+          Mr.array[9] = Yc * Xs;
+          Mr.array[10] = Yc * Xc;
+          return Matrix.multiply(Mr, m, result || new Matrix(4, 4));
+        }
+      }, {
+        key: "rotateX",
+        value: function rotateX(m, t, result) {
+          var Mr = Matrix.Matrixes.rotateX;
+          Mr.array[10] = Mr.array[5] = Math.cos(t);
+          Mr.array[6] = -(Mr.array[9] = Math.sin(t));
+          return Matrix.multiply(Mr, m, result || new Matrix(4, 4));
+        }
+      }, {
+        key: "rotateY",
+        value: function rotateY(m, t, result) {
+          var Mr = Matrix.Matrixes.rotateY;
+          Mr.array[10] = Mr.array[0] = Math.cos(t);
+          Mr.array[8] = -(Mr.array[2] = Math.sin(t));
+          return Matrix.multiply(Mr, m, result || new Matrix(4, 4));
+        }
+      }, {
+        key: "rotateZ",
+        value: function rotateZ(m, t, result) {
+          var Mr = Matrix.Matrixes.rotateZ;
+          Mr.array[5] = Mr.array[0] = Math.cos(t);
+          Mr.array[1] = -(Mr.array[4] = Math.sin(t));
+          return Matrix.multiply(Mr, m, result || new Matrix(4, 4));
+        }
+      }, {
+        key: "scale3d",
+        value: function scale3d(m, x, y, z, result) {
+          var Mr = Matrix.Matrixes.scale3d;
+          Mr.array[0] = x;
+          Mr.array[5] = y;
+          Mr.array[10] = z;
+          return Matrix.multiply(Mr, m, result || new Matrix(4, 4));
+        }
+      }, {
+        key: "translate3d",
+        value: function translate3d(m, x, y, z, result) {
+          var Mr = Matrix.Matrixes.translate3d;
+          Mr.array[12] = x;
+          Mr.array[13] = y;
+          Mr.array[14] = z;
+          return Matrix.multiply(Mr, m, result || new Matrix(4, 4));
+        }
+      }, {
+        key: "put",
+        value: function put(m, sub, row, column) {
+          var c, ind, i;
+          row || (row = 0);
+          column || (column = 0);
 
-      static rotateX(m, t, result) {
-        const Mr = Matrix.Matrixes.rotateX;
-        Mr.array[10] = Mr.array[5] = Math.cos(t);
-        Mr.array[6] = -(Mr.array[9] = Math.sin(t));
-        return Matrix.multiply(Mr, m, result || new Matrix(4, 4));
-      }
+          for (var l = sub.row; l--;) {
+            if (l + row >= m.row) continue;
 
-      static rotateY(m, t, result) {
-        const Mr = Matrix.Matrixes.rotateY;
-        Mr.array[10] = Mr.array[0] = Math.cos(t);
-        Mr.array[8] = -(Mr.array[2] = Math.sin(t));
-        return Matrix.multiply(Mr, m, result || new Matrix(4, 4));
-      }
-
-      static rotateZ(m, t, result) {
-        const Mr = Matrix.Matrixes.rotateZ;
-        Mr.array[5] = Mr.array[0] = Math.cos(t);
-        Mr.array[1] = -(Mr.array[4] = Math.sin(t));
-        return Matrix.multiply(Mr, m, result || new Matrix(4, 4));
-      }
-
-      static scale3d(m, x, y, z, result) {
-        const Mr = Matrix.Matrixes.scale3d;
-        Mr.array[0] = x;
-        Mr.array[5] = y;
-        Mr.array[10] = z;
-        return Matrix.multiply(Mr, m, result || new Matrix(4, 4));
-      }
-
-      static translate3d(m, x, y, z, result) {
-        const Mr = Matrix.Matrixes.translate3d;
-        Mr.array[12] = x;
-        Mr.array[13] = y;
-        Mr.array[14] = z;
-        return Matrix.multiply(Mr, m, result || new Matrix(4, 4));
-      }
-
-      static put(m, sub, row, column) {
-        let c, ind, i;
-        row || (row = 0);
-        column || (column = 0);
-
-        for (let l = sub.row; l--;) {
-          if (l + row >= m.row) continue;
-
-          for (c = sub.column; c--;) {
-            if (c + column >= m.column) continue;
-            m.array[(l + row) * m.column + c + column] = sub.array[l * sub.column + c];
+            for (c = sub.column; c--;) {
+              if (c + column >= m.column) continue;
+              m.array[(l + row) * m.column + c + column] = sub.array[l * sub.column + c];
+            }
           }
         }
-      }
+      }, {
+        key: "createClass",
+        value: function createClass(Constructor) {
+          return _createClass(Constructor);
+        }
+      }]);
 
-      static createClass(Constructor) {
-        return createClass(Constructor);
-      }
-
-    }
+      return Matrix;
+    }();
 
     var testArray = new Constructor(1);
-    (0, _defineProperty.default)(Matrix, '_instanceofTypedArray', {
+    (0, _defineProperty["default"])(Matrix, '_instanceofTypedArray', {
       value: !!(TypedArray && TypedArray.isPrototypeOf(testArray))
     });
     testArray = null;
@@ -1243,7 +1944,7 @@ var _defineProperty = _interopRequireDefault(require("@babel/runtime-corejs3/cor
     return Matrix;
   }
 
-  return createClass(global.Float32Array ? Float32Array : Array);
+  return _createClass(global.Float32Array ? Float32Array : Array);
 });
 
 },{"@babel/runtime-corejs3/core-js-stable/instance/fill":20,"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],9:[function(require,module,exports){
@@ -1252,6 +1953,12 @@ Copyright luojia@luojia.me
 LGPL license
 */
 'use strict';
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
@@ -1263,14 +1970,14 @@ _Object$defineProperty(exports, "__esModule", {
 
 _Object$defineProperty(exports, "DomTools", {
   enumerable: true,
-  get: function () {
+  get: function get() {
     return _index.DomTools;
   }
 });
 
 _Object$defineProperty(exports, "Utils", {
   enumerable: true,
-  get: function () {
+  get: function get() {
     return _index.Utils;
   }
 });
@@ -1291,254 +1998,332 @@ var _now = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable
 
 var _defineProperty2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/defineProperty"));
 
-var _index = require("../../NyaP-Core/index.js");
+var _index = require("../../NyaP-Core/index.js"); //load from NyaP-Core project
 
-//load from NyaP-Core project
-class DanmakuFrameModule {
-  constructor(frame) {
+
+var DanmakuFrameModule = /*#__PURE__*/function () {
+  function DanmakuFrameModule(frame) {
+    _classCallCheck(this, DanmakuFrameModule);
+
     this.frame = frame;
     this.enabled = false;
   }
 
-  get width() {
-    return this.frame.width;
-  }
+  _createClass(DanmakuFrameModule, [{
+    key: "width",
+    get: function get() {
+      return this.frame.width;
+    }
+  }, {
+    key: "height",
+    get: function get() {
+      return this.frame.height;
+    }
+  }]);
 
-  get height() {
-    return this.frame.height;
-  }
-
-}
+  return DanmakuFrameModule;
+}();
 
 exports.DanmakuFrameModule = DanmakuFrameModule;
 
-class DanmakuFrame {
-  static addModule(name, module) {
-    if (name in this.availableModules) {
-      console.warn('The module "' + name + '" has already been added.');
-      return;
+var DanmakuFrame = /*#__PURE__*/function () {
+  _createClass(DanmakuFrame, [{
+    key: "availableModules",
+    get: function get() {
+      return this.constructor.availableModules;
     }
+  }, {
+    key: "opt",
+    get: function get() {
+      return this._opt || {};
+    }
+  }, {
+    key: "time",
+    set: function set(t) {
+      //current media time (ms)
+      this.media || (this.timeBase = (0, _now["default"])() - t);
+      this.moduleFunction('time', t); //let all mods know when the time be set
+    },
+    get: function get() {
+      return this.media ? this.media.currentTime * 1000 : (0, _now["default"])() - this.timeBase;
+    }
+  }, {
+    key: "area",
+    get: function get() {
+      return this.width * this.height;
+    } //constructed module list
 
-    this.availableModules[name] = module;
-  }
+  }], [{
+    key: "addModule",
+    value: function addModule(name, module) {
+      if (name in this.availableModules) {
+        console.warn('The module "' + name + '" has already been added.');
+        return;
+      }
 
-  get availableModules() {
-    return this.constructor.availableModules;
-  }
+      this.availableModules[name] = module;
+    }
+  }]);
 
-  get opt() {
-    return this._opt || {};
-  }
+  function DanmakuFrame(core, opt) {
+    var _this = this;
 
-  set time(t) {
-    //current media time (ms)
-    this.media || (this.timeBase = (0, _now.default)() - t);
-    this.moduleFunction('time', t); //let all mods know when the time be set
-  }
+    _classCallCheck(this, DanmakuFrame);
 
-  get time() {
-    return this.media ? this.media.currentTime * 1000 : (0, _now.default)() - this.timeBase;
-  }
-
-  get area() {
-    return this.width * this.height;
-  }
-
-  //constructed module list
-  constructor(core, opt) {
     var _context;
 
-    (0, _defineProperty2.default)(this, "_opt", void 0);
-    (0, _defineProperty2.default)(this, "rate", 1);
-    (0, _defineProperty2.default)(this, "timeBase", 0);
-    (0, _defineProperty2.default)(this, "width", 0);
-    (0, _defineProperty2.default)(this, "height", 0);
-    (0, _defineProperty2.default)(this, "fpsLimit", 0);
-    (0, _defineProperty2.default)(this, "fps", 0);
-    (0, _defineProperty2.default)(this, "fpsRec", new Uint32Array(9));
-    (0, _defineProperty2.default)(this, "media", null);
-    (0, _defineProperty2.default)(this, "working", false);
-    (0, _defineProperty2.default)(this, "enabled", true);
-    (0, _defineProperty2.default)(this, "modules", {});
+    (0, _defineProperty2["default"])(this, "_opt", void 0);
+    (0, _defineProperty2["default"])(this, "rate", 1);
+    (0, _defineProperty2["default"])(this, "timeBase", 0);
+    (0, _defineProperty2["default"])(this, "width", 0);
+    (0, _defineProperty2["default"])(this, "height", 0);
+    (0, _defineProperty2["default"])(this, "fpsLimit", 0);
+    (0, _defineProperty2["default"])(this, "fps", 0);
+    (0, _defineProperty2["default"])(this, "fpsRec", new Uint32Array(9));
+    (0, _defineProperty2["default"])(this, "media", null);
+    (0, _defineProperty2["default"])(this, "working", false);
+    (0, _defineProperty2["default"])(this, "enabled", true);
+    (0, _defineProperty2["default"])(this, "modules", {});
     this.core = core;
     this._opt = opt;
     this.container = core.danmakuContainer || document.createElement('div'); // create a styleSheet
 
-    const style = document.createElement("style");
+    var style = document.createElement("style");
     document.head.appendChild(style);
     this.styleSheet = style.sheet;
-    (0, _setImmediate2.default)(() => {
+    (0, _setImmediate2["default"])(function () {
       //container size sensor
-      _index.DomTools.resizeEvent.observe(this.container);
+      _index.DomTools.resizeEvent.observe(_this.container);
 
-      _index.DomTools.addEvents(this.container, {
-        resize: e => this.resize(e.contentRect)
+      _index.DomTools.addEvents(_this.container, {
+        resize: function resize(e) {
+          return _this.resize(e.contentRect);
+        }
       });
 
-      this.resize();
+      _this.resize();
     }, 0);
 
-    _index.Utils.animationFrameLoop(() => {
+    _index.Utils.animationFrameLoop(function () {
       //fps recorder
-      let rec = this.fpsRec,
+      var rec = _this.fpsRec,
           length = rec.length; //move left
 
-      (0, _copyWithin.default)(rec).call(rec, rec, 1);
-      rec[length - 1] = (0, _now.default)(); //set this frame's time
+      (0, _copyWithin["default"])(rec).call(rec, rec, 1);
+      rec[length - 1] = (0, _now["default"])(); //set this frame's time
 
-      let result = 0;
+      var result = 0;
 
-      for (let i = 1; i < length; i++) {
+      for (var i = 1; i < length; i++) {
         //weighted average
         result += i * (rec[i] - rec[i - 1]);
       }
 
       result /= length * (length - 1) / 2;
-      this.fps = 1000 / result;
+      _this.fps = 1000 / result;
     });
 
-    this.draw = (0, _bind.default)(_context = this.draw).call(_context, this);
+    this.draw = (0, _bind["default"])(_context = this.draw).call(_context, this);
   }
 
-  enable(name) {
-    //enable a amdule
-    if (name === undefined) {
-      //no name means enable this frame
-      this.enabled = true;
+  _createClass(DanmakuFrame, [{
+    key: "enable",
+    value: function enable(name) {
+      //enable a amdule
+      if (name === undefined) {
+        //no name means enable this frame
+        this.enabled = true;
 
-      if (this.media) {
-        this.media.paused || this.play();
+        if (this.media) {
+          this.media.paused || this.play();
+        }
+
+        this.container.style.display = '';
+        this.core.emit('danmakuFrameToggle', true);
+        this.core.debug('danmaku frame enabled');
+        return;
+      } else if (!name) {
+        throw new Error("Wrong name: ".concat(name));
       }
 
-      this.container.style.display = '';
-      this.core.emit('danmakuFrameToggle', true);
-      this.core.debug('danmaku frame enabled');
-      return;
-    } else if (!name) {
-      throw new Error(`Wrong name: ${name}`);
+      var module = this.modules[name] || this.initModule(name);
+      if (!module) return false;
+      module.enabled = true;
+      module.enable && module.enable();
+      return true;
     }
-
-    let module = this.modules[name] || this.initModule(name);
-    if (!module) return false;
-    module.enabled = true;
-    module.enable && module.enable();
-    return true;
-  }
-
-  disable(name) {
-    if (name === undefined) {
-      this.pause();
-      this.moduleFunction('clear');
-      this.enabled = false;
-      this.container.style.display = 'none';
-      this.core.emit('danmakuFrameToggle', false);
-      this.core.debug('danmaku frame disabled');
-      return;
-    }
-
-    let module = this.modules[name];
-    if (!module) return false;
-    module.enabled = false;
-    module.disable && module.disable();
-    return true;
-  }
-
-  addStyle(s) {
-    if (typeof s === 'string') s = [s];
-    if (s instanceof Array === false) return;
-    (0, _forEach.default)(s).call(s, r => this.styleSheet.insertRule(r, this.styleSheet.cssRules.length));
-  }
-
-  initModule(name, arg = this.opt.modules[name]) {
-    if (this.modules[name]) {
-      console.warn(`The module [${name}] has already inited.`);
-      return this.modules[name];
-    }
-
-    let mod = DanmakuFrame.availableModules[name];
-    if (!mod) throw 'Module [' + name + '] does not exist.';
-    let module = new mod(this, arg);
-    if (module instanceof DanmakuFrameModule === false) throw 'Constructor of ' + name + ' is not child class of DanmakuFrameModule';
-    this.modules[name] = module;
-    console.debug(`Mod Inited: ${name}`);
-    return module;
-  }
-
-  draw(force) {
-    if (!this.working) return;
-    this.moduleFunction('draw', force);
-
-    if (this.fpsLimit <= 0) {
-      requestAnimationFrame(() => this.draw());
-    } else {
-      (0, _setTimeout2.default)(this.draw, 1000 / this.fpsLimit);
-    }
-  }
-
-  load(...danmakuObj) {
-    this.moduleFunction('load', ...danmakuObj);
-  }
-
-  loadList(danmakuArray) {
-    this.moduleFunction('loadList', danmakuArray);
-  }
-
-  unload(danmakuObj) {
-    this.moduleFunction('unload', danmakuObj);
-  }
-
-  play() {
-    if (this.working || !this.enabled) return;
-    this.working = true;
-    this.moduleFunction('play');
-    this.draw(true);
-  }
-
-  pause() {
-    if (!this.enabled) return;
-    this.working = false;
-    this.moduleFunction('pause');
-  }
-
-  resize(rect = this.container.getBoundingClientRect()) {
-    this.width = rect.width;
-    this.height = rect.height;
-    this.moduleFunction('resize', rect);
-  }
-
-  moduleFunction(name, ...arg) {
-    let m;
-
-    for (let n in this.modules) {
-      m = this.modules[n];
-      if (m.enabled && m[name]) m[name](...arg);
-    }
-  }
-
-  setMedia(media) {
-    const F = this;
-    F.media = media;
-
-    _index.DomTools.addEvents(media, {
-      playing: () => F.play(),
-      'pause,stalled,seeking,waiting': () => F.pause(),
-      ratechange: () => {
-        F.rate = F.media.playbackRate;
-        F.moduleFunction('rate', F.rate);
+  }, {
+    key: "disable",
+    value: function disable(name) {
+      if (name === undefined) {
+        this.pause();
+        this.moduleFunction('clear');
+        this.enabled = false;
+        this.container.style.display = 'none';
+        this.core.emit('danmakuFrameToggle', false);
+        this.core.debug('danmaku frame disabled');
+        return;
       }
-    });
 
-    F.moduleFunction('media', media);
-  }
+      var module = this.modules[name];
+      if (!module) return false;
+      module.enabled = false;
+      module.disable && module.disable();
+      return true;
+    }
+  }, {
+    key: "addStyle",
+    value: function addStyle(s) {
+      var _this2 = this;
 
-}
+      if (typeof s === 'string') s = [s];
+      if (s instanceof Array === false) return;
+      (0, _forEach["default"])(s).call(s, function (r) {
+        return _this2.styleSheet.insertRule(r, _this2.styleSheet.cssRules.length);
+      });
+    }
+  }, {
+    key: "initModule",
+    value: function initModule(name) {
+      var arg = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : this.opt.modules[name];
+
+      if (this.modules[name]) {
+        console.warn("The module [".concat(name, "] has already inited."));
+        return this.modules[name];
+      }
+
+      var mod = DanmakuFrame.availableModules[name];
+      if (!mod) throw 'Module [' + name + '] does not exist.';
+      var module = new mod(this, arg);
+      if (module instanceof DanmakuFrameModule === false) throw 'Constructor of ' + name + ' is not child class of DanmakuFrameModule';
+      this.modules[name] = module;
+      console.debug("Mod Inited: ".concat(name));
+      return module;
+    }
+  }, {
+    key: "draw",
+    value: function draw(force) {
+      var _this3 = this;
+
+      if (!this.working) return;
+      this.moduleFunction('draw', force);
+
+      if (this.fpsLimit <= 0) {
+        requestAnimationFrame(function () {
+          return _this3.draw();
+        });
+      } else {
+        (0, _setTimeout2["default"])(this.draw, 1000 / this.fpsLimit);
+      }
+    }
+  }, {
+    key: "load",
+    value: function load() {
+      for (var _len = arguments.length, danmakuObj = new Array(_len), _key = 0; _key < _len; _key++) {
+        danmakuObj[_key] = arguments[_key];
+      }
+
+      this.moduleFunction.apply(this, ['load'].concat(danmakuObj));
+    }
+  }, {
+    key: "loadList",
+    value: function loadList(danmakuArray) {
+      this.moduleFunction('loadList', danmakuArray);
+    }
+  }, {
+    key: "unload",
+    value: function unload(danmakuObj) {
+      this.moduleFunction('unload', danmakuObj);
+    }
+  }, {
+    key: "play",
+    value: function play() {
+      if (this.working || !this.enabled) return;
+      this.working = true;
+      this.moduleFunction('play');
+      this.draw(true);
+    }
+  }, {
+    key: "pause",
+    value: function pause() {
+      if (!this.enabled) return;
+      this.working = false;
+      this.moduleFunction('pause');
+    }
+  }, {
+    key: "resize",
+    value: function resize() {
+      var rect = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.container.getBoundingClientRect();
+      this.width = rect.width;
+      this.height = rect.height;
+      this.moduleFunction('resize', rect);
+    }
+  }, {
+    key: "moduleFunction",
+    value: function moduleFunction(name) {
+      var m;
+
+      for (var _len2 = arguments.length, arg = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+        arg[_key2 - 1] = arguments[_key2];
+      }
+
+      for (var n in this.modules) {
+        var _m;
+
+        m = this.modules[n];
+        if (m.enabled && m[name]) (_m = m)[name].apply(_m, arg);
+      }
+    }
+  }, {
+    key: "setMedia",
+    value: function setMedia(media) {
+      var F = this;
+      F.media = media;
+
+      _index.DomTools.addEvents(media, {
+        playing: function playing() {
+          return F.play();
+        },
+        'pause,stalled,seeking,waiting': function pauseStalledSeekingWaiting() {
+          return F.pause();
+        },
+        ratechange: function ratechange() {
+          F.rate = F.media.playbackRate;
+          F.moduleFunction('rate', F.rate);
+        }
+      });
+
+      F.moduleFunction('media', media);
+    }
+  }]);
+
+  return DanmakuFrame;
+}();
 
 exports.DanmakuFrame = DanmakuFrame;
-(0, _defineProperty2.default)(DanmakuFrame, "availableModules", {});
+(0, _defineProperty2["default"])(DanmakuFrame, "availableModules", {});
 
 },{"../../NyaP-Core/index.js":1,"@babel/runtime-corejs3/core-js-stable/date/now":17,"@babel/runtime-corejs3/core-js-stable/instance/bind":18,"@babel/runtime-corejs3/core-js-stable/instance/copy-within":19,"@babel/runtime-corejs3/core-js-stable/instance/for-each":21,"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/core-js-stable/set-immediate":35,"@babel/runtime-corejs3/core-js-stable/set-timeout":37,"@babel/runtime-corejs3/helpers/defineProperty":39,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],10:[function(require,module,exports){
 "use strict";
 
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
 var _Object$defineProperty = require("@babel/runtime-corejs3/core-js-stable/object/define-property");
@@ -1547,135 +2332,195 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _defineProperty2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/defineProperty"));
 
 var _textModuleTemplate = _interopRequireDefault(require("./textModuleTemplate.js"));
-
 /*
 Copyright luojia@luojia.me
 LGPL license
 */
-class TextCanvas2D extends _textModuleTemplate.default {
-  get container() {
-    return this.canvas;
-  }
 
-  constructor(dText) {
-    super(dText);
-    (0, _defineProperty2.default)(this, "canvas", void 0);
-    (0, _defineProperty2.default)(this, "context2d", void 0);
-    this.canvas = document.createElement('canvas'); //the canvas
 
-    this.context2d = this.canvas.getContext('2d'); //the canvas contex
+var TextCanvas2D = /*#__PURE__*/function (_textModuleTemplate$d) {
+  _inherits(TextCanvas2D, _textModuleTemplate$d);
 
-    if (!this.context2d) {
+  _createClass(TextCanvas2D, [{
+    key: "container",
+    get: function get() {
+      return this.canvas;
+    }
+  }]);
+
+  function TextCanvas2D(dText) {
+    var _this;
+
+    _classCallCheck(this, TextCanvas2D);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(TextCanvas2D).call(this, dText));
+    (0, _defineProperty2["default"])(_assertThisInitialized(_this), "canvas", void 0);
+    (0, _defineProperty2["default"])(_assertThisInitialized(_this), "context2d", void 0);
+    _this.canvas = document.createElement('canvas'); //the canvas
+
+    _this.context2d = _this.canvas.getContext('2d'); //the canvas contex
+
+    if (!_this.context2d) {
       console.warn('text 2d not supported');
-      return;
+      return _possibleConstructorReturn(_this);
     }
 
-    this.canvas.classList.add(`${dText.randomText}_fullfill`);
-    this.canvas.id = `${dText.randomText}_text2d`;
-    this.supported = true;
+    _this.canvas.classList.add("".concat(dText.randomText, "_fullfill"));
+
+    _this.canvas.id = "".concat(dText.randomText, "_text2d");
+    _this.supported = true;
+    return _this;
   }
 
-  draw(force) {
-    let ctx = this.context2d,
-        cW = ctx.canvas.width,
-        dT = this.dText.DanmakuText,
-        i = dT.length,
-        t,
-        left,
-        right,
-        vW;
-    let debug = false;
-    ctx.globalCompositeOperation = 'destination-over';
-    this.clear(force);
+  _createClass(TextCanvas2D, [{
+    key: "draw",
+    value: function draw(force) {
+      var ctx = this.context2d,
+          cW = ctx.canvas.width,
+          dT = this.dText.DanmakuText,
+          i = dT.length,
+          t,
+          left,
+          right,
+          vW;
+      var debug = false;
+      ctx.globalCompositeOperation = 'destination-over';
+      this.clear(force);
 
-    for (; i--;) {
-      if (!(t = dT[i]).drawn) t.drawn = true;
-      left = t.style.x - t.estimatePadding;
-      right = left + t._cache.width;
+      for (; i--;) {
+        if (!(t = dT[i]).drawn) t.drawn = true;
+        left = t.style.x - t.estimatePadding;
+        right = left + t._cache.width;
 
-      if (left > cW || right < 0) {
-        continue;
-      } //ignore danmakus out of the screen
+        if (left > cW || right < 0) {
+          continue;
+        } //ignore danmakus out of the screen
 
 
-      if (debug) {
-        ctx.save();
-        ctx.fillStyle = 'rgba(255,255,255,0.3)';
-        ctx.fillRect(left, t.style.y - t.estimatePadding, t._cache.width, t._cache.height);
-        ctx.restore();
+        if (debug) {
+          ctx.save();
+          ctx.fillStyle = 'rgba(255,255,255,0.3)';
+          ctx.fillRect(left, t.style.y - t.estimatePadding, t._cache.width, t._cache.height);
+          ctx.restore();
+        }
+
+        if (cW >= t._cache.width) {
+          //danmaku which is smaller than canvas width
+          ctx.drawImage(t._bitmap || t._cache, left, t.style.y - t.estimatePadding);
+        } else {
+          //only draw the part on screen if the danmau overflow
+          vW = t._cache.width + (left < 0 ? left : 0) - (right > cW ? right - cW : 0);
+          ctx.drawImage(t._bitmap || t._cache, left < 0 ? -left : 0, 0, vW, t._cache.height, left < 0 ? 0 : left, t.style.y - t.estimatePadding, vW, t._cache.height);
+        }
+      }
+    }
+  }, {
+    key: "clear",
+    value: function clear(force) {
+      var D = this.dText;
+
+      if (force || this._evaluateIfFullClearMode()) {
+        this.context2d.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        return;
       }
 
-      if (cW >= t._cache.width) {
-        //danmaku which is smaller than canvas width
-        ctx.drawImage(t._bitmap || t._cache, left, t.style.y - t.estimatePadding);
-      } else {
-        //only draw the part on screen if the danmau overflow
-        vW = t._cache.width + (left < 0 ? left : 0) - (right > cW ? right - cW : 0);
-        ctx.drawImage(t._bitmap || t._cache, left < 0 ? -left : 0, 0, vW, t._cache.height, left < 0 ? 0 : left, t.style.y - t.estimatePadding, vW, t._cache.height);
+      for (var i = D.DanmakuText.length, t; i--;) {
+        t = D.DanmakuText[i];
+        if (t.drawn) this.context2d.clearRect(t.style.x - t.estimatePadding, t.style.y - t.estimatePadding, t._cache.width, t._cache.height);
       }
     }
-  }
-
-  clear(force) {
-    const D = this.dText;
-
-    if (force || this._evaluateIfFullClearMode()) {
-      this.context2d.clearRect(0, 0, this.canvas.width, this.canvas.height);
-      return;
+  }, {
+    key: "_evaluateIfFullClearMode",
+    value: function _evaluateIfFullClearMode() {
+      if (this.dText.DanmakuText.length > 3) return true;
+      return false;
     }
+  }, {
+    key: "deleteRelatedTextObject",
+    value: function deleteRelatedTextObject(t) {
+      if (t._bitmap) {
+        t._bitmap.close();
 
-    for (let i = D.DanmakuText.length, t; i--;) {
-      t = D.DanmakuText[i];
-      if (t.drawn) this.context2d.clearRect(t.style.x - t.estimatePadding, t.style.y - t.estimatePadding, t._cache.width, t._cache.height);
+        t._bitmap = null;
+      }
     }
-  }
-
-  _evaluateIfFullClearMode() {
-    if (this.dText.DanmakuText.length > 3) return true;
-    return false;
-  }
-
-  deleteRelatedTextObject(t) {
-    if (t._bitmap) {
-      t._bitmap.close();
-
-      t._bitmap = null;
+  }, {
+    key: "resize",
+    value: function resize() {
+      var D = this.dText,
+          C = this.canvas;
+      C.width = D.width;
+      C.height = D.height;
     }
-  }
-
-  resize() {
-    let D = this.dText,
-        C = this.canvas;
-    C.width = D.width;
-    C.height = D.height;
-  }
-
-  enable() {
-    this.draw();
-    this.dText.useImageBitmap = true;
-  }
-
-  disable() {
-    for (let tobj of this.dText.DanmakuText) {
-      this.deleteRelatedTextObject(tobj);
+  }, {
+    key: "enable",
+    value: function enable() {
+      this.draw();
+      this.dText.useImageBitmap = true;
     }
+  }, {
+    key: "disable",
+    value: function disable() {
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
 
-    this.clear(true);
-  }
+      try {
+        for (var _iterator = this.dText.DanmakuText[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var tobj = _step.value;
+          this.deleteRelatedTextObject(tobj);
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+            _iterator["return"]();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
 
-}
+      this.clear(true);
+    }
+  }]);
+
+  return TextCanvas2D;
+}(_textModuleTemplate["default"]);
 
 var _default = TextCanvas2D;
-exports.default = _default;
+exports["default"] = _default;
 
 },{"./textModuleTemplate.js":15,"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/helpers/defineProperty":39,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],11:[function(require,module,exports){
 "use strict";
 
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
 var _Object$defineProperty = require("@babel/runtime-corejs3/core-js-stable/object/define-property");
@@ -1684,105 +2529,174 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _forEach = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/for-each"));
 
 var _textModuleTemplate = _interopRequireDefault(require("./textModuleTemplate.js"));
-
 /*
 Copyright luojia@luojia.me
 LGPL license
 */
-class TextCss extends _textModuleTemplate.default {
-  constructor(dText) {
-    super(dText);
-    this.supported = dText.text2d.supported;
-    if (!this.supported) return;
-    dText.frame.addStyle([`#${dText.randomText}_textCanvasContainer canvas{will-change:transform;top:0;left:0;position:absolute;}`, `#${dText.randomText}_textCanvasContainer.moving canvas{transition:transform 500s linear;}`, `#${dText.randomText}_textCanvasContainer{will-change:transform;pointer-events:none;overflow:hidden;}`]);
-    this.container = document.createElement('div'); //for text canvas
 
-    this.container.classList.add(`${dText.randomText}_fullfill`);
-    this.container.id = `${dText.randomText}_textCanvasContainer`;
+
+var TextCss = /*#__PURE__*/function (_textModuleTemplate$d) {
+  _inherits(TextCss, _textModuleTemplate$d);
+
+  function TextCss(dText) {
+    var _this;
+
+    _classCallCheck(this, TextCss);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(TextCss).call(this, dText));
+    _this.supported = dText.text2d.supported;
+    if (!_this.supported) return _possibleConstructorReturn(_this);
+    dText.frame.addStyle(["#".concat(dText.randomText, "_textCanvasContainer canvas{will-change:transform;top:0;left:0;position:absolute;}"), "#".concat(dText.randomText, "_textCanvasContainer.moving canvas{transition:transform 500s linear;}"), "#".concat(dText.randomText, "_textCanvasContainer{will-change:transform;pointer-events:none;overflow:hidden;}")]);
+    _this.container = document.createElement('div'); //for text canvas
+
+    _this.container.classList.add("".concat(dText.randomText, "_fullfill"));
+
+    _this.container.id = "".concat(dText.randomText, "_textCanvasContainer");
+    return _this;
   }
 
-  _toggle(s) {
-    let D = this.dText,
-        T = D.frame.time;
-    this.container.classList[s ? 'add' : 'remove']('moving');
+  _createClass(TextCss, [{
+    key: "_toggle",
+    value: function _toggle(s) {
+      var _this2 = this;
 
-    for (let i = D.DanmakuText.length, t; i--;) {
-      if ((t = D.DanmakuText[i]).danmaku.mode >= 2) continue;
+      var D = this.dText,
+          T = D.frame.time;
+      this.container.classList[s ? 'add' : 'remove']('moving');
 
-      if (s) {
-        requestAnimationFrame(() => this._move(t));
-      } else {
-        this._move(t, T);
+      var _loop = function _loop(i, _t) {
+        if ((_t = D.DanmakuText[i]).danmaku.mode >= 2) {
+          t = _t;
+          return "continue";
+        }
+
+        if (s) {
+          requestAnimationFrame(function () {
+            return _this2._move(_t);
+          });
+        } else {
+          _this2._move(_t, T);
+        }
+
+        t = _t;
+      };
+
+      for (var i = D.DanmakuText.length, t; i--;) {
+        var _ret = _loop(i, t);
+
+        if (_ret === "continue") continue;
       }
     }
-  }
+  }, {
+    key: "clear",
+    value: function clear() {
+      this.container.innerHTML = '';
+    }
+  }, {
+    key: "pause",
+    value: function pause() {
+      this._toggle(false);
+    }
+  }, {
+    key: "play",
+    value: function play() {
+      this._toggle(true);
+    }
+  }, {
+    key: "rate",
+    value: function rate() {
+      this.resetPos();
+    }
+  }, {
+    key: "_move",
+    value: function _move(t, T) {
+      if (!t.danmaku) return;
+      if (T === undefined) T = this.dText.frame.time + 500000;
+      t._cache.style.transform = "translate(".concat(((this.dText._calcSideDanmakuPosition(t, T) - t.estimatePadding) * 10 | 0) / 10, "px,").concat(t.style.y - t.estimatePadding, "px)");
+    }
+  }, {
+    key: "resetPos",
+    value: function resetPos() {
+      var _this3 = this;
 
-  clear() {
-    this.container.innerHTML = '';
-  }
+      this.pause();
+      this.dText.paused || requestAnimationFrame(function () {
+        return _this3.play();
+      });
+    }
+  }, {
+    key: "resize",
+    value: function resize() {
+      this.resetPos();
+    }
+  }, {
+    key: "remove",
+    value: function remove(t) {
+      t._cache.parentNode && this.container.removeChild(t._cache);
+    }
+  }, {
+    key: "enable",
+    value: function enable() {
+      var _this4 = this;
 
-  pause() {
-    this._toggle(false);
-  }
+      this.dText.useImageBitmap = false;
+      requestAnimationFrame(function () {
+        var _context;
 
-  play() {
-    this._toggle(true);
-  }
+        (0, _forEach["default"])(_context = _this4.dText.DanmakuText).call(_context, function (t) {
+          return _this4.newDanmaku(t);
+        });
+      });
+    }
+  }, {
+    key: "disable",
+    value: function disable() {
+      this.container.innerHTML = '';
+    }
+  }, {
+    key: "newDanmaku",
+    value: function newDanmaku(t) {
+      var _this5 = this;
 
-  rate() {
-    this.resetPos();
-  }
+      t._cache.style.transform = "translate(".concat(t.style.x - t.estimatePadding, "px,").concat(t.style.y - t.estimatePadding, "px)");
+      this.container.appendChild(t._cache);
+      t.danmaku.mode < 2 && !this.dText.paused && requestAnimationFrame(function () {
+        return _this5._move(t);
+      });
+    }
+  }]);
 
-  _move(t, T) {
-    if (!t.danmaku) return;
-    if (T === undefined) T = this.dText.frame.time + 500000;
-    t._cache.style.transform = `translate(${((this.dText._calcSideDanmakuPosition(t, T) - t.estimatePadding) * 10 | 0) / 10}px,${t.style.y - t.estimatePadding}px)`;
-  }
-
-  resetPos() {
-    this.pause();
-    this.dText.paused || requestAnimationFrame(() => this.play());
-  }
-
-  resize() {
-    this.resetPos();
-  }
-
-  remove(t) {
-    t._cache.parentNode && this.container.removeChild(t._cache);
-  }
-
-  enable() {
-    this.dText.useImageBitmap = false;
-    requestAnimationFrame(() => {
-      var _context;
-
-      (0, _forEach.default)(_context = this.dText.DanmakuText).call(_context, t => this.newDanmaku(t));
-    });
-  }
-
-  disable() {
-    this.container.innerHTML = '';
-  }
-
-  newDanmaku(t) {
-    t._cache.style.transform = `translate(${t.style.x - t.estimatePadding}px,${t.style.y - t.estimatePadding}px)`;
-    this.container.appendChild(t._cache);
-    t.danmaku.mode < 2 && !this.dText.paused && requestAnimationFrame(() => this._move(t));
-  }
-
-}
+  return TextCss;
+}(_textModuleTemplate["default"]);
 
 var _default = TextCss;
-exports.default = _default;
+exports["default"] = _default;
 
 },{"./textModuleTemplate.js":15,"@babel/runtime-corejs3/core-js-stable/instance/for-each":21,"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],12:[function(require,module,exports){
 "use strict";
+
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
@@ -1792,7 +2706,7 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _forEach = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/for-each"));
 
@@ -1801,51 +2715,43 @@ var _Mat = _interopRequireDefault(require("../../lib/Mat/Mat.js"));
 var _textModuleTemplate = _interopRequireDefault(require("./textModuleTemplate.js"));
 
 var _danmakuFrame = require("../danmaku-frame.js");
-
 /*
 Copyright luojia@luojia.me
 LGPL license
 */
-class TextWebGL extends _textModuleTemplate.default {
-  get container() {
-    return this.c3d;
-  }
 
-  constructor(dText) {
-    super(dText);
-    let c3d = this.c3d = document.createElement('canvas');
-    c3d.classList.add(`${dText.randomText}_fullfill`);
-    c3d.id = `${dText.randomText}_text3d`; //init webgl
 
-    const gl = this.gl = c3d.getContext('webgl') || c3d.getContext('experimental-webgl'); //the canvas3d context
+var TextWebGL = /*#__PURE__*/function (_textModuleTemplate$d) {
+  _inherits(TextWebGL, _textModuleTemplate$d);
+
+  _createClass(TextWebGL, [{
+    key: "container",
+    get: function get() {
+      return this.c3d;
+    }
+  }]);
+
+  function TextWebGL(dText) {
+    var _this;
+
+    _classCallCheck(this, TextWebGL);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(TextWebGL).call(this, dText));
+    var c3d = _this.c3d = document.createElement('canvas');
+    c3d.classList.add("".concat(dText.randomText, "_fullfill"));
+    c3d.id = "".concat(dText.randomText, "_text3d"); //init webgl
+
+    var gl = _this.gl = c3d.getContext('webgl') || c3d.getContext('experimental-webgl'); //the canvas3d context
 
     if (!gl) {
       console.warn('text 3d not supported');
-      return;
+      return _possibleConstructorReturn(_this);
     } //shader
 
 
     var shaders = {
-      danmakuFrag: [gl.FRAGMENT_SHADER, `
-				#pragma optimize(on)
-				precision lowp float;
-				varying lowp vec2 vDanmakuTexCoord;
-				uniform sampler2D uSampler;
-				void main(void) {
-					vec4 co=texture2D(uSampler,vDanmakuTexCoord);
-					if(co.a == 0.0)discard;
-					gl_FragColor = co;
-				}`],
-      danmakuVert: [gl.VERTEX_SHADER, `
-				#pragma optimize(on)
-				attribute vec2 aVertexPosition;
-				attribute vec2 aDanmakuTexCoord;
-				uniform mat4 u2dCoordinate;
-				varying lowp vec2 vDanmakuTexCoord;
-				void main(void) {
-					gl_Position = u2dCoordinate * vec4(aVertexPosition,0,1);
-					vDanmakuTexCoord = aDanmakuTexCoord;
-				}`]
+      danmakuFrag: [gl.FRAGMENT_SHADER, "\n\t\t\t\t#pragma optimize(on)\n\t\t\t\tprecision lowp float;\n\t\t\t\tvarying lowp vec2 vDanmakuTexCoord;\n\t\t\t\tuniform sampler2D uSampler;\n\t\t\t\tvoid main(void) {\n\t\t\t\t\tvec4 co=texture2D(uSampler,vDanmakuTexCoord);\n\t\t\t\t\tif(co.a == 0.0)discard;\n\t\t\t\t\tgl_FragColor = co;\n\t\t\t\t}"],
+      danmakuVert: [gl.VERTEX_SHADER, "\n\t\t\t\t#pragma optimize(on)\n\t\t\t\tattribute vec2 aVertexPosition;\n\t\t\t\tattribute vec2 aDanmakuTexCoord;\n\t\t\t\tuniform mat4 u2dCoordinate;\n\t\t\t\tvarying lowp vec2 vDanmakuTexCoord;\n\t\t\t\tvoid main(void) {\n\t\t\t\t\tgl_Position = u2dCoordinate * vec4(aVertexPosition,0,1);\n\t\t\t\t\tvDanmakuTexCoord = aDanmakuTexCoord;\n\t\t\t\t}"]
     };
 
     function shader(name) {
@@ -1858,14 +2764,14 @@ class TextWebGL extends _textModuleTemplate.default {
 
     var fragmentShader = shader("danmakuFrag");
     var vertexShader = shader("danmakuVert");
-    var shaderProgram = this.shaderProgram = gl.createProgram();
+    var shaderProgram = _this.shaderProgram = gl.createProgram();
     gl.attachShader(shaderProgram, vertexShader);
     gl.attachShader(shaderProgram, fragmentShader);
     gl.linkProgram(shaderProgram);
 
     if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
       console.error("Unable to initialize the shader program.");
-      return;
+      return _possibleConstructorReturn(_this);
     }
 
     gl.useProgram(shaderProgram); //scene
@@ -1873,140 +2779,190 @@ class TextWebGL extends _textModuleTemplate.default {
     gl.clearColor(0, 0, 0, 0.0);
     gl.enable(gl.BLEND);
     gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-    this.maxTexSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-    this.uSampler = gl.getUniformLocation(shaderProgram, "uSampler");
-    this.u2dCoord = gl.getUniformLocation(shaderProgram, "u2dCoordinate");
-    this.aVertexPosition = gl.getAttribLocation(shaderProgram, "aVertexPosition");
-    this.atextureCoord = gl.getAttribLocation(shaderProgram, "aDanmakuTexCoord");
-    gl.enableVertexAttribArray(this.aVertexPosition);
-    gl.enableVertexAttribArray(this.atextureCoord);
-    this.commonTexCoordBuffer = gl.createBuffer();
-    this.commonVertCoordBuffer = gl.createBuffer();
+    _this.maxTexSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+    _this.uSampler = gl.getUniformLocation(shaderProgram, "uSampler");
+    _this.u2dCoord = gl.getUniformLocation(shaderProgram, "u2dCoordinate");
+    _this.aVertexPosition = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+    _this.atextureCoord = gl.getAttribLocation(shaderProgram, "aDanmakuTexCoord");
+    gl.enableVertexAttribArray(_this.aVertexPosition);
+    gl.enableVertexAttribArray(_this.atextureCoord);
+    _this.commonTexCoordBuffer = gl.createBuffer();
+    _this.commonVertCoordBuffer = gl.createBuffer();
     gl.activeTexture(gl.TEXTURE0);
-    gl.uniform1i(this.uSampler, 0);
-    this.supported = true;
+    gl.uniform1i(_this.uSampler, 0);
+    _this.supported = true;
+    return _this;
   }
 
-  draw(force) {
-    const gl = this.gl,
+  _createClass(TextWebGL, [{
+    key: "draw",
+    value: function draw(force) {
+      var gl = this.gl,
           l = this.dText.DanmakuText.length;
-    let cW = this.c3d.width,
-        left,
-        right,
-        vW;
+      var cW = this.c3d.width,
+          left,
+          right,
+          vW;
 
-    for (let i = 0, t; i < l; i++) {
-      t = this.dText.DanmakuText[i];
-      if (!t || !t.glDanmaku) continue;
-      left = t.style.x - t.estimatePadding;
-      right = left + t._cache.width, vW = t._cache.width + (left < 0 ? left : 0) - (right > cW ? right - cW : 0);
-      if (left > cW || right < 0) continue; //vert
+      for (var i = 0, t; i < l; i++) {
+        t = this.dText.DanmakuText[i];
+        if (!t || !t.glDanmaku) continue;
+        left = t.style.x - t.estimatePadding;
+        right = left + t._cache.width, vW = t._cache.width + (left < 0 ? left : 0) - (right > cW ? right - cW : 0);
+        if (left > cW || right < 0) continue; //vert
 
-      t.vertCoord[0] = t.vertCoord[4] = left < 0 ? 0 : left;
-      t.vertCoord[2] = t.vertCoord[6] = t.vertCoord[0] + vW;
-      gl.bindBuffer(gl.ARRAY_BUFFER, this.commonVertCoordBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, t.vertCoord, gl.DYNAMIC_DRAW);
-      gl.vertexAttribPointer(this.aVertexPosition, 2, gl.FLOAT, false, 0, 0); //tex
+        t.vertCoord[0] = t.vertCoord[4] = left < 0 ? 0 : left;
+        t.vertCoord[2] = t.vertCoord[6] = t.vertCoord[0] + vW;
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.commonVertCoordBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, t.vertCoord, gl.DYNAMIC_DRAW);
+        gl.vertexAttribPointer(this.aVertexPosition, 2, gl.FLOAT, false, 0, 0); //tex
 
-      commonTextureCoord[0] = commonTextureCoord[4] = left < 0 ? -left / t._cache.width : 0;
-      commonTextureCoord[2] = commonTextureCoord[6] = commonTextureCoord[0] + vW / t._cache.width;
-      gl.bindBuffer(gl.ARRAY_BUFFER, this.commonTexCoordBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, commonTextureCoord, gl.DYNAMIC_DRAW);
-      gl.vertexAttribPointer(this.atextureCoord, 2, gl.FLOAT, false, 0, 0);
-      gl.bindTexture(gl.TEXTURE_2D, t.texture);
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        commonTextureCoord[0] = commonTextureCoord[4] = left < 0 ? -left / t._cache.width : 0;
+        commonTextureCoord[2] = commonTextureCoord[6] = commonTextureCoord[0] + vW / t._cache.width;
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.commonTexCoordBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, commonTextureCoord, gl.DYNAMIC_DRAW);
+        gl.vertexAttribPointer(this.atextureCoord, 2, gl.FLOAT, false, 0, 0);
+        gl.bindTexture(gl.TEXTURE_2D, t.texture);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      }
+
+      gl.flush();
     }
-
-    gl.flush();
-  }
-
-  clear() {
-    this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-  }
-
-  deleteRelatedTextObject(t) {
-    if (t.texture) this.gl.deleteTexture(t.texture);
-    t.texture = null;
-    t.vertCoord = null;
-    delete t.glDanmaku;
-  }
-
-  resize(w, h) {
-    const gl = this.gl,
+  }, {
+    key: "clear",
+    value: function clear() {
+      this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+    }
+  }, {
+    key: "deleteRelatedTextObject",
+    value: function deleteRelatedTextObject(t) {
+      if (t.texture) this.gl.deleteTexture(t.texture);
+      t.texture = null;
+      t.vertCoord = null;
+      delete t.glDanmaku;
+    }
+  }, {
+    key: "resize",
+    value: function resize(w, h) {
+      var gl = this.gl,
           C = this.c3d;
-    C.width = this.dText.width;
-    C.height = this.dText.height;
-    gl.viewport(0, 0, C.width, C.height);
-    gl.uniformMatrix4fv(this.u2dCoord, false, _Mat.default.Identity(4).translate3d(-1, 1, 0).scale3d(2 / C.width, -2 / C.height, 0).array);
-  }
-
-  enable() {
-    var _context;
-
-    (0, _forEach.default)(_context = this.dText.DanmakuText).call(_context, t => {
-      this.newDanmaku(t, false);
-    });
-    this.dText.useImageBitmap = false;
-    requestAnimationFrame(() => this.draw());
-  }
-
-  disable() {
-    //clean related objects
-    for (let tobj of this.dText.DanmakuText) {
-      this.deleteRelatedTextObject(tobj);
+      C.width = this.dText.width;
+      C.height = this.dText.height;
+      gl.viewport(0, 0, C.width, C.height);
+      gl.uniformMatrix4fv(this.u2dCoord, false, _Mat["default"].Identity(4).translate3d(-1, 1, 0).scale3d(2 / C.width, -2 / C.height, 0).array);
     }
+  }, {
+    key: "enable",
+    value: function enable() {
+      var _this2 = this;
 
-    this.clear();
-  }
+      var _context;
 
-  newDanmaku(t, async = true) {
-    const gl = this.gl;
-    t.glDanmaku = false;
-
-    if (t._cache.height > this.maxTexSize || t._cache.width > this.maxTexSize) {
-      //ignore too large danmaku image
-      console.warn('Ignore a danmaku width too large size', t.danmaku);
-      return;
+      (0, _forEach["default"])(_context = this.dText.DanmakuText).call(_context, function (t) {
+        _this2.newDanmaku(t, false);
+      });
+      this.dText.useImageBitmap = false;
+      requestAnimationFrame(function () {
+        return _this2.draw();
+      });
     }
+  }, {
+    key: "disable",
+    value: function disable() {
+      //clean related objects
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
 
-    let tex;
+      try {
+        for (var _iterator = this.dText.DanmakuText[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var tobj = _step.value;
+          this.deleteRelatedTextObject(tobj);
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+            _iterator["return"]();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
 
-    if (!(tex = t.texture)) {
-      tex = t.texture = gl.createTexture();
-      gl.bindTexture(gl.TEXTURE_2D, tex);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      this.clear();
     }
+  }, {
+    key: "newDanmaku",
+    value: function newDanmaku(t) {
+      var async = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+      var gl = this.gl;
+      t.glDanmaku = false;
 
-    if (async) {
-      _danmakuFrame.Utils.requestIdleCallback(() => {
+      if (t._cache.height > this.maxTexSize || t._cache.width > this.maxTexSize) {
+        //ignore too large danmaku image
+        console.warn('Ignore a danmaku width too large size', t.danmaku);
+        return;
+      }
+
+      var tex;
+
+      if (!(tex = t.texture)) {
+        tex = t.texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      }
+
+      if (async) {
+        _danmakuFrame.Utils.requestIdleCallback(function () {
+          gl.bindTexture(gl.TEXTURE_2D, tex);
+          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, t._cache);
+          t.glDanmaku = true;
+        });
+      } else {
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, t._cache);
         t.glDanmaku = true;
-      });
-    } else {
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, t._cache);
-      t.glDanmaku = true;
-    } //vert
+      } //vert
 
 
-    let y = t.style.y - t.estimatePadding;
-    t.vertCoord = new Float32Array([0, y, 0, y, 0, y + t._cache.height, 0, y + t._cache.height]);
-  }
+      var y = t.style.y - t.estimatePadding;
+      t.vertCoord = new Float32Array([0, y, 0, y, 0, y + t._cache.height, 0, y + t._cache.height]);
+    }
+  }]);
 
-}
+  return TextWebGL;
+}(_textModuleTemplate["default"]);
 
-const commonTextureCoord = new Float32Array([0.0, 0.0, //↖
+var commonTextureCoord = new Float32Array([0.0, 0.0, //↖
 1.0, 0.0, //↗
 0.0, 1.0, //↙
 1.0, 1.0 //↘
 ]);
 var _default = TextWebGL;
-exports.default = _default;
+exports["default"] = _default;
 
 },{"../../lib/Mat/Mat.js":8,"../danmaku-frame.js":9,"./textModuleTemplate.js":15,"@babel/runtime-corejs3/core-js-stable/instance/for-each":21,"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],13:[function(require,module,exports){
 "use strict";
+
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
@@ -2016,26 +2972,35 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _textModuleTemplate = _interopRequireDefault(require("./textModuleTemplate.js"));
-
 /*
 Copyright luojia@luojia.me
 LGPL license
 */
-class TextOff extends _textModuleTemplate.default {
-  constructor(dText) {
-    super(dText);
-    this.supported = true;
-    this.container = document.createElement('div');
-    this.container.style.display = 'none';
+
+
+var TextOff = /*#__PURE__*/function (_textModuleTemplate$d) {
+  _inherits(TextOff, _textModuleTemplate$d);
+
+  function TextOff(dText) {
+    var _this;
+
+    _classCallCheck(this, TextOff);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(TextOff).call(this, dText));
+    _this.supported = true;
+    _this.container = document.createElement('div');
+    _this.container.style.display = 'none';
+    return _this;
   }
 
-}
+  return TextOff;
+}(_textModuleTemplate["default"]);
 
 var _default = TextOff;
-exports.default = _default;
+exports["default"] = _default;
 
 },{"./textModuleTemplate.js":15,"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],14:[function(require,module,exports){
 /*
@@ -2046,6 +3011,24 @@ danmaku-frame mod
 */
 'use strict';
 
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
 var _Object$defineProperty2 = require("@babel/runtime-corejs3/core-js-stable/object/define-property");
@@ -2054,7 +3037,7 @@ _Object$defineProperty2(exports, "__esModule", {
   value: true
 });
 
-exports.default = init;
+exports["default"] = init;
 
 var _fill = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/fill"));
 
@@ -2087,7 +3070,6 @@ var _TextWebGL = _interopRequireDefault(require("./TextWebGL.js"));
 var _TextCss = _interopRequireDefault(require("./TextCss.js"));
 
 var _Textoff = _interopRequireDefault(require("./Textoff.js"));
-
 /*
 danmaku obj struct
 {
@@ -2105,29 +3087,42 @@ danmaku mode
 	2:bottom
 	3:top
 */
-const defProp = _defineProperty3.default;
-let useImageBitmap = false;
 
-class TextDanmaku extends _danmakuFrame.DanmakuFrameModule {
-  get paused() {
-    return !this.frame.working;
-  }
 
-  constructor(frame, arg = {}) {
+var defProp = _defineProperty3["default"];
+var useImageBitmap = false;
+
+var TextDanmaku = /*#__PURE__*/function (_danmakuFrame$Danmaku) {
+  _inherits(TextDanmaku, _danmakuFrame$Danmaku);
+
+  _createClass(TextDanmaku, [{
+    key: "paused",
+    get: function get() {
+      return !this.frame.working;
+    }
+  }]);
+
+  function TextDanmaku(frame) {
+    var _this;
+
+    var arg = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+    _classCallCheck(this, TextDanmaku);
+
     var _context, _context2;
 
-    super(frame);
-    (0, _defineProperty2.default)(this, "list", []);
-    (0, _defineProperty2.default)(this, "indexMark", 0);
-    (0, _defineProperty2.default)(this, "randomText", `danmaku_text_${Math.random() * 999999 | 0}`);
-    (0, _defineProperty2.default)(this, "lastRendererMode", 0);
-    (0, _defineProperty2.default)(this, "cacheCleanTime", 0);
-    (0, _defineProperty2.default)(this, "danmakuMoveTime", 0);
-    (0, _defineProperty2.default)(this, "danmakuCheckTime", 0);
-    (0, _defineProperty2.default)(this, "danmakuCheckSwitch", true);
-    (0, _defineProperty2.default)(this, "GraphCache", []);
-    (0, _defineProperty2.default)(this, "DanmakuText", []);
-    (0, _defineProperty2.default)(this, "defaultStyle", {
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(TextDanmaku).call(this, frame));
+    (0, _defineProperty2["default"])(_assertThisInitialized(_this), "list", []);
+    (0, _defineProperty2["default"])(_assertThisInitialized(_this), "indexMark", 0);
+    (0, _defineProperty2["default"])(_assertThisInitialized(_this), "randomText", "danmaku_text_".concat(Math.random() * 999999 | 0));
+    (0, _defineProperty2["default"])(_assertThisInitialized(_this), "lastRendererMode", 0);
+    (0, _defineProperty2["default"])(_assertThisInitialized(_this), "cacheCleanTime", 0);
+    (0, _defineProperty2["default"])(_assertThisInitialized(_this), "danmakuMoveTime", 0);
+    (0, _defineProperty2["default"])(_assertThisInitialized(_this), "danmakuCheckTime", 0);
+    (0, _defineProperty2["default"])(_assertThisInitialized(_this), "danmakuCheckSwitch", true);
+    (0, _defineProperty2["default"])(_assertThisInitialized(_this), "GraphCache", []);
+    (0, _defineProperty2["default"])(_assertThisInitialized(_this), "DanmakuText", []);
+    (0, _defineProperty2["default"])(_assertThisInitialized(_this), "defaultStyle", {
       //these styles can be overwrote by the 'font' property of danmaku object
       fontStyle: null,
       fontWeight: 300,
@@ -2147,7 +3142,7 @@ class TextDanmaku extends _danmakuFrame.DanmakuFrameModule {
       fill: true //if the text should be filled
 
     });
-    (0, _defineProperty2.default)(this, "options", {
+    (0, _defineProperty2["default"])(_assertThisInitialized(_this), "options", {
       allowLines: false,
       //allow multi-line danmaku
       screenLimit: 0,
@@ -2162,699 +3157,786 @@ class TextDanmaku extends _danmakuFrame.DanmakuFrameModule {
       renderingMode: 1 //default to css mode
 
     });
-    if (arg.defaultStyle) (0, _assign.default)(this.defaultStyle, arg.defaultStyle);
-    if (arg.options) _danmakuFrame.Utils.deepAssign(this.options, arg.options);
-    frame.addStyle(`.${this.randomText}_fullfill{top:0;left:0;width:100%;height:100%;position:absolute;}`);
-    defProp(this, 'rendererMode', {
+    if (arg.defaultStyle) (0, _assign["default"])(_this.defaultStyle, arg.defaultStyle);
+    if (arg.options) _danmakuFrame.Utils.deepAssign(_this.options, arg.options);
+    frame.addStyle(".".concat(_this.randomText, "_fullfill{top:0;left:0;width:100%;height:100%;position:absolute;}"));
+    defProp(_assertThisInitialized(_this), 'rendererMode', {
       configurable: true
     });
-    defProp(this, 'activeRendererMode', {
+    defProp(_assertThisInitialized(_this), 'activeRendererMode', {
       configurable: true,
       value: null
     });
-    const con = this.container = document.createElement('div');
-    con.id = `${this.randomText}_textDanmakuContainer`;
-    con.classList.add(`${this.randomText}_fullfill`); //init modes
+    var con = _this.container = document.createElement('div');
+    con.id = "".concat(_this.randomText, "_textDanmakuContainer");
+    con.classList.add("".concat(_this.randomText, "_fullfill")); //init modes
 
-    this.modes = {
-      0: this.textoff = new _Textoff.default(this),
+    _this.modes = {
+      0: _this.textoff = new _Textoff["default"](_assertThisInitialized(_this)),
       //off
-      2: this.text2d = new _TextCanvas2D.default(this),
-      1: this.textCss = new _TextCss.default(this),
-      3: this.text3d = new _TextWebGL.default(this)
+      2: _this.text2d = new _TextCanvas2D["default"](_assertThisInitialized(_this)),
+      1: _this.textCss = new _TextCss["default"](_assertThisInitialized(_this)),
+      3: _this.text3d = new _TextWebGL["default"](_assertThisInitialized(_this))
     };
-    this.rendering = new RenderingDanmakuManager(this);
+    _this.rendering = new RenderingDanmakuManager(_assertThisInitialized(_this));
 
     _danmakuFrame.DomTools.addEvents(document, {
-      visibilitychange: e => {//?
+      visibilitychange: function visibilitychange(e) {//?
       }
     });
 
-    this._checkNewDanmaku = (0, _bind.default)(_context = this._checkNewDanmaku).call(_context, this);
-    this._cleanCache = (0, _bind.default)(_context2 = this._cleanCache).call(_context2, this);
-    (0, _setInterval2.default)(this._cleanCache, 5000); //set an interval for cache cleaning
+    _this._checkNewDanmaku = (0, _bind["default"])(_context = _this._checkNewDanmaku).call(_context, _assertThisInitialized(_this));
+    _this._cleanCache = (0, _bind["default"])(_context2 = _this._cleanCache).call(_context2, _assertThisInitialized(_this));
+    (0, _setInterval2["default"])(_this._cleanCache, 5000); //set an interval for cache cleaning
 
-    this.setRendererMode(this.lastRendererMode = this.options.renderingMode || 1);
+    _this.setRendererMode(_this.lastRendererMode = _this.options.renderingMode || 1);
+
+    return _this;
   }
 
-  setRendererMode(n) {
-    if (this.rendererMode === n || !(n in this.modes) || !this.modes[n].supported) return false;
+  _createClass(TextDanmaku, [{
+    key: "setRendererMode",
+    value: function setRendererMode(n) {
+      if (this.rendererMode === n || !(n in this.modes) || !this.modes[n].supported) return false;
 
-    if (this.activeRendererMode) {
-      this.lastRendererMode = this.rendererMode;
-      this.activeRendererMode.disable();
-      this.container.removeChild(this.activeRendererMode.container);
+      if (this.activeRendererMode) {
+        this.lastRendererMode = this.rendererMode;
+        this.activeRendererMode.disable();
+        this.container.removeChild(this.activeRendererMode.container);
+      }
+
+      defProp(this, 'activeRendererMode', {
+        value: this.modes[n]
+      });
+      defProp(this, 'rendererMode', {
+        value: n
+      });
+      this.container.appendChild(this.activeRendererMode.container);
+      this.activeRendererMode.resize();
+      this.activeRendererMode.enable();
+      this.frame.core.debug('rendererMode:', this.rendererMode);
+      return true;
     }
+  }, {
+    key: "media",
+    value: function media(_media) {
+      var _this2 = this;
 
-    defProp(this, 'activeRendererMode', {
-      value: this.modes[n]
-    });
-    defProp(this, 'rendererMode', {
-      value: n
-    });
-    this.container.appendChild(this.activeRendererMode.container);
-    this.activeRendererMode.resize();
-    this.activeRendererMode.enable();
-    this.frame.core.debug('rendererMode:', this.rendererMode);
-    return true;
-  }
-
-  media(media) {
-    _danmakuFrame.DomTools.addEvents(media, {
-      seeked: () => this.time(),
-      seeking: () => this.pause()
-    });
-  }
-
-  play() {
-    this.recheckIndexMark();
-    this.activeRendererMode.play();
-  }
-
-  pause() {
-    this.activeRendererMode.pause();
-  }
-
-  load(d, autoAddToScreen) {
-    if ((d === null || d === void 0 ? void 0 : d._) !== 'text') {
-      return false;
+      _danmakuFrame.DomTools.addEvents(_media, {
+        seeked: function seeked() {
+          return _this2.time();
+        },
+        seeking: function seeking() {
+          return _this2.pause();
+        }
+      });
     }
-
-    if (typeof d.text !== 'string') {
-      console.error('wrong danmaku object:', d);
-      return false;
+  }, {
+    key: "play",
+    value: function play() {
+      this.recheckIndexMark();
+      this.activeRendererMode.play();
     }
-
-    let ind,
-        arr = this.list;
-    ind = dichotomy(arr, d.time, 0, arr.length - 1, false); //find a place for this obj in the list in time order
-
-    (0, _splice.default)(arr).call(arr, ind, 0, d); //insert the obj
-
-    if (ind < this.indexMark) this.indexMark++; //round d.style.fontSize to prevent Iifinity loop in tunnel
-
-    if (typeof d.style !== 'object') d.style = {};
-    d.style.fontSize = Math.round((d.style.fontSize || this.defaultStyle.fontSize) * this.options.danmakuSizeScale);
-    if (isNaN(d.style.fontSize) || d.style.fontSize === Infinity || d.style.fontSize === 0) d.style.fontSize = this.defaultStyle.fontSize * this.options.danmakuSizeScale;
-    if (typeof d.mode !== 'number') d.mode = 0;
-    if (autoAddToScreen) this._addNewDanmaku(d);
-    return d;
-  }
-
-  loadList(danmakuArray) {
-    (0, _forEach.default)(danmakuArray).call(danmakuArray, d => this.load(d));
-  }
-
-  unload(d) {
-    var _context3, _context4;
-
-    if (!d || d._ !== 'text') return false;
-    const i = (0, _indexOf.default)(_context3 = this.list).call(_context3, d);
-    if (i < 0) return false;
-    (0, _splice.default)(_context4 = this.list).call(_context4, i, 1);
-    if (i < this.indexMark) this.indexMark--;
-    return true;
-  }
-
-  _checkNewDanmaku(force) {
-    if (this.paused && !force) return;
-    let d,
-        time = this.frame.time;
-    if (this.danmakuCheckTime === time || !this.danmakuCheckSwitch) return;
-    if (this.list.length) for (; this.indexMark < this.list.length && (d = this.list[this.indexMark]) && d.time <= time; this.indexMark++) {
-      //add new danmaku
-      if (this.options.screenLimit > 0 && this.rendering.onScreenArea >= this.options.screenLimit / 100 * this.frame.area) {
-        continue;
-      } //continue if the number of danmaku on screen has up to limit or doc is not visible
-
-
-      this._addNewDanmaku(d);
+  }, {
+    key: "pause",
+    value: function pause() {
+      this.activeRendererMode.pause();
     }
-    this.danmakuCheckTime = time;
-  }
+  }, {
+    key: "load",
+    value: function load(d, autoAddToScreen) {
+      if ((d === null || d === void 0 ? void 0 : d._) !== 'text') {
+        return false;
+      }
 
-  _addNewDanmaku(d) {
-    const cHeight = this.height,
+      if (typeof d.text !== 'string') {
+        console.error('wrong danmaku object:', d);
+        return false;
+      }
+
+      var ind,
+          arr = this.list;
+      ind = dichotomy(arr, d.time, 0, arr.length - 1, false); //find a place for this obj in the list in time order
+
+      (0, _splice["default"])(arr).call(arr, ind, 0, d); //insert the obj
+
+      if (ind < this.indexMark) this.indexMark++; //round d.style.fontSize to prevent Iifinity loop in tunnel
+
+      if (_typeof(d.style) !== 'object') d.style = {};
+      d.style.fontSize = Math.round((d.style.fontSize || this.defaultStyle.fontSize) * this.options.danmakuSizeScale);
+      if (isNaN(d.style.fontSize) || d.style.fontSize === Infinity || d.style.fontSize === 0) d.style.fontSize = this.defaultStyle.fontSize * this.options.danmakuSizeScale;
+      if (typeof d.mode !== 'number') d.mode = 0;
+      if (autoAddToScreen) this._addNewDanmaku(d);
+      return d;
+    }
+  }, {
+    key: "loadList",
+    value: function loadList(danmakuArray) {
+      var _this3 = this;
+
+      (0, _forEach["default"])(danmakuArray).call(danmakuArray, function (d) {
+        return _this3.load(d);
+      });
+    }
+  }, {
+    key: "unload",
+    value: function unload(d) {
+      var _context3, _context4;
+
+      if (!d || d._ !== 'text') return false;
+      var i = (0, _indexOf["default"])(_context3 = this.list).call(_context3, d);
+      if (i < 0) return false;
+      (0, _splice["default"])(_context4 = this.list).call(_context4, i, 1);
+      if (i < this.indexMark) this.indexMark--;
+      return true;
+    }
+  }, {
+    key: "_checkNewDanmaku",
+    value: function _checkNewDanmaku(force) {
+      if (this.paused && !force) return;
+      var d,
+          time = this.frame.time;
+      if (this.danmakuCheckTime === time || !this.danmakuCheckSwitch) return;
+      if (this.list.length) for (; this.indexMark < this.list.length && (d = this.list[this.indexMark]) && d.time <= time; this.indexMark++) {
+        //add new danmaku
+        if (this.options.screenLimit > 0 && this.rendering.onScreenArea >= this.options.screenLimit / 100 * this.frame.area) {
+          continue;
+        } //continue if the number of danmaku on screen has up to limit or doc is not visible
+
+
+        this._addNewDanmaku(d);
+      }
+      this.danmakuCheckTime = time;
+    }
+  }, {
+    key: "_addNewDanmaku",
+    value: function _addNewDanmaku(d) {
+      var cHeight = this.height,
           cWidth = this.width;
-    let t = this.GraphCache.length ? this.GraphCache.shift() : new TextGraph();
+      var t = this.GraphCache.length ? this.GraphCache.shift() : new TextGraph();
 
-    if (!this.options.allowLines) {
-      d = (0, _create.default)(d);
-      d.text = d.text.replace(/\n/g, ' ');
-    }
-
-    let font = (0, _create.default)(this.defaultStyle);
-    t.init(d, (0, _assign.default)(font, d.style));
-    t.prepare(false); //find tunnel number
-
-    const tnum = this.rendering.tunnelManager.getTunnel(t, cHeight); //calc margin
-
-    let margin = (tnum < 0 ? 0 : tnum) % cHeight;
-
-    switch (d.mode) {
-      case 0:
-      case 1:
-      case 3:
-        {
-          t.style.y = margin;
-          break;
-        }
-
-      case 2:
-        {
-          t.style.y = cHeight - margin - t.style.height - 1;
-        }
-    }
-
-    switch (d.mode) {
-      case 0:
-        {
-          t.style.x = cWidth;
-          break;
-        }
-
-      case 1:
-        {
-          t.style.x = -t.style.width;
-          break;
-        }
-
-      case 2:
-      case 3:
-        {
-          t.style.x = (cWidth - t.style.width) / 2;
-        }
-    }
-
-    this.rendering.add(t);
-  }
-
-  _calcSideDanmakuPosition(t, T = this.frame.time) {
-    let R = !t.danmaku.mode,
-        style = t.style; //R:from right
-
-    return (R ? this.frame.width : -style.width) + (R ? -1 : 1) * this.frame.rate * (style.width + 1024) * (T - t.time) * this.options.speed / 60000;
-  }
-
-  _calcDanmakusPosition(force) {
-    let T = this.frame.time;
-    if (this.paused && !force) return;
-    const cWidth = this.width,
-          rate = this.frame.rate;
-    let R, i, t, style, X;
-    this.danmakuMoveTime = T;
-
-    for (i = this.DanmakuText.length; i--;) {
-      t = this.DanmakuText[i];
-
-      if (t.time > T) {
-        this.removeText(t);
-        continue;
+      if (!this.options.allowLines) {
+        d = (0, _create["default"])(d);
+        d.text = d.text.replace(/\n/g, ' ');
       }
 
-      style = t.style;
+      var font = (0, _create["default"])(this.defaultStyle);
+      t.init(d, (0, _assign["default"])(font, d.style));
+      t.prepare(false); //find tunnel number
 
-      switch (t.danmaku.mode) {
+      var tnum = this.rendering.tunnelManager.getTunnel(t, cHeight); //calc margin
+
+      var margin = (tnum < 0 ? 0 : tnum) % cHeight;
+
+      switch (d.mode) {
         case 0:
         case 1:
+        case 3:
           {
-            R = !t.danmaku.mode;
-            style.x = X = this._calcSideDanmakuPosition(t, T);
+            t.style.y = margin;
+            break;
+          }
 
-            if (t.tunnelNumber >= 0 && (R && X + style.width + 10 < cWidth || !R && X > 10)) {
-              this.rendering.tunnelManager.removeMark(t);
-            } else if (R && X < -style.width - 20 || !R && X > cWidth + style.width + 20) {
-              //go out the canvas
-              this.removeText(t);
-              continue;
-            }
+        case 2:
+          {
+            t.style.y = cHeight - margin - t.style.height - 1;
+          }
+      }
 
+      switch (d.mode) {
+        case 0:
+          {
+            t.style.x = cWidth;
+            break;
+          }
+
+        case 1:
+          {
+            t.style.x = -t.style.width;
             break;
           }
 
         case 2:
         case 3:
           {
-            if (T - t.time > this.options.speed * 1000 / rate) {
-              this.removeText(t);
-            }
+            t.style.x = (cWidth - t.style.width) / 2;
           }
       }
+
+      this.rendering.add(t);
     }
-  }
+  }, {
+    key: "_calcSideDanmakuPosition",
+    value: function _calcSideDanmakuPosition(t) {
+      var T = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : this.frame.time;
+      var R = !t.danmaku.mode,
+          style = t.style; //R:from right
 
-  _cleanCache(force) {
-    //clean text object cache
-    force && this.frame.core.debug('force cleaning graph cache');
-    const now = (0, _now.default)();
+      return (R ? this.frame.width : -style.width) + (R ? -1 : 1) * this.frame.rate * (style.width + 1024) * (T - t.time) * this.options.speed / 60000;
+    }
+  }, {
+    key: "_calcDanmakusPosition",
+    value: function _calcDanmakusPosition(force) {
+      var T = this.frame.time;
+      if (this.paused && !force) return;
+      var cWidth = this.width,
+          rate = this.frame.rate;
+      var R, i, t, style, X;
+      this.danmakuMoveTime = T;
 
-    if (this.GraphCache.length > 30 || force) {
-      //save 30 cached danmaku
-      for (let ti = 0; ti < this.GraphCache.length; ti++) {
-        if (force || now - this.GraphCache[ti].removeTime > 10000) {
-          var _context5;
+      for (i = this.DanmakuText.length; i--;) {
+        t = this.DanmakuText[i];
 
-          //delete cache which has not been used for 10s
-          this.GraphCache[ti].destructor();
-          (0, _splice.default)(_context5 = this.GraphCache).call(_context5, ti, 1);
-        } else {
-          break;
+        if (t.time > T) {
+          this.removeText(t);
+          continue;
+        }
+
+        style = t.style;
+
+        switch (t.danmaku.mode) {
+          case 0:
+          case 1:
+            {
+              R = !t.danmaku.mode;
+              style.x = X = this._calcSideDanmakuPosition(t, T);
+
+              if (t.tunnelNumber >= 0 && (R && X + style.width + 10 < cWidth || !R && X > 10)) {
+                this.rendering.tunnelManager.removeMark(t);
+              } else if (R && X < -style.width - 20 || !R && X > cWidth + style.width + 20) {
+                //go out the canvas
+                this.removeText(t);
+                continue;
+              }
+
+              break;
+            }
+
+          case 2:
+          case 3:
+            {
+              if (T - t.time > this.options.speed * 1000 / rate) {
+                this.removeText(t);
+              }
+            }
         }
       }
     }
-  }
+  }, {
+    key: "_cleanCache",
+    value: function _cleanCache(force) {
+      //clean text object cache
+      force && this.frame.core.debug('force cleaning graph cache');
+      var now = (0, _now["default"])();
 
-  draw(force) {
-    if (!force && this.paused || !this.enabled) return;
+      if (this.GraphCache.length > 30 || force) {
+        //save 30 cached danmaku
+        for (var ti = 0; ti < this.GraphCache.length; ti++) {
+          if (force || now - this.GraphCache[ti].removeTime > 10000) {
+            var _context5; //delete cache which has not been used for 10s
 
-    this._calcDanmakusPosition(force);
 
-    this.activeRendererMode.draw(force);
-    requestAnimationFrame(() => {
-      this._checkNewDanmaku(force);
-    });
-  }
-
-  removeText(t) {
-    //remove the danmaku from screen
-    this.rendering.remove(t);
-  }
-
-  resize() {
-    if (this.activeRendererMode) this.activeRendererMode.resize();
-    this.draw(true);
-  }
-
-  _clearScreen(forceFull) {
-    this.activeRendererMode && this.activeRendererMode.clear(forceFull);
-  }
-
-  clear() {
-    //clear danmaku on the screen
-    this.rendering.clear();
-
-    this._clearScreen(true);
-  }
-
-  recheckIndexMark(t = this.frame.time) {
-    this.indexMark = dichotomy(this.list, t, 0, this.list.length - 1, true);
-  }
-
-  rate(r) {
-    if (this.activeRendererMode) this.activeRendererMode.rate(r);
-  }
-
-  time(t = this.frame.time) {
-    //reset time,you should invoke it when the media has seeked to another time
-    this.recheckIndexMark(t);
-
-    if (this.options.clearWhenTimeReset) {
-      this.clear();
-    } else {
-      this.resetTimeOfDanmakuOnScreen();
+            this.GraphCache[ti].destructor();
+            (0, _splice["default"])(_context5 = this.GraphCache).call(_context5, ti, 1);
+          } else {
+            break;
+          }
+        }
+      }
     }
-  }
+  }, {
+    key: "draw",
+    value: function draw(force) {
+      var _this4 = this;
 
-  resetTimeOfDanmakuOnScreen(cTime) {
-    var _context6;
+      if (!force && this.paused || !this.enabled) return;
 
-    //cause the position of the danmaku is based on time
-    //and if you don't want these danmaku on the screen to disappear after seeking,their time should be reset
-    if (cTime === undefined) cTime = this.frame.time;
-    (0, _forEach.default)(_context6 = this.DanmakuText).call(_context6, t => {
-      if (!t.danmaku) return;
-      t.time = cTime - (this.danmakuMoveTime - t.time);
-    });
-  }
+      this._calcDanmakusPosition(force);
 
-  danmakuAt(x, y) {
-    var _context7;
+      this.activeRendererMode.draw(force);
+      requestAnimationFrame(function () {
+        _this4._checkNewDanmaku(force);
+      });
+    }
+  }, {
+    key: "removeText",
+    value: function removeText(t) {
+      //remove the danmaku from screen
+      this.rendering.remove(t);
+    }
+  }, {
+    key: "resize",
+    value: function resize() {
+      if (this.activeRendererMode) this.activeRendererMode.resize();
+      this.draw(true);
+    }
+  }, {
+    key: "_clearScreen",
+    value: function _clearScreen(forceFull) {
+      this.activeRendererMode && this.activeRendererMode.clear(forceFull);
+    }
+  }, {
+    key: "clear",
+    value: function clear() {
+      //clear danmaku on the screen
+      this.rendering.clear();
 
-    //return a list of danmaku which covers this position
-    const list = [];
-    if (!this.enabled) return list;
-    (0, _forEach.default)(_context7 = this.DanmakuText).call(_context7, t => {
-      if (!t.danmaku) return;
-      if (t.style.x <= x && t.style.x + t.style.width >= x && t.style.y <= y && t.style.y + t.style.height >= y) list.push(t.danmaku);
-    });
-    return list;
-  }
+      this._clearScreen(true);
+    }
+  }, {
+    key: "recheckIndexMark",
+    value: function recheckIndexMark() {
+      var t = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.frame.time;
+      this.indexMark = dichotomy(this.list, t, 0, this.list.length - 1, true);
+    }
+  }, {
+    key: "rate",
+    value: function rate(r) {
+      if (this.activeRendererMode) this.activeRendererMode.rate(r);
+    }
+  }, {
+    key: "time",
+    value: function time() {
+      var t = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.frame.time;
+      //reset time,you should invoke it when the media has seeked to another time
+      this.recheckIndexMark(t);
 
-  enable() {
-    //enable the plugin
-    this.setRendererMode(this.lastRendererMode);
-    this.frame.container.appendChild(this.container);
-    if (this.frame.working) this.play();
-  }
+      if (this.options.clearWhenTimeReset) {
+        this.clear();
+      } else {
+        this.resetTimeOfDanmakuOnScreen();
+      }
+    }
+  }, {
+    key: "resetTimeOfDanmakuOnScreen",
+    value: function resetTimeOfDanmakuOnScreen(cTime) {
+      var _this5 = this;
 
-  disable() {
-    //disable the plugin
-    this.frame.container.removeChild(this.container);
-    this.pause();
-    this.clear();
-    this.setRendererMode(0);
-  }
+      var _context6; //cause the position of the danmaku is based on time
+      //and if you don't want these danmaku on the screen to disappear after seeking,their time should be reset
 
-  set useImageBitmap(v) {
-    useImageBitmap = typeof createImageBitmap === 'function' ? v : false;
-  }
 
-  get useImageBitmap() {
-    return useImageBitmap;
-  }
+      if (cTime === undefined) cTime = this.frame.time;
+      (0, _forEach["default"])(_context6 = this.DanmakuText).call(_context6, function (t) {
+        if (!t.danmaku) return;
+        t.time = cTime - (_this5.danmakuMoveTime - t.time);
+      });
+    }
+  }, {
+    key: "danmakuAt",
+    value: function danmakuAt(x, y) {
+      var _context7; //return a list of danmaku which covers this position
 
-}
 
-class TextGraph {
-  //code copied from CanvasObjLibrary
-  //bool: 
-  //number: remove time of the danmaku
-  //number: tunnel number in the tunner manager
-  //number: tunnel height
-  //number: padding of the canvas
-  get text() {
-    return this.danmaku.text;
-  }
+      var list = [];
+      if (!this.enabled) return list;
+      (0, _forEach["default"])(_context7 = this.DanmakuText).call(_context7, function (t) {
+        if (!t.danmaku) return;
+        if (t.style.x <= x && t.style.x + t.style.width >= x && t.style.y <= y && t.style.y + t.style.height >= y) list.push(t.danmaku);
+      });
+      return list;
+    }
+  }, {
+    key: "enable",
+    value: function enable() {
+      //enable the plugin
+      this.setRendererMode(this.lastRendererMode);
+      this.frame.container.appendChild(this.container);
+      if (this.frame.working) this.play();
+    }
+  }, {
+    key: "disable",
+    value: function disable() {
+      //disable the plugin
+      this.frame.container.removeChild(this.container);
+      this.pause();
+      this.clear();
+      this.setRendererMode(0);
+    }
+  }, {
+    key: "useImageBitmap",
+    set: function set(v) {
+      useImageBitmap = typeof createImageBitmap === 'function' ? v : false;
+    },
+    get: function get() {
+      return useImageBitmap;
+    }
+  }]);
 
-  constructor(danmakuObj, font) {
+  return TextDanmaku;
+}(_danmakuFrame.DanmakuFrameModule);
+
+var TextGraph = /*#__PURE__*/function () {
+  _createClass(TextGraph, [{
+    key: "text",
+    //code copied from CanvasObjLibrary
+    //bool: 
+    //number: remove time of the danmaku
+    //number: tunnel number in the tunner manager
+    //number: tunnel height
+    //number: padding of the canvas
+    get: function get() {
+      return this.danmaku.text;
+    }
+  }]);
+
+  function TextGraph(danmakuObj, font) {
+    _classCallCheck(this, TextGraph);
+
     var _context8;
 
-    (0, _defineProperty2.default)(this, "_fontString", '');
-    (0, _defineProperty2.default)(this, "_renderList", void 0);
-    (0, _defineProperty2.default)(this, "_cache", void 0);
-    (0, _defineProperty2.default)(this, "_bitmap", void 0);
-    (0, _defineProperty2.default)(this, "font", {});
-    (0, _defineProperty2.default)(this, "time", void 0);
-    (0, _defineProperty2.default)(this, "style", {});
-    (0, _defineProperty2.default)(this, "drawn", false);
-    (0, _defineProperty2.default)(this, "danmaku", void 0);
-    (0, _defineProperty2.default)(this, "removeTime", void 0);
-    (0, _defineProperty2.default)(this, "tunnelNumber", void 0);
-    (0, _defineProperty2.default)(this, "tunnelHeight", void 0);
-    (0, _defineProperty2.default)(this, "estimatePadding", void 0);
-    this._renderToCache = (0, _bind.default)(_context8 = this._renderToCache).call(_context8, this);
+    (0, _defineProperty2["default"])(this, "_fontString", '');
+    (0, _defineProperty2["default"])(this, "_renderList", void 0);
+    (0, _defineProperty2["default"])(this, "_cache", void 0);
+    (0, _defineProperty2["default"])(this, "_bitmap", void 0);
+    (0, _defineProperty2["default"])(this, "font", {});
+    (0, _defineProperty2["default"])(this, "time", void 0);
+    (0, _defineProperty2["default"])(this, "style", {});
+    (0, _defineProperty2["default"])(this, "drawn", false);
+    (0, _defineProperty2["default"])(this, "danmaku", void 0);
+    (0, _defineProperty2["default"])(this, "removeTime", void 0);
+    (0, _defineProperty2["default"])(this, "tunnelNumber", void 0);
+    (0, _defineProperty2["default"])(this, "tunnelHeight", void 0);
+    (0, _defineProperty2["default"])(this, "estimatePadding", void 0);
+    this._renderToCache = (0, _bind["default"])(_context8 = this._renderToCache).call(_context8, this);
     danmakuObj && this.init(danmakuObj, font);
   }
 
-  init(d, font) {
-    this.danmaku = d;
-    this.drawn = false;
-    this.time = d.time;
-    this.font = font;
-    if (!this.font.lineHeight) this.font.lineHeight = this.font.fontSize + 2 || 1;
+  _createClass(TextGraph, [{
+    key: "init",
+    value: function init(d, font) {
+      this.danmaku = d;
+      this.drawn = false;
+      this.time = d.time;
+      this.font = font;
+      if (!this.font.lineHeight) this.font.lineHeight = this.font.fontSize + 2 || 1;
 
-    if (d.style.color) {
-      if (this.font.color && this.font.color[0] !== '#') {
-        this.font.color = '#' + d.style.color;
+      if (d.style.color) {
+        if (this.font.color && this.font.color[0] !== '#') {
+          this.font.color = '#' + d.style.color;
+        }
+      }
+
+      if (d.mode > 1) this.font.textAlign = 'center';
+    }
+  }, {
+    key: "prepare",
+    value: function prepare() {
+      var async = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+
+      //prepare text details
+      if (!this._cache) {
+        this._cache = document.createElement("canvas");
+      }
+
+      var ta = [];
+      this.font.fontStyle && ta.push(this.font.fontStyle);
+      this.font.fontVariant && ta.push(this.font.fontVariant);
+      this.font.fontWeight && ta.push(this.font.fontWeight);
+      ta.push("".concat(this.font.fontSize, "px"));
+      this.font.fontFamily && ta.push(this.font.fontFamily);
+      this._fontString = ta.join(' ');
+      var canvas = this._cache,
+          ct = canvas.ctx2d || (canvas.ctx2d = canvas.getContext("2d"));
+      ct.font = this._fontString;
+      this._renderList = this.text.split(/\n/g);
+      this.estimatePadding = Math.max(this.font.shadowBlur + 5 + Math.max(Math.abs(this.font.shadowOffsetY), Math.abs(this.font.shadowOffsetX)), this.font.strokeWidth + 3);
+      var w = 0,
+          tw,
+          lh = typeof this.font.lineHeight === 'number' ? this.font.lineHeight : this.font.fontSize;
+
+      for (var i = this._renderList.length; i--;) {
+        tw = ct.measureText(this._renderList[i]).width;
+        tw > w && (w = tw); //max
+      }
+
+      canvas.width = (this.style.width = w) + this.estimatePadding * 2;
+      canvas.height = (this.style.height = this._renderList.length * lh) + (lh < this.font.fontSize ? this.font.fontSize * 2 : 0) + this.estimatePadding * 2;
+      ct.translate(this.estimatePadding, this.estimatePadding);
+
+      if (async) {
+        _danmakuFrame.Utils.requestIdleCallback(this._renderToCache);
+      } else {
+        this._renderToCache();
       }
     }
+  }, {
+    key: "_renderToCache",
+    value: function _renderToCache() {
+      var _this6 = this;
 
-    if (d.mode > 1) this.font.textAlign = 'center';
-  }
+      if (!this.danmaku) return;
+      this.render(this._cache.ctx2d);
 
-  prepare(async = false) {
-    //prepare text details
-    if (!this._cache) {
-      this._cache = document.createElement("canvas");
+      if (useImageBitmap) {
+        //use ImageBitmap
+        if (this._bitmap) {
+          this._bitmap.close();
+
+          this._bitmap = null;
+        }
+
+        createImageBitmap(this._cache).then(function (bitmap) {
+          _this6._bitmap = bitmap;
+        });
+      }
     }
+  }, {
+    key: "render",
+    value: function render(ct) {
+      //render text
+      if (!this._renderList) return;
+      ct.save();
 
-    let ta = [];
-    this.font.fontStyle && ta.push(this.font.fontStyle);
-    this.font.fontVariant && ta.push(this.font.fontVariant);
-    this.font.fontWeight && ta.push(this.font.fontWeight);
-    ta.push(`${this.font.fontSize}px`);
-    this.font.fontFamily && ta.push(this.font.fontFamily);
-    this._fontString = ta.join(' ');
-    const canvas = this._cache,
-          ct = canvas.ctx2d || (canvas.ctx2d = canvas.getContext("2d"));
-    ct.font = this._fontString;
-    this._renderList = this.text.split(/\n/g);
-    this.estimatePadding = Math.max(this.font.shadowBlur + 5 + Math.max(Math.abs(this.font.shadowOffsetY), Math.abs(this.font.shadowOffsetX)), this.font.strokeWidth + 3);
-    let w = 0,
-        tw,
-        lh = typeof this.font.lineHeight === 'number' ? this.font.lineHeight : this.font.fontSize;
+      if (this.danmaku.highlight) {
+        ct.fillStyle = 'rgba(255,255,255,0.3)';
+        ct.beginPath();
+        ct.rect(0, 0, this.style.width, this.style.height);
+        (0, _fill["default"])(ct).call(ct);
+      }
 
-    for (let i = this._renderList.length; i--;) {
-      tw = ct.measureText(this._renderList[i]).width;
-      tw > w && (w = tw); //max
+      ct.font = this._fontString; //set font
+
+      ct.textBaseline = 'middle';
+      ct.lineWidth = this.font.strokeWidth;
+      ct.fillStyle = this.font.color;
+      ct.strokeStyle = this.font.strokeColor;
+      ct.shadowBlur = this.font.shadowBlur;
+      ct.shadowColor = this.font.shadowColor;
+      ct.shadowOffsetX = this.font.shadowOffsetX;
+      ct.shadowOffsetY = this.font.shadowOffsetY;
+      ct.textAlign = this.font.textAlign;
+      var lh = typeof this.font.lineHeight === 'number' ? this.font.lineHeight : this.font.fontSize,
+          x;
+
+      switch (this.font.textAlign) {
+        case 'left':
+        case 'start':
+          {
+            x = 0;
+            break;
+          }
+
+        case 'center':
+          {
+            x = this.style.width / 2;
+            break;
+          }
+
+        case 'right':
+        case 'end':
+          {
+            x = this.style.width;
+          }
+      }
+
+      for (var i = this._renderList.length; i--;) {
+        this.font.strokeWidth && ct.strokeText(this._renderList[i], x, lh * (i + 0.5));
+        (0, _fill["default"])(this.font) && ct.fillText(this._renderList[i], x, lh * (i + 0.5));
+      }
+
+      ct.restore();
+      this._renderList = undefined;
     }
+  }, {
+    key: "destructor",
+    value: function destructor() {
+      this._fontString = undefined;
+      this._renderList = undefined;
+      this.danmaku = undefined;
+      this.style = undefined;
+      this.font = undefined;
 
-    canvas.width = (this.style.width = w) + this.estimatePadding * 2;
-    canvas.height = (this.style.height = this._renderList.length * lh) + (lh < this.font.fontSize ? this.font.fontSize * 2 : 0) + this.estimatePadding * 2;
-    ct.translate(this.estimatePadding, this.estimatePadding);
-
-    if (async) {
-      _danmakuFrame.Utils.requestIdleCallback(this._renderToCache);
-    } else {
-      this._renderToCache();
-    }
-  }
-
-  _renderToCache() {
-    if (!this.danmaku) return;
-    this.render(this._cache.ctx2d);
-
-    if (useImageBitmap) {
-      //use ImageBitmap
       if (this._bitmap) {
         this._bitmap.close();
 
         this._bitmap = null;
       }
-
-      createImageBitmap(this._cache).then(bitmap => {
-        this._bitmap = bitmap;
-      });
     }
-  }
+  }]);
 
-  render(ct) {
-    //render text
-    if (!this._renderList) return;
-    ct.save();
+  return TextGraph;
+}();
 
-    if (this.danmaku.highlight) {
-      ct.fillStyle = 'rgba(255,255,255,0.3)';
-      ct.beginPath();
-      ct.rect(0, 0, this.style.width, this.style.height);
-      (0, _fill.default)(ct).call(ct);
-    }
+var tunnels = ['right', 'left', 'bottom', 'top'];
 
-    ct.font = this._fontString; //set font
+var TunnelManager = /*#__PURE__*/function () {
+  function TunnelManager() {
+    _classCallCheck(this, TunnelManager);
 
-    ct.textBaseline = 'middle';
-    ct.lineWidth = this.font.strokeWidth;
-    ct.fillStyle = this.font.color;
-    ct.strokeStyle = this.font.strokeColor;
-    ct.shadowBlur = this.font.shadowBlur;
-    ct.shadowColor = this.font.shadowColor;
-    ct.shadowOffsetX = this.font.shadowOffsetX;
-    ct.shadowOffsetY = this.font.shadowOffsetY;
-    ct.textAlign = this.font.textAlign;
-    let lh = typeof this.font.lineHeight === 'number' ? this.font.lineHeight : this.font.fontSize,
-        x;
-
-    switch (this.font.textAlign) {
-      case 'left':
-      case 'start':
-        {
-          x = 0;
-          break;
-        }
-
-      case 'center':
-        {
-          x = this.style.width / 2;
-          break;
-        }
-
-      case 'right':
-      case 'end':
-        {
-          x = this.style.width;
-        }
-    }
-
-    for (let i = this._renderList.length; i--;) {
-      this.font.strokeWidth && ct.strokeText(this._renderList[i], x, lh * (i + 0.5));
-      (0, _fill.default)(this.font) && ct.fillText(this._renderList[i], x, lh * (i + 0.5));
-    }
-
-    ct.restore();
-    this._renderList = undefined;
-  }
-
-  destructor() {
-    this._fontString = undefined;
-    this._renderList = undefined;
-    this.danmaku = undefined;
-    this.style = undefined;
-    this.font = undefined;
-
-    if (this._bitmap) {
-      this._bitmap.close();
-
-      this._bitmap = null;
-    }
-  }
-
-}
-
-const tunnels = ['right', 'left', 'bottom', 'top'];
-
-class TunnelManager {
-  constructor() {
     this.reset();
   }
 
-  reset() {
-    this.right = {};
-    this.left = {};
-    this.bottom = {};
-    this.top = {};
-  }
-
-  getTunnel(tobj, cHeight) {
-    //get the tunnel index that can contain the danmaku of the sizes
-    let tunnel = this.tunnel(tobj.danmaku.mode),
-        size = tobj.style.height,
-        ti = 0,
-        tnum = -1;
-
-    if (typeof size !== 'number' || size <= 0) {
-      console.error('Incorrect size:' + size);
-      size = 24;
+  _createClass(TunnelManager, [{
+    key: "reset",
+    value: function reset() {
+      this.right = {};
+      this.left = {};
+      this.bottom = {};
+      this.top = {};
     }
+  }, {
+    key: "getTunnel",
+    value: function getTunnel(tobj, cHeight) {
+      //get the tunnel index that can contain the danmaku of the sizes
+      var tunnel = this.tunnel(tobj.danmaku.mode),
+          size = tobj.style.height,
+          ti = 0,
+          tnum = -1;
 
-    if (size > cHeight) return 0;
+      if (typeof size !== 'number' || size <= 0) {
+        console.error('Incorrect size:' + size);
+        size = 24;
+      }
 
-    while (tnum < 0) {
-      for (let t = ti + size - 1; ti <= t;) {
-        if (tunnel[ti]) {
-          //used
-          ti += tunnel[ti].tunnelHeight;
-          break;
-        } else if (ti !== 0 && ti % (cHeight - 1) === 0) {
-          //new page
-          ti++;
-          break;
-        } else if (ti === t) {
-          //get
-          tnum = ti - size + 1;
-          break;
-        } else {
-          ti++;
+      if (size > cHeight) return 0;
+
+      while (tnum < 0) {
+        for (var t = ti + size - 1; ti <= t;) {
+          if (tunnel[ti]) {
+            //used
+            ti += tunnel[ti].tunnelHeight;
+            break;
+          } else if (ti !== 0 && ti % (cHeight - 1) === 0) {
+            //new page
+            ti++;
+            break;
+          } else if (ti === t) {
+            //get
+            tnum = ti - size + 1;
+            break;
+          } else {
+            ti++;
+          }
         }
       }
+
+      tobj.tunnelNumber = tnum;
+      tobj.tunnelHeight = tobj.style.y + size > cHeight ? 1 : size;
+      this.addMark(tobj);
+      return tnum;
     }
-
-    tobj.tunnelNumber = tnum;
-    tobj.tunnelHeight = tobj.style.y + size > cHeight ? 1 : size;
-    this.addMark(tobj);
-    return tnum;
-  }
-
-  addMark(tobj) {
-    let t = this.tunnel(tobj.danmaku.mode);
-    if (!t[tobj.tunnelNumber]) t[tobj.tunnelNumber] = tobj;
-  }
-
-  removeMark(tobj) {
-    let t,
-        tun = tobj.tunnelNumber;
-
-    if (tun >= 0 && (t = this.tunnel(tobj.danmaku.mode))[tun] === tobj) {
-      delete t[tun];
-      tobj.tunnelNumber = -1;
+  }, {
+    key: "addMark",
+    value: function addMark(tobj) {
+      var t = this.tunnel(tobj.danmaku.mode);
+      if (!t[tobj.tunnelNumber]) t[tobj.tunnelNumber] = tobj;
     }
-  }
+  }, {
+    key: "removeMark",
+    value: function removeMark(tobj) {
+      var t,
+          tun = tobj.tunnelNumber;
 
-  tunnel(id) {
-    return this[tunnels[id]];
-  }
+      if (tun >= 0 && (t = this.tunnel(tobj.danmaku.mode))[tun] === tobj) {
+        delete t[tun];
+        tobj.tunnelNumber = -1;
+      }
+    }
+  }, {
+    key: "tunnel",
+    value: function tunnel(id) {
+      return this[tunnels[id]];
+    }
+  }]);
 
-}
+  return TunnelManager;
+}();
 
-class RenderingDanmakuManager {
+var RenderingDanmakuManager = /*#__PURE__*/function () {
   //limit danmaku area on the screen(auto change)
-  constructor(dText) {
-    (0, _defineProperty2.default)(this, "totalArea", 0);
-    (0, _defineProperty2.default)(this, "onScreenArea", 0);
-    (0, _defineProperty2.default)(this, "limitArea", Infinity);
-    (0, _defineProperty2.default)(this, "tunnelManager", new TunnelManager());
-    //dText:TextDanmaku
+  function RenderingDanmakuManager(dText) {
+    var _this7 = this;
+
+    _classCallCheck(this, RenderingDanmakuManager);
+
+    (0, _defineProperty2["default"])(this, "totalArea", 0);
+    (0, _defineProperty2["default"])(this, "onScreenArea", 0);
+    (0, _defineProperty2["default"])(this, "limitArea", Infinity);
+    (0, _defineProperty2["default"])(this, "tunnelManager", new TunnelManager()); //dText:TextDanmaku
+
     this.dText = dText;
-    if (dText.text2d.supported) this.timer = (0, _setInterval2.default)(() => this.rendererModeCheck(), 1500);
+    if (dText.text2d.supported) this.timer = (0, _setInterval2["default"])(function () {
+      return _this7.rendererModeCheck();
+    }, 1500);
   }
 
-  add(t) {
-    if (t.danmaku.onScreen) return;
-    t.danmaku.onScreen = true;
-    this.dText.DanmakuText.push(t);
-    this.totalArea += t._cache.width * t._cache.height; //cumulate danmaku area
+  _createClass(RenderingDanmakuManager, [{
+    key: "add",
+    value: function add(t) {
+      if (t.danmaku.onScreen) return;
+      t.danmaku.onScreen = true;
+      this.dText.DanmakuText.push(t);
+      this.totalArea += t._cache.width * t._cache.height; //cumulate danmaku area
 
-    this.onScreenArea += Math.min(t._cache.width, this.dText.frame.width) * Math.min(t._cache.height, this.dText.frame.height);
-    this.dText.activeRendererMode.newDanmaku(t);
-  }
-
-  remove(t) {
-    var _context9;
-
-    t.danmaku.onScreen = false;
-    let ind = (0, _indexOf.default)(_context9 = this.dText.DanmakuText).call(_context9, t);
-
-    if (ind >= 0) {
-      var _context10;
-
-      (0, _splice.default)(_context10 = this.dText.DanmakuText).call(_context10, ind, 1);
-      this.totalArea -= t._cache.width * t._cache.height;
-      this.onScreenArea -= Math.min(t._cache.width, this.dText.frame.width) * Math.min(t._cache.height, this.dText.frame.height);
+      this.onScreenArea += Math.min(t._cache.width, this.dText.frame.width) * Math.min(t._cache.height, this.dText.frame.height);
+      this.dText.activeRendererMode.newDanmaku(t);
     }
+  }, {
+    key: "remove",
+    value: function remove(t) {
+      var _context9;
 
-    this.tunnelManager.removeMark(t);
-    this.dText.activeRendererMode.remove(t);
-    this.dText.activeRendererMode.deleteRelatedTextObject(t);
-    t.removeTime = (0, _now.default)();
-    t.danmaku = null;
-    this.dText.GraphCache.push(t);
-  }
+      t.danmaku.onScreen = false;
+      var ind = (0, _indexOf["default"])(_context9 = this.dText.DanmakuText).call(_context9, t);
 
-  clear() {
-    for (let i = 0, T; i < this.dText.DanmakuText.length; i++) {
-      T = this.dText.DanmakuText[i];
-      this.remove(T);
+      if (ind >= 0) {
+        var _context10;
+
+        (0, _splice["default"])(_context10 = this.dText.DanmakuText).call(_context10, ind, 1);
+        this.totalArea -= t._cache.width * t._cache.height;
+        this.onScreenArea -= Math.min(t._cache.width, this.dText.frame.width) * Math.min(t._cache.height, this.dText.frame.height);
+      }
+
+      this.tunnelManager.removeMark(t);
+      this.dText.activeRendererMode.remove(t);
+      this.dText.activeRendererMode.deleteRelatedTextObject(t);
+      t.removeTime = (0, _now["default"])();
+      t.danmaku = null;
+      this.dText.GraphCache.push(t);
     }
+  }, {
+    key: "clear",
+    value: function clear() {
+      for (var i = 0, T; i < this.dText.DanmakuText.length; i++) {
+        T = this.dText.DanmakuText[i];
+        this.remove(T);
+      }
 
-    this.tunnelManager.reset();
-  }
-
-  rendererModeCheck() {
-    //auto shift rendering mode
-    let D = this.dText;
-    if (!this.dText.options.autoShiftRenderingMode || D.paused) return;
-
-    if (D.frame.fps < (D.frame.fpsLimit || 60) * 0.9) {
-      //when frame rate low
-      if (this.limitArea > this.totalArea) this.limitArea = this.totalArea; //reduce area limit
-    } else if (this.limitArea < this.totalArea) {
-      //increase area limit
-      this.limitArea = this.totalArea;
+      this.tunnelManager.reset();
     }
+  }, {
+    key: "rendererModeCheck",
+    value: function rendererModeCheck() {
+      //auto shift rendering mode
+      var D = this.dText;
+      if (!this.dText.options.autoShiftRenderingMode || D.paused) return;
 
-    if (D.rendererMode === 1 && this.totalArea > this.limitArea) {
-      //switch to canvas mode when fps low
-      D.text2d.supported && D.setRendererMode(2);
-    } else if (D.rendererMode === 2 && this.totalArea < this.limitArea * 0.5) {
-      //recover to css mode when animation is fluent enough
-      D.textCss.supported && D.setRendererMode(1);
+      if (D.frame.fps < (D.frame.fpsLimit || 60) * 0.9) {
+        //when frame rate low
+        if (this.limitArea > this.totalArea) this.limitArea = this.totalArea; //reduce area limit
+      } else if (this.limitArea < this.totalArea) {
+        //increase area limit
+        this.limitArea = this.totalArea;
+      }
+
+      if (D.rendererMode === 1 && this.totalArea > this.limitArea) {
+        //switch to canvas mode when fps low
+        D.text2d.supported && D.setRendererMode(2);
+      } else if (D.rendererMode === 2 && this.totalArea < this.limitArea * 0.5) {
+        //recover to css mode when animation is fluent enough
+        D.textCss.supported && D.setRendererMode(1);
+      }
     }
-  }
+  }]);
 
-}
+  return RenderingDanmakuManager;
+}();
 
-function dichotomy(arr, t, start, end, position = false) {
+function dichotomy(arr, t, start, end) {
+  var position = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
   if (arr.length === 0) return 0;
-  let m = start
+  var m = start
   /* ,s=start,e=end */
   ;
 
@@ -2868,10 +3950,14 @@ function dichotomy(arr, t, start, end, position = false) {
 
   if (position) {
     //find to top
-    while (start > 0 && arr[start - 1].time === t) start--;
+    while (start > 0 && arr[start - 1].time === t) {
+      start--;
+    }
   } else {
     //find to end
-    while (start <= end && arr[start].time === t) start++;
+    while (start <= end && arr[start].time === t) {
+      start++;
+    }
   }
 
   return start;
@@ -2887,6 +3973,12 @@ function init(DanmakuFrame) {
 },{"../danmaku-frame.js":9,"./TextCanvas2D.js":10,"./TextCss.js":11,"./TextWebGL.js":12,"./Textoff.js":13,"@babel/runtime-corejs3/core-js-stable/date/now":17,"@babel/runtime-corejs3/core-js-stable/instance/bind":18,"@babel/runtime-corejs3/core-js-stable/instance/fill":20,"@babel/runtime-corejs3/core-js-stable/instance/for-each":21,"@babel/runtime-corejs3/core-js-stable/instance/index-of":22,"@babel/runtime-corejs3/core-js-stable/instance/splice":26,"@babel/runtime-corejs3/core-js-stable/object/assign":29,"@babel/runtime-corejs3/core-js-stable/object/create":30,"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/core-js-stable/set-interval":36,"@babel/runtime-corejs3/helpers/defineProperty":39,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],15:[function(require,module,exports){
 "use strict";
 
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
 var _Object$defineProperty = require("@babel/runtime-corejs3/core-js-stable/object/define-property");
@@ -2895,56 +3987,73 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _defineProperty2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/defineProperty"));
-
 /*
 Copyright luojia@luojia.me
 LGPL license
 */
-class textModuleTemplate {
-  constructor(dText) {
-    (0, _defineProperty2.default)(this, "supported", false);
+
+
+var textModuleTemplate = /*#__PURE__*/function () {
+  function textModuleTemplate(dText) {
+    _classCallCheck(this, textModuleTemplate);
+
+    (0, _defineProperty2["default"])(this, "supported", false);
     this.dText = dText;
   }
 
-  draw() {} //draw call from danmaku-frame on every animation frame
+  _createClass(textModuleTemplate, [{
+    key: "draw",
+    value: function draw() {} //draw call from danmaku-frame on every animation frame
 
+  }, {
+    key: "rate",
+    value: function rate() {} //playback rate
 
-  rate() {} //playback rate
+  }, {
+    key: "pause",
+    value: function pause() {} //the media is paused
 
+  }, {
+    key: "play",
+    value: function play() {} //the media is starting
 
-  pause() {} //the media is paused
+  }, {
+    key: "clear",
+    value: function clear() {} //clear all danmaku on screen
 
+  }, {
+    key: "resize",
+    value: function resize() {} //the container is resized
 
-  play() {} //the media is starting
+  }, {
+    key: "remove",
+    value: function remove() {} //remove a danmaku freom the screen
 
+  }, {
+    key: "enable",
+    value: function enable() {} //this module is enabled
 
-  clear() {} //clear all danmaku on screen
+  }, {
+    key: "disable",
+    value: function disable() {} //this module is disabled
 
+  }, {
+    key: "newDanmaku",
+    value: function newDanmaku() {} //add danmaku to the screen
 
-  resize() {} //the container is resized
+  }, {
+    key: "deleteRelatedTextObject",
+    value: function deleteRelatedTextObject() {}
+  }]);
 
-
-  remove() {} //remove a danmaku freom the screen
-
-
-  enable() {} //this module is enabled
-
-
-  disable() {} //this module is disabled
-
-
-  newDanmaku() {} //add danmaku to the screen
-
-
-  deleteRelatedTextObject() {}
-
-}
+  return textModuleTemplate;
+}();
 
 var _default = textModuleTemplate;
-exports.default = _default;
+exports["default"] = _default;
 
 },{"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/helpers/defineProperty":39,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],16:[function(require,module,exports){
 module.exports = require("core-js-pure/stable/array/is-array");
@@ -6966,6 +8075,24 @@ LGPL license
 */
 'use strict';
 
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
 var _repeat = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/repeat"));
@@ -6982,42 +8109,56 @@ var _setTimeout2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-j
 
 var _NyaPCommon = require("./NyaPCommon.js");
 
-const O2H = _NyaPCommon.DomTools.Object2HTML; //NyaP options
+var O2H = _NyaPCommon.DomTools.Object2HTML; //NyaP options
 
-const NyaPOptions = {}; //normal player
+var NyaPOptions = {}; //normal player
 
-class NyaP extends _NyaPCommon.NyaPCommon {
-  get icons() {
-    return this.opt.icons;
-  }
+var NyaP = /*#__PURE__*/function (_NyaPCommon$NyaPCommo) {
+  _inherits(NyaP, _NyaPCommon$NyaPCommo);
 
-  constructor(opt) {
-    super(_NyaPCommon.Utils.deepAssign({}, NyaPOptions, opt));
-    opt = this.opt;
-    const NP = this,
-          _t = this._t,
-          $ = this.$,
-          video = this.video; //set icons
+  _createClass(NyaP, [{
+    key: "icons",
+    get: function get() {
+      return this.opt.icons;
+    }
+  }]);
 
-    function icon(name, event, attr = {}, extopt) {
-      const ico = opt.icons[name];
+  function NyaP(opt) {
+    var _this;
+
+    _classCallCheck(this, NyaP);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(NyaP).call(this, _NyaPCommon.Utils.deepAssign({}, NyaPOptions, opt)));
+    opt = _this.opt;
+
+    var NP = _assertThisInitialized(_this),
+        _t = _this._t,
+        $ = _this.$,
+        video = _this.video; //set icons
+
+
+    function icon(name, event) {
+      var attr = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      var extopt = arguments.length > 3 ? arguments[3] : undefined;
+      var ico = opt.icons[name];
       return O2H({
         _: 'span',
-        event,
-        attr,
+        event: event,
+        attr: attr,
         prop: {
-          id: `icon_span_${name}`,
-          innerHTML: `<svg viewBox="0 0 ${ico[0]} ${ico[1]}" height=${(extopt === null || extopt === void 0 ? void 0 : extopt.height) || ico[1]} width=${(extopt === null || extopt === void 0 ? void 0 : extopt.width) || ico[0]} id="icon_${name}"">${ico[2]}</svg>`
+          id: "icon_span_".concat(name),
+          innerHTML: "<svg viewBox=\"0 0 ".concat(ico[0], " ").concat(ico[1], "\" height=").concat((extopt === null || extopt === void 0 ? void 0 : extopt.height) || ico[1], " width=").concat((extopt === null || extopt === void 0 ? void 0 : extopt.width) || ico[0], " id=\"icon_").concat(name, "\"\">").concat(ico[2], "</svg>")
         }
       });
     }
 
-    this.stat('creating_player'); //create player elements
+    _this.stat('creating_player'); //create player elements
+
 
     NP._.player = O2H({
       _: 'div',
       attr: {
-        class: 'NyaP',
+        "class": 'NyaP',
         id: 'NyaP',
         tabindex: 0
       },
@@ -7037,7 +8178,9 @@ class NyaP extends _NyaPCommon.NyaPCommon {
               id: 'control_left'
             },
             child: [icon('play', {
-              click: e => NP.playToggle()
+              click: function click(e) {
+                return NP.playToggle();
+              }
             }, {
               title: _t('play')
             })]
@@ -7086,18 +8229,22 @@ class NyaP extends _NyaPCommon.NyaPCommon {
               id: 'control_right'
             },
             child: [icon('addDanmaku', {
-              click: e => NP.danmakuInput()
+              click: function click(e) {
+                return NP.danmakuInput();
+              }
             }, {
               title: _t('danmaku input(Enter)')
             }), icon('danmakuToggle', {
-              click: e => NP.Danmaku.toggle()
+              click: function click(e) {
+                return NP.Danmaku.toggle();
+              }
             }, {
               title: _t('danmaku toggle(D)'),
-              class: 'active_icon'
+              "class": 'active_icon'
             }), icon('volume', {}, {
-              title: `${_t('volume')}:(${video.muted ? _t('muted') : (video.volume * 100 | 0) + '%'})([shift]+↑↓)(${_t('wheeling')})`
+              title: "".concat(_t('volume'), ":(").concat(video.muted ? _t('muted') : (video.volume * 100 | 0) + '%', ")([shift]+\u2191\u2193)(").concat(_t('wheeling'), ")")
             }), icon('loop', {
-              click: e => {
+              click: function click(e) {
                 video.loop = !video.loop;
               }
             }, {
@@ -7108,11 +8255,15 @@ class NyaP extends _NyaPCommon.NyaPCommon {
                 id: 'player_mode'
               },
               child: [icon('fullScreen', {
-                click: e => NP.playerMode('fullScreen')
+                click: function click(e) {
+                  return NP.playerMode('fullScreen');
+                }
               }, {
                 title: _t('full screen(F)')
               }), icon('fullPage', {
-                click: e => NP.playerMode('fullPage')
+                click: function click(e) {
+                  return NP.playerMode('fullPage');
+                }
               }, {
                 title: _t('full page(P)')
               })]
@@ -7148,7 +8299,7 @@ class NyaP extends _NyaPCommon.NyaPCommon {
                 maxlength: "6"
               },
               event: {
-                keypress: e => {}
+                keypress: function keypress(e) {}
               }
             }, {
               _: 'span',
@@ -7181,69 +8332,82 @@ class NyaP extends _NyaPCommon.NyaPCommon {
       }]
     }); //progress
 
-    (0, _setTimeout2.default)(() => {
+    (0, _setTimeout2["default"])(function () {
       //add resize event
       _NyaPCommon.DomTools.resizeEvent.observe($('#control'));
 
       _NyaPCommon.DomTools.addEvents($('#control'), {
-        resize: e => NP.resizeProgress()
+        resize: function resize(e) {
+          return NP.resizeProgress();
+        }
       });
 
       NP.resizeProgress();
     }, 0);
     NP._.progressContext = $('#progress').getContext('2d'); //events
 
-    const events = {
+    var events = {
       main_video: {
-        playing: e => {
+        playing: function playing(e) {
           NP._iconActive('play', true);
 
-          if (this.$('#danmaku_input_frame').offsetHeight) {
-            this.danmakuInput(false);
+          if (_this.$('#danmaku_input_frame').offsetHeight) {
+            _this.danmakuInput(false);
           }
         },
-        pause: e => {
+        pause: function pause(e) {
           NP._iconActive('play', false);
         },
-        timeupdate: e => {
-          if ((0, _now.default)() - NP._.lastTimeUpdate < 30) return;
+        timeupdate: function timeupdate(e) {
+          if ((0, _now["default"])() - NP._.lastTimeUpdate < 30) return;
 
           NP._setDisplayTime(_NyaPCommon.Utils.formatTime(video.currentTime, video.duration));
 
           NP.drawProgress();
-          NP._.lastTimeUpdate = (0, _now.default)();
+          NP._.lastTimeUpdate = (0, _now["default"])();
         },
-        loadedmetadata: e => {
+        loadedmetadata: function loadedmetadata(e) {
           NP._setDisplayTime(null, _NyaPCommon.Utils.formatTime(video.duration, video.duration));
         },
-        volumechange: e => {
+        volumechange: function volumechange(e) {
           //show volume msg
-          NP._.volumeBox.renew(`${_t('volume')}:${(video.volume * 100).toFixed(0)}%` + `${video.muted ? '(' + _t('muted') + ')' : ''}`, 3000); //change icon style
+          NP._.volumeBox.renew("".concat(_t('volume'), ":").concat((video.volume * 100).toFixed(0), "%") + "".concat(video.muted ? '(' + _t('muted') + ')' : ''), 3000); //change icon style
 
 
           _NyaPCommon.DomTools.setAttrs($('#volume_circle'), {
-            'stroke-dasharray': `${video.volume * 12 * Math.PI} 90`,
-            style: `fill-opacity:${video.muted ? .2 : .6}!important`
+            'stroke-dasharray': "".concat(video.volume * 12 * Math.PI, " 90"),
+            style: "fill-opacity:".concat(video.muted ? .2 : .6, "!important")
           }); //change icon tip
 
 
-          $('#icon_span_volume').setAttribute('title', `${_t('volume')}:(${video.muted ? _t('muted') : (video.volume * 100 | 0) + '%'})([shift]+↑↓)(${_t('wheeling')})`);
+          $('#icon_span_volume').setAttribute('title', "".concat(_t('volume'), ":(").concat(video.muted ? _t('muted') : (video.volume * 100 | 0) + '%', ")([shift]+\u2191\u2193)(").concat(_t('wheeling'), ")"));
         },
-        progress: e => NP.drawProgress(),
-        click: e => NP.playToggle(),
-        contextmenu: e => e.preventDefault(),
-        error: () => {
-          NP.msg(`视频加载错误`, 'error');
-          this.log('video error', 'error');
+        progress: function progress(e) {
+          return NP.drawProgress();
+        },
+        click: function click(e) {
+          return NP.playToggle();
+        },
+        contextmenu: function contextmenu(e) {
+          return e.preventDefault();
+        },
+        error: function error() {
+          NP.msg("\u89C6\u9891\u52A0\u8F7D\u9519\u8BEF", 'error');
+
+          _this.log('video error', 'error');
         }
       },
       danmaku_container: {
-        click: e => NP.playToggle(),
-        contextmenu: e => e.preventDefault()
+        click: function click(e) {
+          return NP.playToggle();
+        },
+        contextmenu: function contextmenu(e) {
+          return e.preventDefault();
+        }
       },
       progress: {
-        'mousemove,click': e => {
-          let t = e.target,
+        'mousemove,click': function mousemoveClick(e) {
+          var t = e.target,
               pre = _NyaPCommon.Utils.clamp((e.offsetX - t.pad) / (t.offsetWidth - 2 * t.pad), 0, 1);
 
           if (e.type === 'mousemove') {
@@ -7255,7 +8419,7 @@ class NyaP extends _NyaPCommon.NyaPCommon {
             video.currentTime = pre * video.duration;
           }
         },
-        mouseout: e => {
+        mouseout: function mouseout(e) {
           NP._.progressX = undefined;
           NP.drawProgress();
 
@@ -7263,37 +8427,41 @@ class NyaP extends _NyaPCommon.NyaPCommon {
         }
       },
       danmaku_style_pannel: {
-        click: e => {
-          if (e.target.tagName !== 'INPUT') (0, _setImmediate2.default)(a => NP.$('#danmaku_input').focus());
+        click: function click(e) {
+          if (e.target.tagName !== 'INPUT') (0, _setImmediate2["default"])(function (a) {
+            return NP.$('#danmaku_input').focus();
+          });
         }
       },
       danmaku_color: {
-        'input,change': e => {
-          let i = e.target,
+        'input,change': function inputChange(e) {
+          var i = e.target,
               c = NP.Danmaku.isVaildColor(i.value);
 
           if (c) {
             //match valid hex color code
-            i.style.backgroundColor = `#${c}`;
+            i.style.backgroundColor = "#".concat(c);
             NP._.danmakuColor = c;
           } else {
             NP._.danmakuColor = undefined;
             c = NP.Danmaku.isVaildColor(NP.opt.danmaku.defaultDanmakuColor);
-            i.style.backgroundColor = c ? `#${c}` : '';
+            i.style.backgroundColor = c ? "#".concat(c) : '';
           }
         }
       },
       icon_span_volume: {
-        click: e => video.muted = !video.muted,
-        wheel: e => {
+        click: function click(e) {
+          return video.muted = !video.muted;
+        },
+        wheel: function wheel(e) {
           e.preventDefault();
-          let d = e.wheelDeltaY;
+          var d = e.wheelDeltaY;
           if (e.shiftKey) d = d > 0 ? 10 : -10;
           video.volume = _NyaPCommon.Utils.clamp(video.volume + d / 900, 0, 1);
         }
       },
       danmaku_input: {
-        keydown: e => {
+        keydown: function keydown(e) {
           if (e.key === 'Enter') {
             NP.send();
           } else if (e.key === 'Escape') {
@@ -7302,29 +8470,31 @@ class NyaP extends _NyaPCommon.NyaPCommon {
         }
       },
       danmaku_submit: {
-        click: e => NP.send()
+        click: function click(e) {
+          return NP.send();
+        }
       },
       danmaku_mode_box: {
-        click: e => {
+        click: function click(e) {
           var _context;
 
-          let t = e.target;
+          var t = e.target;
 
-          if ((0, _startsWith.default)(_context = t.id).call(_context, 'icon_span_danmakuMode')) {
-            let m = 1 * t.id.match(/\d$/)[0];
-            if (NP._.danmakuMode !== undefined) $(`#icon_span_danmakuMode${NP._.danmakuMode}`).classList.remove('active');
-            $(`#icon_span_danmakuMode${m}`).classList.add('active');
+          if ((0, _startsWith["default"])(_context = t.id).call(_context, 'icon_span_danmakuMode')) {
+            var m = 1 * t.id.match(/\d$/)[0];
+            if (NP._.danmakuMode !== undefined) $("#icon_span_danmakuMode".concat(NP._.danmakuMode)).classList.remove('active');
+            $("#icon_span_danmakuMode".concat(m)).classList.add('active');
             NP._.danmakuMode = m;
           }
         }
       },
       danmaku_size_box: {
-        click: e => {
+        click: function click(e) {
           var _context2;
 
-          let t = e.target;
+          var t = e.target;
           if (!t.size) return;
-          (0, _forEach.default)(_context2 = _NyaPCommon.Utils.toArray($('#danmaku_size_box').childNodes)).call(_context2, sp => {
+          (0, _forEach["default"])(_context2 = _NyaPCommon.Utils.toArray($('#danmaku_size_box').childNodes)).call(_context2, function (sp) {
             if (NP._.danmakuSize === sp.size) sp.classList.remove('active');
           });
           t.classList.add('active');
@@ -7332,7 +8502,7 @@ class NyaP extends _NyaPCommon.NyaPCommon {
         }
       },
       danmaku_color_box: {
-        click: e => {
+        click: function click(e) {
           if (e.target.color) {
             $('#danmaku_color').value = e.target.color;
             $('#danmaku_color').dispatchEvent(new Event('change'));
@@ -7341,52 +8511,58 @@ class NyaP extends _NyaPCommon.NyaPCommon {
       }
     };
 
-    for (let eleid in events) {
+    for (var eleid in events) {
       //add events to elements
-      let el = $(`#${eleid}`);
+      var el = $("#".concat(eleid));
       if (!el) continue;
-      let eves = events[eleid];
-      eves && _NyaPCommon.DomTools.addEvents($(`#${eleid}`), eves);
+      var eves = events[eleid];
+      eves && _NyaPCommon.DomTools.addEvents($("#".concat(eleid)), eves);
     }
 
-    _NyaPCommon.DomTools.addEvents(this, {
-      danmakuFrameToggle: bool => NP._iconActive('danmakuToggle', bool),
+    _NyaPCommon.DomTools.addEvents(_assertThisInitialized(_this), {
+      danmakuFrameToggle: function danmakuFrameToggle(bool) {
+        return NP._iconActive('danmakuToggle', bool);
+      },
       //listen danmakuToggle event to change button style
-      playerModeChange: mode => {
+      playerModeChange: function playerModeChange(mode) {
         var _context3;
 
-        (0, _forEach.default)(_context3 = ['fullPage', 'fullScreen']).call(_context3, m => {
+        (0, _forEach["default"])(_context3 = ['fullPage', 'fullScreen']).call(_context3, function (m) {
           NP._iconActive(m, mode === m);
         });
       },
-      video_loopChange: value => NP._iconActive('loop', value)
+      video_loopChange: function video_loopChange(value) {
+        return NP._iconActive('loop', value);
+      }
     });
 
-    _NyaPCommon.DomTools.addEvents(this._.player, {
-      keydown: e => NP._playerKeyHandle(e),
-      mousemove: e => {
-        this._userActiveWatcher(true);
+    _NyaPCommon.DomTools.addEvents(_this._.player, {
+      keydown: function keydown(e) {
+        return NP._playerKeyHandle(e);
+      },
+      mousemove: function mousemove(e) {
+        _this._userActiveWatcher(true);
       }
     });
 
     _NyaPCommon.DomTools.addEvents(document, {
-      'fullscreenchange,mozfullscreenchange,webkitfullscreenchange,msfullscreenchange': e => {
+      'fullscreenchange,mozfullscreenchange,webkitfullscreenchange,msfullscreenchange': function fullscreenchangeMozfullscreenchangeWebkitfullscreenchangeMsfullscreenchange(e) {
         if (NP.currentPlayerMode == 'fullScreen' && !_NyaPCommon.DomTools.isFullscreen()) NP.playerMode('normal');
       }
     }); //danmaku ui
 
 
-    if (this._danmakuEnabled) {
-      var _context4, _context5, _opt$uiOptions2, _context6;
+    if (_this._danmakuEnabled) {
+      var _context4, _context5, _opt$uiOptions2, _context6; //danmaku sizes
 
-      //danmaku sizes
-      opt.uiOptions.danmakuSizes && (0, _forEach.default)(_context4 = opt.uiOptions.danmakuSizes).call(_context4, (s, ind) => {
+
+      opt.uiOptions.danmakuSizes && (0, _forEach["default"])(_context4 = opt.uiOptions.danmakuSizes).call(_context4, function (s, ind) {
         var _opt, _opt$uiOptions;
 
-        let e = O2H({
+        var e = O2H({
           _: 'span',
           attr: {
-            style: `font-size:${12 + ind * 3}px;`,
+            style: "font-size:".concat(12 + ind * 3, "px;"),
             title: s
           },
           prop: {
@@ -7402,11 +8578,11 @@ class NyaP extends _NyaPCommon.NyaPCommon {
         }
       }); //danmaku colors
 
-      opt.uiOptions.danmakuColors && (0, _forEach.default)(_context5 = opt.uiOptions.danmakuColors).call(_context5, c => {
-        let e = O2H({
+      opt.uiOptions.danmakuColors && (0, _forEach["default"])(_context5 = opt.uiOptions.danmakuColors).call(_context5, function (c) {
+        var e = O2H({
           _: 'span',
           attr: {
-            style: `background-color:#${c};`,
+            style: "background-color:#".concat(c, ";"),
             title: c
           },
           prop: {
@@ -7422,10 +8598,10 @@ class NyaP extends _NyaPCommon.NyaPCommon {
       } //danmaku modes
 
 
-      opt.uiOptions.danmakuModes && (0, _forEach.default)(_context6 = opt.uiOptions.danmakuModes).call(_context6, m => {
+      opt.uiOptions.danmakuModes && (0, _forEach["default"])(_context6 = opt.uiOptions.danmakuModes).call(_context6, function (m) {
         var _opt2, _opt2$uiOptions;
 
-        let e = icon(`danmakuMode${m}`);
+        var e = icon("danmakuMode".concat(m));
         $('#danmaku_mode_box').appendChild(e);
 
         if (m === ((_opt2 = opt) === null || _opt2 === void 0 ? void 0 : (_opt2$uiOptions = _opt2.uiOptions) === null || _opt2$uiOptions === void 0 ? void 0 : _opt2$uiOptions.danmakuMode)) {
@@ -7436,7 +8612,7 @@ class NyaP extends _NyaPCommon.NyaPCommon {
     } else {
       var _context7;
 
-      (0, _forEach.default)(_context7 = this.$$('[id*=danmaku]')).call(_context7, el => {
+      (0, _forEach["default"])(_context7 = _this.$$('[id*=danmaku]')).call(_context7, function (el) {
         //remove danmaku buttons
         el.parentNode, removeChild(el);
       });
@@ -7444,169 +8620,185 @@ class NyaP extends _NyaPCommon.NyaPCommon {
 
 
     if (opt.playerContainer instanceof HTMLElement) opt.playerContainer.appendChild(NP.player);
-    this.statResult('creating_player');
+
+    _this.statResult('creating_player');
+
+    return _this;
   }
 
-  _userActiveWatcher(active = false) {
-    //watch user active,for auto hiding ui
-    let delay = 5000,
-        t = (0, _now.default)();
+  _createClass(NyaP, [{
+    key: "_userActiveWatcher",
+    value: function _userActiveWatcher() {
+      var _this2 = this;
 
-    if (active) {
-      this._.lastUserActive = t;
+      var active = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+      //watch user active,for auto hiding ui
+      var delay = 5000,
+          t = (0, _now["default"])();
 
-      if (this._.userInactive) {
-        this._.userInactive = false;
-        this.player.classList.remove('user-inactive');
+      if (active) {
+        this._.lastUserActive = t;
+
+        if (this._.userInactive) {
+          this._.userInactive = false;
+          this.player.classList.remove('user-inactive');
+        }
       }
+
+      if (this._.userActiveTimer) return;
+      this._.userActiveTimer = (0, _setTimeout2["default"])(function () {
+        _this2._.userActiveTimer = 0;
+        var now = (0, _now["default"])();
+
+        if (now - _this2._.lastUserActive < delay) {
+          _this2._userActiveWatcher();
+        } else {
+          _this2.player.classList.add('user-inactive');
+
+          _this2._.userInactive = true;
+        }
+      }, delay - t + this._.lastUserActive);
     }
+  }, {
+    key: "_playerKeyHandle",
+    value: function _playerKeyHandle(e) {
+      //hot keys
+      if (e.target.tagName === 'INPUT') return;
 
-    if (this._.userActiveTimer) return;
-    this._.userActiveTimer = (0, _setTimeout2.default)(() => {
-      this._.userActiveTimer = 0;
-      let now = (0, _now.default)();
-
-      if (now - this._.lastUserActive < delay) {
-        this._userActiveWatcher();
-      } else {
-        this.player.classList.add('user-inactive');
-        this._.userInactive = true;
-      }
-    }, delay - t + this._.lastUserActive);
-  }
-
-  _playerKeyHandle(e) {
-    //hot keys
-    if (e.target.tagName === 'INPUT') return;
-
-    const V = this.video,
+      var V = this.video,
           _SH = e.shiftKey,
-          _RE = (0, _repeat.default)(e); //to prevent default,use break.otherwise,use return.
+          _RE = (0, _repeat["default"])(e); //to prevent default,use break.otherwise,use return.
 
 
-    switch (e.key) {
-      case ' ':
-        {
-          if (_RE) return; //ignore repeat keys
+      switch (e.key) {
+        case ' ':
+          {
+            if (_RE) return; //ignore repeat keys
 
-          this.playToggle();
-          break;
-        }
-
-      case 'ArrowRight':
-        {
-          //seek forward
-          V.currentTime += 3 * (_SH ? 2 : 1);
-          break;
-        }
-
-      case 'ArrowLeft':
-        {
-          //seek backward
-          V.currentTime -= 1.5 * (_SH ? 2 : 1);
-          break;
-        }
-
-      case 'ArrowUp':
-        {
-          //volume up
-          V.volume = _NyaPCommon.Utils.clamp(V.volume + 0.03 * (_SH ? 2 : 1), 0, 1);
-          break;
-        }
-
-      case 'ArrowDown':
-        {
-          //volume down
-          V.volume = _NyaPCommon.Utils.clamp(V.volume - 0.03 * (_SH ? 2 : 1), 0, 1);
-          break;
-        }
-
-      case 'p':
-        {
-          //full page
-          if (_RE) return;
-          this.playerMode('fullPage');
-          break;
-        }
-
-      case 'f':
-        {
-          //fullscreen
-          this.playerMode('fullScreen');
-          break;
-        }
-
-      case 'd':
-        {
-          //danmaku toggle
-          if (_RE) return;
-          this._danmakuEnabled && this.Danmaku.toggle();
-          break;
-        }
-
-      case 'm':
-        {
-          //mute
-          if (_RE) return;
-          this.video.muted = !this.video.muted;
-          break;
-        }
-
-      case 'l':
-        {
-          //loop
-          this.video.loop = !this.video.loop;
-          break;
-        }
-
-      case 'Enter':
-        {
-          //danmaku input toggle
-          if (_RE) return;
-          this._danmakuEnabled && this.danmakuInput();
-          break;
-        }
-
-      case 'Escape':
-        {
-          //exit full page mode
-          if (this.currentPlayerMode === 'fullPage') {
-            this.playerMode('normal');
+            this.playToggle();
             break;
           }
 
+        case 'ArrowRight':
+          {
+            //seek forward
+            V.currentTime += 3 * (_SH ? 2 : 1);
+            break;
+          }
+
+        case 'ArrowLeft':
+          {
+            //seek backward
+            V.currentTime -= 1.5 * (_SH ? 2 : 1);
+            break;
+          }
+
+        case 'ArrowUp':
+          {
+            //volume up
+            V.volume = _NyaPCommon.Utils.clamp(V.volume + 0.03 * (_SH ? 2 : 1), 0, 1);
+            break;
+          }
+
+        case 'ArrowDown':
+          {
+            //volume down
+            V.volume = _NyaPCommon.Utils.clamp(V.volume - 0.03 * (_SH ? 2 : 1), 0, 1);
+            break;
+          }
+
+        case 'p':
+          {
+            //full page
+            if (_RE) return;
+            this.playerMode('fullPage');
+            break;
+          }
+
+        case 'f':
+          {
+            //fullscreen
+            this.playerMode('fullScreen');
+            break;
+          }
+
+        case 'd':
+          {
+            //danmaku toggle
+            if (_RE) return;
+            this._danmakuEnabled && this.Danmaku.toggle();
+            break;
+          }
+
+        case 'm':
+          {
+            //mute
+            if (_RE) return;
+            this.video.muted = !this.video.muted;
+            break;
+          }
+
+        case 'l':
+          {
+            //loop
+            this.video.loop = !this.video.loop;
+            break;
+          }
+
+        case 'Enter':
+          {
+            //danmaku input toggle
+            if (_RE) return;
+            this._danmakuEnabled && this.danmakuInput();
+            break;
+          }
+
+        case 'Escape':
+          {
+            //exit full page mode
+            if (this.currentPlayerMode === 'fullPage') {
+              this.playerMode('normal');
+              break;
+            }
+
+            return;
+          }
+
+        default:
           return;
-        }
+      }
 
-      default:
-        return;
+      e.preventDefault();
     }
+  }, {
+    key: "danmakuInput",
+    value: function danmakuInput() {
+      var _this3 = this;
 
-    e.preventDefault();
-  }
+      var bool = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : !this.$('#danmaku_input_frame').offsetHeight;
+      //hide or show danmaku input
+      var $ = this.$;
+      $('#danmaku_input_frame').style.display = bool ? '' : 'none';
 
-  danmakuInput(bool = !this.$('#danmaku_input_frame').offsetHeight) {
-    //hide or show danmaku input
-    let $ = this.$;
-    $('#danmaku_input_frame').style.display = bool ? '' : 'none';
+      this._iconActive('addDanmaku', bool);
 
-    this._iconActive('addDanmaku', bool);
-
-    (0, _setImmediate2.default)(() => {
-      bool ? $('#danmaku_input').focus() : this._.player.focus();
-    });
-  }
-
-  resizeProgress() {
-    const c = this.$('#progress');
-    c.width = c.offsetWidth;
-    c.height = c.offsetHeight;
-    this.drawProgress();
-    this.emit('progressRefresh');
-  }
-
-  _progressDrawer() {
-    const ctx = this._.progressContext,
+      (0, _setImmediate2["default"])(function () {
+        bool ? $('#danmaku_input').focus() : _this3._.player.focus();
+      });
+    }
+  }, {
+    key: "resizeProgress",
+    value: function resizeProgress() {
+      var c = this.$('#progress');
+      c.width = c.offsetWidth;
+      c.height = c.offsetHeight;
+      this.drawProgress();
+      this.emit('progressRefresh');
+    }
+  }, {
+    key: "_progressDrawer",
+    value: function _progressDrawer() {
+      var ctx = this._.progressContext,
           c = this.$('#progress'),
           w = c.width,
           h = c.height,
@@ -7615,71 +8807,96 @@ class NyaP extends _NyaPCommon.NyaPCommon {
           cT = v.currentTime,
           pad = c.pad,
           len = w - 2 * pad;
-    let i;
-    ctx.clearRect(0, 0, w, h);
-    ctx.lineCap = "round"; //background
+      var i;
+      ctx.clearRect(0, 0, w, h);
+      ctx.lineCap = "round"; //background
 
-    ctx.beginPath();
-    ctx.strokeStyle = '#eee';
-    ctx.lineWidth = 7;
-    ctx.moveTo(pad, 15);
-    ctx.lineTo(pad + len, 15);
-    ctx.stroke(); //buffered
-
-    ctx.beginPath();
-    ctx.strokeStyle = '#C0BBBB';
-    ctx.lineWidth = 2;
-    let tr = v.buffered;
-
-    for (i = tr.length; i--;) {
-      ctx.moveTo(pad + tr.start(i) / d * len, 18);
-      ctx.lineTo(pad + tr.end(i) / d * len, 18);
-    }
-
-    ctx.stroke(); //progress
-
-    ctx.beginPath();
-    ctx.strokeStyle = '#6cf';
-    ctx.lineWidth = 5;
-    ctx.moveTo(pad, 15);
-    ctx.lineTo(pad + len * cT / d, 15);
-    ctx.stroke(); //already played
-
-    ctx.beginPath();
-    ctx.strokeStyle = 'rgba(255,255,255,.3)';
-    ctx.lineWidth = 5;
-    tr = v.played;
-
-    for (i = tr.length; i--;) {
-      ctx.moveTo(pad + tr.start(i) / d * len, 15);
-      ctx.lineTo(pad + tr.end(i) / d * len, 15);
-    }
-
-    ctx.stroke(); //mouse
-
-    if (this._.progressX) {
       ctx.beginPath();
-      ctx.strokeStyle = 'rgba(0,0,0,.05)';
-      ctx.moveTo(pad + len * cT / d, 15);
-      ctx.lineTo(_NyaPCommon.Utils.clamp(this._.progressX, pad, pad + len), 15);
-      ctx.stroke();
+      ctx.strokeStyle = '#eee';
+      ctx.lineWidth = 7;
+      ctx.moveTo(pad, 15);
+      ctx.lineTo(pad + len, 15);
+      ctx.stroke(); //buffered
+
+      ctx.beginPath();
+      ctx.strokeStyle = '#C0BBBB';
+      ctx.lineWidth = 2;
+      var tr = v.buffered;
+
+      for (i = tr.length; i--;) {
+        ctx.moveTo(pad + tr.start(i) / d * len, 18);
+        ctx.lineTo(pad + tr.end(i) / d * len, 18);
+      }
+
+      ctx.stroke(); //progress
+
+      ctx.beginPath();
+      ctx.strokeStyle = '#6cf';
+      ctx.lineWidth = 5;
+      ctx.moveTo(pad, 15);
+      ctx.lineTo(pad + len * cT / d, 15);
+      ctx.stroke(); //already played
+
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(255,255,255,.3)';
+      ctx.lineWidth = 5;
+      tr = v.played;
+
+      for (i = tr.length; i--;) {
+        ctx.moveTo(pad + tr.start(i) / d * len, 15);
+        ctx.lineTo(pad + tr.end(i) / d * len, 15);
+      }
+
+      ctx.stroke(); //mouse
+
+      if (this._.progressX) {
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(0,0,0,.05)';
+        ctx.moveTo(pad + len * cT / d, 15);
+        ctx.lineTo(_NyaPCommon.Utils.clamp(this._.progressX, pad, pad + len), 15);
+        ctx.stroke();
+      }
+
+      this._.drawingProgress = false;
     }
+  }, {
+    key: "drawProgress",
+    value: function drawProgress() {
+      var _this4 = this;
 
-    this._.drawingProgress = false;
-  }
+      if (this._.drawingProgress) return;
+      this._.drawingProgress = true;
+      requestAnimationFrame(function () {
+        return _this4._progressDrawer();
+      }); //prevent progress bar drawing multi times in a frame
+    }
+  }]);
 
-  drawProgress() {
-    if (this._.drawingProgress) return;
-    this._.drawingProgress = true;
-    requestAnimationFrame(() => this._progressDrawer()); //prevent progress bar drawing multi times in a frame
-  }
-
-}
+  return NyaP;
+}(_NyaPCommon.NyaPCommon);
 
 window.NyaP = NyaP;
 
 },{"./NyaPCommon.js":228,"@babel/runtime-corejs3/core-js-stable/date/now":17,"@babel/runtime-corejs3/core-js-stable/instance/for-each":21,"@babel/runtime-corejs3/core-js-stable/instance/repeat":23,"@babel/runtime-corejs3/core-js-stable/instance/starts-with":27,"@babel/runtime-corejs3/core-js-stable/set-immediate":35,"@babel/runtime-corejs3/core-js-stable/set-timeout":37,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],228:[function(require,module,exports){
 "use strict";
+
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
 
@@ -7691,14 +8908,14 @@ _Object$defineProperty(exports, "__esModule", {
 
 _Object$defineProperty(exports, "DomTools", {
   enumerable: true,
-  get: function () {
+  get: function get() {
     return _index.DomTools;
   }
 });
 
 _Object$defineProperty(exports, "Utils", {
   enumerable: true,
-  get: function () {
+  get: function get() {
     return _index.Utils;
   }
 });
@@ -7717,9 +8934,9 @@ var _index = require("../component/NyaP-Core/index.js");
 
 var _index2 = _interopRequireDefault(require("../component/NyaP-Danmaku/index.js"));
 
-const O2H = _index.DomTools.Object2HTML; //default options
+var O2H = _index.DomTools.Object2HTML; //default options
 
-const NyaPCommonOptions = {
+var NyaPCommonOptions = {
   //for danmaku frame
   danmaku: {
     enable: true,
@@ -7732,8 +8949,8 @@ const NyaPCommonOptions = {
     },
     defaultDanmakuColor: null,
     //a hex color(without #),default when the color inputed is invalid
-    send: d => {
-      return _promise.default.reject();
+    send: function send(d) {
+      return _promise["default"].reject();
     } //the method for sending danmaku
 
   },
@@ -7760,27 +8977,24 @@ const NyaPCommonOptions = {
     contentSpliter: '...'
   },
   loadingAnimation: {
-    start(NP) {
+    start: function start(NP) {
       NP.$('#loading_anime').innerHTML = '(๑•́ ω •̀๑)';
-      NP._.loadingAnimationInterval = (0, _setInterval2.default)(() => {
+      NP._.loadingAnimationInterval = (0, _setInterval2["default"])(function () {
         //loading animation
         NP.$('#loading_anime').style.transform = "translate(" + _index.Utils.rand(-20, 20) + "px," + _index.Utils.rand(-20, 20) + "px) rotate(" + _index.Utils.rand(-10, 10) + "deg)";
       }, 80);
     },
-
-    stop(NP) {
+    stop: function stop(NP) {
       clearInterval(NP._.loadingAnimationInterval);
-      let lf = NP.$('#loading_frame');
+      var lf = NP.$('#loading_frame');
       if (lf.parentNode) //remove loading animation
         lf.parentNode.removeChild(lf);
     },
-
-    error(NP) {
+    error: function error(NP) {
       clearInterval(NP._.loadingAnimationInterval);
       NP.$('#loading_anime').innerHTML = '(๑• . •๑)';
       NP.$('#loading_anime').style.transform = "";
     }
-
   },
   //other common options
   playerContainer: null,
@@ -7801,49 +9015,63 @@ const NyaPCommonOptions = {
   }
 }; //NyaP classic theme Core
 
-class NyaPCommon extends _index.NyaPlayerCore {
-  get frame() {
-    return this._.player || this.videoFrame;
-  }
+var NyaPCommon = /*#__PURE__*/function (_index$NyaPlayerCore) {
+  _inherits(NyaPCommon, _index$NyaPlayerCore);
 
-  get player() {
-    return this._.player;
-  }
+  _createClass(NyaPCommon, [{
+    key: "frame",
+    get: function get() {
+      return this._.player || this.videoFrame;
+    }
+  }, {
+    key: "player",
+    get: function get() {
+      return this._.player;
+    }
+  }, {
+    key: "currentPlayerMode",
+    get: function get() {
+      return this.player.getAttribute('playerMode') || 'normal';
+    }
+  }, {
+    key: "_danmakuEnabled",
+    get: function get() {
+      return this.opt.danmaku.enable;
+    }
+  }]);
 
-  get currentPlayerMode() {
-    return this.player.getAttribute('playerMode') || 'normal';
-  }
+  function NyaPCommon(opt) {
+    var _this;
 
-  get _danmakuEnabled() {
-    return this.opt.danmaku.enable;
-  }
+    _classCallCheck(this, NyaPCommon);
 
-  constructor(opt) {
     var _context, _context2, _context3;
 
-    super(_index.Utils.deepAssign({}, NyaPCommonOptions, opt));
-    this.log('%c https://github.com/JiaJiaJiang/NyaP/ ', 'log', "background:#6f8fa2;color:#ccc;padding:.3em");
-    opt = this.opt;
-    this.$ = (0, _bind.default)(_context = this.$).call(_context, this);
-    this.$$ = (0, _bind.default)(_context2 = this.$$).call(_context2, this); //language
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(NyaPCommon).call(this, _index.Utils.deepAssign({}, NyaPCommonOptions, opt)));
 
-    const _t = this._t = (0, _bind.default)(_context3 = this.i18n._).call(_context3, this.i18n); //translate
+    _this.log('%c https://github.com/JiaJiaJiang/NyaP/ ', 'log', "background:#6f8fa2;color:#ccc;padding:.3em");
+
+    opt = _this.opt;
+    _this.$ = (0, _bind["default"])(_context = _this.$).call(_context, _assertThisInitialized(_this));
+    _this.$$ = (0, _bind["default"])(_context2 = _this.$$).call(_context2, _assertThisInitialized(_this)); //language
+
+    var _t = _this._t = (0, _bind["default"])(_context3 = _this.i18n._).call(_context3, _this.i18n); //translate
     //load languages to the core
 
 
-    let langs = require('./langs.json');
+    var langs = require('./langs.json');
 
-    for (let l in langs) {
-      this.i18n.add(l, langs[l]);
+    for (var l in langs) {
+      _this.i18n.add(l, langs[l]);
     } //the video frame for NyaP and NyaPTouch
 
 
-    this.videoFrame = O2H({
+    _this.videoFrame = O2H({
       _: 'div',
       attr: {
         id: 'video_frame'
       },
-      child: [this.video, //this.container,
+      child: [_this.video, //this.container,
       {
         _: 'div',
         attr: {
@@ -7868,250 +9096,306 @@ class NyaPCommon extends _index.NyaPlayerCore {
       }]
     }); //add private vars
 
-    this._.selectorCache = {};
-    this._.volumeBox = new MsgBox('', 'info', this.$('#msg_box'));
-    this._.ios = !!navigator.userAgent.match(/i[A-z]+?; CPU .+?like Mac OS/);
-    this._.mobileX5 = !!navigator.userAgent.match(/MQQBrowser/); //receive stat requests
+    _this._.selectorCache = {};
+    _this._.volumeBox = new MsgBox('', 'info', _this.$('#msg_box'));
+    _this._.ios = !!navigator.userAgent.match(/i[A-z]+?; CPU .+?like Mac OS/);
+    _this._.mobileX5 = !!navigator.userAgent.match(/MQQBrowser/); //receive stat requests
 
-    this.on('stat', stat => {
-      let name = _t(stat[1]);
+    _this.on('stat', function (stat) {
+      var name = _t(stat[1]);
 
-      this.debug('stat:', name);
-      let d = O2H({
+      _this.debug('stat:', name);
+
+      var d = O2H({
         _: 'div',
         child: [name]
       });
-      d.append(this.opt.loadingInfo.contentSpliter);
-      this.$('#loading_info').appendChild(d);
-      stat[2].then(result => {
+      d.append(_this.opt.loadingInfo.contentSpliter);
+
+      _this.$('#loading_info').appendChild(d);
+
+      stat[2].then(function (result) {
         //wait for the result
-        d.append(result || this.opt.loadingInfo.doneText);
-      }).catch(e => {
-        d.append(e.message || e || this.opt.loadingInfo.failText);
+        d.append(result || _this.opt.loadingInfo.doneText);
+      })["catch"](function (e) {
+        d.append(e.message || e || _this.opt.loadingInfo.failText);
       });
     }); //loading animation
+
 
     if (opt.loadingAnimation) {
       var _opt, _opt$loadingAnimation;
 
-      (_opt = opt) === null || _opt === void 0 ? void 0 : (_opt$loadingAnimation = _opt.loadingAnimation) === null || _opt$loadingAnimation === void 0 ? void 0 : _opt$loadingAnimation.start(this);
+      (_opt = opt) === null || _opt === void 0 ? void 0 : (_opt$loadingAnimation = _opt.loadingAnimation) === null || _opt$loadingAnimation === void 0 ? void 0 : _opt$loadingAnimation.start(_assertThisInitialized(_this));
     }
 
-    _index.DomTools.addEvents(this.video, {
-      loadedmetadata: e => {
+    _index.DomTools.addEvents(_this.video, {
+      loadedmetadata: function loadedmetadata(e) {
         var _opt2, _opt2$loadingAnimatio;
 
-        this.statResult('loading_video');
-        (_opt2 = opt) === null || _opt2 === void 0 ? void 0 : (_opt2$loadingAnimatio = _opt2.loadingAnimation) === null || _opt2$loadingAnimatio === void 0 ? void 0 : _opt2$loadingAnimatio.stop(this);
+        _this.statResult('loading_video');
+
+        (_opt2 = opt) === null || _opt2 === void 0 ? void 0 : (_opt2$loadingAnimatio = _opt2.loadingAnimation) === null || _opt2$loadingAnimatio === void 0 ? void 0 : _opt2$loadingAnimatio.stop(_assertThisInitialized(_this));
       },
-      error: e => {
+      error: function error(e) {
         var _opt3, _opt3$loadingAnimatio;
 
-        this.statResult('loading_video', e === null || e === void 0 ? void 0 : e.message);
-        (_opt3 = opt) === null || _opt3 === void 0 ? void 0 : (_opt3$loadingAnimatio = _opt3.loadingAnimation) === null || _opt3$loadingAnimatio === void 0 ? void 0 : _opt3$loadingAnimatio.error(this);
+        _this.statResult('loading_video', e === null || e === void 0 ? void 0 : e.message);
+
+        (_opt3 = opt) === null || _opt3 === void 0 ? void 0 : (_opt3$loadingAnimatio = _opt3.loadingAnimation) === null || _opt3$loadingAnimatio === void 0 ? void 0 : _opt3$loadingAnimatio.error(_assertThisInitialized(_this));
       }
     }); //load danmaku frame
 
 
-    if (this._danmakuEnabled) {
-      this.danmakuContainer = O2H({
+    if (_this._danmakuEnabled) {
+      _this.danmakuContainer = O2H({
         _: 'div',
         prop: {
           id: 'danmaku_container'
         }
       });
-      this.stat('loading_danmakuFrame', () => {
-        this.Danmaku = new _index2.default(this);
-        this.videoFrame.insertBefore(this.danmakuContainer, this.$('#loading_frame'));
+
+      _this.stat('loading_danmakuFrame', function () {
+        _this.Danmaku = new _index2["default"](_assertThisInitialized(_this));
+
+        _this.videoFrame.insertBefore(_this.danmakuContainer, _this.$('#loading_frame'));
       });
     } //stupid x5 core
 
 
-    if (this._.mobileX5) {
+    if (_this._.mobileX5) {
       try {
-        this.Danmaku.modules.TextDanmaku.setRendererMode(1); //force css mode
+        _this.Danmaku.modules.TextDanmaku.setRendererMode(1); //force css mode
 
-        this.Danmaku.modules.TextDanmaku.text2d.supported = false;
+
+        _this.Danmaku.modules.TextDanmaku.text2d.supported = false;
       } catch (e) {
         alert(e.message);
       }
     }
+
+    return _this;
   }
 
-  $(selector, useCache = true) {
-    //querySelector for the frame element
-    if (useCache && this._.selectorCache[selector]) return this._.selectorCache[selector];
-    let el = this.frame.querySelector(selector);
-    if (el) this._.selectorCache[selector] = el;
-    return el;
-  }
-
-  $$(selector) {
-    //querySelectorAll for the frame element
-    return this.frame.querySelectorAll(selector);
-  }
-
-  playerMode(mode = 'normal') {
-    let ios = this._.ios;
-    if (mode === 'normal' && this.currentPlayerMode === mode) return;
-
-    if (this.currentPlayerMode === 'fullScreen') {
-      ios || _index.DomTools.exitFullscreen().catch(e => {});
+  _createClass(NyaPCommon, [{
+    key: "$",
+    value: function $(selector) {
+      var useCache = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+      //querySelector for the frame element
+      if (useCache && this._.selectorCache[selector]) return this._.selectorCache[selector];
+      var el = this.frame.querySelector(selector);
+      if (el) this._.selectorCache[selector] = el;
+      return el;
     }
+  }, {
+    key: "$$",
+    value: function $$(selector) {
+      //querySelectorAll for the frame element
+      return this.frame.querySelectorAll(selector);
+    }
+  }, {
+    key: "playerMode",
+    value: function playerMode() {
+      var _this2 = this;
 
-    if (mode !== 'normal' && this.currentPlayerMode === mode) mode = 'normal'; //back to normal mode
+      var mode = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'normal';
+      var ios = this._.ios;
+      if (mode === 'normal' && this.currentPlayerMode === mode) return;
 
-    switch (mode) {
-      case 'fullPage':
-        {
-          this.player.setAttribute('playerMode', 'fullPage');
-          this.emit('playerModeChange', mode);
-          break;
-        }
+      if (this.currentPlayerMode === 'fullScreen') {
+        ios || _index.DomTools.exitFullscreen()["catch"](function (e) {});
+      }
 
-      case 'fullScreen':
-        {
-          if (ios) {
-            //for ios, only fullscreen video, not the player
-            _index.DomTools.requestFullscreen(this.video);
+      if (mode !== 'normal' && this.currentPlayerMode === mode) mode = 'normal'; //back to normal mode
+
+      switch (mode) {
+        case 'fullPage':
+          {
+            this.player.setAttribute('playerMode', 'fullPage');
+            this.emit('playerModeChange', mode);
+            break;
+          }
+
+        case 'fullScreen':
+          {
+            if (ios) {
+              //for ios, only fullscreen video, not the player
+              _index.DomTools.requestFullscreen(this.video);
+
+              break;
+            }
+
+            _index.DomTools.requestFullscreen(this.player).then(function () {
+              _this2.player.setAttribute('playerMode', 'fullScreen');
+
+              _this2.emit('playerModeChange', mode);
+            })["catch"](function (e) {
+              alert('Failed to enter screen mode');
+            });
 
             break;
           }
 
-          _index.DomTools.requestFullscreen(this.player).then(() => {
-            this.player.setAttribute('playerMode', 'fullScreen');
+        default:
+          {
+            this.player.setAttribute('playerMode', 'normal');
             this.emit('playerModeChange', mode);
-          }).catch(e => {
-            alert('Failed to enter screen mode');
-          });
-
-          break;
-        }
-
-      default:
-        {
-          this.player.setAttribute('playerMode', 'normal');
-          this.emit('playerModeChange', mode);
-        }
-    }
-  }
-
-  msg(text, type = 'tip') {
-    //type:tip|info|error
-    let msg = new MsgBox(text, type, this.$('#msg_box'));
-    requestAnimationFrame(() => msg.show());
-  }
-
-  _iconActive(name, bool) {
-    var _this$$;
-
-    (_this$$ = this.$(`#icon_span_${name}`)) === null || _this$$ === void 0 ? void 0 : _this$$.classList[bool ? 'add' : 'remove']('active_icon');
-  }
-
-  _setDisplayTime(current = null, total = null) {
-    if (current !== null) this.$('#current_time').innerHTML = current;
-    if (total !== null) this.$('#total_time').innerHTML = total;
-  }
-
-  send() {
-    let color = this._.danmakuColor || this.opt.danmaku.defaultDanmakuColor,
-        text = this.$('#danmaku_input').value,
-        size = this._.danmakuSize,
-        mode = this._.danmakuMode,
-        time = this.Danmaku.time,
-        d = {
-      color,
-      text,
-      size,
-      mode,
-      time
-    };
-    let S = this.Danmaku.send(d, danmaku => {
-      if (danmaku && danmaku._ === 'text') this.$('#danmaku_input').value = '';
-      danmaku.highlight = true;
-      this.Danmaku.load(danmaku, true);
-
-      if (this.opt.uiOptions.autoHideDanmakuInput) {
-        this.danmakuInput(false);
+          }
       }
-    });
-
-    if (!S) {
-      this.danmakuInput(false);
-      return;
     }
-  }
+  }, {
+    key: "msg",
+    value: function msg(text) {
+      var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'tip';
+      //type:tip|info|error
+      var msg = new MsgBox(text, type, this.$('#msg_box'));
+      requestAnimationFrame(function () {
+        return msg.show();
+      });
+    }
+  }, {
+    key: "_iconActive",
+    value: function _iconActive(name, bool) {
+      var _this$$;
 
-}
+      (_this$$ = this.$("#icon_span_".concat(name))) === null || _this$$ === void 0 ? void 0 : _this$$.classList[bool ? 'add' : 'remove']('active_icon');
+    }
+  }, {
+    key: "_setDisplayTime",
+    value: function _setDisplayTime() {
+      var current = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      var total = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      if (current !== null) this.$('#current_time').innerHTML = current;
+      if (total !== null) this.$('#total_time').innerHTML = total;
+    }
+  }, {
+    key: "send",
+    value: function send() {
+      var _this3 = this;
+
+      var color = this._.danmakuColor || this.opt.danmaku.defaultDanmakuColor,
+          text = this.$('#danmaku_input').value,
+          size = this._.danmakuSize,
+          mode = this._.danmakuMode,
+          time = this.Danmaku.time,
+          d = {
+        color: color,
+        text: text,
+        size: size,
+        mode: mode,
+        time: time
+      };
+      var S = this.Danmaku.send(d, function (danmaku) {
+        if (danmaku && danmaku._ === 'text') _this3.$('#danmaku_input').value = '';
+        danmaku.highlight = true;
+
+        _this3.Danmaku.load(danmaku, true);
+
+        if (_this3.opt.uiOptions.autoHideDanmakuInput) {
+          _this3.danmakuInput(false);
+        }
+      });
+
+      if (!S) {
+        this.danmakuInput(false);
+        return;
+      }
+    }
+  }]);
+
+  return NyaPCommon;
+}(_index.NyaPlayerCore);
 
 exports.NyaPCommon = NyaPCommon;
 
-class MsgBox {
-  constructor(text, type, parentNode) {
+var MsgBox = /*#__PURE__*/function () {
+  function MsgBox(text, type, parentNode) {
+    var _this4 = this;
+
+    _classCallCheck(this, MsgBox);
+
     this.using = false;
-    let msg = this.msg = O2H({
+    var msg = this.msg = O2H({
       _: 'div',
       attr: {
-        class: `msg_type_${type}`
+        "class": "msg_type_".concat(type)
       }
     });
-    msg.addEventListener('click', () => this.remove());
+    msg.addEventListener('click', function () {
+      return _this4.remove();
+    });
     this.parentNode = parentNode;
     this.setText(text);
   }
 
-  setTimeout(time) {
-    if (this.timeout) clearTimeout(this.timeout);
-    this.timeout = (0, _setTimeout2.default)(() => this.remove(), time || Math.max((this.texts ? this.texts.length : 0) * 0.6 * 1000, 5000));
-  }
+  _createClass(MsgBox, [{
+    key: "setTimeout",
+    value: function setTimeout(time) {
+      var _this5 = this;
 
-  setText(text) {
-    this.msg.innerHTML = '';
-    let e = O2H(text);
-    e && this.msg.appendChild(e);
-    if (text instanceof HTMLElement) text = text.textContent;
-    let texts = String(text).match(/\w+|\S/g);
-    this.text = text;
-    this.texts = texts;
-  }
-
-  renew(text, time) {
-    this.setText(text);
-    this.setTimeout(time);
-    if (!this.using) this.show();
-  }
-
-  show() {
-    if (this.using) return;
-    this.msg.style.opacity = 0;
-
-    if (this.parentNode && this.parentNode !== this.msg.parentNode) {
-      this.parentNode.appendChild(this.msg);
+      if (this.timeout) clearTimeout(this.timeout);
+      this.timeout = (0, _setTimeout2["default"])(function () {
+        return _this5.remove();
+      }, time || Math.max((this.texts ? this.texts.length : 0) * 0.6 * 1000, 5000));
     }
-
-    this.msg.parentNode && (0, _setTimeout2.default)(() => {
-      this.using = true;
-      this.msg.style.opacity = 1;
-    }, 0);
-    this.setTimeout();
-  }
-
-  remove() {
-    if (!this.using) return;
-    this.using = false;
-    this.msg.style.opacity = 0;
-
-    if (this.timeout) {
-      clearTimeout(this.timeout);
-      this.timeout = 0;
+  }, {
+    key: "setText",
+    value: function setText(text) {
+      this.msg.innerHTML = '';
+      var e = O2H(text);
+      e && this.msg.appendChild(e);
+      if (text instanceof HTMLElement) text = text.textContent;
+      var texts = String(text).match(/\w+|\S/g);
+      this.text = text;
+      this.texts = texts;
     }
+  }, {
+    key: "renew",
+    value: function renew(text, time) {
+      this.setText(text);
+      this.setTimeout(time);
+      if (!this.using) this.show();
+    }
+  }, {
+    key: "show",
+    value: function show() {
+      var _this6 = this;
 
-    (0, _setTimeout2.default)(() => {
-      this.msg.parentNode && this.msg.parentNode.removeChild(this.msg);
-    }, 600);
-  }
+      if (this.using) return;
+      this.msg.style.opacity = 0;
 
-}
+      if (this.parentNode && this.parentNode !== this.msg.parentNode) {
+        this.parentNode.appendChild(this.msg);
+      }
+
+      this.msg.parentNode && (0, _setTimeout2["default"])(function () {
+        _this6.using = true;
+        _this6.msg.style.opacity = 1;
+      }, 0);
+      this.setTimeout();
+    }
+  }, {
+    key: "remove",
+    value: function remove() {
+      var _this7 = this;
+
+      if (!this.using) return;
+      this.using = false;
+      this.msg.style.opacity = 0;
+
+      if (this.timeout) {
+        clearTimeout(this.timeout);
+        this.timeout = 0;
+      }
+
+      (0, _setTimeout2["default"])(function () {
+        _this7.msg.parentNode && _this7.msg.parentNode.removeChild(_this7.msg);
+      }, 600);
+    }
+  }]);
+
+  return MsgBox;
+}();
 
 },{"../component/NyaP-Core/index.js":1,"../component/NyaP-Danmaku/index.js":7,"./langs.json":229,"@babel/runtime-corejs3/core-js-stable/instance/bind":18,"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/core-js-stable/promise":34,"@babel/runtime-corejs3/core-js-stable/set-interval":36,"@babel/runtime-corejs3/core-js-stable/set-timeout":37,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],229:[function(require,module,exports){
 module.exports={"zh-CN":{"play":"播放","Send":"发送","Done":"完成","loop":"循环","pause":"暂停","muted":"静音","volume":"音量","settings":"设置","wheeling":"滚轮","hex color":"Hex颜色","Loading core":"加载核心","Loading video":"加载视频","Loading plugin":"加载插件","full page(P)":"全页模式(P)","Loading danmaku":"加载弹幕","Creating player":"创建播放器","full screen(F)":"全屏模式(F)","danmaku toggle(D)":"弹幕开关(D)","Input danmaku here":"在这里输入弹幕","Loading danmaku frame":"加载弹幕框架","danmaku input(Enter)":"弹幕输入框(回车)","Failed to change to fullscreen mode":"无法切换到全屏模式","loading_core":"加载核心","loading_plugin":"加载插件","loading_danmakuFrame":"加载弹幕框架","creating_player":"创建播放器","loading_danmaku":"加载弹幕","loading_video":"加载视频"}}

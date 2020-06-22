@@ -55,7 +55,7 @@ _Object$defineProperty(exports, "__esModule", {
 });
 
 exports.Object2HTML = Object2HTML;
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _getIterator2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js/get-iterator"));
 
@@ -64,23 +64,24 @@ var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime-corejs3/hel
 var _entries = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/object/entries"));
 
 var _typeof2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/typeof"));
-
 /*
 Copyright luojia@luojia.me
 LGPL license
 */
+
+
 function Object2HTML(obj, func) {
   var ele,
       o = {},
       a = [];
-  if (obj === null || (0, _typeof2.default)(obj) !== 'object') ele = document.createTextNode(String(obj)); //text node
+  if (obj === null || (0, _typeof2["default"])(obj) !== 'object') ele = document.createTextNode(String(obj)); //text node
   else if (obj instanceof Node) ele = obj;else {
       if (obj === undefined) throw new TypeError("'undefined' received, object or string expect.");
       if (!obj._) obj._ = 'div';
       ele || (ele = document.createElement(obj._)); //attributes
 
-      for (var _i = 0, _Object$entries = (0, _entries.default)(obj.attr || obj.a || o); _i < _Object$entries.length; _i++) {
-        var _Object$entries$_i = (0, _slicedToArray2.default)(_Object$entries[_i], 2),
+      for (var _i = 0, _Object$entries = (0, _entries["default"])(obj.attr || obj.a || o); _i < _Object$entries.length; _i++) {
+        var _Object$entries$_i = (0, _slicedToArray2["default"])(_Object$entries[_i], 2),
             attr = _Object$entries$_i[0],
             value = _Object$entries$_i[1];
 
@@ -88,8 +89,8 @@ function Object2HTML(obj, func) {
       } //properties
 
 
-      for (var _i2 = 0, _Object$entries2 = (0, _entries.default)(obj.prop || obj.p || o); _i2 < _Object$entries2.length; _i2++) {
-        var _Object$entries2$_i = (0, _slicedToArray2.default)(_Object$entries2[_i2], 2),
+      for (var _i2 = 0, _Object$entries2 = (0, _entries["default"])(obj.prop || obj.p || o); _i2 < _Object$entries2.length; _i2++) {
+        var _Object$entries2$_i = (0, _slicedToArray2["default"])(_Object$entries2[_i2], 2),
             prop = _Object$entries2$_i[0],
             _value = _Object$entries2$_i[1];
 
@@ -97,8 +98,8 @@ function Object2HTML(obj, func) {
       } //events
 
 
-      for (var _i3 = 0, _Object$entries3 = (0, _entries.default)(obj.event || obj.e || o); _i3 < _Object$entries3.length; _i3++) {
-        var _Object$entries3$_i = (0, _slicedToArray2.default)(_Object$entries3[_i3], 2),
+      for (var _i3 = 0, _Object$entries3 = (0, _entries["default"])(obj.event || obj.e || o); _i3 < _Object$entries3.length; _i3++) {
+        var _Object$entries3$_i = (0, _slicedToArray2["default"])(_Object$entries3[_i3], 2),
             e = _Object$entries3$_i[0],
             cb = _Object$entries3$_i[1];
 
@@ -111,7 +112,7 @@ function Object2HTML(obj, func) {
       var _iteratorError = undefined;
 
       try {
-        for (var _iterator = (0, _getIterator2.default)(obj.child || obj.c || a), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        for (var _iterator = (0, _getIterator2["default"])(obj.child || obj.c || a), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var c = _step.value;
 
           var _e = Object2HTML(c, func);
@@ -123,8 +124,8 @@ function Object2HTML(obj, func) {
         _iteratorError = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion && _iterator.return != null) {
-            _iterator.return();
+          if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+            _iterator["return"]();
           }
         } finally {
           if (_didIteratorError) {
@@ -138,7 +139,7 @@ function Object2HTML(obj, func) {
 }
 
 var _default = Object2HTML;
-exports.default = _default;
+exports["default"] = _default;
 
 },{"@babel/runtime-corejs3/core-js-stable/object/define-property":32,"@babel/runtime-corejs3/core-js-stable/object/entries":33,"@babel/runtime-corejs3/core-js/get-iterator":41,"@babel/runtime-corejs3/helpers/interopRequireDefault":64,"@babel/runtime-corejs3/helpers/slicedToArray":71,"@babel/runtime-corejs3/helpers/typeof":74}],3:[function(require,module,exports){
 /*
@@ -205,9 +206,9 @@ var _i18n = require("./i18n.js");
 
 var _domTools = require("./domTools.js");
 
-var _utils = require("./utils.js");
+var _utils = require("./utils.js"); //default options
 
-//default options
+
 var NyaPCoreOptions = {
   //for video
   muted: false,
@@ -223,11 +224,11 @@ var NyaPCoreOptions = {
 
 var NyaPEventEmitter = /*#__PURE__*/function () {
   function NyaPEventEmitter() {
-    (0, _classCallCheck2.default)(this, NyaPEventEmitter);
+    (0, _classCallCheck2["default"])(this, NyaPEventEmitter);
     this._events = {};
   }
 
-  (0, _createClass2.default)(NyaPEventEmitter, [{
+  (0, _createClass2["default"])(NyaPEventEmitter, [{
     key: "emit",
     value: function emit(e) {
       var _context, _context2;
@@ -236,9 +237,9 @@ var NyaPEventEmitter = /*#__PURE__*/function () {
         args[_key - 1] = arguments[_key];
       }
 
-      this._resolve.apply(this, (0, _concat.default)(_context = [e]).call(_context, args));
+      this._resolve.apply(this, (0, _concat["default"])(_context = [e]).call(_context, args));
 
-      this.globalListener.apply(this, (0, _concat.default)(_context2 = [e]).call(_context2, args));
+      this.globalListener.apply(this, (0, _concat["default"])(_context2 = [e]).call(_context2, args));
       return this;
     }
   }, {
@@ -257,7 +258,7 @@ var NyaPEventEmitter = /*#__PURE__*/function () {
           var _iteratorError = undefined;
 
           try {
-            for (var _iterator = (0, _getIterator2.default)(hs), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            for (var _iterator = (0, _getIterator2["default"])(hs), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
               var h = _step.value;
               if (h.apply(this, args) === false) return;
             }
@@ -266,8 +267,8 @@ var NyaPEventEmitter = /*#__PURE__*/function () {
             _iteratorError = err;
           } finally {
             try {
-              if (!_iteratorNormalCompletion && _iterator.return != null) {
-                _iterator.return();
+              if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+                _iterator["return"]();
               }
             } finally {
               if (_didIteratorError) {
@@ -307,7 +308,7 @@ var NyaPEventEmitter = /*#__PURE__*/function () {
       }
 
       var ind;
-      if (ind = (0, _indexOf.default)(_context3 = this._events[e]).call(_context3, handle) >= 0) (0, _splice.default)(_context4 = this._events[e]).call(_context4, ind, 1);
+      if (ind = (0, _indexOf["default"])(_context3 = this._events[e]).call(_context3, handle) >= 0) (0, _splice["default"])(_context4 = this._events[e]).call(_context4, ind, 1);
       if (this._events[e].length === 0) delete this._events[e];
       return this;
     }
@@ -320,8 +321,8 @@ var NyaPEventEmitter = /*#__PURE__*/function () {
 }();
 
 var NyaPlayerCore = /*#__PURE__*/function (_NyaPEventEmitter) {
-  (0, _inherits2.default)(NyaPlayerCore, _NyaPEventEmitter);
-  (0, _createClass2.default)(NyaPlayerCore, [{
+  (0, _inherits2["default"])(NyaPlayerCore, _NyaPEventEmitter);
+  (0, _createClass2["default"])(NyaPlayerCore, [{
     key: "video",
     //stats of the player. Item: [[time,name,promise or result],...]
     //debug messages. Item: [[time,...msgs],...]
@@ -347,13 +348,13 @@ var NyaPlayerCore = /*#__PURE__*/function (_NyaPEventEmitter) {
   function NyaPlayerCore(opt) {
     var _this;
 
-    (0, _classCallCheck2.default)(this, NyaPlayerCore);
-    _this = (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(NyaPlayerCore).call(this));
-    (0, _defineProperty3.default)((0, _assertThisInitialized2.default)(_this), "stats", []);
-    (0, _defineProperty3.default)((0, _assertThisInitialized2.default)(_this), "debugs", []);
-    (0, _defineProperty3.default)((0, _assertThisInitialized2.default)(_this), "plugins", {});
-    (0, _defineProperty3.default)((0, _assertThisInitialized2.default)(_this), "i18n", new _i18n.i18n());
-    (0, _defineProperty3.default)((0, _assertThisInitialized2.default)(_this), "_", {
+    (0, _classCallCheck2["default"])(this, NyaPlayerCore);
+    _this = (0, _possibleConstructorReturn2["default"])(this, (0, _getPrototypeOf2["default"])(NyaPlayerCore).call(this));
+    (0, _defineProperty3["default"])((0, _assertThisInitialized2["default"])(_this), "stats", []);
+    (0, _defineProperty3["default"])((0, _assertThisInitialized2["default"])(_this), "debugs", []);
+    (0, _defineProperty3["default"])((0, _assertThisInitialized2["default"])(_this), "plugins", {});
+    (0, _defineProperty3["default"])((0, _assertThisInitialized2["default"])(_this), "i18n", new _i18n.i18n());
+    (0, _defineProperty3["default"])((0, _assertThisInitialized2["default"])(_this), "_", {
       //for private variables, do not change vars here
       videoSrc: '',
       video: _domTools.DomTools.Object2HTML({
@@ -392,8 +393,8 @@ var NyaPlayerCore = /*#__PURE__*/function (_NyaPEventEmitter) {
 
     {
       //video:video_loopChange
-      var LoopDesc = (0, _getOwnPropertyDescriptor.default)(HTMLMediaElement.prototype, 'loop');
-      (0, _defineProperty2.default)(_this.video, 'loop', {
+      var LoopDesc = (0, _getOwnPropertyDescriptor["default"])(HTMLMediaElement.prototype, 'loop');
+      (0, _defineProperty2["default"])(_this.video, 'loop', {
         get: LoopDesc.get,
         set: function set(bool) {
           if (bool === _this.video.loop) return;
@@ -420,24 +421,24 @@ var NyaPlayerCore = /*#__PURE__*/function (_NyaPEventEmitter) {
 
 
     _this.addURLResolver(function (url) {
-      return _promise.default.resolve(url); //return the url
+      return _promise["default"].resolve(url); //return the url
     }, 999); //most lower priority
 
     /*opts*/
 
 
     requestAnimationFrame(function () {
-      var _context5;
+      var _context5; //active after events are attached
 
-      //active after events are attached
-      (0, _forEach.default)(_context5 = ['muted', 'volume', 'loop']).call(_context5, function (o) {
+
+      (0, _forEach["default"])(_context5 = ['muted', 'volume', 'loop']).call(_context5, function (o) {
         //dont change the order
         opt[o] !== undefined && (_this.video[o] = opt[o]);
       });
       if (opt.videoSrc) _this.setVideoSrc(opt.videoSrc); //videoSrc
     });
 
-    if ((0, _isArray.default)(opt.plugins)) {
+    if ((0, _isArray["default"])(opt.plugins)) {
       //load plugins,opt.plugins is a list of url for plugins
       var _done = _this.stat('loading_plugin');
 
@@ -447,7 +448,7 @@ var NyaPlayerCore = /*#__PURE__*/function (_NyaPEventEmitter) {
       var _iteratorError2 = undefined;
 
       try {
-        for (var _iterator2 = (0, _getIterator2.default)(opt.plugins), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+        for (var _iterator2 = (0, _getIterator2["default"])(opt.plugins), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
           var url = _step2.value;
           pluginList.push(_this.loadPlugin(url));
         }
@@ -456,8 +457,8 @@ var NyaPlayerCore = /*#__PURE__*/function (_NyaPEventEmitter) {
         _iteratorError2 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
-            _iterator2.return();
+          if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
+            _iterator2["return"]();
           }
         } finally {
           if (_didIteratorError2) {
@@ -466,11 +467,11 @@ var NyaPlayerCore = /*#__PURE__*/function (_NyaPEventEmitter) {
         }
       }
 
-      _promise.default.all(pluginList).then(function () {
+      _promise["default"].all(pluginList).then(function () {
         _done();
 
         _this.emit('coreLoad');
-      }).catch(function (e) {
+      })["catch"](function (e) {
         _done(e);
 
         _this.debug('coreLoadError', e);
@@ -478,7 +479,7 @@ var NyaPlayerCore = /*#__PURE__*/function (_NyaPEventEmitter) {
         _this.emit('coreLoadError', e);
       });
 
-      return (0, _possibleConstructorReturn2.default)(_this);
+      return (0, _possibleConstructorReturn2["default"])(_this);
     }
 
     _this.emit('coreLoad');
@@ -486,7 +487,7 @@ var NyaPlayerCore = /*#__PURE__*/function (_NyaPEventEmitter) {
     return _this;
   }
 
-  (0, _createClass2.default)(NyaPlayerCore, [{
+  (0, _createClass2["default"])(NyaPlayerCore, [{
     key: "stat",
     value: function stat(statusName, cb) {
       var _this2 = this;
@@ -503,19 +504,19 @@ var NyaPlayerCore = /*#__PURE__*/function (_NyaPEventEmitter) {
         }
       };
 
-      var p = new _promise.default(function (ok, no) {
+      var p = new _promise["default"](function (ok, no) {
         doneFunc = ok;
         failFunc = no;
       });
-      p.catch(function (e) {
+      p["catch"](function (e) {
         _this2.debug("fail stat:".concat(e));
       });
-      var s = [(0, _now.default)(), statusName, p, doneFunc, failFunc];
+      var s = [(0, _now["default"])(), statusName, p, doneFunc, failFunc];
       this.stats.push(s); //add to core debug log
 
       if (cb) {
-        (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee() {
-          return _regenerator.default.wrap(function _callee$(_context6) {
+        (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
+          return _regenerator["default"].wrap(function _callee$(_context6) {
             while (1) {
               switch (_context6.prev = _context6.next) {
                 case 0:
@@ -544,7 +545,7 @@ var NyaPlayerCore = /*#__PURE__*/function (_NyaPEventEmitter) {
         }))();
       }
 
-      (0, _setTimeout2.default)(function () {
+      (0, _setTimeout2["default"])(function () {
         return _this2.emit('stat', s);
       }, 0);
       return resultFunc;
@@ -577,17 +578,17 @@ var NyaPlayerCore = /*#__PURE__*/function (_NyaPEventEmitter) {
 
       this._.urlResolvers.push([priority, func]);
 
-      (0, _sort.default)(_context7 = this._.urlResolvers).call(_context7, function (a, b) {
+      (0, _sort["default"])(_context7 = this._.urlResolvers).call(_context7, function (a, b) {
         return a[0] - b[0];
       }); //sort by priority
     }
   }, {
     key: "resolveURL",
     value: function () {
-      var _resolveURL = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee2(url) {
+      var _resolveURL = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(url) {
         var _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, n, func, r;
 
-        return _regenerator.default.wrap(function _callee2$(_context8) {
+        return _regenerator["default"].wrap(function _callee2$(_context8) {
           while (1) {
             switch (_context8.prev = _context8.next) {
               case 0:
@@ -596,7 +597,7 @@ var NyaPlayerCore = /*#__PURE__*/function (_NyaPEventEmitter) {
                 _didIteratorError3 = false;
                 _iteratorError3 = undefined;
                 _context8.prev = 3;
-                _iterator3 = (0, _getIterator2.default)(this._.urlResolvers);
+                _iterator3 = (0, _getIterator2["default"])(this._.urlResolvers);
 
               case 5:
                 if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
@@ -648,8 +649,8 @@ var NyaPlayerCore = /*#__PURE__*/function (_NyaPEventEmitter) {
                 _context8.prev = 26;
                 _context8.prev = 27;
 
-                if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
-                  _iterator3.return();
+                if (!_iteratorNormalCompletion3 && _iterator3["return"] != null) {
+                  _iterator3["return"]();
                 }
 
               case 29:
@@ -669,7 +670,7 @@ var NyaPlayerCore = /*#__PURE__*/function (_NyaPEventEmitter) {
                 return _context8.finish(26);
 
               case 34:
-                return _context8.abrupt("return", _promise.default.reject('No url resolver hit'));
+                return _context8.abrupt("return", _promise["default"].reject('No url resolver hit'));
 
               case 35:
               case "end":
@@ -688,13 +689,13 @@ var NyaPlayerCore = /*#__PURE__*/function (_NyaPEventEmitter) {
   }, {
     key: "setVideoSrc",
     value: function () {
-      var _setVideoSrc = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee3(s) {
+      var _setVideoSrc = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(s) {
         var url;
-        return _regenerator.default.wrap(function _callee3$(_context9) {
+        return _regenerator["default"].wrap(function _callee3$(_context9) {
           while (1) {
             switch (_context9.prev = _context9.next) {
               case 0:
-                s = (0, _trim.default)(s).call(s);
+                s = (0, _trim["default"])(s).call(s);
                 _context9.next = 3;
                 return this.resolveURL(s);
 
@@ -738,9 +739,9 @@ var NyaPlayerCore = /*#__PURE__*/function (_NyaPEventEmitter) {
   }, {
     key: "loadPlugin",
     value: function loadPlugin(url, name) {
-      var _this3 = this;
+      var _this3 = this; //load js plugins for NyaP
 
-      //load js plugins for NyaP
+
       if (name && this.plugins[name]) {
         //check if exists
         this.debug("Plugin already loaded: ".concat(name));
@@ -750,13 +751,13 @@ var NyaPlayerCore = /*#__PURE__*/function (_NyaPEventEmitter) {
       var p = fetch(url).then(function (res) {
         return res.text();
       }).then( /*#__PURE__*/function () {
-        var _ref2 = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee4(script) {
+        var _ref2 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(script) {
           var plugin;
-          return _regenerator.default.wrap(function _callee4$(_context10) {
+          return _regenerator["default"].wrap(function _callee4$(_context10) {
             while (1) {
               switch (_context10.prev = _context10.next) {
                 case 0:
-                  script = (0, _trim.default)(script).call(script);
+                  script = (0, _trim["default"])(script).call(script);
                   plugin = eval(script);
 
                   if (!(typeof plugin.name !== 'string' || !plugin.name)) {
@@ -770,9 +771,9 @@ var NyaPlayerCore = /*#__PURE__*/function (_NyaPEventEmitter) {
                   if (!_this3.plugins[plugin.name]) {
                     _context10.next = 7;
                     break;
-                  }
+                  } //check if exists
 
-                  //check if exists
+
                   _this3.debug("Plugin already loaded: ".concat(plugin.name));
 
                   return _context10.abrupt("return", plugin);
@@ -806,7 +807,7 @@ var NyaPlayerCore = /*#__PURE__*/function (_NyaPEventEmitter) {
           return _ref2.apply(this, arguments);
         };
       }());
-      p.catch(function (e) {
+      p["catch"](function (e) {
         _this3.debug('Plugin loading error:', e); // this.emit('pluginLoadError',e);
 
       });
@@ -821,10 +822,10 @@ var NyaPlayerCore = /*#__PURE__*/function (_NyaPEventEmitter) {
 
       for (var _len3 = arguments.length, styles = new Array(_len3 > 2 ? _len3 - 2 : 0), _key3 = 2; _key3 < _len3; _key3++) {
         styles[_key3 - 2] = arguments[_key3];
-      }
+      } //log to console
 
-      //log to console
-      (_console = console)[type].apply(_console, (0, _concat.default)(_context11 = ["%c NyaP %c".concat(content), "background:#e0e0e0;padding:.2em", "background:unset"]).call(_context11, styles));
+
+      (_console = console)[type].apply(_console, (0, _concat["default"])(_context11 = ["%c NyaP %c".concat(content), "background:#e0e0e0;padding:.2em", "background:unset"]).call(_context11, styles));
     }
   }, {
     key: "debug",
@@ -833,12 +834,12 @@ var NyaPlayerCore = /*#__PURE__*/function (_NyaPEventEmitter) {
 
       for (var _len4 = arguments.length, msg = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
         msg[_key4] = arguments[_key4];
-      }
+      } //debug messages
 
-      //debug messages
-      (_console2 = console).debug.apply(_console2, (0, _concat.default)(_context12 = ['NyaP[debug]']).call(_context12, msg));
 
-      msg.unshift((0, _now.default)());
+      (_console2 = console).debug.apply(_console2, (0, _concat["default"])(_context12 = ['NyaP[debug]']).call(_context12, msg));
+
+      msg.unshift((0, _now["default"])());
       this.debugs.push(msg);
       this.emit('debug', msg);
     }
@@ -847,10 +848,10 @@ var NyaPlayerCore = /*#__PURE__*/function (_NyaPEventEmitter) {
 }(NyaPEventEmitter);
 
 exports.NyaPlayerCore = NyaPlayerCore;
-(0, _defineProperty3.default)(NyaPlayerCore, "i18n", _i18n.i18n);
-(0, _defineProperty3.default)(NyaPlayerCore, "Utils", _utils.Utils);
-(0, _defineProperty3.default)(NyaPlayerCore, "DomTools", _domTools.DomTools);
-(0, _defineProperty3.default)(NyaPlayerCore, "NyaPCoreOptions", NyaPCoreOptions);
+(0, _defineProperty3["default"])(NyaPlayerCore, "i18n", _i18n.i18n);
+(0, _defineProperty3["default"])(NyaPlayerCore, "Utils", _utils.Utils);
+(0, _defineProperty3["default"])(NyaPlayerCore, "DomTools", _domTools.DomTools);
+(0, _defineProperty3["default"])(NyaPlayerCore, "NyaPCoreOptions", NyaPCoreOptions);
 
 },{"./domTools.js":4,"./i18n.js":5,"./utils.js":6,"@babel/runtime-corejs3/core-js-stable/array/is-array":16,"@babel/runtime-corejs3/core-js-stable/date/now":17,"@babel/runtime-corejs3/core-js-stable/instance/concat":19,"@babel/runtime-corejs3/core-js-stable/instance/for-each":22,"@babel/runtime-corejs3/core-js-stable/instance/index-of":23,"@babel/runtime-corejs3/core-js-stable/instance/sort":25,"@babel/runtime-corejs3/core-js-stable/instance/splice":26,"@babel/runtime-corejs3/core-js-stable/instance/trim":28,"@babel/runtime-corejs3/core-js-stable/object/define-property":32,"@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptor":34,"@babel/runtime-corejs3/core-js-stable/promise":35,"@babel/runtime-corejs3/core-js-stable/set-timeout":38,"@babel/runtime-corejs3/core-js/get-iterator":41,"@babel/runtime-corejs3/helpers/assertThisInitialized":56,"@babel/runtime-corejs3/helpers/asyncToGenerator":57,"@babel/runtime-corejs3/helpers/classCallCheck":58,"@babel/runtime-corejs3/helpers/createClass":59,"@babel/runtime-corejs3/helpers/defineProperty":60,"@babel/runtime-corejs3/helpers/getPrototypeOf":62,"@babel/runtime-corejs3/helpers/inherits":63,"@babel/runtime-corejs3/helpers/interopRequireDefault":64,"@babel/runtime-corejs3/helpers/possibleConstructorReturn":69,"@babel/runtime-corejs3/regenerator":76}],4:[function(require,module,exports){
 "use strict";
@@ -887,14 +888,14 @@ var _utils = require("./utils.js");
 
 var DomTools = /*#__PURE__*/function () {
   function DomTools() {
-    (0, _classCallCheck2.default)(this, DomTools);
+    (0, _classCallCheck2["default"])(this, DomTools);
   }
 
-  (0, _createClass2.default)(DomTools, null, [{
+  (0, _createClass2["default"])(DomTools, null, [{
     key: "addEvents",
     value: function addEvents(target, events) {
-      if (!(0, _isArray.default)(target)) target = [target];
-      (0, _forEach.default)(target).call(target, function (t) {
+      if (!(0, _isArray["default"])(target)) target = [target];
+      (0, _forEach["default"])(target).call(target, function (t) {
         if (!_utils.Utils.isObject(t.__NyaPEvents__)) {
           t.__NyaPEvents__ = [];
         }
@@ -902,7 +903,7 @@ var DomTools = /*#__PURE__*/function () {
         var _loop = function _loop(e) {
           var _context;
 
-          (0, _forEach.default)(_context = e.split(/\,/g)).call(_context, function (e2) {
+          (0, _forEach["default"])(_context = e.split(/\,/g)).call(_context, function (e2) {
             t.addEventListener(e2, events[e]);
 
             t.__NyaPEvents__.push([e2, events[e]]);
@@ -938,7 +939,7 @@ var DomTools = /*#__PURE__*/function () {
       try {
         return (d.requestFullscreen || d.msRequestFullscreen || d.mozRequestFullScreen || d.webkitRequestFullScreen || d.webkitEnterFullScreen).call(d);
       } catch (e) {
-        return _promise.default.reject(e);
+        return _promise["default"].reject(e);
       }
     }
   }, {
@@ -949,7 +950,7 @@ var DomTools = /*#__PURE__*/function () {
       try {
         return (d.exitFullscreen || d.msExitFullscreen || d.mozCancelFullScreen || d.webkitExitFullScreen || d.webkitCancelFullScreen).call(d);
       } catch (e) {
-        return _promise.default.reject(e);
+        return _promise["default"].reject(e);
       }
     }
   }, {
@@ -968,7 +969,7 @@ var DomTools = /*#__PURE__*/function () {
 }();
 
 exports.DomTools = DomTools;
-(0, _defineProperty2.default)(DomTools, "resizeEvent", {
+(0, _defineProperty2["default"])(DomTools, "resizeEvent", {
   resizeObserverInstance: null,
   observe: function observe(dom) {
     if (!this.resizeObserverInstance) {
@@ -984,7 +985,7 @@ exports.DomTools = DomTools;
         var _iteratorError = undefined;
 
         try {
-          for (var _iterator = (0, _getIterator2.default)(entries), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          for (var _iterator = (0, _getIterator2["default"])(entries), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
             var entry = _step.value;
             var el = entry.target;
             var e = new Event('resize', {
@@ -999,8 +1000,8 @@ exports.DomTools = DomTools;
           _iteratorError = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion && _iterator.return != null) {
-              _iterator.return();
+            if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+              _iterator["return"]();
             }
           } finally {
             if (_didIteratorError) {
@@ -1032,6 +1033,8 @@ _Object$defineProperty(exports, "__esModule", {
 
 exports.i18n = void 0;
 
+var _assign = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/object/assign"));
+
 var _startsWith = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/starts-with"));
 
 var _getIterator2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js/get-iterator"));
@@ -1045,12 +1048,13 @@ var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/he
 var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/createClass"));
 
 var _defineProperty2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/defineProperty"));
-
 /*
 Copyright luojia@luojia.me
 LGPL license
 */
 //polyfill
+
+
 if (!navigator.languages) {
   navigator.languages = [navigator.language || navigator.browserLanguage];
 }
@@ -1062,16 +1066,16 @@ var i18n = /*#__PURE__*/function () {
   */
   function i18n() {
     var langs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-    var langsArr = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : (0, _toConsumableArray2.default)(navigator.languages);
-    (0, _classCallCheck2.default)(this, i18n);
-    (0, _defineProperty2.default)(this, "langsArr", []);
+    var langsArr = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : (0, _toConsumableArray2["default"])(navigator.languages);
+    (0, _classCallCheck2["default"])(this, i18n);
+    (0, _defineProperty2["default"])(this, "langsArr", []);
     this.langs = langs; //defines texts
 
     this.langsArr = langsArr;
     this.langsArr.push('zh-CN'); //add zh-CN as default language
   }
 
-  (0, _createClass2.default)(i18n, [{
+  (0, _createClass2["default"])(i18n, [{
     key: "_",
     //language priority array
     value: function _(str) {
@@ -1082,7 +1086,7 @@ var i18n = /*#__PURE__*/function () {
         args[_key - 1] = arguments[_key];
       }
 
-      args.length && (0, _forEach.default)(args).call(args, function (arg, ind) {
+      args.length && (0, _forEach["default"])(args).call(args, function (arg, ind) {
         s = s.replace("$".concat(ind), arg);
       }); //fill args in the string
 
@@ -1096,10 +1100,9 @@ var i18n = /*#__PURE__*/function () {
       var _iteratorError = undefined;
 
       try {
-        for (var _iterator = (0, _getIterator2.default)(this.langsArr), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var lang = _step.value;
+        for (var _iterator = (0, _getIterator2["default"])(this.langsArr), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var lang = _step.value; //find by language priority
 
-          //find by language priority
           if (lang in this.langs && text in this.langs[lang]) {
             return this.langs[lang][text];
           } //fallback to other same main code
@@ -1108,7 +1111,7 @@ var i18n = /*#__PURE__*/function () {
           var code = lang.match(/^\w+/)[0];
 
           for (var c in this.langs) {
-            if ((0, _startsWith.default)(c).call(c, code) && text in this.langs[c]) {
+            if ((0, _startsWith["default"])(c).call(c, code) && text in this.langs[c]) {
               return this.langs[c][text];
             }
           }
@@ -1118,8 +1121,8 @@ var i18n = /*#__PURE__*/function () {
         _iteratorError = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion && _iterator.return != null) {
-            _iterator.return();
+          if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+            _iterator["return"]();
           }
         } finally {
           if (_didIteratorError) {
@@ -1133,7 +1136,8 @@ var i18n = /*#__PURE__*/function () {
   }, {
     key: "add",
     value: function add(langCode, texts) {
-      this.langs[langCode] = texts;
+      if (!this.langs[langCode]) this.langs[langCode] = {};
+      (0, _assign["default"])(this.langs[langCode], texts);
     }
   }]);
   return i18n;
@@ -1141,7 +1145,7 @@ var i18n = /*#__PURE__*/function () {
 
 exports.i18n = i18n;
 
-},{"@babel/runtime-corejs3/core-js-stable/instance/for-each":22,"@babel/runtime-corejs3/core-js-stable/instance/starts-with":27,"@babel/runtime-corejs3/core-js-stable/object/define-property":32,"@babel/runtime-corejs3/core-js/get-iterator":41,"@babel/runtime-corejs3/helpers/classCallCheck":58,"@babel/runtime-corejs3/helpers/createClass":59,"@babel/runtime-corejs3/helpers/defineProperty":60,"@babel/runtime-corejs3/helpers/interopRequireDefault":64,"@babel/runtime-corejs3/helpers/toConsumableArray":73}],6:[function(require,module,exports){
+},{"@babel/runtime-corejs3/core-js-stable/instance/for-each":22,"@babel/runtime-corejs3/core-js-stable/instance/starts-with":27,"@babel/runtime-corejs3/core-js-stable/object/assign":30,"@babel/runtime-corejs3/core-js-stable/object/define-property":32,"@babel/runtime-corejs3/core-js/get-iterator":41,"@babel/runtime-corejs3/helpers/classCallCheck":58,"@babel/runtime-corejs3/helpers/createClass":59,"@babel/runtime-corejs3/helpers/defineProperty":60,"@babel/runtime-corejs3/helpers/interopRequireDefault":64,"@babel/runtime-corejs3/helpers/toConsumableArray":73}],6:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -1181,10 +1185,10 @@ function padTime(n) {
 
 var Utils = /*#__PURE__*/function () {
   function Utils() {
-    (0, _classCallCheck2.default)(this, Utils);
+    (0, _classCallCheck2["default"])(this, Utils);
   }
 
-  (0, _createClass2.default)(Utils, null, [{
+  (0, _createClass2["default"])(Utils, null, [{
     key: "clamp",
     value: function clamp(num, min, max) {
       return num < min ? min : num > max ? max : num;
@@ -1201,22 +1205,22 @@ var Utils = /*#__PURE__*/function () {
 
       for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
         args[_key - 1] = arguments[_key];
-      }
+      } //本函数不处理循环引用
 
-      //本函数不处理循环引用
+
       var obj = args.shift();
 
-      if (target === null || target === undefined || (0, _typeof2.default)(target) !== 'object') {
+      if (target === null || target === undefined || (0, _typeof2["default"])(target) !== 'object') {
         throw new TypeError('target should be an object');
       }
 
       if (!Utils.isObject(obj)) {
-        var _context;
+        var _context; //obj不是对象则跳过
 
-        //obj不是对象则跳过
+
         if (args.length === 0) return target; //没有参数了就返回结果
 
-        return Utils.deepAssign.apply(Utils, (0, _concat.default)(_context = [target]).call(_context, args)); //提取一个参数出来继续
+        return Utils.deepAssign.apply(Utils, (0, _concat["default"])(_context = [target]).call(_context, args)); //提取一个参数出来继续
       }
 
       for (var i in obj) {
@@ -1231,7 +1235,7 @@ var Utils = /*#__PURE__*/function () {
       }
 
       if (args.length === 0) return target;
-      return Utils.deepAssign.apply(Utils, (0, _concat.default)(_context2 = [target]).call(_context2, args));
+      return Utils.deepAssign.apply(Utils, (0, _concat["default"])(_context2 = [target]).call(_context2, args));
     }
   }, {
     key: "formatTime",
@@ -1253,9 +1257,9 @@ var Utils = /*#__PURE__*/function () {
   }, {
     key: "toArray",
     value: function toArray(obj) {
-      if (obj instanceof Array) return (0, _slice.default)(obj).call(obj);
-      if (obj.length !== undefined) return (0, _slice.default)(Array.prototype).call(obj);
-      return (0, _toConsumableArray2.default)(obj);
+      if (obj instanceof Array) return (0, _slice["default"])(obj).call(obj);
+      if (obj.length !== undefined) return (0, _slice["default"])(Array.prototype).call(obj);
+      return (0, _toConsumableArray2["default"])(obj);
     }
   }, {
     key: "animationFrameLoop",
@@ -1271,7 +1275,7 @@ var Utils = /*#__PURE__*/function () {
 }();
 
 exports.Utils = Utils;
-(0, _defineProperty2.default)(Utils, "requestIdleCallback", ((_window$requestIdleCa = window.requestIdleCallback) === null || _window$requestIdleCa === void 0 ? void 0 : (0, _bind.default)(_window$requestIdleCa).call(_window$requestIdleCa, window)) || _setImmediate2.default);
+(0, _defineProperty2["default"])(Utils, "requestIdleCallback", ((_window$requestIdleCa = window.requestIdleCallback) === null || _window$requestIdleCa === void 0 ? void 0 : (0, _bind["default"])(_window$requestIdleCa).call(_window$requestIdleCa, window)) || _setImmediate2["default"]);
 
 },{"@babel/runtime-corejs3/core-js-stable/instance/bind":18,"@babel/runtime-corejs3/core-js-stable/instance/concat":19,"@babel/runtime-corejs3/core-js-stable/instance/slice":24,"@babel/runtime-corejs3/core-js-stable/object/define-property":32,"@babel/runtime-corejs3/core-js-stable/set-immediate":36,"@babel/runtime-corejs3/helpers/classCallCheck":58,"@babel/runtime-corejs3/helpers/createClass":59,"@babel/runtime-corejs3/helpers/defineProperty":60,"@babel/runtime-corejs3/helpers/interopRequireDefault":64,"@babel/runtime-corejs3/helpers/toConsumableArray":73,"@babel/runtime-corejs3/helpers/typeof":74}],7:[function(require,module,exports){
 /*
@@ -1288,7 +1292,7 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _getIterator2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js/get-iterator"));
 
@@ -1308,17 +1312,17 @@ var _index = require("../NyaP-Core/index.js");
 
 var _danmakuFrame = require("./src/danmaku-frame.js");
 
-var _danmakuText = _interopRequireDefault(require("./src/danmaku-text/danmaku-text.js"));
+var _danmakuText = _interopRequireDefault(require("./src/danmaku-text/danmaku-text.js")); //load DomTools from NyaP-Core project
 
-//load DomTools from NyaP-Core project
-(0, _danmakuText.default)(_danmakuFrame.DanmakuFrame); //init TextDanmaku mod
+
+(0, _danmakuText["default"])(_danmakuFrame.DanmakuFrame); //init TextDanmaku mod
 
 var colorChars = '0123456789abcdef';
 var danmakuProp = ['color', 'text', 'size', 'mode', 'time'];
 
 var NyaPDanmaku = /*#__PURE__*/function (_DanmakuFrame) {
-  (0, _inherits2.default)(NyaPDanmaku, _DanmakuFrame);
-  (0, _createClass2.default)(NyaPDanmaku, [{
+  (0, _inherits2["default"])(NyaPDanmaku, _DanmakuFrame);
+  (0, _createClass2["default"])(NyaPDanmaku, [{
     key: "opt",
     get: function get() {
       return this.core.opt.danmaku;
@@ -1328,8 +1332,8 @@ var NyaPDanmaku = /*#__PURE__*/function (_DanmakuFrame) {
   function NyaPDanmaku(core) {
     var _this;
 
-    (0, _classCallCheck2.default)(this, NyaPDanmaku);
-    _this = (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(NyaPDanmaku).call(this, core, core.opt.danmaku)); //init mods
+    (0, _classCallCheck2["default"])(this, NyaPDanmaku);
+    _this = (0, _possibleConstructorReturn2["default"])(this, (0, _getPrototypeOf2["default"])(NyaPDanmaku).call(this, core, core.opt.danmaku)); //init mods
 
     for (var mod in _danmakuFrame.DanmakuFrame.availableModules) {
       var _this$opt$modules$mod;
@@ -1344,7 +1348,7 @@ var NyaPDanmaku = /*#__PURE__*/function (_DanmakuFrame) {
     return _this;
   }
 
-  (0, _createClass2.default)(NyaPDanmaku, [{
+  (0, _createClass2["default"])(NyaPDanmaku, [{
     key: "toggle",
     value: function toggle(name, bool) {
       if (typeof name === 'boolean' || name == undefined) {
@@ -1355,9 +1359,9 @@ var NyaPDanmaku = /*#__PURE__*/function (_DanmakuFrame) {
       }
 
       try {
-        var _this$module;
+        var _this$module; //module switch mode
 
-        //module switch mode
+
         if (bool == undefined) bool = !this.module(name).enabled;
         this[bool ? 'enable' : 'disable'](name);
         this.core.emit('danmakuModuleToggle', name, (_this$module = this.module(name)) === null || _this$module === void 0 ? void 0 : _this$module.enabled);
@@ -1371,7 +1375,7 @@ var NyaPDanmaku = /*#__PURE__*/function (_DanmakuFrame) {
   }, {
     key: "module",
     value: function module(name) {
-      return (0, _get2.default)((0, _getPrototypeOf2.default)(NyaPDanmaku.prototype), "modules", this)[name];
+      return (0, _get2["default"])((0, _getPrototypeOf2["default"])(NyaPDanmaku.prototype), "modules", this)[name];
     }
   }, {
     key: "send",
@@ -1381,7 +1385,7 @@ var NyaPDanmaku = /*#__PURE__*/function (_DanmakuFrame) {
       var _iteratorError = undefined;
 
       try {
-        for (var _iterator = (0, _getIterator2.default)(danmakuProp), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        for (var _iterator = (0, _getIterator2["default"])(danmakuProp), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var i = _step.value;
           if (i in obj === false) return false;
         }
@@ -1390,8 +1394,8 @@ var NyaPDanmaku = /*#__PURE__*/function (_DanmakuFrame) {
         _iteratorError = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion && _iterator.return != null) {
-            _iterator.return();
+          if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+            _iterator["return"]();
           }
         } finally {
           if (_didIteratorError) {
@@ -1429,7 +1433,7 @@ var NyaPDanmaku = /*#__PURE__*/function (_DanmakuFrame) {
 }(_danmakuFrame.DanmakuFrame);
 
 var _default = NyaPDanmaku;
-exports.default = _default;
+exports["default"] = _default;
 
 },{"../NyaP-Core/index.js":1,"./src/danmaku-frame.js":9,"./src/danmaku-text/danmaku-text.js":14,"@babel/runtime-corejs3/core-js-stable/object/define-property":32,"@babel/runtime-corejs3/core-js/get-iterator":41,"@babel/runtime-corejs3/helpers/classCallCheck":58,"@babel/runtime-corejs3/helpers/createClass":59,"@babel/runtime-corejs3/helpers/get":61,"@babel/runtime-corejs3/helpers/getPrototypeOf":62,"@babel/runtime-corejs3/helpers/inherits":63,"@babel/runtime-corejs3/helpers/interopRequireDefault":64,"@babel/runtime-corejs3/helpers/possibleConstructorReturn":69}],8:[function(require,module,exports){
 /*
@@ -1453,7 +1457,7 @@ var _typeof2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/ty
 (function (f) {
   if (typeof define === "function" && define.amd) {
     define(f);
-  } else if ((typeof exports === "undefined" ? "undefined" : (0, _typeof2.default)(exports)) === "object") {
+  } else if ((typeof exports === "undefined" ? "undefined" : (0, _typeof2["default"])(exports)) === "object") {
     module.exports = f();
   } else {
     (0, eval)('this').Mat = f();
@@ -1466,12 +1470,12 @@ var _typeof2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/ty
     var Matrix = /*#__PURE__*/function () {
       function Matrix(l, c) {
         var fill = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
-        (0, _classCallCheck2.default)(this, Matrix);
+        (0, _classCallCheck2["default"])(this, Matrix);
         this.array = new Constructor(l * c);
-        (0, _defineProperty.default)(this.array, 'row', {
+        (0, _defineProperty["default"])(this.array, 'row', {
           value: l
         });
-        (0, _defineProperty.default)(this.array, 'column', {
+        (0, _defineProperty["default"])(this.array, 'column', {
           value: c
         });
 
@@ -1479,14 +1483,14 @@ var _typeof2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/ty
           if (Matrix._instanceofTypedArray && fill === 0) {} else if (typeof fill === 'number') {
             var _context;
 
-            (0, _fill.default)(_context = this).call(_context, fill);
+            (0, _fill["default"])(_context = this).call(_context, fill);
           } else if (fill.length) {
             this.set(fill);
           }
         }
       }
 
-      (0, _createClass3.default)(Matrix, [{
+      (0, _createClass3["default"])(Matrix, [{
         key: "leftMultiply",
         value: function leftMultiply(m) {
           return this.set(Matrix.multiply(m, this, new Matrix(m.row, this.column)));
@@ -1661,8 +1665,8 @@ var _typeof2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/ty
       }, {
         key: "multiplyString",
         value: function multiplyString(a, b, array) {
-          var ignoreZero = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
-          //work out the equation for every elements,only for debug and only works with Array matrixes
+          var ignoreZero = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true; //work out the equation for every elements,only for debug and only works with Array matrixes
+
           if (a.column !== b.row) throw 'wrong matrix';
           var r = array || new Matrix(a.row, b.column),
               l,
@@ -1820,7 +1824,7 @@ var _typeof2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/ty
     }();
 
     var testArray = new Constructor(1);
-    (0, _defineProperty.default)(Matrix, '_instanceofTypedArray', {
+    (0, _defineProperty["default"])(Matrix, '_instanceofTypedArray', {
       value: !!(TypedArray && TypedArray.isPrototypeOf(testArray))
     });
     testArray = null;
@@ -1898,17 +1902,17 @@ var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/he
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/createClass"));
 
-var _index = require("../../NyaP-Core/index.js");
+var _index = require("../../NyaP-Core/index.js"); //load from NyaP-Core project
 
-//load from NyaP-Core project
+
 var DanmakuFrameModule = /*#__PURE__*/function () {
   function DanmakuFrameModule(frame) {
-    (0, _classCallCheck2.default)(this, DanmakuFrameModule);
+    (0, _classCallCheck2["default"])(this, DanmakuFrameModule);
     this.frame = frame;
     this.enabled = false;
   }
 
-  (0, _createClass2.default)(DanmakuFrameModule, [{
+  (0, _createClass2["default"])(DanmakuFrameModule, [{
     key: "width",
     get: function get() {
       return this.frame.width;
@@ -1925,7 +1929,7 @@ var DanmakuFrameModule = /*#__PURE__*/function () {
 exports.DanmakuFrameModule = DanmakuFrameModule;
 
 var DanmakuFrame = /*#__PURE__*/function () {
-  (0, _createClass2.default)(DanmakuFrame, [{
+  (0, _createClass2["default"])(DanmakuFrame, [{
     key: "availableModules",
     get: function get() {
       return this.constructor.availableModules;
@@ -1939,11 +1943,11 @@ var DanmakuFrame = /*#__PURE__*/function () {
     key: "time",
     set: function set(t) {
       //current media time (ms)
-      this.media || (this.timeBase = (0, _now.default)() - t);
+      this.media || (this.timeBase = (0, _now["default"])() - t);
       this.moduleFunction('time', t); //let all mods know when the time be set
     },
     get: function get() {
-      return this.media ? this.media.currentTime * 1000 : (0, _now.default)() - this.timeBase;
+      return this.media ? this.media.currentTime * 1000 : (0, _now["default"])() - this.timeBase;
     }
   }, {
     key: "area",
@@ -1960,26 +1964,25 @@ var DanmakuFrame = /*#__PURE__*/function () {
 
       this.availableModules[name] = module;
     }
-  }]);
+  }]); //constructed module list
 
-  //constructed module list
   function DanmakuFrame(core, opt) {
     var _this = this,
         _context;
 
-    (0, _classCallCheck2.default)(this, DanmakuFrame);
-    (0, _defineProperty2.default)(this, "_opt", void 0);
-    (0, _defineProperty2.default)(this, "rate", 1);
-    (0, _defineProperty2.default)(this, "timeBase", 0);
-    (0, _defineProperty2.default)(this, "width", 0);
-    (0, _defineProperty2.default)(this, "height", 0);
-    (0, _defineProperty2.default)(this, "fpsLimit", 0);
-    (0, _defineProperty2.default)(this, "fps", 0);
-    (0, _defineProperty2.default)(this, "fpsRec", new Uint32Array(9));
-    (0, _defineProperty2.default)(this, "media", null);
-    (0, _defineProperty2.default)(this, "working", false);
-    (0, _defineProperty2.default)(this, "enabled", true);
-    (0, _defineProperty2.default)(this, "modules", {});
+    (0, _classCallCheck2["default"])(this, DanmakuFrame);
+    (0, _defineProperty2["default"])(this, "_opt", void 0);
+    (0, _defineProperty2["default"])(this, "rate", 1);
+    (0, _defineProperty2["default"])(this, "timeBase", 0);
+    (0, _defineProperty2["default"])(this, "width", 0);
+    (0, _defineProperty2["default"])(this, "height", 0);
+    (0, _defineProperty2["default"])(this, "fpsLimit", 0);
+    (0, _defineProperty2["default"])(this, "fps", 0);
+    (0, _defineProperty2["default"])(this, "fpsRec", new Uint32Array(9));
+    (0, _defineProperty2["default"])(this, "media", null);
+    (0, _defineProperty2["default"])(this, "working", false);
+    (0, _defineProperty2["default"])(this, "enabled", true);
+    (0, _defineProperty2["default"])(this, "modules", {});
     this.core = core;
     this._opt = opt;
     this.container = core.danmakuContainer || document.createElement('div'); // create a styleSheet
@@ -1987,7 +1990,7 @@ var DanmakuFrame = /*#__PURE__*/function () {
     var style = document.createElement("style");
     document.head.appendChild(style);
     this.styleSheet = style.sheet;
-    (0, _setImmediate2.default)(function () {
+    (0, _setImmediate2["default"])(function () {
       //container size sensor
       _index.DomTools.resizeEvent.observe(_this.container);
 
@@ -2005,8 +2008,8 @@ var DanmakuFrame = /*#__PURE__*/function () {
       var rec = _this.fpsRec,
           length = rec.length; //move left
 
-      (0, _copyWithin.default)(rec).call(rec, rec, 1);
-      rec[length - 1] = (0, _now.default)(); //set this frame's time
+      (0, _copyWithin["default"])(rec).call(rec, rec, 1);
+      rec[length - 1] = (0, _now["default"])(); //set this frame's time
 
       var result = 0;
 
@@ -2019,10 +2022,10 @@ var DanmakuFrame = /*#__PURE__*/function () {
       _this.fps = 1000 / result;
     });
 
-    this.draw = (0, _bind.default)(_context = this.draw).call(_context, this);
+    this.draw = (0, _bind["default"])(_context = this.draw).call(_context, this);
   }
 
-  (0, _createClass2.default)(DanmakuFrame, [{
+  (0, _createClass2["default"])(DanmakuFrame, [{
     key: "enable",
     value: function enable(name) {
       //enable a amdule
@@ -2074,7 +2077,7 @@ var DanmakuFrame = /*#__PURE__*/function () {
 
       if (typeof s === 'string') s = [s];
       if (s instanceof Array === false) return;
-      (0, _forEach.default)(s).call(s, function (r) {
+      (0, _forEach["default"])(s).call(s, function (r) {
         return _this2.styleSheet.insertRule(r, _this2.styleSheet.cssRules.length);
       });
     }
@@ -2109,7 +2112,7 @@ var DanmakuFrame = /*#__PURE__*/function () {
           return _this3.draw();
         });
       } else {
-        (0, _setTimeout2.default)(this.draw, 1000 / this.fpsLimit);
+        (0, _setTimeout2["default"])(this.draw, 1000 / this.fpsLimit);
       }
     }
   }, {
@@ -2121,7 +2124,7 @@ var DanmakuFrame = /*#__PURE__*/function () {
         danmakuObj[_key] = arguments[_key];
       }
 
-      this.moduleFunction.apply(this, (0, _concat.default)(_context2 = ['load']).call(_context2, danmakuObj));
+      this.moduleFunction.apply(this, (0, _concat["default"])(_context2 = ['load']).call(_context2, danmakuObj));
     }
   }, {
     key: "loadList",
@@ -2198,7 +2201,7 @@ var DanmakuFrame = /*#__PURE__*/function () {
 }();
 
 exports.DanmakuFrame = DanmakuFrame;
-(0, _defineProperty2.default)(DanmakuFrame, "availableModules", {});
+(0, _defineProperty2["default"])(DanmakuFrame, "availableModules", {});
 
 },{"../../NyaP-Core/index.js":1,"@babel/runtime-corejs3/core-js-stable/date/now":17,"@babel/runtime-corejs3/core-js-stable/instance/bind":18,"@babel/runtime-corejs3/core-js-stable/instance/concat":19,"@babel/runtime-corejs3/core-js-stable/instance/copy-within":20,"@babel/runtime-corejs3/core-js-stable/instance/for-each":22,"@babel/runtime-corejs3/core-js-stable/object/define-property":32,"@babel/runtime-corejs3/core-js-stable/set-immediate":36,"@babel/runtime-corejs3/core-js-stable/set-timeout":38,"@babel/runtime-corejs3/helpers/classCallCheck":58,"@babel/runtime-corejs3/helpers/createClass":59,"@babel/runtime-corejs3/helpers/defineProperty":60,"@babel/runtime-corejs3/helpers/interopRequireDefault":64}],10:[function(require,module,exports){
 "use strict";
@@ -2211,7 +2214,7 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _getIterator2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js/get-iterator"));
 
@@ -2230,14 +2233,15 @@ var _inherits2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/
 var _defineProperty2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/defineProperty"));
 
 var _textModuleTemplate = _interopRequireDefault(require("./textModuleTemplate.js"));
-
 /*
 Copyright luojia@luojia.me
 LGPL license
 */
+
+
 var TextCanvas2D = /*#__PURE__*/function (_Template) {
-  (0, _inherits2.default)(TextCanvas2D, _Template);
-  (0, _createClass2.default)(TextCanvas2D, [{
+  (0, _inherits2["default"])(TextCanvas2D, _Template);
+  (0, _createClass2["default"])(TextCanvas2D, [{
     key: "container",
     get: function get() {
       return this.canvas;
@@ -2247,17 +2251,17 @@ var TextCanvas2D = /*#__PURE__*/function (_Template) {
   function TextCanvas2D(dText) {
     var _this;
 
-    (0, _classCallCheck2.default)(this, TextCanvas2D);
-    _this = (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(TextCanvas2D).call(this, dText));
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this), "canvas", void 0);
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this), "context2d", void 0);
+    (0, _classCallCheck2["default"])(this, TextCanvas2D);
+    _this = (0, _possibleConstructorReturn2["default"])(this, (0, _getPrototypeOf2["default"])(TextCanvas2D).call(this, dText));
+    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "canvas", void 0);
+    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "context2d", void 0);
     _this.canvas = document.createElement('canvas'); //the canvas
 
     _this.context2d = _this.canvas.getContext('2d'); //the canvas contex
 
     if (!_this.context2d) {
       console.warn('text 2d not supported');
-      return (0, _possibleConstructorReturn2.default)(_this);
+      return (0, _possibleConstructorReturn2["default"])(_this);
     }
 
     _this.canvas.classList.add("".concat(dText.randomText, "_fullfill"));
@@ -2267,7 +2271,7 @@ var TextCanvas2D = /*#__PURE__*/function (_Template) {
     return _this;
   }
 
-  (0, _createClass2.default)(TextCanvas2D, [{
+  (0, _createClass2["default"])(TextCanvas2D, [{
     key: "draw",
     value: function draw(force) {
       var ctx = this.context2d,
@@ -2361,7 +2365,7 @@ var TextCanvas2D = /*#__PURE__*/function (_Template) {
       var _iteratorError = undefined;
 
       try {
-        for (var _iterator = (0, _getIterator2.default)(this.dText.DanmakuText), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        for (var _iterator = (0, _getIterator2["default"])(this.dText.DanmakuText), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var tobj = _step.value;
           this.deleteRelatedTextObject(tobj);
         }
@@ -2370,8 +2374,8 @@ var TextCanvas2D = /*#__PURE__*/function (_Template) {
         _iteratorError = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion && _iterator.return != null) {
-            _iterator.return();
+          if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+            _iterator["return"]();
           }
         } finally {
           if (_didIteratorError) {
@@ -2384,10 +2388,10 @@ var TextCanvas2D = /*#__PURE__*/function (_Template) {
     }
   }]);
   return TextCanvas2D;
-}(_textModuleTemplate.default);
+}(_textModuleTemplate["default"]);
 
 var _default = TextCanvas2D;
-exports.default = _default;
+exports["default"] = _default;
 
 },{"./textModuleTemplate.js":15,"@babel/runtime-corejs3/core-js-stable/object/define-property":32,"@babel/runtime-corejs3/core-js/get-iterator":41,"@babel/runtime-corejs3/helpers/assertThisInitialized":56,"@babel/runtime-corejs3/helpers/classCallCheck":58,"@babel/runtime-corejs3/helpers/createClass":59,"@babel/runtime-corejs3/helpers/defineProperty":60,"@babel/runtime-corejs3/helpers/getPrototypeOf":62,"@babel/runtime-corejs3/helpers/inherits":63,"@babel/runtime-corejs3/helpers/interopRequireDefault":64,"@babel/runtime-corejs3/helpers/possibleConstructorReturn":69}],11:[function(require,module,exports){
 "use strict";
@@ -2400,7 +2404,7 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _forEach = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/for-each"));
 
@@ -2417,21 +2421,22 @@ var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime-corejs3/he
 var _inherits2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/inherits"));
 
 var _textModuleTemplate = _interopRequireDefault(require("./textModuleTemplate.js"));
-
 /*
 Copyright luojia@luojia.me
 LGPL license
 */
+
+
 var TextCss = /*#__PURE__*/function (_Template) {
-  (0, _inherits2.default)(TextCss, _Template);
+  (0, _inherits2["default"])(TextCss, _Template);
 
   function TextCss(dText) {
     var _this;
 
-    (0, _classCallCheck2.default)(this, TextCss);
-    _this = (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(TextCss).call(this, dText));
+    (0, _classCallCheck2["default"])(this, TextCss);
+    _this = (0, _possibleConstructorReturn2["default"])(this, (0, _getPrototypeOf2["default"])(TextCss).call(this, dText));
     _this.supported = dText.text2d.supported;
-    if (!_this.supported) return (0, _possibleConstructorReturn2.default)(_this);
+    if (!_this.supported) return (0, _possibleConstructorReturn2["default"])(_this);
     dText.frame.addStyle(["#".concat(dText.randomText, "_textCanvasContainer canvas{will-change:transform;top:0;left:0;position:absolute;}"), "#".concat(dText.randomText, "_textCanvasContainer.moving canvas{transition:transform 500s linear;}"), "#".concat(dText.randomText, "_textCanvasContainer{will-change:transform;pointer-events:none;overflow:hidden;}")]);
     _this.container = document.createElement('div'); //for text canvas
 
@@ -2441,7 +2446,7 @@ var TextCss = /*#__PURE__*/function (_Template) {
     return _this;
   }
 
-  (0, _createClass2.default)(TextCss, [{
+  (0, _createClass2["default"])(TextCss, [{
     key: "_toggle",
     value: function _toggle(s) {
       var _this2 = this;
@@ -2500,7 +2505,7 @@ var TextCss = /*#__PURE__*/function (_Template) {
 
       if (!t.danmaku) return;
       if (T === undefined) T = this.dText.frame.time + 500000;
-      t._cache.style.transform = (0, _concat.default)(_context = "translate(".concat(((this.dText._calcSideDanmakuPosition(t, T) - t.estimatePadding) * 10 | 0) / 10, "px,")).call(_context, t.style.y - t.estimatePadding, "px)");
+      t._cache.style.transform = (0, _concat["default"])(_context = "translate(".concat(((this.dText._calcSideDanmakuPosition(t, T) - t.estimatePadding) * 10 | 0) / 10, "px,")).call(_context, t.style.y - t.estimatePadding, "px)");
     }
   }, {
     key: "resetPos",
@@ -2531,7 +2536,7 @@ var TextCss = /*#__PURE__*/function (_Template) {
       requestAnimationFrame(function () {
         var _context2;
 
-        (0, _forEach.default)(_context2 = _this4.dText.DanmakuText).call(_context2, function (t) {
+        (0, _forEach["default"])(_context2 = _this4.dText.DanmakuText).call(_context2, function (t) {
           return _this4.newDanmaku(t);
         });
       });
@@ -2547,7 +2552,7 @@ var TextCss = /*#__PURE__*/function (_Template) {
       var _context3,
           _this5 = this;
 
-      t._cache.style.transform = (0, _concat.default)(_context3 = "translate(".concat(t.style.x - t.estimatePadding, "px,")).call(_context3, t.style.y - t.estimatePadding, "px)");
+      t._cache.style.transform = (0, _concat["default"])(_context3 = "translate(".concat(t.style.x - t.estimatePadding, "px,")).call(_context3, t.style.y - t.estimatePadding, "px)");
       this.container.appendChild(t._cache);
       t.danmaku.mode < 2 && !this.dText.paused && requestAnimationFrame(function () {
         return _this5._move(t);
@@ -2555,10 +2560,10 @@ var TextCss = /*#__PURE__*/function (_Template) {
     }
   }]);
   return TextCss;
-}(_textModuleTemplate.default);
+}(_textModuleTemplate["default"]);
 
 var _default = TextCss;
-exports.default = _default;
+exports["default"] = _default;
 
 },{"./textModuleTemplate.js":15,"@babel/runtime-corejs3/core-js-stable/instance/concat":19,"@babel/runtime-corejs3/core-js-stable/instance/for-each":22,"@babel/runtime-corejs3/core-js-stable/object/define-property":32,"@babel/runtime-corejs3/helpers/classCallCheck":58,"@babel/runtime-corejs3/helpers/createClass":59,"@babel/runtime-corejs3/helpers/getPrototypeOf":62,"@babel/runtime-corejs3/helpers/inherits":63,"@babel/runtime-corejs3/helpers/interopRequireDefault":64,"@babel/runtime-corejs3/helpers/possibleConstructorReturn":69}],12:[function(require,module,exports){
 "use strict";
@@ -2571,7 +2576,7 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _getIterator2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js/get-iterator"));
 
@@ -2592,14 +2597,15 @@ var _Mat = _interopRequireDefault(require("../../lib/Mat/Mat.js"));
 var _textModuleTemplate = _interopRequireDefault(require("./textModuleTemplate.js"));
 
 var _danmakuFrame = require("../danmaku-frame.js");
-
 /*
 Copyright luojia@luojia.me
 LGPL license
 */
+
+
 var TextWebGL = /*#__PURE__*/function (_Template) {
-  (0, _inherits2.default)(TextWebGL, _Template);
-  (0, _createClass2.default)(TextWebGL, [{
+  (0, _inherits2["default"])(TextWebGL, _Template);
+  (0, _createClass2["default"])(TextWebGL, [{
     key: "container",
     get: function get() {
       return this.c3d;
@@ -2609,8 +2615,8 @@ var TextWebGL = /*#__PURE__*/function (_Template) {
   function TextWebGL(dText) {
     var _this;
 
-    (0, _classCallCheck2.default)(this, TextWebGL);
-    _this = (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(TextWebGL).call(this, dText));
+    (0, _classCallCheck2["default"])(this, TextWebGL);
+    _this = (0, _possibleConstructorReturn2["default"])(this, (0, _getPrototypeOf2["default"])(TextWebGL).call(this, dText));
     var c3d = _this.c3d = document.createElement('canvas');
     c3d.classList.add("".concat(dText.randomText, "_fullfill"));
     c3d.id = "".concat(dText.randomText, "_text3d"); //init webgl
@@ -2619,7 +2625,7 @@ var TextWebGL = /*#__PURE__*/function (_Template) {
 
     if (!gl) {
       console.warn('text 3d not supported');
-      return (0, _possibleConstructorReturn2.default)(_this);
+      return (0, _possibleConstructorReturn2["default"])(_this);
     } //shader
 
 
@@ -2645,7 +2651,7 @@ var TextWebGL = /*#__PURE__*/function (_Template) {
 
     if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
       console.error("Unable to initialize the shader program.");
-      return (0, _possibleConstructorReturn2.default)(_this);
+      return (0, _possibleConstructorReturn2["default"])(_this);
     }
 
     gl.useProgram(shaderProgram); //scene
@@ -2668,7 +2674,7 @@ var TextWebGL = /*#__PURE__*/function (_Template) {
     return _this;
   }
 
-  (0, _createClass2.default)(TextWebGL, [{
+  (0, _createClass2["default"])(TextWebGL, [{
     key: "draw",
     value: function draw(force) {
       var gl = this.gl,
@@ -2723,7 +2729,7 @@ var TextWebGL = /*#__PURE__*/function (_Template) {
       C.width = this.dText.width;
       C.height = this.dText.height;
       gl.viewport(0, 0, C.width, C.height);
-      gl.uniformMatrix4fv(this.u2dCoord, false, _Mat.default.Identity(4).translate3d(-1, 1, 0).scale3d(2 / C.width, -2 / C.height, 0).array);
+      gl.uniformMatrix4fv(this.u2dCoord, false, _Mat["default"].Identity(4).translate3d(-1, 1, 0).scale3d(2 / C.width, -2 / C.height, 0).array);
     }
   }, {
     key: "enable",
@@ -2731,7 +2737,7 @@ var TextWebGL = /*#__PURE__*/function (_Template) {
       var _context,
           _this2 = this;
 
-      (0, _forEach.default)(_context = this.dText.DanmakuText).call(_context, function (t) {
+      (0, _forEach["default"])(_context = this.dText.DanmakuText).call(_context, function (t) {
         _this2.newDanmaku(t, false);
       });
       this.dText.useImageBitmap = false;
@@ -2748,7 +2754,7 @@ var TextWebGL = /*#__PURE__*/function (_Template) {
       var _iteratorError = undefined;
 
       try {
-        for (var _iterator = (0, _getIterator2.default)(this.dText.DanmakuText), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        for (var _iterator = (0, _getIterator2["default"])(this.dText.DanmakuText), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var tobj = _step.value;
           this.deleteRelatedTextObject(tobj);
         }
@@ -2757,8 +2763,8 @@ var TextWebGL = /*#__PURE__*/function (_Template) {
         _iteratorError = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion && _iterator.return != null) {
-            _iterator.return();
+          if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+            _iterator["return"]();
           }
         } finally {
           if (_didIteratorError) {
@@ -2809,7 +2815,7 @@ var TextWebGL = /*#__PURE__*/function (_Template) {
     }
   }]);
   return TextWebGL;
-}(_textModuleTemplate.default);
+}(_textModuleTemplate["default"]);
 
 var commonTextureCoord = new Float32Array([0.0, 0.0, //↖
 1.0, 0.0, //↗
@@ -2817,7 +2823,7 @@ var commonTextureCoord = new Float32Array([0.0, 0.0, //↖
 1.0, 1.0 //↘
 ]);
 var _default = TextWebGL;
-exports.default = _default;
+exports["default"] = _default;
 
 },{"../../lib/Mat/Mat.js":8,"../danmaku-frame.js":9,"./textModuleTemplate.js":15,"@babel/runtime-corejs3/core-js-stable/instance/for-each":22,"@babel/runtime-corejs3/core-js-stable/object/define-property":32,"@babel/runtime-corejs3/core-js/get-iterator":41,"@babel/runtime-corejs3/helpers/classCallCheck":58,"@babel/runtime-corejs3/helpers/createClass":59,"@babel/runtime-corejs3/helpers/getPrototypeOf":62,"@babel/runtime-corejs3/helpers/inherits":63,"@babel/runtime-corejs3/helpers/interopRequireDefault":64,"@babel/runtime-corejs3/helpers/possibleConstructorReturn":69}],13:[function(require,module,exports){
 "use strict";
@@ -2830,7 +2836,7 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/classCallCheck"));
 
@@ -2841,19 +2847,20 @@ var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime-corejs3/he
 var _inherits2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/inherits"));
 
 var _textModuleTemplate = _interopRequireDefault(require("./textModuleTemplate.js"));
-
 /*
 Copyright luojia@luojia.me
 LGPL license
 */
+
+
 var TextOff = /*#__PURE__*/function (_Template) {
-  (0, _inherits2.default)(TextOff, _Template);
+  (0, _inherits2["default"])(TextOff, _Template);
 
   function TextOff(dText) {
     var _this;
 
-    (0, _classCallCheck2.default)(this, TextOff);
-    _this = (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(TextOff).call(this, dText));
+    (0, _classCallCheck2["default"])(this, TextOff);
+    _this = (0, _possibleConstructorReturn2["default"])(this, (0, _getPrototypeOf2["default"])(TextOff).call(this, dText));
     _this.supported = true;
     _this.container = document.createElement('div');
     _this.container.style.display = 'none';
@@ -2861,10 +2868,10 @@ var TextOff = /*#__PURE__*/function (_Template) {
   }
 
   return TextOff;
-}(_textModuleTemplate.default);
+}(_textModuleTemplate["default"]);
 
 var _default = TextOff;
-exports.default = _default;
+exports["default"] = _default;
 
 },{"./textModuleTemplate.js":15,"@babel/runtime-corejs3/core-js-stable/object/define-property":32,"@babel/runtime-corejs3/helpers/classCallCheck":58,"@babel/runtime-corejs3/helpers/getPrototypeOf":62,"@babel/runtime-corejs3/helpers/inherits":63,"@babel/runtime-corejs3/helpers/interopRequireDefault":64,"@babel/runtime-corejs3/helpers/possibleConstructorReturn":69}],14:[function(require,module,exports){
 /*
@@ -2883,7 +2890,7 @@ _Object$defineProperty2(exports, "__esModule", {
   value: true
 });
 
-exports.default = init;
+exports["default"] = init;
 
 var _fill = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/fill"));
 
@@ -2930,7 +2937,6 @@ var _TextWebGL = _interopRequireDefault(require("./TextWebGL.js"));
 var _TextCss = _interopRequireDefault(require("./TextCss.js"));
 
 var _Textoff = _interopRequireDefault(require("./Textoff.js"));
-
 /*
 danmaku obj struct
 {
@@ -2948,12 +2954,14 @@ danmaku mode
 	2:bottom
 	3:top
 */
-var defProp = _defineProperty3.default;
+
+
+var defProp = _defineProperty3["default"];
 var useImageBitmap = false;
 
 var TextDanmaku = /*#__PURE__*/function (_DanmakuFrameModule) {
-  (0, _inherits2.default)(TextDanmaku, _DanmakuFrameModule);
-  (0, _createClass2.default)(TextDanmaku, [{
+  (0, _inherits2["default"])(TextDanmaku, _DanmakuFrameModule);
+  (0, _createClass2["default"])(TextDanmaku, [{
     key: "paused",
     get: function get() {
       return !this.frame.working;
@@ -2966,19 +2974,19 @@ var TextDanmaku = /*#__PURE__*/function (_DanmakuFrameModule) {
     var _this;
 
     var arg = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    (0, _classCallCheck2.default)(this, TextDanmaku);
-    _this = (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(TextDanmaku).call(this, frame));
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this), "list", []);
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this), "indexMark", 0);
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this), "randomText", "danmaku_text_".concat(Math.random() * 999999 | 0));
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this), "lastRendererMode", 0);
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this), "cacheCleanTime", 0);
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this), "danmakuMoveTime", 0);
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this), "danmakuCheckTime", 0);
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this), "danmakuCheckSwitch", true);
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this), "GraphCache", []);
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this), "DanmakuText", []);
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this), "defaultStyle", {
+    (0, _classCallCheck2["default"])(this, TextDanmaku);
+    _this = (0, _possibleConstructorReturn2["default"])(this, (0, _getPrototypeOf2["default"])(TextDanmaku).call(this, frame));
+    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "list", []);
+    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "indexMark", 0);
+    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "randomText", "danmaku_text_".concat(Math.random() * 999999 | 0));
+    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "lastRendererMode", 0);
+    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "cacheCleanTime", 0);
+    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "danmakuMoveTime", 0);
+    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "danmakuCheckTime", 0);
+    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "danmakuCheckSwitch", true);
+    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "GraphCache", []);
+    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "DanmakuText", []);
+    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "defaultStyle", {
       //these styles can be overwrote by the 'font' property of danmaku object
       fontStyle: null,
       fontWeight: 300,
@@ -2998,7 +3006,7 @@ var TextDanmaku = /*#__PURE__*/function (_DanmakuFrameModule) {
       fill: true //if the text should be filled
 
     });
-    (0, _defineProperty2.default)((0, _assertThisInitialized2.default)(_this), "options", {
+    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "options", {
       allowLines: false,
       //allow multi-line danmaku
       screenLimit: 0,
@@ -3013,13 +3021,13 @@ var TextDanmaku = /*#__PURE__*/function (_DanmakuFrameModule) {
       renderingMode: 1 //default to css mode
 
     });
-    if (arg.defaultStyle) (0, _assign.default)(_this.defaultStyle, arg.defaultStyle);
+    if (arg.defaultStyle) (0, _assign["default"])(_this.defaultStyle, arg.defaultStyle);
     if (arg.options) _danmakuFrame.Utils.deepAssign(_this.options, arg.options);
     frame.addStyle(".".concat(_this.randomText, "_fullfill{top:0;left:0;width:100%;height:100%;position:absolute;}"));
-    defProp((0, _assertThisInitialized2.default)(_this), 'rendererMode', {
+    defProp((0, _assertThisInitialized2["default"])(_this), 'rendererMode', {
       configurable: true
     });
-    defProp((0, _assertThisInitialized2.default)(_this), 'activeRendererMode', {
+    defProp((0, _assertThisInitialized2["default"])(_this), 'activeRendererMode', {
       configurable: true,
       value: null
     });
@@ -3028,29 +3036,29 @@ var TextDanmaku = /*#__PURE__*/function (_DanmakuFrameModule) {
     con.classList.add("".concat(_this.randomText, "_fullfill")); //init modes
 
     _this.modes = {
-      0: _this.textoff = new _Textoff.default((0, _assertThisInitialized2.default)(_this)),
+      0: _this.textoff = new _Textoff["default"]((0, _assertThisInitialized2["default"])(_this)),
       //off
-      2: _this.text2d = new _TextCanvas2D.default((0, _assertThisInitialized2.default)(_this)),
-      1: _this.textCss = new _TextCss.default((0, _assertThisInitialized2.default)(_this)),
-      3: _this.text3d = new _TextWebGL.default((0, _assertThisInitialized2.default)(_this))
+      2: _this.text2d = new _TextCanvas2D["default"]((0, _assertThisInitialized2["default"])(_this)),
+      1: _this.textCss = new _TextCss["default"]((0, _assertThisInitialized2["default"])(_this)),
+      3: _this.text3d = new _TextWebGL["default"]((0, _assertThisInitialized2["default"])(_this))
     };
-    _this.rendering = new RenderingDanmakuManager((0, _assertThisInitialized2.default)(_this));
+    _this.rendering = new RenderingDanmakuManager((0, _assertThisInitialized2["default"])(_this));
 
     _danmakuFrame.DomTools.addEvents(document, {
       visibilitychange: function visibilitychange(e) {//?
       }
     });
 
-    _this._checkNewDanmaku = (0, _bind.default)(_context = _this._checkNewDanmaku).call(_context, (0, _assertThisInitialized2.default)(_this));
-    _this._cleanCache = (0, _bind.default)(_context2 = _this._cleanCache).call(_context2, (0, _assertThisInitialized2.default)(_this));
-    (0, _setInterval2.default)(_this._cleanCache, 5000); //set an interval for cache cleaning
+    _this._checkNewDanmaku = (0, _bind["default"])(_context = _this._checkNewDanmaku).call(_context, (0, _assertThisInitialized2["default"])(_this));
+    _this._cleanCache = (0, _bind["default"])(_context2 = _this._cleanCache).call(_context2, (0, _assertThisInitialized2["default"])(_this));
+    (0, _setInterval2["default"])(_this._cleanCache, 5000); //set an interval for cache cleaning
 
     _this.setRendererMode(_this.lastRendererMode = _this.options.renderingMode || 1);
 
     return _this;
   }
 
-  (0, _createClass2.default)(TextDanmaku, [{
+  (0, _createClass2["default"])(TextDanmaku, [{
     key: "setRendererMode",
     value: function setRendererMode(n) {
       if (this.rendererMode === n || !(n in this.modes) || !this.modes[n].supported) return false;
@@ -3114,11 +3122,11 @@ var TextDanmaku = /*#__PURE__*/function (_DanmakuFrameModule) {
           arr = this.list;
       ind = dichotomy(arr, d.time, 0, arr.length - 1, false); //find a place for this obj in the list in time order
 
-      (0, _splice.default)(arr).call(arr, ind, 0, d); //insert the obj
+      (0, _splice["default"])(arr).call(arr, ind, 0, d); //insert the obj
 
       if (ind < this.indexMark) this.indexMark++; //round d.style.fontSize to prevent Iifinity loop in tunnel
 
-      if ((0, _typeof2.default)(d.style) !== 'object') d.style = {};
+      if ((0, _typeof2["default"])(d.style) !== 'object') d.style = {};
       d.style.fontSize = Math.round((d.style.fontSize || this.defaultStyle.fontSize) * this.options.danmakuSizeScale);
       if (isNaN(d.style.fontSize) || d.style.fontSize === Infinity || d.style.fontSize === 0) d.style.fontSize = this.defaultStyle.fontSize * this.options.danmakuSizeScale;
       if (typeof d.mode !== 'number') d.mode = 0;
@@ -3130,7 +3138,7 @@ var TextDanmaku = /*#__PURE__*/function (_DanmakuFrameModule) {
     value: function loadList(danmakuArray) {
       var _this3 = this;
 
-      (0, _forEach.default)(danmakuArray).call(danmakuArray, function (d) {
+      (0, _forEach["default"])(danmakuArray).call(danmakuArray, function (d) {
         return _this3.load(d);
       });
     }
@@ -3140,9 +3148,9 @@ var TextDanmaku = /*#__PURE__*/function (_DanmakuFrameModule) {
       var _context3, _context4;
 
       if (!d || d._ !== 'text') return false;
-      var i = (0, _indexOf.default)(_context3 = this.list).call(_context3, d);
+      var i = (0, _indexOf["default"])(_context3 = this.list).call(_context3, d);
       if (i < 0) return false;
-      (0, _splice.default)(_context4 = this.list).call(_context4, i, 1);
+      (0, _splice["default"])(_context4 = this.list).call(_context4, i, 1);
       if (i < this.indexMark) this.indexMark--;
       return true;
     }
@@ -3172,12 +3180,12 @@ var TextDanmaku = /*#__PURE__*/function (_DanmakuFrameModule) {
       var t = this.GraphCache.length ? this.GraphCache.shift() : new TextGraph();
 
       if (!this.options.allowLines) {
-        d = (0, _create.default)(d);
+        d = (0, _create["default"])(d);
         d.text = d.text.replace(/\n/g, ' ');
       }
 
-      var font = (0, _create.default)(this.defaultStyle);
-      t.init(d, (0, _assign.default)(font, d.style));
+      var font = (0, _create["default"])(this.defaultStyle);
+      t.init(d, (0, _assign["default"])(font, d.style));
       t.prepare(false); //find tunnel number
 
       var tnum = this.rendering.tunnelManager.getTunnel(t, cHeight); //calc margin
@@ -3283,17 +3291,17 @@ var TextDanmaku = /*#__PURE__*/function (_DanmakuFrameModule) {
     value: function _cleanCache(force) {
       //clean text object cache
       force && this.frame.core.debug('force cleaning graph cache');
-      var now = (0, _now.default)();
+      var now = (0, _now["default"])();
 
       if (this.GraphCache.length > 30 || force) {
         //save 30 cached danmaku
         for (var ti = 0; ti < this.GraphCache.length; ti++) {
           if (force || now - this.GraphCache[ti].removeTime > 10000) {
-            var _context5;
+            var _context5; //delete cache which has not been used for 10s
 
-            //delete cache which has not been used for 10s
+
             this.GraphCache[ti].destructor();
-            (0, _splice.default)(_context5 = this.GraphCache).call(_context5, ti, 1);
+            (0, _splice["default"])(_context5 = this.GraphCache).call(_context5, ti, 1);
           } else {
             break;
           }
@@ -3353,8 +3361,8 @@ var TextDanmaku = /*#__PURE__*/function (_DanmakuFrameModule) {
   }, {
     key: "time",
     value: function time() {
-      var t = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.frame.time;
-      //reset time,you should invoke it when the media has seeked to another time
+      var t = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.frame.time; //reset time,you should invoke it when the media has seeked to another time
+
       this.recheckIndexMark(t);
 
       if (this.options.clearWhenTimeReset) {
@@ -3367,12 +3375,12 @@ var TextDanmaku = /*#__PURE__*/function (_DanmakuFrameModule) {
     key: "resetTimeOfDanmakuOnScreen",
     value: function resetTimeOfDanmakuOnScreen(cTime) {
       var _context6,
-          _this5 = this;
-
-      //cause the position of the danmaku is based on time
+          _this5 = this; //cause the position of the danmaku is based on time
       //and if you don't want these danmaku on the screen to disappear after seeking,their time should be reset
+
+
       if (cTime === undefined) cTime = this.frame.time;
-      (0, _forEach.default)(_context6 = this.DanmakuText).call(_context6, function (t) {
+      (0, _forEach["default"])(_context6 = this.DanmakuText).call(_context6, function (t) {
         if (!t.danmaku) return;
         t.time = cTime - (_this5.danmakuMoveTime - t.time);
       });
@@ -3380,12 +3388,12 @@ var TextDanmaku = /*#__PURE__*/function (_DanmakuFrameModule) {
   }, {
     key: "danmakuAt",
     value: function danmakuAt(x, y) {
-      var _context7;
+      var _context7; //return a list of danmaku which covers this position
 
-      //return a list of danmaku which covers this position
+
       var list = [];
       if (!this.enabled) return list;
-      (0, _forEach.default)(_context7 = this.DanmakuText).call(_context7, function (t) {
+      (0, _forEach["default"])(_context7 = this.DanmakuText).call(_context7, function (t) {
         if (!t.danmaku) return;
         if (t.style.x <= x && t.style.x + t.style.width >= x && t.style.y <= y && t.style.y + t.style.height >= y) list.push(t.danmaku);
       });
@@ -3421,7 +3429,7 @@ var TextDanmaku = /*#__PURE__*/function (_DanmakuFrameModule) {
 }(_danmakuFrame.DanmakuFrameModule);
 
 var TextGraph = /*#__PURE__*/function () {
-  (0, _createClass2.default)(TextGraph, [{
+  (0, _createClass2["default"])(TextGraph, [{
     key: "text",
     //code copied from CanvasObjLibrary
     //bool: 
@@ -3437,25 +3445,25 @@ var TextGraph = /*#__PURE__*/function () {
   function TextGraph(danmakuObj, font) {
     var _context8;
 
-    (0, _classCallCheck2.default)(this, TextGraph);
-    (0, _defineProperty2.default)(this, "_fontString", '');
-    (0, _defineProperty2.default)(this, "_renderList", void 0);
-    (0, _defineProperty2.default)(this, "_cache", void 0);
-    (0, _defineProperty2.default)(this, "_bitmap", void 0);
-    (0, _defineProperty2.default)(this, "font", {});
-    (0, _defineProperty2.default)(this, "time", void 0);
-    (0, _defineProperty2.default)(this, "style", {});
-    (0, _defineProperty2.default)(this, "drawn", false);
-    (0, _defineProperty2.default)(this, "danmaku", void 0);
-    (0, _defineProperty2.default)(this, "removeTime", void 0);
-    (0, _defineProperty2.default)(this, "tunnelNumber", void 0);
-    (0, _defineProperty2.default)(this, "tunnelHeight", void 0);
-    (0, _defineProperty2.default)(this, "estimatePadding", void 0);
-    this._renderToCache = (0, _bind.default)(_context8 = this._renderToCache).call(_context8, this);
+    (0, _classCallCheck2["default"])(this, TextGraph);
+    (0, _defineProperty2["default"])(this, "_fontString", '');
+    (0, _defineProperty2["default"])(this, "_renderList", void 0);
+    (0, _defineProperty2["default"])(this, "_cache", void 0);
+    (0, _defineProperty2["default"])(this, "_bitmap", void 0);
+    (0, _defineProperty2["default"])(this, "font", {});
+    (0, _defineProperty2["default"])(this, "time", void 0);
+    (0, _defineProperty2["default"])(this, "style", {});
+    (0, _defineProperty2["default"])(this, "drawn", false);
+    (0, _defineProperty2["default"])(this, "danmaku", void 0);
+    (0, _defineProperty2["default"])(this, "removeTime", void 0);
+    (0, _defineProperty2["default"])(this, "tunnelNumber", void 0);
+    (0, _defineProperty2["default"])(this, "tunnelHeight", void 0);
+    (0, _defineProperty2["default"])(this, "estimatePadding", void 0);
+    this._renderToCache = (0, _bind["default"])(_context8 = this._renderToCache).call(_context8, this);
     danmakuObj && this.init(danmakuObj, font);
   }
 
-  (0, _createClass2.default)(TextGraph, [{
+  (0, _createClass2["default"])(TextGraph, [{
     key: "init",
     value: function init(d, font) {
       this.danmaku = d;
@@ -3475,9 +3483,8 @@ var TextGraph = /*#__PURE__*/function () {
   }, {
     key: "prepare",
     value: function prepare() {
-      var async = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+      var async = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false; //prepare text details
 
-      //prepare text details
       if (!this._cache) {
         this._cache = document.createElement("canvas");
       }
@@ -3545,7 +3552,7 @@ var TextGraph = /*#__PURE__*/function () {
         ct.fillStyle = 'rgba(255,255,255,0.3)';
         ct.beginPath();
         ct.rect(0, 0, this.style.width, this.style.height);
-        (0, _fill.default)(ct).call(ct);
+        (0, _fill["default"])(ct).call(ct);
       }
 
       ct.font = this._fontString; //set font
@@ -3585,7 +3592,7 @@ var TextGraph = /*#__PURE__*/function () {
 
       for (var i = this._renderList.length; i--;) {
         this.font.strokeWidth && ct.strokeText(this._renderList[i], x, lh * (i + 0.5));
-        (0, _fill.default)(this.font) && ct.fillText(this._renderList[i], x, lh * (i + 0.5));
+        (0, _fill["default"])(this.font) && ct.fillText(this._renderList[i], x, lh * (i + 0.5));
       }
 
       ct.restore();
@@ -3614,11 +3621,11 @@ var tunnels = ['right', 'left', 'bottom', 'top'];
 
 var TunnelManager = /*#__PURE__*/function () {
   function TunnelManager() {
-    (0, _classCallCheck2.default)(this, TunnelManager);
+    (0, _classCallCheck2["default"])(this, TunnelManager);
     this.reset();
   }
 
-  (0, _createClass2.default)(TunnelManager, [{
+  (0, _createClass2["default"])(TunnelManager, [{
     key: "reset",
     value: function reset() {
       this.right = {};
@@ -3698,19 +3705,19 @@ var RenderingDanmakuManager = /*#__PURE__*/function () {
   function RenderingDanmakuManager(dText) {
     var _this7 = this;
 
-    (0, _classCallCheck2.default)(this, RenderingDanmakuManager);
-    (0, _defineProperty2.default)(this, "totalArea", 0);
-    (0, _defineProperty2.default)(this, "onScreenArea", 0);
-    (0, _defineProperty2.default)(this, "limitArea", Infinity);
-    (0, _defineProperty2.default)(this, "tunnelManager", new TunnelManager());
-    //dText:TextDanmaku
+    (0, _classCallCheck2["default"])(this, RenderingDanmakuManager);
+    (0, _defineProperty2["default"])(this, "totalArea", 0);
+    (0, _defineProperty2["default"])(this, "onScreenArea", 0);
+    (0, _defineProperty2["default"])(this, "limitArea", Infinity);
+    (0, _defineProperty2["default"])(this, "tunnelManager", new TunnelManager()); //dText:TextDanmaku
+
     this.dText = dText;
-    if (dText.text2d.supported) this.timer = (0, _setInterval2.default)(function () {
+    if (dText.text2d.supported) this.timer = (0, _setInterval2["default"])(function () {
       return _this7.rendererModeCheck();
     }, 1500);
   }
 
-  (0, _createClass2.default)(RenderingDanmakuManager, [{
+  (0, _createClass2["default"])(RenderingDanmakuManager, [{
     key: "add",
     value: function add(t) {
       if (t.danmaku.onScreen) return;
@@ -3727,12 +3734,12 @@ var RenderingDanmakuManager = /*#__PURE__*/function () {
       var _context9;
 
       t.danmaku.onScreen = false;
-      var ind = (0, _indexOf.default)(_context9 = this.dText.DanmakuText).call(_context9, t);
+      var ind = (0, _indexOf["default"])(_context9 = this.dText.DanmakuText).call(_context9, t);
 
       if (ind >= 0) {
         var _context10;
 
-        (0, _splice.default)(_context10 = this.dText.DanmakuText).call(_context10, ind, 1);
+        (0, _splice["default"])(_context10 = this.dText.DanmakuText).call(_context10, ind, 1);
         this.totalArea -= t._cache.width * t._cache.height;
         this.onScreenArea -= Math.min(t._cache.width, this.dText.frame.width) * Math.min(t._cache.height, this.dText.frame.height);
       }
@@ -3740,7 +3747,7 @@ var RenderingDanmakuManager = /*#__PURE__*/function () {
       this.tunnelManager.removeMark(t);
       this.dText.activeRendererMode.remove(t);
       this.dText.activeRendererMode.deleteRelatedTextObject(t);
-      t.removeTime = (0, _now.default)();
+      t.removeTime = (0, _now["default"])();
       t.danmaku = null;
       this.dText.GraphCache.push(t);
     }
@@ -3829,26 +3836,27 @@ _Object$defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/classCallCheck"));
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/createClass"));
 
 var _defineProperty2 = _interopRequireDefault(require("@babel/runtime-corejs3/helpers/defineProperty"));
-
 /*
 Copyright luojia@luojia.me
 LGPL license
 */
+
+
 var textModuleTemplate = /*#__PURE__*/function () {
   function textModuleTemplate(dText) {
-    (0, _classCallCheck2.default)(this, textModuleTemplate);
-    (0, _defineProperty2.default)(this, "supported", false);
+    (0, _classCallCheck2["default"])(this, textModuleTemplate);
+    (0, _defineProperty2["default"])(this, "supported", false);
     this.dText = dText;
   }
 
-  (0, _createClass2.default)(textModuleTemplate, [{
+  (0, _createClass2["default"])(textModuleTemplate, [{
     key: "draw",
     value: function draw() {} //draw call from danmaku-frame on every animation frame
 
@@ -3896,7 +3904,7 @@ var textModuleTemplate = /*#__PURE__*/function () {
 }();
 
 var _default = textModuleTemplate;
-exports.default = _default;
+exports["default"] = _default;
 
 },{"@babel/runtime-corejs3/core-js-stable/object/define-property":32,"@babel/runtime-corejs3/helpers/classCallCheck":58,"@babel/runtime-corejs3/helpers/createClass":59,"@babel/runtime-corejs3/helpers/defineProperty":60,"@babel/runtime-corejs3/helpers/interopRequireDefault":64}],16:[function(require,module,exports){
 module.exports = require("core-js-pure/stable/array/is-array");
@@ -10036,7 +10044,7 @@ var NyaPCommonOptions = {
     defaultDanmakuColor: null,
     //a hex color(without #),default when the color inputed is invalid
     send: function send(d) {
-      return _promise.default.reject();
+      return _promise["default"].reject();
     } //the method for sending danmaku
 
   },
@@ -10065,7 +10073,7 @@ var NyaPCommonOptions = {
   loadingAnimation: {
     start: function start(NP) {
       NP.$('#loading_anime').innerHTML = '(๑•́ ω •̀๑)';
-      NP._.loadingAnimationInterval = (0, _setInterval2.default)(function () {
+      NP._.loadingAnimationInterval = (0, _setInterval2["default"])(function () {
         //loading animation
         NP.$('#loading_anime').style.transform = "translate(" + _index.Utils.rand(-20, 20) + "px," + _index.Utils.rand(-20, 20) + "px) rotate(" + _index.Utils.rand(-10, 10) + "deg)";
       }, 80);
@@ -10102,8 +10110,8 @@ var NyaPCommonOptions = {
 }; //NyaP classic theme Core
 
 var NyaPCommon = /*#__PURE__*/function (_NyaPlayerCore) {
-  (0, _inherits2.default)(NyaPCommon, _NyaPlayerCore);
-  (0, _createClass2.default)(NyaPCommon, [{
+  (0, _inherits2["default"])(NyaPCommon, _NyaPlayerCore);
+  (0, _createClass2["default"])(NyaPCommon, [{
     key: "frame",
     get: function get() {
       return this._.player || this.videoFrame;
@@ -10130,16 +10138,16 @@ var NyaPCommon = /*#__PURE__*/function (_NyaPlayerCore) {
 
     var _this;
 
-    (0, _classCallCheck2.default)(this, NyaPCommon);
-    _this = (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(NyaPCommon).call(this, _index.Utils.deepAssign({}, NyaPCommonOptions, opt)));
+    (0, _classCallCheck2["default"])(this, NyaPCommon);
+    _this = (0, _possibleConstructorReturn2["default"])(this, (0, _getPrototypeOf2["default"])(NyaPCommon).call(this, _index.Utils.deepAssign({}, NyaPCommonOptions, opt)));
 
     _this.log('%c https://github.com/JiaJiaJiang/NyaP/ ', 'log', "background:#6f8fa2;color:#ccc;padding:.3em");
 
     opt = _this.opt;
-    _this.$ = (0, _bind.default)(_context = _this.$).call(_context, (0, _assertThisInitialized2.default)(_this));
-    _this.$$ = (0, _bind.default)(_context2 = _this.$$).call(_context2, (0, _assertThisInitialized2.default)(_this)); //language
+    _this.$ = (0, _bind["default"])(_context = _this.$).call(_context, (0, _assertThisInitialized2["default"])(_this));
+    _this.$$ = (0, _bind["default"])(_context2 = _this.$$).call(_context2, (0, _assertThisInitialized2["default"])(_this)); //language
 
-    var _t = _this._t = (0, _bind.default)(_context3 = _this.i18n._).call(_context3, _this.i18n); //translate
+    var _t = _this._t = (0, _bind["default"])(_context3 = _this.i18n._).call(_context3, _this.i18n); //translate
     //load languages to the core
 
 
@@ -10201,7 +10209,7 @@ var NyaPCommon = /*#__PURE__*/function (_NyaPlayerCore) {
       stat[2].then(function (result) {
         //wait for the result
         d.append(result || _this.opt.loadingInfo.doneText);
-      }).catch(function (e) {
+      })["catch"](function (e) {
         d.append(e.message || e || _this.opt.loadingInfo.failText);
       });
     }); //loading animation
@@ -10210,7 +10218,7 @@ var NyaPCommon = /*#__PURE__*/function (_NyaPlayerCore) {
     if (opt.loadingAnimation) {
       var _opt, _opt$loadingAnimation;
 
-      (_opt = opt) === null || _opt === void 0 ? void 0 : (_opt$loadingAnimation = _opt.loadingAnimation) === null || _opt$loadingAnimation === void 0 ? void 0 : _opt$loadingAnimation.start((0, _assertThisInitialized2.default)(_this));
+      (_opt = opt) === null || _opt === void 0 ? void 0 : (_opt$loadingAnimation = _opt.loadingAnimation) === null || _opt$loadingAnimation === void 0 ? void 0 : _opt$loadingAnimation.start((0, _assertThisInitialized2["default"])(_this));
     }
 
     _index.DomTools.addEvents(_this.video, {
@@ -10219,14 +10227,14 @@ var NyaPCommon = /*#__PURE__*/function (_NyaPlayerCore) {
 
         _this.statResult('loading_video');
 
-        (_opt2 = opt) === null || _opt2 === void 0 ? void 0 : (_opt2$loadingAnimatio = _opt2.loadingAnimation) === null || _opt2$loadingAnimatio === void 0 ? void 0 : _opt2$loadingAnimatio.stop((0, _assertThisInitialized2.default)(_this));
+        (_opt2 = opt) === null || _opt2 === void 0 ? void 0 : (_opt2$loadingAnimatio = _opt2.loadingAnimation) === null || _opt2$loadingAnimatio === void 0 ? void 0 : _opt2$loadingAnimatio.stop((0, _assertThisInitialized2["default"])(_this));
       },
       error: function error(e) {
         var _opt3, _opt3$loadingAnimatio;
 
         _this.statResult('loading_video', e === null || e === void 0 ? void 0 : e.message);
 
-        (_opt3 = opt) === null || _opt3 === void 0 ? void 0 : (_opt3$loadingAnimatio = _opt3.loadingAnimation) === null || _opt3$loadingAnimatio === void 0 ? void 0 : _opt3$loadingAnimatio.error((0, _assertThisInitialized2.default)(_this));
+        (_opt3 = opt) === null || _opt3 === void 0 ? void 0 : (_opt3$loadingAnimatio = _opt3.loadingAnimation) === null || _opt3$loadingAnimatio === void 0 ? void 0 : _opt3$loadingAnimatio.error((0, _assertThisInitialized2["default"])(_this));
       }
     }); //load danmaku frame
 
@@ -10240,7 +10248,7 @@ var NyaPCommon = /*#__PURE__*/function (_NyaPlayerCore) {
       });
 
       _this.stat('loading_danmakuFrame', function () {
-        _this.Danmaku = new _index2.default((0, _assertThisInitialized2.default)(_this));
+        _this.Danmaku = new _index2["default"]((0, _assertThisInitialized2["default"])(_this));
 
         _this.videoFrame.insertBefore(_this.danmakuContainer, _this.$('#loading_frame'));
       });
@@ -10261,11 +10269,11 @@ var NyaPCommon = /*#__PURE__*/function (_NyaPlayerCore) {
     return _this;
   }
 
-  (0, _createClass2.default)(NyaPCommon, [{
+  (0, _createClass2["default"])(NyaPCommon, [{
     key: "$",
     value: function $(selector) {
-      var useCache = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-      //querySelector for the frame element
+      var useCache = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true; //querySelector for the frame element
+
       if (useCache && this._.selectorCache[selector]) return this._.selectorCache[selector];
       var el = this.frame.querySelector(selector);
       if (el) this._.selectorCache[selector] = el;
@@ -10287,7 +10295,7 @@ var NyaPCommon = /*#__PURE__*/function (_NyaPlayerCore) {
       if (mode === 'normal' && this.currentPlayerMode === mode) return;
 
       if (this.currentPlayerMode === 'fullScreen') {
-        ios || _index.DomTools.exitFullscreen().catch(function (e) {});
+        ios || _index.DomTools.exitFullscreen()["catch"](function (e) {});
       }
 
       if (mode !== 'normal' && this.currentPlayerMode === mode) mode = 'normal'; //back to normal mode
@@ -10313,7 +10321,7 @@ var NyaPCommon = /*#__PURE__*/function (_NyaPlayerCore) {
               _this2.player.setAttribute('playerMode', 'fullScreen');
 
               _this2.emit('playerModeChange', mode);
-            }).catch(function (e) {
+            })["catch"](function (e) {
               alert('Failed to enter screen mode');
             });
 
@@ -10330,8 +10338,8 @@ var NyaPCommon = /*#__PURE__*/function (_NyaPlayerCore) {
   }, {
     key: "msg",
     value: function msg(text) {
-      var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'tip';
-      //type:tip|info|error
+      var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'tip'; //type:tip|info|error
+
       var msg = new MsgBox(text, type, this.$('#msg_box'));
       requestAnimationFrame(function () {
         return msg.show();
@@ -10395,12 +10403,12 @@ var MsgBox = /*#__PURE__*/function () {
   function MsgBox(text, type, parentNode) {
     var _this4 = this;
 
-    (0, _classCallCheck2.default)(this, MsgBox);
+    (0, _classCallCheck2["default"])(this, MsgBox);
     this.using = false;
     var msg = this.msg = O2H({
       _: 'div',
       attr: {
-        class: "msg_type_".concat(type)
+        "class": "msg_type_".concat(type)
       }
     });
     msg.addEventListener('click', function () {
@@ -10410,7 +10418,7 @@ var MsgBox = /*#__PURE__*/function () {
     this.setText(text);
   }
 
-  (0, _createClass2.default)(MsgBox, [{
+  (0, _createClass2["default"])(MsgBox, [{
     key: "setTimeout",
     value: function (_setTimeout) {
       function setTimeout(_x) {
@@ -10426,7 +10434,7 @@ var MsgBox = /*#__PURE__*/function () {
       var _this5 = this;
 
       if (this.timeout) clearTimeout(this.timeout);
-      this.timeout = (0, _setTimeout3.default)(function () {
+      this.timeout = (0, _setTimeout3["default"])(function () {
         return _this5.remove();
       }, time || Math.max((this.texts ? this.texts.length : 0) * 0.6 * 1000, 5000));
     })
@@ -10460,7 +10468,7 @@ var MsgBox = /*#__PURE__*/function () {
         this.parentNode.appendChild(this.msg);
       }
 
-      this.msg.parentNode && (0, _setTimeout3.default)(function () {
+      this.msg.parentNode && (0, _setTimeout3["default"])(function () {
         _this6.using = true;
         _this6.msg.style.opacity = 1;
       }, 0);
@@ -10480,7 +10488,7 @@ var MsgBox = /*#__PURE__*/function () {
         this.timeout = 0;
       }
 
-      (0, _setTimeout3.default)(function () {
+      (0, _setTimeout3["default"])(function () {
         _this7.msg.parentNode && _this7.msg.parentNode.removeChild(_this7.msg);
       }, 600);
     }
@@ -10546,15 +10554,15 @@ var NyaPTouchOptions = {
 }; //touch player
 
 var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
-  (0, _inherits2.default)(NyaPTouch, _NyaPCommon);
+  (0, _inherits2["default"])(NyaPTouch, _NyaPCommon);
 
   function NyaPTouch(opt) {
     var _this;
 
-    (0, _classCallCheck2.default)(this, NyaPTouch);
-    _this = (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(NyaPTouch).call(this, _NyaPCommon2.Utils.deepAssign({}, NyaPTouchOptions, opt)));
+    (0, _classCallCheck2["default"])(this, NyaPTouch);
+    _this = (0, _possibleConstructorReturn2["default"])(this, (0, _getPrototypeOf2["default"])(NyaPTouch).call(this, _NyaPCommon2.Utils.deepAssign({}, NyaPTouchOptions, opt)));
     opt = _this.opt;
-    var NP = (0, _assertThisInitialized2.default)(_this),
+    var NP = (0, _assertThisInitialized2["default"])(_this),
         _t = _this._t,
         $ = _this.$,
         video = _this.video; //set icons
@@ -10570,7 +10578,7 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
         attr: attr,
         prop: {
           id: "icon_span_".concat(name),
-          innerHTML: (0, _concat.default)(_context = (0, _concat.default)(_context2 = (0, _concat.default)(_context3 = (0, _concat.default)(_context4 = (0, _concat.default)(_context5 = "<svg height=\"".concat(NP.opt.bottomControlHeight, "\" width=\"")).call(_context5, NP.opt.bottomControlHeight / ico[1] * ico[0], "\" viewBox=\"0,0,")).call(_context4, ico[0], ",")).call(_context3, ico[1], "\" id=\"icon_")).call(_context2, name, "\"\">")).call(_context, ico[2], "</svg>")
+          innerHTML: (0, _concat["default"])(_context = (0, _concat["default"])(_context2 = (0, _concat["default"])(_context3 = (0, _concat["default"])(_context4 = (0, _concat["default"])(_context5 = "<svg height=\"".concat(NP.opt.bottomControlHeight, "\" width=\"")).call(_context5, NP.opt.bottomControlHeight / ico[1] * ico[0], "\" viewBox=\"0,0,")).call(_context4, ico[0], ",")).call(_context3, ico[1], "\" id=\"icon_")).call(_context2, name, "\"\">")).call(_context, ico[2], "</svg>")
         }
       });
     }
@@ -10582,7 +10590,7 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
     _this._.player = O2H({
       _: 'div',
       attr: {
-        class: 'NyaPTouch',
+        "class": 'NyaPTouch',
         id: 'NyaPTouch'
       },
       child: [_this.videoFrame, {
@@ -10673,7 +10681,7 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
                   return _this.Danmaku.toggle();
                 }
               }, {
-                class: 'active_icon'
+                "class": 'active_icon'
               }), icon('loop', {
                 click: function click(e) {
                   return video.loop = !video.loop;
@@ -10697,7 +10705,7 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
               _: 'span',
               attr: {
                 id: 'danmakuStyleEditor',
-                class: 'NyaP_hideNotFirstChildren',
+                "class": 'NyaP_hideNotFirstChildren',
                 tabindex: 0
               },
               child: [icon('danmakuStyle', {
@@ -10732,7 +10740,7 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
       }]
     }); //add private vars
 
-    (0, _assign.default)(NP._, {
+    (0, _assign["default"])(NP._, {
       currentDragMode: null,
       touchStartPoint: [0, 0],
       bottomControlDraging: undefined,
@@ -10741,7 +10749,7 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
       seekTo: 0
     }); //calc progress and control_bottom styles
 
-    (0, _assign.default)($('#progress_wrap').style, {
+    (0, _assign["default"])($('#progress_wrap').style, {
       left: _this.opt.progressPad + 'px',
       right: _this.opt.progressPad + 'px',
       height: _this.opt.progressBarHeight + 'px',
@@ -10779,10 +10787,10 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
           if (opt.hideControlsBeforeVideoLoaded) $('#controls').hidden = false;
         },
         volumechange: function volumechange(e) {
-          var _context6;
+          var _context6; //show volume msg
 
-          //show volume msg
-          NP._.volumeBox.renew((0, _concat.default)(_context6 = "".concat(_t('volume'), ":")).call(_context6, (video.volume * 100).toFixed(0), "%") + "".concat(video.muted ? '(' + _t('muted') + ')' : ''), 3000); //change icon style
+
+          NP._.volumeBox.renew((0, _concat["default"])(_context6 = "".concat(_t('volume'), ":")).call(_context6, (video.volume * 100).toFixed(0), "%") + "".concat(video.muted ? '(' + _t('muted') + ')' : ''), 3000); //change icon style
 
 
           _NyaPCommon2.DomTools.setAttrs($('#volume_circle'), {
@@ -10801,7 +10809,7 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
           return NP.playToggle();
         },
         timeupdate: function timeupdate(e) {
-          var t = (0, _now.default)();
+          var t = (0, _now["default"])();
           if (t - NP._.lastTimeUpdate < 30) return;
 
           NP._setDisplayTime(_NyaPCommon2.Utils.formatTime(video.currentTime, video.duration));
@@ -10861,7 +10869,7 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
           if (!opt.dragToChangeVolume) return;
           NP._.currentDragMode = 'volume';
 
-          NP._.volumeBox.renew((0, _concat.default)(_context7 = "".concat(_t('volume'), ":")).call(_context7, (video.volume * 100).toFixed(0), "%") + "".concat(video.muted ? '(' + _t('muted') + ')' : ''), 3000);
+          NP._.volumeBox.renew((0, _concat["default"])(_context7 = "".concat(_t('volume'), ":")).call(_context7, (video.volume * 100).toFixed(0), "%") + "".concat(video.muted ? '(' + _t('muted') + ')' : ''), 3000);
         }
       },
       control_bottom: {
@@ -10902,7 +10910,7 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
           NP._bottomControlTransformY(0);
         },
         blur: function blur(e) {
-          (0, _setTimeout2.default)(function () {
+          (0, _setTimeout2["default"])(function () {
             if (NP._.preVideoStat) video.play();
           }, 100);
           if ($('#control_bottom').style.top == '') return;
@@ -10922,7 +10930,7 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
 
           var t = e.target;
 
-          if ((0, _startsWith.default)(_context8 = t.id).call(_context8, 'icon_span_danmakuMode')) {
+          if ((0, _startsWith["default"])(_context8 = t.id).call(_context8, 'icon_span_danmakuMode')) {
             var m = 1 * t.id.match(/\d$/)[0];
             if (NP._.danmakuMode !== undefined) $("#icon_span_danmakuMode".concat(NP._.danmakuMode)).classList.remove('active');
             $("#icon_span_danmakuMode".concat(m)).classList.add('active');
@@ -10936,7 +10944,7 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
 
           var t = e.target;
           if (!t.size) return;
-          (0, _forEach.default)(_context9 = _NyaPCommon2.Utils.toArray($('#danmaku_size_box').childNodes)).call(_context9, function (sp) {
+          (0, _forEach["default"])(_context9 = _NyaPCommon2.Utils.toArray($('#danmaku_size_box').childNodes)).call(_context9, function (sp) {
             if (NP._.danmakuSize === sp.size) sp.classList.remove('active');
           });
           t.classList.add('active');
@@ -10949,11 +10957,11 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
             var c = NP.Danmaku.isVaildColor(e.target.color);
 
             if (c) {
-              var _context10;
+              var _context10; //match valid hex color code
 
-              //match valid hex color code
+
               NP._.danmakuColor = c;
-              (0, _forEach.default)(_context10 = _NyaPCommon2.Utils.toArray($('#danmaku_color_box').childNodes)).call(_context10, function (cp) {
+              (0, _forEach["default"])(_context10 = _NyaPCommon2.Utils.toArray($('#danmaku_color_box').childNodes)).call(_context10, function (cp) {
                 if (cp === e.target) cp.classList.add('active');else cp.classList.remove('active');
               });
             } else {
@@ -10961,7 +10969,7 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
 
               NP._.danmakuColor = undefined;
               c = NP.Danmaku.isVaildColor(NP.opt.danmaku.defaultDanmakuColor);
-              (0, _forEach.default)(_context11 = _NyaPCommon2.Utils.toArray($('#danmaku_color_box').childNodes)).call(_context11, function (cp) {
+              (0, _forEach["default"])(_context11 = _NyaPCommon2.Utils.toArray($('#danmaku_color_box').childNodes)).call(_context11, function (cp) {
                 return cp.classList.remove('active');
               });
             }
@@ -10978,7 +10986,7 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
       eves && _NyaPCommon2.DomTools.addEvents($("#".concat(eleid)), eves);
     }
 
-    _NyaPCommon2.DomTools.addEvents((0, _assertThisInitialized2.default)(_this), {
+    _NyaPCommon2.DomTools.addEvents((0, _assertThisInitialized2["default"])(_this), {
       video_loopChange: function video_loopChange(value) {
         return NP._iconActive('loop', value);
       },
@@ -10995,7 +11003,7 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
       playerModeChange: function playerModeChange(mode) {
         var _context12;
 
-        (0, _forEach.default)(_context12 = ['fullScreen', 'fullPage']).call(_context12, function (m) {
+        (0, _forEach["default"])(_context12 = ['fullScreen', 'fullPage']).call(_context12, function (m) {
           NP._iconActive(m, mode === m);
         });
       }
@@ -11012,10 +11020,10 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
 
 
     if (_this._danmakuEnabled) {
-      var _context13, _context14, _context15;
+      var _context13, _context14, _context15; //danmaku sizes
 
-      //danmaku sizes
-      opt.uiOptions.danmakuSizes && (0, _forEach.default)(_context13 = opt.uiOptions.danmakuSizes).call(_context13, function (s, ind) {
+
+      opt.uiOptions.danmakuSizes && (0, _forEach["default"])(_context13 = opt.uiOptions.danmakuSizes).call(_context13, function (s, ind) {
         var el = O2H({
           _: 'span',
           attr: {
@@ -11034,7 +11042,7 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
         }
       }); //danmaku colors
 
-      opt.uiOptions.danmakuColors && (0, _forEach.default)(_context14 = opt.uiOptions.danmakuColors).call(_context14, function (c) {
+      opt.uiOptions.danmakuColors && (0, _forEach["default"])(_context14 = opt.uiOptions.danmakuColors).call(_context14, function (c) {
         var el = O2H({
           _: 'span',
           attr: {
@@ -11048,20 +11056,20 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
         $('#danmaku_color_box').appendChild(el);
       }); //danmaku modes
 
-      opt.uiOptions.danmakuModes && (0, _forEach.default)(_context15 = opt.uiOptions.danmakuModes).call(_context15, function (m) {
+      opt.uiOptions.danmakuModes && (0, _forEach["default"])(_context15 = opt.uiOptions.danmakuModes).call(_context15, function (m) {
         var _opt$uiOptions;
 
         var el = icon("danmakuMode".concat(m));
         $('#danmaku_mode_box').appendChild(el);
 
-        if ((0, _isInteger.default)((_opt$uiOptions = opt.uiOptions) === null || _opt$uiOptions === void 0 ? void 0 : _opt$uiOptions.danmakuMode) && m === opt.uiOptions.danmakuMode) {
+        if ((0, _isInteger["default"])((_opt$uiOptions = opt.uiOptions) === null || _opt$uiOptions === void 0 ? void 0 : _opt$uiOptions.danmakuMode) && m === opt.uiOptions.danmakuMode) {
           el.click();
         }
       });
     } else {
       var _context16;
 
-      (0, _forEach.default)(_context16 = _this.$$('[id*=danmaku]')).call(_context16, function (el) {
+      (0, _forEach["default"])(_context16 = _this.$$('[id*=danmaku]')).call(_context16, function (el) {
         //remove danmaku buttons
         el.parentNode, removeChild(el);
       });
@@ -11075,7 +11083,7 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
     return _this;
   }
 
-  (0, _createClass2.default)(NyaPTouch, [{
+  (0, _createClass2["default"])(NyaPTouch, [{
     key: "controlsToggle",
     value: function controlsToggle() {
       var bool = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.$('#controls').hidden;
@@ -11100,13 +11108,13 @@ var NyaPTouch = /*#__PURE__*/function (_NyaPCommon) {
     value: function danmakuInput() {
       var _this2 = this;
 
-      var bool = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this._.bottomControlTransformY === 0;
-      //hide or show danmaku input
+      var bool = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this._.bottomControlTransformY === 0; //hide or show danmaku input
+
       var $ = this.$;
       if (bool) this._bottomControlTransformY(this.$('#control_bottom_first').offsetHeight - NP.opt.bottomControlHeight);else {
         this._bottomControlTransformY(0);
       }
-      (0, _setImmediate2.default)(function () {
+      (0, _setImmediate2["default"])(function () {
         bool ? $('#danmaku_input').focus() : _this2._.player.focus();
       });
     }
@@ -11140,7 +11148,7 @@ var extendEvent = {
   //扩展事件
   touchdrag: function touchdrag(element, opt) {
     var stats = {};
-    opt = (0, _assign.default)({}, extendEventDefaultOpt.touchdrag, opt);
+    opt = (0, _assign["default"])({}, extendEventDefaultOpt.touchdrag, opt);
     element.addEventListener('touchstart', function (e) {
       if (!opt.allowMultiTouch && e.changedTouches.length > 1) {
         stats = {};
@@ -11196,7 +11204,7 @@ var extendEvent = {
       checking = false;
     }
 
-    opt = (0, _assign.default)({}, extendEventDefaultOpt.doubletouch, opt);
+    opt = (0, _assign["default"])({}, extendEventDefaultOpt.doubletouch, opt);
     element.addEventListener('touchstart', function (e) {
       currentTouches = e.touches; //touches of this touch event
     });
@@ -11223,7 +11231,7 @@ var extendEvent = {
             for (var i2 = lP.length; i2--;) {
               //remove points that are not more than 6 pixels far from last point
               if (lineLength(currentTouches[_i].clientX, currentTouches[_i].clientY, lP[i2][0], lP[i2][1]) <= 6) {
-                (0, _splice.default)(lP).call(lP, i2, 1);
+                (0, _splice["default"])(lP).call(lP, i2, 1);
               }
             }
           }
@@ -11240,7 +11248,7 @@ var extendEvent = {
         reset();
       } else {
         checking = true;
-        checkTimeout = (0, _setTimeout2.default)(function () {
+        checkTimeout = (0, _setTimeout2["default"])(function () {
           checking = false;
         }, 400);
       }

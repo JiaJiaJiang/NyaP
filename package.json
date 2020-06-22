@@ -14,6 +14,9 @@
     "player",
     "NyaP"
   ],
+  "browserify": {
+    "transform": [["babelify", { "presets": ["@babel/preset-env"] }]]
+  },
   "author": "luojia@luojia.me",
   "license": "LGPL-3.0",
   "devDependencies": {

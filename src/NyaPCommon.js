@@ -39,7 +39,25 @@ const NyaPCommonOptions={
 		failText:'failed',
 		contentSpliter:'...',
 	},
-	loadingAnimation:true,
+	loadingAnimation:{
+		start(NP){
+			NP.$('#loading_anime').innerHTML='(๑•́ ω •̀๑)';
+			NP._.loadingAnimationInterval=setInterval(()=>{//loading animation
+				NP.$('#loading_anime').style.transform="translate("+Utils.rand(-20,20)+"px,"+Utils.rand(-20,20)+"px) rotate("+Utils.rand(-10,10)+"deg)";
+			},80);
+		},
+		stop(NP){
+			clearInterval(NP._.loadingAnimationInterval);
+			let lf=NP.$('#loading_frame');
+			if(lf.parentNode)//remove loading animation
+				lf.parentNode.removeChild(lf);
+		},
+		error(NP){
+			clearInterval(NP._.loadingAnimationInterval);
+			NP.$('#loading_anime').innerHTML='(๑• . •๑)';
+			NP.$('#loading_anime').style.transform="";
+		},
+	},
 
 	//other common options
 	playerContainer:null,//the element for containing the player
@@ -118,24 +136,16 @@ class NyaPCommon extends NyaPlayerCore{
 
 		//loading animation
 		if(opt.loadingAnimation){
-			this.$('#loading_anime').innerHTML='(๑•́ ω •̀๑)';
-			this._.loadingAnimationInterval=setInterval(()=>{//loading animation
-				this.$('#loading_anime').style.transform="translate("+Utils.rand(-20,20)+"px,"+Utils.rand(-20,20)+"px) rotate("+Utils.rand(-10,10)+"deg)";
-			},80);
+			opt?.loadingAnimation?.start(this);
 		}
 		DomTools.addEvents(this.video,{
 			loadedmetadata:e=>{
 				this.statResult('loading_video');
-				clearInterval(this._.loadingAnimationInterval);
-				let lf=this.$('#loading_frame');
-				if(lf.parentNode)//remove loading animation
-					lf.parentNode.removeChild(lf);
+				opt?.loadingAnimation?.stop(this);
 			},
 			error:e=>{
 				this.statResult('loading_video',e?.message);
-				clearInterval(this._.loadingAnimationInterval);
-				this.$('#loading_anime').innerHTML='(๑• . •๑)';
-				this.$('#loading_anime').style.transform="";
+				opt?.loadingAnimation?.error(this);
 			},
 		});
 
@@ -209,7 +219,6 @@ class NyaPCommon extends NyaPlayerCore{
 			if(current!==null)this.$('#current_time').innerHTML=current;
 			if(total!==null)this.$('#total_time').innerHTML=total;
 	}
-
 	send(){
 		let color=this._.danmakuColor||this.opt.danmaku.defaultDanmakuColor,
 			text=this.$('#danmaku_input').value,

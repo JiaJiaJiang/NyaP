@@ -19,22 +19,23 @@
   "devDependencies": {
     "@babel/core": "^7.8.7",
     "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/plugin-proposal-export-default-from": "^7.8.3",
     "@babel/plugin-transform-modules-commonjs": "^7.8.3",
     "@babel/plugin-transform-runtime": "^7.9.0",
     "@babel/preset-env": "^7.8.7",
     "@babel/runtime-corejs3": "^7.9.2",
+    "@juggle/resize-observer": "^3.2.0",
     "babelify": "^10.0.0",
     "browserify": "^16.5.0",
     "core-js": "^3.6.4",
     "gulp": "^4.0.2",
     "gulp-rename": "^2.0.0",
+    "gulp-sass": "^4.0.2",
     "gulp-sourcemaps": "^2.6.5",
     "regenerator-runtime": "^0.13.5",
     "uglifyify": "^5.0.2",
     "vinyl-buffer": "^1.0.1",
-    "vinyl-source-stream": "^2.0.0",
-    "@babel/plugin-proposal-export-default-from": "^7.8.3",
-    "gulp-sass": "^4.0.2"
+    "vinyl-source-stream": "^2.0.0"
   },
   "dependencies": {}
 }

@@ -43,7 +43,7 @@ var _i18n = require("./src/i18n.js");
 
 var _utils = require("./src/utils.js");
 
-},{"./src/core.js":4,"./src/domTools.js":5,"./src/i18n.js":6,"./src/utils.js":7,"@babel/runtime-corejs3/core-js-stable/object/define-property":32}],2:[function(require,module,exports){
+},{"./src/core.js":3,"./src/domTools.js":4,"./src/i18n.js":5,"./src/utils.js":6,"@babel/runtime-corejs3/core-js-stable/object/define-property":31}],2:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -94,504 +94,7 @@ function Object2HTML(obj, func) {
 var _default = Object2HTML;
 exports.default = _default;
 
-},{"@babel/runtime-corejs3/core-js-stable/object/define-property":32,"@babel/runtime-corejs3/core-js-stable/object/entries":33,"@babel/runtime-corejs3/helpers/interopRequireDefault":41}],3:[function(require,module,exports){
-(function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-    typeof define === 'function' && define.amd ? define(['exports'], factory) :
-    (global = global || self, factory(global.ResizeObserver = {}));
-}(this, (function (exports) { 'use strict';
-
-    var resizeObservers = [];
-
-    var hasActiveObservations = function () {
-        return resizeObservers.some(function (ro) { return ro.activeTargets.length > 0; });
-    };
-
-    var hasSkippedObservations = function () {
-        return resizeObservers.some(function (ro) { return ro.skippedTargets.length > 0; });
-    };
-
-    var msg = 'ResizeObserver loop completed with undelivered notifications.';
-    var deliverResizeLoopError = function () {
-        var event;
-        if (typeof ErrorEvent === 'function') {
-            event = new ErrorEvent('error', {
-                message: msg
-            });
-        }
-        else {
-            event = document.createEvent('Event');
-            event.initEvent('error', false, false);
-            event.message = msg;
-        }
-        window.dispatchEvent(event);
-    };
-
-    var ResizeObserverBoxOptions;
-    (function (ResizeObserverBoxOptions) {
-        ResizeObserverBoxOptions["BORDER_BOX"] = "border-box";
-        ResizeObserverBoxOptions["CONTENT_BOX"] = "content-box";
-        ResizeObserverBoxOptions["DEVICE_PIXEL_CONTENT_BOX"] = "device-pixel-content-box";
-    })(ResizeObserverBoxOptions || (ResizeObserverBoxOptions = {}));
-
-    var DOMRectReadOnly = (function () {
-        function DOMRectReadOnly(x, y, width, height) {
-            this.x = x;
-            this.y = y;
-            this.width = width;
-            this.height = height;
-            this.top = this.y;
-            this.left = this.x;
-            this.bottom = this.top + this.height;
-            this.right = this.left + this.width;
-            return Object.freeze(this);
-        }
-        DOMRectReadOnly.prototype.toJSON = function () {
-            var _a = this, x = _a.x, y = _a.y, top = _a.top, right = _a.right, bottom = _a.bottom, left = _a.left, width = _a.width, height = _a.height;
-            return { x: x, y: y, top: top, right: right, bottom: bottom, left: left, width: width, height: height };
-        };
-        DOMRectReadOnly.fromRect = function (rectangle) {
-            return new DOMRectReadOnly(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
-        };
-        return DOMRectReadOnly;
-    }());
-
-    var isSVG = function (target) { return target instanceof SVGElement && 'getBBox' in target; };
-    var isHidden = function (target) {
-        if (isSVG(target)) {
-            var _a = target.getBBox(), width = _a.width, height = _a.height;
-            return !width && !height;
-        }
-        var _b = target, offsetWidth = _b.offsetWidth, offsetHeight = _b.offsetHeight;
-        return !(offsetWidth || offsetHeight || target.getClientRects().length);
-    };
-    var isElement = function (obj) {
-        var _a, _b;
-        var scope = (_b = (_a = obj) === null || _a === void 0 ? void 0 : _a.ownerDocument) === null || _b === void 0 ? void 0 : _b.defaultView;
-        return !!(scope && obj instanceof scope.Element);
-    };
-    var isReplacedElement = function (target) {
-        switch (target.tagName) {
-            case 'INPUT':
-                if (target.type !== 'image') {
-                    break;
-                }
-            case 'VIDEO':
-            case 'AUDIO':
-            case 'EMBED':
-            case 'OBJECT':
-            case 'CANVAS':
-            case 'IFRAME':
-            case 'IMG':
-                return true;
-        }
-        return false;
-    };
-
-    var global = typeof window !== 'undefined' ? window : {};
-
-    var cache = new Map();
-    var scrollRegexp = /auto|scroll/;
-    var verticalRegexp = /^tb|vertical/;
-    var IE = (/msie|trident/i).test(global.navigator && global.navigator.userAgent);
-    var parseDimension = function (pixel) { return parseFloat(pixel || '0'); };
-    var size = function (inlineSize, blockSize, switchSizes) {
-        if (inlineSize === void 0) { inlineSize = 0; }
-        if (blockSize === void 0) { blockSize = 0; }
-        if (switchSizes === void 0) { switchSizes = false; }
-        return Object.freeze({
-            inlineSize: (switchSizes ? blockSize : inlineSize) || 0,
-            blockSize: (switchSizes ? inlineSize : blockSize) || 0
-        });
-    };
-    var zeroBoxes = Object.freeze({
-        devicePixelContentBoxSize: size(),
-        borderBoxSize: size(),
-        contentBoxSize: size(),
-        contentRect: new DOMRectReadOnly(0, 0, 0, 0)
-    });
-    var calculateBoxSizes = function (target) {
-        if (cache.has(target)) {
-            return cache.get(target);
-        }
-        if (isHidden(target)) {
-            cache.set(target, zeroBoxes);
-            return zeroBoxes;
-        }
-        var cs = getComputedStyle(target);
-        var svg = isSVG(target) && target.ownerSVGElement && target.getBBox();
-        var removePadding = !IE && cs.boxSizing === 'border-box';
-        var switchSizes = verticalRegexp.test(cs.writingMode || '');
-        var canScrollVertically = !svg && scrollRegexp.test(cs.overflowY || '');
-        var canScrollHorizontally = !svg && scrollRegexp.test(cs.overflowX || '');
-        var paddingTop = svg ? 0 : parseDimension(cs.paddingTop);
-        var paddingRight = svg ? 0 : parseDimension(cs.paddingRight);
-        var paddingBottom = svg ? 0 : parseDimension(cs.paddingBottom);
-        var paddingLeft = svg ? 0 : parseDimension(cs.paddingLeft);
-        var borderTop = svg ? 0 : parseDimension(cs.borderTopWidth);
-        var borderRight = svg ? 0 : parseDimension(cs.borderRightWidth);
-        var borderBottom = svg ? 0 : parseDimension(cs.borderBottomWidth);
-        var borderLeft = svg ? 0 : parseDimension(cs.borderLeftWidth);
-        var horizontalPadding = paddingLeft + paddingRight;
-        var verticalPadding = paddingTop + paddingBottom;
-        var horizontalBorderArea = borderLeft + borderRight;
-        var verticalBorderArea = borderTop + borderBottom;
-        var horizontalScrollbarThickness = !canScrollHorizontally ? 0 : target.offsetHeight - verticalBorderArea - target.clientHeight;
-        var verticalScrollbarThickness = !canScrollVertically ? 0 : target.offsetWidth - horizontalBorderArea - target.clientWidth;
-        var widthReduction = removePadding ? horizontalPadding + horizontalBorderArea : 0;
-        var heightReduction = removePadding ? verticalPadding + verticalBorderArea : 0;
-        var contentWidth = svg ? svg.width : parseDimension(cs.width) - widthReduction - verticalScrollbarThickness;
-        var contentHeight = svg ? svg.height : parseDimension(cs.height) - heightReduction - horizontalScrollbarThickness;
-        var borderBoxWidth = contentWidth + horizontalPadding + verticalScrollbarThickness + horizontalBorderArea;
-        var borderBoxHeight = contentHeight + verticalPadding + horizontalScrollbarThickness + verticalBorderArea;
-        var boxes = Object.freeze({
-            devicePixelContentBoxSize: size(Math.round(contentWidth * devicePixelRatio), Math.round(contentHeight * devicePixelRatio), switchSizes),
-            borderBoxSize: size(borderBoxWidth, borderBoxHeight, switchSizes),
-            contentBoxSize: size(contentWidth, contentHeight, switchSizes),
-            contentRect: new DOMRectReadOnly(paddingLeft, paddingTop, contentWidth, contentHeight)
-        });
-        cache.set(target, boxes);
-        return boxes;
-    };
-    var calculateBoxSize = function (target, observedBox) {
-        var _a = calculateBoxSizes(target), borderBoxSize = _a.borderBoxSize, contentBoxSize = _a.contentBoxSize, devicePixelContentBoxSize = _a.devicePixelContentBoxSize;
-        switch (observedBox) {
-            case ResizeObserverBoxOptions.DEVICE_PIXEL_CONTENT_BOX:
-                return devicePixelContentBoxSize;
-            case ResizeObserverBoxOptions.BORDER_BOX:
-                return borderBoxSize;
-            default:
-                return contentBoxSize;
-        }
-    };
-
-    var ResizeObserverEntry = (function () {
-        function ResizeObserverEntry(target) {
-            var boxes = calculateBoxSizes(target);
-            this.target = target;
-            this.contentRect = boxes.contentRect;
-            this.borderBoxSize = [boxes.borderBoxSize];
-            this.contentBoxSize = [boxes.contentBoxSize];
-            this.devicePixelContentBoxSize = [boxes.devicePixelContentBoxSize];
-        }
-        return ResizeObserverEntry;
-    }());
-
-    var calculateDepthForNode = function (node) {
-        if (isHidden(node)) {
-            return Infinity;
-        }
-        var depth = 0;
-        var parent = node.parentNode;
-        while (parent) {
-            depth += 1;
-            parent = parent.parentNode;
-        }
-        return depth;
-    };
-
-    var broadcastActiveObservations = function () {
-        var shallowestDepth = Infinity;
-        var callbacks = [];
-        resizeObservers.forEach(function processObserver(ro) {
-            if (ro.activeTargets.length === 0) {
-                return;
-            }
-            var entries = [];
-            ro.activeTargets.forEach(function processTarget(ot) {
-                var entry = new ResizeObserverEntry(ot.target);
-                var targetDepth = calculateDepthForNode(ot.target);
-                entries.push(entry);
-                ot.lastReportedSize = calculateBoxSize(ot.target, ot.observedBox);
-                if (targetDepth < shallowestDepth) {
-                    shallowestDepth = targetDepth;
-                }
-            });
-            callbacks.push(function resizeObserverCallback() {
-                ro.callback.call(ro.observer, entries, ro.observer);
-            });
-            ro.activeTargets.splice(0, ro.activeTargets.length);
-        });
-        for (var _i = 0, callbacks_1 = callbacks; _i < callbacks_1.length; _i++) {
-            var callback = callbacks_1[_i];
-            callback();
-        }
-        return shallowestDepth;
-    };
-
-    var gatherActiveObservationsAtDepth = function (depth) {
-        cache.clear();
-        resizeObservers.forEach(function processObserver(ro) {
-            ro.activeTargets.splice(0, ro.activeTargets.length);
-            ro.skippedTargets.splice(0, ro.skippedTargets.length);
-            ro.observationTargets.forEach(function processTarget(ot) {
-                if (ot.isActive()) {
-                    if (calculateDepthForNode(ot.target) > depth) {
-                        ro.activeTargets.push(ot);
-                    }
-                    else {
-                        ro.skippedTargets.push(ot);
-                    }
-                }
-            });
-        });
-    };
-
-    var process = function () {
-        var depth = 0;
-        gatherActiveObservationsAtDepth(depth);
-        while (hasActiveObservations()) {
-            depth = broadcastActiveObservations();
-            gatherActiveObservationsAtDepth(depth);
-        }
-        if (hasSkippedObservations()) {
-            deliverResizeLoopError();
-        }
-        return depth > 0;
-    };
-
-    var trigger;
-    var callbacks = [];
-    var notify = function () { return callbacks.splice(0).forEach(function (cb) { return cb(); }); };
-    var queueMicroTask = function (callback) {
-        if (!trigger) {
-            var el_1 = document.createTextNode('');
-            var config = { characterData: true };
-            new MutationObserver(function () { return notify(); }).observe(el_1, config);
-            trigger = function () { el_1.textContent = ''; };
-        }
-        callbacks.push(callback);
-        trigger();
-    };
-
-    var queueResizeObserver = function (cb) {
-        queueMicroTask(function ResizeObserver() {
-            requestAnimationFrame(cb);
-        });
-    };
-
-    var watching = 0;
-    var isWatching = function () { return !!watching; };
-    var CATCH_FRAMES = 60 / 5;
-    var observerConfig = { attributes: true, characterData: true, childList: true, subtree: true };
-    var events = [
-        'resize',
-        'load',
-        'transitionend',
-        'animationend',
-        'animationstart',
-        'animationiteration',
-        'keyup',
-        'keydown',
-        'mouseup',
-        'mousedown',
-        'mouseover',
-        'mouseout',
-        'blur',
-        'focus'
-    ];
-    var scheduled = false;
-    var Scheduler = (function () {
-        function Scheduler() {
-            var _this = this;
-            this.stopped = true;
-            this.listener = function () { return _this.schedule(); };
-        }
-        Scheduler.prototype.run = function (frames) {
-            var _this = this;
-            if (scheduled) {
-                return;
-            }
-            scheduled = true;
-            queueResizeObserver(function () {
-                var elementsHaveResized = false;
-                try {
-                    elementsHaveResized = process();
-                }
-                finally {
-                    scheduled = false;
-                    if (!isWatching()) {
-                        return;
-                    }
-                    if (elementsHaveResized) {
-                        _this.run(60);
-                    }
-                    else if (frames) {
-                        _this.run(frames - 1);
-                    }
-                    else {
-                        _this.start();
-                    }
-                }
-            });
-        };
-        Scheduler.prototype.schedule = function () {
-            this.stop();
-            this.run(CATCH_FRAMES);
-        };
-        Scheduler.prototype.observe = function () {
-            var _this = this;
-            var cb = function () { return _this.observer && _this.observer.observe(document.body, observerConfig); };
-            document.body ? cb() : global.addEventListener('DOMContentLoaded', cb);
-        };
-        Scheduler.prototype.start = function () {
-            var _this = this;
-            if (this.stopped) {
-                this.stopped = false;
-                this.observer = new MutationObserver(this.listener);
-                this.observe();
-                events.forEach(function (name) { return global.addEventListener(name, _this.listener, true); });
-            }
-        };
-        Scheduler.prototype.stop = function () {
-            var _this = this;
-            if (!this.stopped) {
-                this.observer && this.observer.disconnect();
-                events.forEach(function (name) { return global.removeEventListener(name, _this.listener, true); });
-                this.stopped = true;
-            }
-        };
-        return Scheduler;
-    }());
-    var scheduler = new Scheduler();
-    var updateCount = function (n) {
-        !watching && n > 0 && scheduler.start();
-        watching += n;
-        !watching && scheduler.stop();
-    };
-
-    var skipNotifyOnElement = function (target) {
-        return !isSVG(target)
-            && !isReplacedElement(target)
-            && getComputedStyle(target).display === 'inline';
-    };
-    var ResizeObservation = (function () {
-        function ResizeObservation(target, observedBox) {
-            this.target = target;
-            this.observedBox = observedBox || ResizeObserverBoxOptions.CONTENT_BOX;
-            this.lastReportedSize = {
-                inlineSize: 0,
-                blockSize: 0
-            };
-        }
-        ResizeObservation.prototype.isActive = function () {
-            var size = calculateBoxSize(this.target, this.observedBox);
-            if (skipNotifyOnElement(this.target)) {
-                this.lastReportedSize = size;
-            }
-            if (this.lastReportedSize.inlineSize !== size.inlineSize
-                || this.lastReportedSize.blockSize !== size.blockSize) {
-                return true;
-            }
-            return false;
-        };
-        return ResizeObservation;
-    }());
-
-    var ResizeObserverDetail = (function () {
-        function ResizeObserverDetail(resizeObserver, callback) {
-            this.activeTargets = [];
-            this.skippedTargets = [];
-            this.observationTargets = [];
-            this.observer = resizeObserver;
-            this.callback = callback;
-        }
-        return ResizeObserverDetail;
-    }());
-
-    var observerMap = new Map();
-    var getObservationIndex = function (observationTargets, target) {
-        for (var i = 0; i < observationTargets.length; i += 1) {
-            if (observationTargets[i].target === target) {
-                return i;
-            }
-        }
-        return -1;
-    };
-    var ResizeObserverController = (function () {
-        function ResizeObserverController() {
-        }
-        ResizeObserverController.connect = function (resizeObserver, callback) {
-            var detail = new ResizeObserverDetail(resizeObserver, callback);
-            resizeObservers.push(detail);
-            observerMap.set(resizeObserver, detail);
-        };
-        ResizeObserverController.observe = function (resizeObserver, target, options) {
-            if (observerMap.has(resizeObserver)) {
-                var detail = observerMap.get(resizeObserver);
-                if (getObservationIndex(detail.observationTargets, target) < 0) {
-                    detail.observationTargets.push(new ResizeObservation(target, options && options.box));
-                    updateCount(1);
-                    scheduler.schedule();
-                }
-            }
-        };
-        ResizeObserverController.unobserve = function (resizeObserver, target) {
-            if (observerMap.has(resizeObserver)) {
-                var detail = observerMap.get(resizeObserver);
-                var index = getObservationIndex(detail.observationTargets, target);
-                if (index >= 0) {
-                    detail.observationTargets.splice(index, 1);
-                    updateCount(-1);
-                }
-            }
-        };
-        ResizeObserverController.disconnect = function (resizeObserver) {
-            if (observerMap.has(resizeObserver)) {
-                var detail = observerMap.get(resizeObserver);
-                resizeObservers.splice(resizeObservers.indexOf(detail), 1);
-                observerMap.delete(resizeObserver);
-                updateCount(-detail.observationTargets.length);
-            }
-        };
-        return ResizeObserverController;
-    }());
-
-    var ResizeObserver = (function () {
-        function ResizeObserver(callback) {
-            if (arguments.length === 0) {
-                throw new TypeError("Failed to construct 'ResizeObserver': 1 argument required, but only 0 present.");
-            }
-            if (typeof callback !== 'function') {
-                throw new TypeError("Failed to construct 'ResizeObserver': The callback provided as parameter 1 is not a function.");
-            }
-            ResizeObserverController.connect(this, callback);
-        }
-        ResizeObserver.prototype.observe = function (target, options) {
-            if (arguments.length === 0) {
-                throw new TypeError("Failed to execute 'observe' on 'ResizeObserver': 1 argument required, but only 0 present.");
-            }
-            if (!isElement(target)) {
-                throw new TypeError("Failed to execute 'observe' on 'ResizeObserver': parameter 1 is not of type 'Element");
-            }
-            ResizeObserverController.observe(this, target, options);
-        };
-        ResizeObserver.prototype.unobserve = function (target) {
-            if (arguments.length === 0) {
-                throw new TypeError("Failed to execute 'unobserve' on 'ResizeObserver': 1 argument required, but only 0 present.");
-            }
-            if (!isElement(target)) {
-                throw new TypeError("Failed to execute 'unobserve' on 'ResizeObserver': parameter 1 is not of type 'Element");
-            }
-            ResizeObserverController.unobserve(this, target);
-        };
-        ResizeObserver.prototype.disconnect = function () {
-            ResizeObserverController.disconnect(this);
-        };
-        ResizeObserver.toString = function () {
-            return 'function ResizeObserver () { [polyfill code] }';
-        };
-        return ResizeObserver;
-    }());
-
-    exports.ResizeObserver = ResizeObserver;
-    exports.ResizeObserverEntry = ResizeObserverEntry;
-
-    Object.defineProperty(exports, '__esModule', { value: true });
-
-})));
-
-},{}],4:[function(require,module,exports){
+},{"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/core-js-stable/object/entries":32,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],3:[function(require,module,exports){
 /*
 Copyright luojia@luojia.me
 LGPL license
@@ -977,7 +480,7 @@ exports.NyaPlayerCore = NyaPlayerCore;
 (0, _defineProperty3.default)(NyaPlayerCore, "DomTools", _domTools.DomTools);
 (0, _defineProperty3.default)(NyaPlayerCore, "NyaPCoreOptions", NyaPCoreOptions);
 
-},{"./domTools.js":5,"./i18n.js":6,"./utils.js":7,"@babel/runtime-corejs3/core-js-stable/array/is-array":17,"@babel/runtime-corejs3/core-js-stable/date/now":18,"@babel/runtime-corejs3/core-js-stable/instance/for-each":22,"@babel/runtime-corejs3/core-js-stable/instance/index-of":23,"@babel/runtime-corejs3/core-js-stable/instance/sort":26,"@babel/runtime-corejs3/core-js-stable/instance/splice":27,"@babel/runtime-corejs3/core-js-stable/instance/trim":29,"@babel/runtime-corejs3/core-js-stable/object/define-property":32,"@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptor":34,"@babel/runtime-corejs3/core-js-stable/promise":35,"@babel/runtime-corejs3/core-js-stable/set-timeout":38,"@babel/runtime-corejs3/helpers/defineProperty":40,"@babel/runtime-corejs3/helpers/interopRequireDefault":41}],5:[function(require,module,exports){
+},{"./domTools.js":4,"./i18n.js":5,"./utils.js":6,"@babel/runtime-corejs3/core-js-stable/array/is-array":16,"@babel/runtime-corejs3/core-js-stable/date/now":17,"@babel/runtime-corejs3/core-js-stable/instance/for-each":21,"@babel/runtime-corejs3/core-js-stable/instance/index-of":22,"@babel/runtime-corejs3/core-js-stable/instance/sort":25,"@babel/runtime-corejs3/core-js-stable/instance/splice":26,"@babel/runtime-corejs3/core-js-stable/instance/trim":28,"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptor":33,"@babel/runtime-corejs3/core-js-stable/promise":34,"@babel/runtime-corejs3/core-js-stable/set-timeout":37,"@babel/runtime-corejs3/helpers/defineProperty":39,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],4:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -1097,7 +600,7 @@ exports.DomTools = DomTools;
 
 });
 
-},{"../lib/Object2HTML.js":2,"./utils.js":7,"@babel/runtime-corejs3/core-js-stable/array/is-array":17,"@babel/runtime-corejs3/core-js-stable/instance/for-each":22,"@babel/runtime-corejs3/core-js-stable/object/define-property":32,"@babel/runtime-corejs3/core-js-stable/promise":35,"@babel/runtime-corejs3/helpers/defineProperty":40,"@babel/runtime-corejs3/helpers/interopRequireDefault":41,"@juggle/resize-observer":3}],6:[function(require,module,exports){
+},{"../lib/Object2HTML.js":2,"./utils.js":6,"@babel/runtime-corejs3/core-js-stable/array/is-array":16,"@babel/runtime-corejs3/core-js-stable/instance/for-each":21,"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/core-js-stable/promise":34,"@babel/runtime-corejs3/helpers/defineProperty":39,"@babel/runtime-corejs3/helpers/interopRequireDefault":40,"@juggle/resize-observer":41}],5:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -1177,7 +680,7 @@ class i18n {
 
 exports.i18n = i18n;
 
-},{"@babel/runtime-corejs3/core-js-stable/instance/for-each":22,"@babel/runtime-corejs3/core-js-stable/instance/starts-with":28,"@babel/runtime-corejs3/core-js-stable/object/define-property":32,"@babel/runtime-corejs3/helpers/defineProperty":40,"@babel/runtime-corejs3/helpers/interopRequireDefault":41}],7:[function(require,module,exports){
+},{"@babel/runtime-corejs3/core-js-stable/instance/for-each":21,"@babel/runtime-corejs3/core-js-stable/instance/starts-with":27,"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/helpers/defineProperty":39,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],6:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -1278,7 +781,7 @@ class Utils {
 exports.Utils = Utils;
 (0, _defineProperty2.default)(Utils, "requestIdleCallback", ((_window$requestIdleCa = window.requestIdleCallback) === null || _window$requestIdleCa === void 0 ? void 0 : (0, _bind.default)(_window$requestIdleCa).call(_window$requestIdleCa, window)) || _setImmediate2.default);
 
-},{"@babel/runtime-corejs3/core-js-stable/instance/bind":19,"@babel/runtime-corejs3/core-js-stable/instance/slice":25,"@babel/runtime-corejs3/core-js-stable/object/define-property":32,"@babel/runtime-corejs3/core-js-stable/set-immediate":36,"@babel/runtime-corejs3/helpers/defineProperty":40,"@babel/runtime-corejs3/helpers/interopRequireDefault":41}],8:[function(require,module,exports){
+},{"@babel/runtime-corejs3/core-js-stable/instance/bind":18,"@babel/runtime-corejs3/core-js-stable/instance/slice":24,"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/core-js-stable/set-immediate":35,"@babel/runtime-corejs3/helpers/defineProperty":39,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],7:[function(require,module,exports){
 /*
 Copyright luojia@luojia.me
 LGPL license
@@ -1384,7 +887,7 @@ class NyaPDanmaku extends _danmakuFrame.DanmakuFrame {
 var _default = NyaPDanmaku;
 exports.default = _default;
 
-},{"../NyaP-Core/index.js":1,"./src/danmaku-frame.js":10,"./src/danmaku-text/danmaku-text.js":15,"@babel/runtime-corejs3/core-js-stable/object/define-property":32,"@babel/runtime-corejs3/helpers/interopRequireDefault":41}],9:[function(require,module,exports){
+},{"../NyaP-Core/index.js":1,"./src/danmaku-frame.js":9,"./src/danmaku-text/danmaku-text.js":14,"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],8:[function(require,module,exports){
 /*
 Copyright luojia@luojia.me
 LGPL license
@@ -1743,7 +1246,7 @@ var _defineProperty = _interopRequireDefault(require("@babel/runtime-corejs3/cor
   return createClass(global.Float32Array ? Float32Array : Array);
 });
 
-},{"@babel/runtime-corejs3/core-js-stable/instance/fill":21,"@babel/runtime-corejs3/core-js-stable/object/define-property":32,"@babel/runtime-corejs3/helpers/interopRequireDefault":41}],10:[function(require,module,exports){
+},{"@babel/runtime-corejs3/core-js-stable/instance/fill":20,"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],9:[function(require,module,exports){
 /*
 Copyright luojia@luojia.me
 LGPL license
@@ -2033,7 +1536,7 @@ class DanmakuFrame {
 exports.DanmakuFrame = DanmakuFrame;
 (0, _defineProperty2.default)(DanmakuFrame, "availableModules", {});
 
-},{"../../NyaP-Core/index.js":1,"@babel/runtime-corejs3/core-js-stable/date/now":18,"@babel/runtime-corejs3/core-js-stable/instance/bind":19,"@babel/runtime-corejs3/core-js-stable/instance/copy-within":20,"@babel/runtime-corejs3/core-js-stable/instance/for-each":22,"@babel/runtime-corejs3/core-js-stable/object/define-property":32,"@babel/runtime-corejs3/core-js-stable/set-immediate":36,"@babel/runtime-corejs3/core-js-stable/set-timeout":38,"@babel/runtime-corejs3/helpers/defineProperty":40,"@babel/runtime-corejs3/helpers/interopRequireDefault":41}],11:[function(require,module,exports){
+},{"../../NyaP-Core/index.js":1,"@babel/runtime-corejs3/core-js-stable/date/now":17,"@babel/runtime-corejs3/core-js-stable/instance/bind":18,"@babel/runtime-corejs3/core-js-stable/instance/copy-within":19,"@babel/runtime-corejs3/core-js-stable/instance/for-each":21,"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/core-js-stable/set-immediate":35,"@babel/runtime-corejs3/core-js-stable/set-timeout":37,"@babel/runtime-corejs3/helpers/defineProperty":39,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],10:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -2170,7 +1673,7 @@ class TextCanvas2D extends _textModuleTemplate.default {
 var _default = TextCanvas2D;
 exports.default = _default;
 
-},{"./textModuleTemplate.js":16,"@babel/runtime-corejs3/core-js-stable/object/define-property":32,"@babel/runtime-corejs3/helpers/defineProperty":40,"@babel/runtime-corejs3/helpers/interopRequireDefault":41}],12:[function(require,module,exports){
+},{"./textModuleTemplate.js":15,"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/helpers/defineProperty":39,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],11:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -2278,7 +1781,7 @@ class TextCss extends _textModuleTemplate.default {
 var _default = TextCss;
 exports.default = _default;
 
-},{"./textModuleTemplate.js":16,"@babel/runtime-corejs3/core-js-stable/instance/for-each":22,"@babel/runtime-corejs3/core-js-stable/object/define-property":32,"@babel/runtime-corejs3/helpers/interopRequireDefault":41}],13:[function(require,module,exports){
+},{"./textModuleTemplate.js":15,"@babel/runtime-corejs3/core-js-stable/instance/for-each":21,"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],12:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -2502,7 +2005,7 @@ const commonTextureCoord = new Float32Array([0.0, 0.0, //↖
 var _default = TextWebGL;
 exports.default = _default;
 
-},{"../../lib/Mat/Mat.js":9,"../danmaku-frame.js":10,"./textModuleTemplate.js":16,"@babel/runtime-corejs3/core-js-stable/instance/for-each":22,"@babel/runtime-corejs3/core-js-stable/object/define-property":32,"@babel/runtime-corejs3/helpers/interopRequireDefault":41}],14:[function(require,module,exports){
+},{"../../lib/Mat/Mat.js":8,"../danmaku-frame.js":9,"./textModuleTemplate.js":15,"@babel/runtime-corejs3/core-js-stable/instance/for-each":21,"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],13:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -2534,7 +2037,7 @@ class TextOff extends _textModuleTemplate.default {
 var _default = TextOff;
 exports.default = _default;
 
-},{"./textModuleTemplate.js":16,"@babel/runtime-corejs3/core-js-stable/object/define-property":32,"@babel/runtime-corejs3/helpers/interopRequireDefault":41}],15:[function(require,module,exports){
+},{"./textModuleTemplate.js":15,"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],14:[function(require,module,exports){
 /*
 Copyright luojia@luojia.me
 LGPL license
@@ -3381,7 +2884,7 @@ function init(DanmakuFrame) {
 ;
 ;
 
-},{"../danmaku-frame.js":10,"./TextCanvas2D.js":11,"./TextCss.js":12,"./TextWebGL.js":13,"./Textoff.js":14,"@babel/runtime-corejs3/core-js-stable/date/now":18,"@babel/runtime-corejs3/core-js-stable/instance/bind":19,"@babel/runtime-corejs3/core-js-stable/instance/fill":21,"@babel/runtime-corejs3/core-js-stable/instance/for-each":22,"@babel/runtime-corejs3/core-js-stable/instance/index-of":23,"@babel/runtime-corejs3/core-js-stable/instance/splice":27,"@babel/runtime-corejs3/core-js-stable/object/assign":30,"@babel/runtime-corejs3/core-js-stable/object/create":31,"@babel/runtime-corejs3/core-js-stable/object/define-property":32,"@babel/runtime-corejs3/core-js-stable/set-interval":37,"@babel/runtime-corejs3/helpers/defineProperty":40,"@babel/runtime-corejs3/helpers/interopRequireDefault":41}],16:[function(require,module,exports){
+},{"../danmaku-frame.js":9,"./TextCanvas2D.js":10,"./TextCss.js":11,"./TextWebGL.js":12,"./Textoff.js":13,"@babel/runtime-corejs3/core-js-stable/date/now":17,"@babel/runtime-corejs3/core-js-stable/instance/bind":18,"@babel/runtime-corejs3/core-js-stable/instance/fill":20,"@babel/runtime-corejs3/core-js-stable/instance/for-each":21,"@babel/runtime-corejs3/core-js-stable/instance/index-of":22,"@babel/runtime-corejs3/core-js-stable/instance/splice":26,"@babel/runtime-corejs3/core-js-stable/object/assign":29,"@babel/runtime-corejs3/core-js-stable/object/create":30,"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/core-js-stable/set-interval":36,"@babel/runtime-corejs3/helpers/defineProperty":39,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],15:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -3443,53 +2946,53 @@ class textModuleTemplate {
 var _default = textModuleTemplate;
 exports.default = _default;
 
-},{"@babel/runtime-corejs3/core-js-stable/object/define-property":32,"@babel/runtime-corejs3/helpers/defineProperty":40,"@babel/runtime-corejs3/helpers/interopRequireDefault":41}],17:[function(require,module,exports){
+},{"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/helpers/defineProperty":39,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],16:[function(require,module,exports){
 module.exports = require("core-js-pure/stable/array/is-array");
-},{"core-js-pure/stable/array/is-array":204}],18:[function(require,module,exports){
+},{"core-js-pure/stable/array/is-array":204}],17:[function(require,module,exports){
 module.exports = require("core-js-pure/stable/date/now");
-},{"core-js-pure/stable/date/now":206}],19:[function(require,module,exports){
+},{"core-js-pure/stable/date/now":206}],18:[function(require,module,exports){
 module.exports = require("core-js-pure/stable/instance/bind");
-},{"core-js-pure/stable/instance/bind":207}],20:[function(require,module,exports){
+},{"core-js-pure/stable/instance/bind":207}],19:[function(require,module,exports){
 module.exports = require("core-js-pure/stable/instance/copy-within");
-},{"core-js-pure/stable/instance/copy-within":208}],21:[function(require,module,exports){
+},{"core-js-pure/stable/instance/copy-within":208}],20:[function(require,module,exports){
 module.exports = require("core-js-pure/stable/instance/fill");
-},{"core-js-pure/stable/instance/fill":209}],22:[function(require,module,exports){
+},{"core-js-pure/stable/instance/fill":209}],21:[function(require,module,exports){
 module.exports = require("core-js-pure/stable/instance/for-each");
-},{"core-js-pure/stable/instance/for-each":210}],23:[function(require,module,exports){
+},{"core-js-pure/stable/instance/for-each":210}],22:[function(require,module,exports){
 module.exports = require("core-js-pure/stable/instance/index-of");
-},{"core-js-pure/stable/instance/index-of":211}],24:[function(require,module,exports){
+},{"core-js-pure/stable/instance/index-of":211}],23:[function(require,module,exports){
 module.exports = require("core-js-pure/stable/instance/repeat");
-},{"core-js-pure/stable/instance/repeat":212}],25:[function(require,module,exports){
+},{"core-js-pure/stable/instance/repeat":212}],24:[function(require,module,exports){
 module.exports = require("core-js-pure/stable/instance/slice");
-},{"core-js-pure/stable/instance/slice":213}],26:[function(require,module,exports){
+},{"core-js-pure/stable/instance/slice":213}],25:[function(require,module,exports){
 module.exports = require("core-js-pure/stable/instance/sort");
-},{"core-js-pure/stable/instance/sort":214}],27:[function(require,module,exports){
+},{"core-js-pure/stable/instance/sort":214}],26:[function(require,module,exports){
 module.exports = require("core-js-pure/stable/instance/splice");
-},{"core-js-pure/stable/instance/splice":215}],28:[function(require,module,exports){
+},{"core-js-pure/stable/instance/splice":215}],27:[function(require,module,exports){
 module.exports = require("core-js-pure/stable/instance/starts-with");
-},{"core-js-pure/stable/instance/starts-with":216}],29:[function(require,module,exports){
+},{"core-js-pure/stable/instance/starts-with":216}],28:[function(require,module,exports){
 module.exports = require("core-js-pure/stable/instance/trim");
-},{"core-js-pure/stable/instance/trim":217}],30:[function(require,module,exports){
+},{"core-js-pure/stable/instance/trim":217}],29:[function(require,module,exports){
 module.exports = require("core-js-pure/stable/object/assign");
-},{"core-js-pure/stable/object/assign":218}],31:[function(require,module,exports){
+},{"core-js-pure/stable/object/assign":218}],30:[function(require,module,exports){
 module.exports = require("core-js-pure/stable/object/create");
-},{"core-js-pure/stable/object/create":219}],32:[function(require,module,exports){
+},{"core-js-pure/stable/object/create":219}],31:[function(require,module,exports){
 module.exports = require("core-js-pure/stable/object/define-property");
-},{"core-js-pure/stable/object/define-property":220}],33:[function(require,module,exports){
+},{"core-js-pure/stable/object/define-property":220}],32:[function(require,module,exports){
 module.exports = require("core-js-pure/stable/object/entries");
-},{"core-js-pure/stable/object/entries":221}],34:[function(require,module,exports){
+},{"core-js-pure/stable/object/entries":221}],33:[function(require,module,exports){
 module.exports = require("core-js-pure/stable/object/get-own-property-descriptor");
-},{"core-js-pure/stable/object/get-own-property-descriptor":222}],35:[function(require,module,exports){
+},{"core-js-pure/stable/object/get-own-property-descriptor":222}],34:[function(require,module,exports){
 module.exports = require("core-js-pure/stable/promise");
-},{"core-js-pure/stable/promise":223}],36:[function(require,module,exports){
+},{"core-js-pure/stable/promise":223}],35:[function(require,module,exports){
 module.exports = require("core-js-pure/stable/set-immediate");
-},{"core-js-pure/stable/set-immediate":224}],37:[function(require,module,exports){
+},{"core-js-pure/stable/set-immediate":224}],36:[function(require,module,exports){
 module.exports = require("core-js-pure/stable/set-interval");
-},{"core-js-pure/stable/set-interval":225}],38:[function(require,module,exports){
+},{"core-js-pure/stable/set-interval":225}],37:[function(require,module,exports){
 module.exports = require("core-js-pure/stable/set-timeout");
-},{"core-js-pure/stable/set-timeout":226}],39:[function(require,module,exports){
+},{"core-js-pure/stable/set-timeout":226}],38:[function(require,module,exports){
 module.exports = require("core-js-pure/features/object/define-property");
-},{"core-js-pure/features/object/define-property":71}],40:[function(require,module,exports){
+},{"core-js-pure/features/object/define-property":71}],39:[function(require,module,exports){
 var _Object$defineProperty = require("../core-js/object/define-property");
 
 function _defineProperty(obj, key, value) {
@@ -3508,7 +3011,7 @@ function _defineProperty(obj, key, value) {
 }
 
 module.exports = _defineProperty;
-},{"../core-js/object/define-property":39}],41:[function(require,module,exports){
+},{"../core-js/object/define-property":38}],40:[function(require,module,exports){
 function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : {
     "default": obj
@@ -3516,6 +3019,508 @@ function _interopRequireDefault(obj) {
 }
 
 module.exports = _interopRequireDefault;
+},{}],41:[function(require,module,exports){
+(function (global, factory) {
+    typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+    typeof define === 'function' && define.amd ? define(['exports'], factory) :
+    (global = global || self, factory(global.ResizeObserver = {}));
+}(this, (function (exports) { 'use strict';
+
+    var resizeObservers = [];
+
+    var hasActiveObservations = function () {
+        return resizeObservers.some(function (ro) { return ro.activeTargets.length > 0; });
+    };
+
+    var hasSkippedObservations = function () {
+        return resizeObservers.some(function (ro) { return ro.skippedTargets.length > 0; });
+    };
+
+    var msg = 'ResizeObserver loop completed with undelivered notifications.';
+    var deliverResizeLoopError = function () {
+        var event;
+        if (typeof ErrorEvent === 'function') {
+            event = new ErrorEvent('error', {
+                message: msg
+            });
+        }
+        else {
+            event = document.createEvent('Event');
+            event.initEvent('error', false, false);
+            event.message = msg;
+        }
+        window.dispatchEvent(event);
+    };
+
+    var ResizeObserverBoxOptions;
+    (function (ResizeObserverBoxOptions) {
+        ResizeObserverBoxOptions["BORDER_BOX"] = "border-box";
+        ResizeObserverBoxOptions["CONTENT_BOX"] = "content-box";
+        ResizeObserverBoxOptions["DEVICE_PIXEL_CONTENT_BOX"] = "device-pixel-content-box";
+    })(ResizeObserverBoxOptions || (ResizeObserverBoxOptions = {}));
+
+    var DOMRectReadOnly = (function () {
+        function DOMRectReadOnly(x, y, width, height) {
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
+            this.top = this.y;
+            this.left = this.x;
+            this.bottom = this.top + this.height;
+            this.right = this.left + this.width;
+            return Object.freeze(this);
+        }
+        DOMRectReadOnly.prototype.toJSON = function () {
+            var _a = this, x = _a.x, y = _a.y, top = _a.top, right = _a.right, bottom = _a.bottom, left = _a.left, width = _a.width, height = _a.height;
+            return { x: x, y: y, top: top, right: right, bottom: bottom, left: left, width: width, height: height };
+        };
+        DOMRectReadOnly.fromRect = function (rectangle) {
+            return new DOMRectReadOnly(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
+        };
+        return DOMRectReadOnly;
+    }());
+
+    var isSVG = function (target) { return target instanceof SVGElement && 'getBBox' in target; };
+    var isHidden = function (target) {
+        if (isSVG(target)) {
+            var _a = target.getBBox(), width = _a.width, height = _a.height;
+            return !width && !height;
+        }
+        var _b = target, offsetWidth = _b.offsetWidth, offsetHeight = _b.offsetHeight;
+        return !(offsetWidth || offsetHeight || target.getClientRects().length);
+    };
+    var isElement = function (obj) {
+        var _a, _b;
+        var scope = (_b = (_a = obj) === null || _a === void 0 ? void 0 : _a.ownerDocument) === null || _b === void 0 ? void 0 : _b.defaultView;
+        return !!(scope && obj instanceof scope.Element);
+    };
+    var isReplacedElement = function (target) {
+        switch (target.tagName) {
+            case 'INPUT':
+                if (target.type !== 'image') {
+                    break;
+                }
+            case 'VIDEO':
+            case 'AUDIO':
+            case 'EMBED':
+            case 'OBJECT':
+            case 'CANVAS':
+            case 'IFRAME':
+            case 'IMG':
+                return true;
+        }
+        return false;
+    };
+
+    var global = typeof window !== 'undefined' ? window : {};
+
+    var cache = new WeakMap();
+    var scrollRegexp = /auto|scroll/;
+    var verticalRegexp = /^tb|vertical/;
+    var IE = (/msie|trident/i).test(global.navigator && global.navigator.userAgent);
+    var parseDimension = function (pixel) { return parseFloat(pixel || '0'); };
+    var size = function (inlineSize, blockSize, switchSizes) {
+        if (inlineSize === void 0) { inlineSize = 0; }
+        if (blockSize === void 0) { blockSize = 0; }
+        if (switchSizes === void 0) { switchSizes = false; }
+        return Object.freeze({
+            inlineSize: (switchSizes ? blockSize : inlineSize) || 0,
+            blockSize: (switchSizes ? inlineSize : blockSize) || 0
+        });
+    };
+    var zeroBoxes = Object.freeze({
+        devicePixelContentBoxSize: size(),
+        borderBoxSize: size(),
+        contentBoxSize: size(),
+        contentRect: new DOMRectReadOnly(0, 0, 0, 0)
+    });
+    var calculateBoxSizes = function (target, forceRecalculation) {
+        if (forceRecalculation === void 0) { forceRecalculation = false; }
+        if (cache.has(target) && !forceRecalculation) {
+            return cache.get(target);
+        }
+        if (isHidden(target)) {
+            cache.set(target, zeroBoxes);
+            return zeroBoxes;
+        }
+        var cs = getComputedStyle(target);
+        var svg = isSVG(target) && target.ownerSVGElement && target.getBBox();
+        var removePadding = !IE && cs.boxSizing === 'border-box';
+        var switchSizes = verticalRegexp.test(cs.writingMode || '');
+        var canScrollVertically = !svg && scrollRegexp.test(cs.overflowY || '');
+        var canScrollHorizontally = !svg && scrollRegexp.test(cs.overflowX || '');
+        var paddingTop = svg ? 0 : parseDimension(cs.paddingTop);
+        var paddingRight = svg ? 0 : parseDimension(cs.paddingRight);
+        var paddingBottom = svg ? 0 : parseDimension(cs.paddingBottom);
+        var paddingLeft = svg ? 0 : parseDimension(cs.paddingLeft);
+        var borderTop = svg ? 0 : parseDimension(cs.borderTopWidth);
+        var borderRight = svg ? 0 : parseDimension(cs.borderRightWidth);
+        var borderBottom = svg ? 0 : parseDimension(cs.borderBottomWidth);
+        var borderLeft = svg ? 0 : parseDimension(cs.borderLeftWidth);
+        var horizontalPadding = paddingLeft + paddingRight;
+        var verticalPadding = paddingTop + paddingBottom;
+        var horizontalBorderArea = borderLeft + borderRight;
+        var verticalBorderArea = borderTop + borderBottom;
+        var horizontalScrollbarThickness = !canScrollHorizontally ? 0 : target.offsetHeight - verticalBorderArea - target.clientHeight;
+        var verticalScrollbarThickness = !canScrollVertically ? 0 : target.offsetWidth - horizontalBorderArea - target.clientWidth;
+        var widthReduction = removePadding ? horizontalPadding + horizontalBorderArea : 0;
+        var heightReduction = removePadding ? verticalPadding + verticalBorderArea : 0;
+        var contentWidth = svg ? svg.width : parseDimension(cs.width) - widthReduction - verticalScrollbarThickness;
+        var contentHeight = svg ? svg.height : parseDimension(cs.height) - heightReduction - horizontalScrollbarThickness;
+        var borderBoxWidth = contentWidth + horizontalPadding + verticalScrollbarThickness + horizontalBorderArea;
+        var borderBoxHeight = contentHeight + verticalPadding + horizontalScrollbarThickness + verticalBorderArea;
+        var boxes = Object.freeze({
+            devicePixelContentBoxSize: size(Math.round(contentWidth * devicePixelRatio), Math.round(contentHeight * devicePixelRatio), switchSizes),
+            borderBoxSize: size(borderBoxWidth, borderBoxHeight, switchSizes),
+            contentBoxSize: size(contentWidth, contentHeight, switchSizes),
+            contentRect: new DOMRectReadOnly(paddingLeft, paddingTop, contentWidth, contentHeight)
+        });
+        cache.set(target, boxes);
+        return boxes;
+    };
+    var calculateBoxSize = function (target, observedBox, forceRecalculation) {
+        var _a = calculateBoxSizes(target, forceRecalculation), borderBoxSize = _a.borderBoxSize, contentBoxSize = _a.contentBoxSize, devicePixelContentBoxSize = _a.devicePixelContentBoxSize;
+        switch (observedBox) {
+            case ResizeObserverBoxOptions.DEVICE_PIXEL_CONTENT_BOX:
+                return devicePixelContentBoxSize;
+            case ResizeObserverBoxOptions.BORDER_BOX:
+                return borderBoxSize;
+            default:
+                return contentBoxSize;
+        }
+    };
+
+    var ResizeObserverEntry = (function () {
+        function ResizeObserverEntry(target) {
+            var boxes = calculateBoxSizes(target);
+            this.target = target;
+            this.contentRect = boxes.contentRect;
+            this.borderBoxSize = [boxes.borderBoxSize];
+            this.contentBoxSize = [boxes.contentBoxSize];
+            this.devicePixelContentBoxSize = [boxes.devicePixelContentBoxSize];
+        }
+        return ResizeObserverEntry;
+    }());
+
+    var calculateDepthForNode = function (node) {
+        if (isHidden(node)) {
+            return Infinity;
+        }
+        var depth = 0;
+        var parent = node.parentNode;
+        while (parent) {
+            depth += 1;
+            parent = parent.parentNode;
+        }
+        return depth;
+    };
+
+    var broadcastActiveObservations = function () {
+        var shallowestDepth = Infinity;
+        var callbacks = [];
+        resizeObservers.forEach(function processObserver(ro) {
+            if (ro.activeTargets.length === 0) {
+                return;
+            }
+            var entries = [];
+            ro.activeTargets.forEach(function processTarget(ot) {
+                var entry = new ResizeObserverEntry(ot.target);
+                var targetDepth = calculateDepthForNode(ot.target);
+                entries.push(entry);
+                ot.lastReportedSize = calculateBoxSize(ot.target, ot.observedBox);
+                if (targetDepth < shallowestDepth) {
+                    shallowestDepth = targetDepth;
+                }
+            });
+            callbacks.push(function resizeObserverCallback() {
+                ro.callback.call(ro.observer, entries, ro.observer);
+            });
+            ro.activeTargets.splice(0, ro.activeTargets.length);
+        });
+        for (var _i = 0, callbacks_1 = callbacks; _i < callbacks_1.length; _i++) {
+            var callback = callbacks_1[_i];
+            callback();
+        }
+        return shallowestDepth;
+    };
+
+    var gatherActiveObservationsAtDepth = function (depth) {
+        resizeObservers.forEach(function processObserver(ro) {
+            ro.activeTargets.splice(0, ro.activeTargets.length);
+            ro.skippedTargets.splice(0, ro.skippedTargets.length);
+            ro.observationTargets.forEach(function processTarget(ot) {
+                if (ot.isActive()) {
+                    if (calculateDepthForNode(ot.target) > depth) {
+                        ro.activeTargets.push(ot);
+                    }
+                    else {
+                        ro.skippedTargets.push(ot);
+                    }
+                }
+            });
+        });
+    };
+
+    var process = function () {
+        var depth = 0;
+        gatherActiveObservationsAtDepth(depth);
+        while (hasActiveObservations()) {
+            depth = broadcastActiveObservations();
+            gatherActiveObservationsAtDepth(depth);
+        }
+        if (hasSkippedObservations()) {
+            deliverResizeLoopError();
+        }
+        return depth > 0;
+    };
+
+    var trigger;
+    var callbacks = [];
+    var notify = function () { return callbacks.splice(0).forEach(function (cb) { return cb(); }); };
+    var queueMicroTask = function (callback) {
+        if (!trigger) {
+            var toggle_1 = 0;
+            var el_1 = document.createTextNode('');
+            var config = { characterData: true };
+            new MutationObserver(function () { return notify(); }).observe(el_1, config);
+            trigger = function () { el_1.textContent = "" + (toggle_1 ? toggle_1-- : toggle_1++); };
+        }
+        callbacks.push(callback);
+        trigger();
+    };
+
+    var queueResizeObserver = function (cb) {
+        queueMicroTask(function ResizeObserver() {
+            requestAnimationFrame(cb);
+        });
+    };
+
+    var watching = 0;
+    var isWatching = function () { return !!watching; };
+    var CATCH_PERIOD = 250;
+    var observerConfig = { attributes: true, characterData: true, childList: true, subtree: true };
+    var events = [
+        'resize',
+        'load',
+        'transitionend',
+        'animationend',
+        'animationstart',
+        'animationiteration',
+        'keyup',
+        'keydown',
+        'mouseup',
+        'mousedown',
+        'mouseover',
+        'mouseout',
+        'blur',
+        'focus'
+    ];
+    var time = function (timeout) {
+        if (timeout === void 0) { timeout = 0; }
+        return Date.now() + timeout;
+    };
+    var scheduled = false;
+    var Scheduler = (function () {
+        function Scheduler() {
+            var _this = this;
+            this.stopped = true;
+            this.listener = function () { return _this.schedule(); };
+        }
+        Scheduler.prototype.run = function (timeout) {
+            var _this = this;
+            if (timeout === void 0) { timeout = CATCH_PERIOD; }
+            if (scheduled) {
+                return;
+            }
+            scheduled = true;
+            var until = time(timeout);
+            queueResizeObserver(function () {
+                var elementsHaveResized = false;
+                try {
+                    elementsHaveResized = process();
+                }
+                finally {
+                    scheduled = false;
+                    timeout = until - time();
+                    if (!isWatching()) {
+                        return;
+                    }
+                    if (elementsHaveResized) {
+                        _this.run(1000);
+                    }
+                    else if (timeout > 0) {
+                        _this.run(timeout);
+                    }
+                    else {
+                        _this.start();
+                    }
+                }
+            });
+        };
+        Scheduler.prototype.schedule = function () {
+            this.stop();
+            this.run();
+        };
+        Scheduler.prototype.observe = function () {
+            var _this = this;
+            var cb = function () { return _this.observer && _this.observer.observe(document.body, observerConfig); };
+            document.body ? cb() : global.addEventListener('DOMContentLoaded', cb);
+        };
+        Scheduler.prototype.start = function () {
+            var _this = this;
+            if (this.stopped) {
+                this.stopped = false;
+                this.observer = new MutationObserver(this.listener);
+                this.observe();
+                events.forEach(function (name) { return global.addEventListener(name, _this.listener, true); });
+            }
+        };
+        Scheduler.prototype.stop = function () {
+            var _this = this;
+            if (!this.stopped) {
+                this.observer && this.observer.disconnect();
+                events.forEach(function (name) { return global.removeEventListener(name, _this.listener, true); });
+                this.stopped = true;
+            }
+        };
+        return Scheduler;
+    }());
+    var scheduler = new Scheduler();
+    var updateCount = function (n) {
+        !watching && n > 0 && scheduler.start();
+        watching += n;
+        !watching && scheduler.stop();
+    };
+
+    var skipNotifyOnElement = function (target) {
+        return !isSVG(target)
+            && !isReplacedElement(target)
+            && getComputedStyle(target).display === 'inline';
+    };
+    var ResizeObservation = (function () {
+        function ResizeObservation(target, observedBox) {
+            this.target = target;
+            this.observedBox = observedBox || ResizeObserverBoxOptions.CONTENT_BOX;
+            this.lastReportedSize = {
+                inlineSize: 0,
+                blockSize: 0
+            };
+        }
+        ResizeObservation.prototype.isActive = function () {
+            var size = calculateBoxSize(this.target, this.observedBox, true);
+            if (skipNotifyOnElement(this.target)) {
+                this.lastReportedSize = size;
+            }
+            if (this.lastReportedSize.inlineSize !== size.inlineSize
+                || this.lastReportedSize.blockSize !== size.blockSize) {
+                return true;
+            }
+            return false;
+        };
+        return ResizeObservation;
+    }());
+
+    var ResizeObserverDetail = (function () {
+        function ResizeObserverDetail(resizeObserver, callback) {
+            this.activeTargets = [];
+            this.skippedTargets = [];
+            this.observationTargets = [];
+            this.observer = resizeObserver;
+            this.callback = callback;
+        }
+        return ResizeObserverDetail;
+    }());
+
+    var observerMap = new WeakMap();
+    var getObservationIndex = function (observationTargets, target) {
+        for (var i = 0; i < observationTargets.length; i += 1) {
+            if (observationTargets[i].target === target) {
+                return i;
+            }
+        }
+        return -1;
+    };
+    var ResizeObserverController = (function () {
+        function ResizeObserverController() {
+        }
+        ResizeObserverController.connect = function (resizeObserver, callback) {
+            var detail = new ResizeObserverDetail(resizeObserver, callback);
+            observerMap.set(resizeObserver, detail);
+        };
+        ResizeObserverController.observe = function (resizeObserver, target, options) {
+            var detail = observerMap.get(resizeObserver);
+            var firstObservation = detail.observationTargets.length === 0;
+            if (getObservationIndex(detail.observationTargets, target) < 0) {
+                firstObservation && resizeObservers.push(detail);
+                detail.observationTargets.push(new ResizeObservation(target, options && options.box));
+                updateCount(1);
+                scheduler.schedule();
+            }
+        };
+        ResizeObserverController.unobserve = function (resizeObserver, target) {
+            var detail = observerMap.get(resizeObserver);
+            var index = getObservationIndex(detail.observationTargets, target);
+            var lastObservation = detail.observationTargets.length === 1;
+            if (index >= 0) {
+                lastObservation && resizeObservers.splice(resizeObservers.indexOf(detail), 1);
+                detail.observationTargets.splice(index, 1);
+                updateCount(-1);
+            }
+        };
+        ResizeObserverController.disconnect = function (resizeObserver) {
+            var _this = this;
+            var detail = observerMap.get(resizeObserver);
+            detail.observationTargets.slice().forEach(function (ot) { return _this.unobserve(resizeObserver, ot.target); });
+            detail.activeTargets.splice(0, detail.activeTargets.length);
+        };
+        return ResizeObserverController;
+    }());
+
+    var ResizeObserver = (function () {
+        function ResizeObserver(callback) {
+            if (arguments.length === 0) {
+                throw new TypeError("Failed to construct 'ResizeObserver': 1 argument required, but only 0 present.");
+            }
+            if (typeof callback !== 'function') {
+                throw new TypeError("Failed to construct 'ResizeObserver': The callback provided as parameter 1 is not a function.");
+            }
+            ResizeObserverController.connect(this, callback);
+        }
+        ResizeObserver.prototype.observe = function (target, options) {
+            if (arguments.length === 0) {
+                throw new TypeError("Failed to execute 'observe' on 'ResizeObserver': 1 argument required, but only 0 present.");
+            }
+            if (!isElement(target)) {
+                throw new TypeError("Failed to execute 'observe' on 'ResizeObserver': parameter 1 is not of type 'Element");
+            }
+            ResizeObserverController.observe(this, target, options);
+        };
+        ResizeObserver.prototype.unobserve = function (target) {
+            if (arguments.length === 0) {
+                throw new TypeError("Failed to execute 'unobserve' on 'ResizeObserver': 1 argument required, but only 0 present.");
+            }
+            if (!isElement(target)) {
+                throw new TypeError("Failed to execute 'unobserve' on 'ResizeObserver': parameter 1 is not of type 'Element");
+            }
+            ResizeObserverController.unobserve(this, target);
+        };
+        ResizeObserver.prototype.disconnect = function () {
+            ResizeObserverController.disconnect(this);
+        };
+        ResizeObserver.toString = function () {
+            return 'function ResizeObserver () { [polyfill code] }';
+        };
+        return ResizeObserver;
+    }());
+
+    exports.ResizeObserver = ResizeObserver;
+    exports.ResizeObserverEntry = ResizeObserverEntry;
+
+    Object.defineProperty(exports, '__esModule', { value: true });
+
+})));
+
 },{}],42:[function(require,module,exports){
 require('../../modules/es.array.is-array');
 var path = require('../../internals/path');
@@ -7673,7 +7678,7 @@ class NyaP extends _NyaPCommon.NyaPCommon {
 
 window.NyaP = NyaP;
 
-},{"./NyaPCommon.js":228,"@babel/runtime-corejs3/core-js-stable/date/now":18,"@babel/runtime-corejs3/core-js-stable/instance/for-each":22,"@babel/runtime-corejs3/core-js-stable/instance/repeat":24,"@babel/runtime-corejs3/core-js-stable/instance/starts-with":28,"@babel/runtime-corejs3/core-js-stable/set-immediate":36,"@babel/runtime-corejs3/core-js-stable/set-timeout":38,"@babel/runtime-corejs3/helpers/interopRequireDefault":41}],228:[function(require,module,exports){
+},{"./NyaPCommon.js":228,"@babel/runtime-corejs3/core-js-stable/date/now":17,"@babel/runtime-corejs3/core-js-stable/instance/for-each":21,"@babel/runtime-corejs3/core-js-stable/instance/repeat":23,"@babel/runtime-corejs3/core-js-stable/instance/starts-with":27,"@babel/runtime-corejs3/core-js-stable/set-immediate":35,"@babel/runtime-corejs3/core-js-stable/set-timeout":37,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],228:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime-corejs3/helpers/interopRequireDefault");
@@ -7702,9 +7707,9 @@ exports.NyaPCommon = void 0;
 
 var _setTimeout2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-timeout"));
 
-var _setInterval2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-interval"));
-
 var _bind = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/instance/bind"));
+
+var _setInterval2 = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/set-interval"));
 
 var _promise = _interopRequireDefault(require("@babel/runtime-corejs3/core-js-stable/promise"));
 
@@ -7754,7 +7759,29 @@ const NyaPCommonOptions = {
     failText: 'failed',
     contentSpliter: '...'
   },
-  loadingAnimation: true,
+  loadingAnimation: {
+    start(NP) {
+      NP.$('#loading_anime').innerHTML = '(๑•́ ω •̀๑)';
+      NP._.loadingAnimationInterval = (0, _setInterval2.default)(() => {
+        //loading animation
+        NP.$('#loading_anime').style.transform = "translate(" + _index.Utils.rand(-20, 20) + "px," + _index.Utils.rand(-20, 20) + "px) rotate(" + _index.Utils.rand(-10, 10) + "deg)";
+      }, 80);
+    },
+
+    stop(NP) {
+      clearInterval(NP._.loadingAnimationInterval);
+      let lf = NP.$('#loading_frame');
+      if (lf.parentNode) //remove loading animation
+        lf.parentNode.removeChild(lf);
+    },
+
+    error(NP) {
+      clearInterval(NP._.loadingAnimationInterval);
+      NP.$('#loading_anime').innerHTML = '(๑• . •๑)';
+      NP.$('#loading_anime').style.transform = "";
+    }
+
+  },
   //other common options
   playerContainer: null,
   //the element for containing the player
@@ -7865,26 +7892,23 @@ class NyaPCommon extends _index.NyaPlayerCore {
     }); //loading animation
 
     if (opt.loadingAnimation) {
-      this.$('#loading_anime').innerHTML = '(๑•́ ω •̀๑)';
-      this._.loadingAnimationInterval = (0, _setInterval2.default)(() => {
-        //loading animation
-        this.$('#loading_anime').style.transform = "translate(" + _index.Utils.rand(-20, 20) + "px," + _index.Utils.rand(-20, 20) + "px) rotate(" + _index.Utils.rand(-10, 10) + "deg)";
-      }, 80);
+      var _opt, _opt$loadingAnimation;
+
+      (_opt = opt) === null || _opt === void 0 ? void 0 : (_opt$loadingAnimation = _opt.loadingAnimation) === null || _opt$loadingAnimation === void 0 ? void 0 : _opt$loadingAnimation.start(this);
     }
 
     _index.DomTools.addEvents(this.video, {
       loadedmetadata: e => {
+        var _opt2, _opt2$loadingAnimatio;
+
         this.statResult('loading_video');
-        clearInterval(this._.loadingAnimationInterval);
-        let lf = this.$('#loading_frame');
-        if (lf.parentNode) //remove loading animation
-          lf.parentNode.removeChild(lf);
+        (_opt2 = opt) === null || _opt2 === void 0 ? void 0 : (_opt2$loadingAnimatio = _opt2.loadingAnimation) === null || _opt2$loadingAnimatio === void 0 ? void 0 : _opt2$loadingAnimatio.stop(this);
       },
       error: e => {
+        var _opt3, _opt3$loadingAnimatio;
+
         this.statResult('loading_video', e === null || e === void 0 ? void 0 : e.message);
-        clearInterval(this._.loadingAnimationInterval);
-        this.$('#loading_anime').innerHTML = '(๑• . •๑)';
-        this.$('#loading_anime').style.transform = "";
+        (_opt3 = opt) === null || _opt3 === void 0 ? void 0 : (_opt3$loadingAnimatio = _opt3.loadingAnimation) === null || _opt3$loadingAnimatio === void 0 ? void 0 : _opt3$loadingAnimatio.error(this);
       }
     }); //load danmaku frame
 
@@ -8089,7 +8113,7 @@ class MsgBox {
 
 }
 
-},{"../component/NyaP-Core/index.js":1,"../component/NyaP-Danmaku/index.js":8,"./langs.json":229,"@babel/runtime-corejs3/core-js-stable/instance/bind":19,"@babel/runtime-corejs3/core-js-stable/object/define-property":32,"@babel/runtime-corejs3/core-js-stable/promise":35,"@babel/runtime-corejs3/core-js-stable/set-interval":37,"@babel/runtime-corejs3/core-js-stable/set-timeout":38,"@babel/runtime-corejs3/helpers/interopRequireDefault":41}],229:[function(require,module,exports){
+},{"../component/NyaP-Core/index.js":1,"../component/NyaP-Danmaku/index.js":7,"./langs.json":229,"@babel/runtime-corejs3/core-js-stable/instance/bind":18,"@babel/runtime-corejs3/core-js-stable/object/define-property":31,"@babel/runtime-corejs3/core-js-stable/promise":34,"@babel/runtime-corejs3/core-js-stable/set-interval":36,"@babel/runtime-corejs3/core-js-stable/set-timeout":37,"@babel/runtime-corejs3/helpers/interopRequireDefault":40}],229:[function(require,module,exports){
 module.exports={"zh-CN":{"play":"播放","Send":"发送","Done":"完成","loop":"循环","pause":"暂停","muted":"静音","volume":"音量","settings":"设置","wheeling":"滚轮","hex color":"Hex颜色","Loading core":"加载核心","Loading video":"加载视频","Loading plugin":"加载插件","full page(P)":"全页模式(P)","Loading danmaku":"加载弹幕","Creating player":"创建播放器","full screen(F)":"全屏模式(F)","danmaku toggle(D)":"弹幕开关(D)","Input danmaku here":"在这里输入弹幕","Loading danmaku frame":"加载弹幕框架","danmaku input(Enter)":"弹幕输入框(回车)","Failed to change to fullscreen mode":"无法切换到全屏模式","loading_core":"加载核心","loading_plugin":"加载插件","loading_danmakuFrame":"加载弹幕框架","creating_player":"创建播放器","loading_danmaku":"加载弹幕","loading_video":"加载视频"}}
 },{}]},{},[227])
 

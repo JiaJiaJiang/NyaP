@@ -16,6 +16,11 @@ export class DomTools{
 				});
 		});
 	}
+    static setAttrs(ele,obj){//set multi attrs to a Element
+        for(let a in obj)
+            ele.setAttribute(a,obj[a]);
+        return ele;
+    }
 	static fullscreenElement(){
 		const d=document;
 		return d.webkitFullscreenElement

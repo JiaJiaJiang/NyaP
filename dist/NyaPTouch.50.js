@@ -1024,6 +1024,13 @@ class DomTools {
     });
   }
 
+  static setAttrs(ele, obj) {
+    //set multi attrs to a Element
+    for (let a in obj) ele.setAttribute(a, obj[a]);
+
+    return ele;
+  }
+
   static fullscreenElement() {
     const d = document;
     return d.webkitFullscreenElement || d.msFullscreenElement || d.mozFullScreenElement || d.fullscreenElement;
@@ -1246,13 +1253,6 @@ class Utils {
     r = [padTime(s / 60 | 0), padTime(s % 60)];
     total >= 3600 && r.unshift(h);
     return r.join(':');
-  }
-
-  static setAttrs(ele, obj) {
-    //set multi attrs to a Element
-    for (let a in obj) ele.setAttribute(a, obj[a]);
-
-    return ele;
   }
 
   static rand(min, max) {
@@ -2592,7 +2592,8 @@ danmaku obj struct
 	time:(number)msec time,
 	text:(string),
 	style:(object)to be combined whit default style,
-	mode:(number)
+	mode:(number),
+	onScreen:(bool)on the screen
 }
 
 danmaku mode
@@ -3284,6 +3285,8 @@ class RenderingDanmakuManager {
   }
 
   add(t) {
+    if (t.danmaku.onScreen) return;
+    t.danmaku.onScreen = true;
     this.dText.DanmakuText.push(t);
     this.totalArea += t._cache.width * t._cache.height; //cumulate danmaku area
 
@@ -3294,6 +3297,7 @@ class RenderingDanmakuManager {
   remove(t) {
     var _context9;
 
+    t.danmaku.onScreen = false;
     let ind = (0, _indexOf.default)(_context9 = this.dText.DanmakuText).call(_context9, t);
 
     if (ind >= 0) {
@@ -7021,9 +7025,9 @@ const NyaPCommonOptions = {
   //the element for containing the player
   icons: {
     play: [30, 30, '<path d="m10.063,8.856l9.873,6.143l-9.873,6.143v-12.287z" stroke-width="3" stroke-linejoin="round"/>'],
-    addDanmaku: [30, 30, '<path style="fill-opacity:0!important;" stroke-width="1.4" d="m21.004,8.995c-0.513,-0.513 -1.135,-0.770 -1.864,-0.770l-8.281,0c-0.729,0 -1.350,0.256 -1.864,0.770c-0.513,0.513 -0.770,1.135 -0.770,1.864l0,8.281c0,0.721 0.256,1.341 0.770,1.858c0.513,0.517 1.135,0.776 1.864,0.776l8.281,0c0.729,0 1.350,-0.258 1.864,-0.776c0.513,-0.517 0.770,-1.136 0.770,-1.858l0,-8.281c0,-0.729 -0.257,-1.350 -0.770,-1.864z" stroke-linejoin="round"/>' + '<path d="m12.142,14.031l1.888,0l0,-1.888l1.937,0l0,1.888l1.888,0l0,1.937l-1.888,0l0,1.888l-1.937,0l0,-1.888l-1.888,0l0,-1.937z" stroke-width="1"/>'],
+    danmakuStyle: [30, 30, '<path style="fill-opacity:0!important;" stroke-width="1.4" d="m21.004,8.995c-0.513,-0.513 -1.135,-0.770 -1.864,-0.770l-8.281,0c-0.729,0 -1.350,0.256 -1.864,0.770c-0.513,0.513 -0.770,1.135 -0.770,1.864l0,8.281c0,0.721 0.256,1.341 0.770,1.858c0.513,0.517 1.135,0.776 1.864,0.776l8.281,0c0.729,0 1.350,-0.258 1.864,-0.776c0.513,-0.517 0.770,-1.136 0.770,-1.858l0,-8.281c0,-0.729 -0.257,-1.350 -0.770,-1.864z" stroke-linejoin="round"/>' + '<path d="m12.142,14.031l1.888,0l0,-1.888l1.937,0l0,1.888l1.888,0l0,1.937l-1.888,0l0,1.888l-1.937,0l0,-1.888l-1.888,0l0,-1.937z" stroke-width="1"/>'],
     danmakuToggle: [30, 30, '<path d="m8.569,10.455l0,0c0,-0.767 0.659,-1.389 1.473,-1.389l0.669,0l0,0l3.215,0l6.028,0c0.390,0 0.765,0.146 1.041,0.406c0.276,0.260 0.431,0.613 0.431,0.982l0,3.473l0,0l0,2.083l0,0c0,0.767 -0.659,1.389 -1.473,1.389l-6.028,0l-4.200,3.532l0.985,-3.532l-0.669,0c-0.813,0 -1.473,-0.621 -1.473,-1.389l0,0l0,-2.083l0,0l0,-3.473z"/>'],
-    danmakuStyle: [30, 30, '<path style="fill-opacity:1!important" d="m21.781,9.872l-1.500,-1.530c-0.378,-0.385 -0.997,-0.391 -1.384,-0.012l-0.959,0.941l2.870,2.926l0.960,-0.940c0.385,-0.379 0.392,-0.998 0.013,-1.383zm-12.134,7.532l2.871,2.926l7.593,-7.448l-2.872,-2.927l-7.591,7.449l0.000,0.000zm-1.158,2.571l-0.549,1.974l1.984,-0.511l1.843,-0.474l-2.769,-2.824l-0.509,1.835z" stroke-width="0"/>'],
+    addDanmaku: [30, 30, '<path style="fill-opacity:1!important" d="m21.781,9.872l-1.500,-1.530c-0.378,-0.385 -0.997,-0.391 -1.384,-0.012l-0.959,0.941l2.870,2.926l0.960,-0.940c0.385,-0.379 0.392,-0.998 0.013,-1.383zm-12.134,7.532l2.871,2.926l7.593,-7.448l-2.872,-2.927l-7.591,7.449l0.000,0.000zm-1.158,2.571l-0.549,1.974l1.984,-0.511l1.843,-0.474l-2.769,-2.824l-0.509,1.835z" stroke-width="0"/>'],
     fullScreen: [30, 30, '<path stroke-linejoin="round" d="m11.166,9.761l-5.237,5.239l5.237,5.238l1.905,-1.905l-3.333,-3.333l3.332,-3.333l-1.904,-1.906zm7.665,0l-1.903,1.905l3.332,3.333l-3.332,3.332l1.903,1.905l5.238,-5.238l-5.238,-5.237z" stroke-width="1.3" />'],
     fullPage: [30, 30, '<rect stroke-linejoin="round" height="11.169" width="17.655" y="9.415" x="6.172" stroke-width="1.5"/>' + '<path stroke-linejoin="round" d="m12.361,11.394l-3.604,3.605l3.605,3.605l1.311,-1.311l-2.294,-2.294l2.293,-2.294l-1.311,-1.311zm5.275,0l-1.310,1.311l2.293,2.294l-2.293,2.293l1.310,1.311l3.605,-3.605l-3.605,-3.605z"/>'],
     loop: [30, 30, '<path stroke-linejoin="round" stroke-width="1" d="m20.945,15.282c-0.204,-0.245 -0.504,-0.387 -0.823,-0.387c-0.583,0 -1.079,0.398 -1.205,0.969c-0.400,1.799 -2.027,3.106 -3.870,3.106c-2.188,0 -3.969,-1.780 -3.969,-3.969c0,-2.189 1.781,-3.969 3.969,-3.969c0.720,0 1.412,0.192 2.024,0.561l-0.334,0.338c-0.098,0.100 -0.127,0.250 -0.073,0.380c0.055,0.130 0.183,0.213 0.324,0.212l2.176,0.001c0.255,-0.002 0.467,-0.231 0.466,-0.482l-0.008,-2.183c-0.000,-0.144 -0.085,-0.272 -0.217,-0.325c-0.131,-0.052 -0.280,-0.022 -0.379,0.077l-0.329,0.334c-1.058,-0.765 -2.340,-1.182 -3.649,-1.182c-3.438,0 -6.236,2.797 -6.236,6.236c0,3.438 2.797,6.236 6.236,6.236c2.993,0 5.569,-2.133 6.126,-5.072c0.059,-0.314 -0.022,-0.635 -0.227,-0.882z"/>'],
@@ -7443,69 +7447,77 @@ class NyaPTouch extends _NyaPCommon.NyaPCommon {
             child: [{
               _: 'div',
               attr: {
-                id: 'progress_leftside_button'
-              },
-              child: [icon('play', {
-                click: e => this.playToggle()
-              })]
-            }, {
-              _: 'div',
-              prop: {
-                id: 'progress_info'
+                id: 'progress_area'
               },
               child: [{
-                _: 'span',
-                attr: {
-                  id: 'progress_frame'
+                _: 'div',
+                prop: {
+                  id: 'progress_info'
                 },
                 child: [{
-                  _: 'div',
-                  prop: {
-                    id: 'progress_wrap'
+                  _: 'span',
+                  attr: {
+                    id: 'progress_frame'
                   },
                   child: [{
                     _: 'div',
                     prop: {
-                      id: 'buffed_bar'
-                    }
-                  }, {
-                    _: 'div',
-                    prop: {
-                      id: 'progress_bar'
-                    }
-                  }, {
-                    _: 'div',
-                    prop: {
-                      id: 'seekTo_bar',
-                      hidden: true
-                    }
+                      id: 'progress_wrap'
+                    },
+                    child: [{
+                      _: 'div',
+                      prop: {
+                        id: 'buffed_bar'
+                      }
+                    }, {
+                      _: 'div',
+                      prop: {
+                        id: 'progress_bar'
+                      }
+                    }, {
+                      _: 'div',
+                      prop: {
+                        id: 'seekTo_bar',
+                        hidden: true
+                      }
+                    }]
                   }]
-                }]
-              }, {
-                _: 'span',
-                prop: {
-                  id: 'time'
-                },
-                child: [{
+                }, {
                   _: 'span',
                   prop: {
-                    id: 'current_time'
+                    id: 'time'
                   },
-                  child: ['00:00']
-                }, '/', {
-                  _: 'span',
-                  prop: {
-                    id: 'total_time'
-                  },
-                  child: ['00:00']
+                  child: [{
+                    _: 'span',
+                    prop: {
+                      id: 'current_time'
+                    },
+                    child: ['00:00']
+                  }, '/', {
+                    _: 'span',
+                    prop: {
+                      id: 'total_time'
+                    },
+                    child: ['00:00']
+                  }]
                 }]
               }]
             }, {
               _: 'span',
               prop: {
-                id: 'progress_rightside_button'
+                id: 'button_area'
               },
-              child: [icon(this._.fullScreenToFullPage ? 'fullPage' : 'fullScreen', {
+              child: [icon('play', {
+                click: e => this.playToggle()
+              }), icon('danmakuToggle', {
+                click: e => this.Danmaku.toggle()
+              }, {
+                class: 'active_icon'
+              }), icon('loop', {
+                click: e => video.loop = !video.loop
+              }), icon('volume', {
+                click: e => video.muted = !video.muted
+              }), icon(this._.fullScreenToFullPage ? 'fullPage' : 'fullScreen', {
                 click: e => this.playerMode(this._.fullScreenToFullPage ? 'fullPage' : 'fullScreen')
               })]
             }]
@@ -7545,15 +7557,7 @@ class NyaPTouch extends _NyaPCommon.NyaPCommon {
                 id: 'danmaku_input',
                 placeholder: _t('Input danmaku here')
               }
-            }, icon('danmakuToggle', {
-              click: e => this.Danmaku.toggle()
-            }, {
-              class: 'active_icon'
-            }), icon('loop', {
-              click: e => video.loop = !video.loop
-            }), icon('volume', {
-              click: e => video.muted = !video.muted
-            })]
+            }]
           }]
         }]
       }]
@@ -7573,8 +7577,8 @@ class NyaPTouch extends _NyaPCommon.NyaPCommon {
       right: this.opt.progressPad + 'px',
       height: this.opt.progressBarHeight + 'px',
       marginTop: -this.opt.progressBarHeight / 2 + 1 + 'px'
-    });
-    $('#control_bottom').style.marginTop = `-${this.opt.bottomControlHeight}px`; //add extra touch event to video
+    }); // $('#control_bottom').style.marginBottom=`-${this.opt.bottomControlHeight}px`;
+    //add extra touch event to video
 
     extendEvent.doubletouch($('#main_video'));
     extendEvent.touchdrag($('#main_video'), {
@@ -7610,7 +7614,7 @@ class NyaPTouch extends _NyaPCommon.NyaPCommon {
           NP._.volumeBox.renew(`${_t('volume')}:${(video.volume * 100).toFixed(0)}%` + `${video.muted ? '(' + _t('muted') + ')' : ''}`, 3000); //change icon style
 
 
-          _NyaPCommon.Utils.setAttrs($('#volume_circle'), {
+          _NyaPCommon.DomTools.setAttrs($('#volume_circle'), {
             'stroke-dasharray': `${video.volume * 12 * Math.PI} 90`,
             style: `fill-opacity:${video.muted ? .2 : .6}!important`
           });
@@ -7689,14 +7693,14 @@ class NyaPTouch extends _NyaPCommon.NyaPCommon {
             NP._.bottomControlDraging = Math.abs(e.deltaY) > Math.abs(e.deltaX);
           }
 
-          if (NP._.bottomControlDraging) NP._bottomControlTransformY(_NyaPCommon.Utils.clamp(NP._.bottomControlTransformY - e.deltaY, 0, $('#control_bottom').offsetHeight - NP.opt.bottomControlHeight));
+          if (NP._.bottomControlDraging) NP._bottomControlTransformY(NP._.bottomControlTransformY - e.deltaY);
         },
         touchend: e => {
           if (NP._.bottomControlDraging == undefined) return;
           NP._.bottomControlDraging = undefined;
-          let R = $('#control_bottom').offsetHeight - NP.opt.bottomControlHeight;
+          let R = $('#control_bottom').offsetHeight / 2;
 
-          NP._bottomControlTransformY(NP._.bottomControlTransformY < R / 2 ? 0 : R);
+          NP._bottomControlTransformY(NP._.bottomControlTransformY < R ? 0 : NP.opt.bottomControlHeight);
         }
       },
       progress_frame: {
@@ -7892,15 +7896,15 @@ class NyaPTouch extends _NyaPCommon.NyaPCommon {
   }
 
   _bottomControlTransformY(y = this._.bottomControlTransformY) {
-    this._.bottomControlTransformY = y;
-    this.$('#control_bottom').style.transform = `translate3d(0,-${y}px,0)`;
+    this._.bottomControlTransformY = _NyaPCommon.Utils.clamp(y, 0, NP.opt.bottomControlHeight);
+    this.$('#control_bottom').style.transform = `translate3d(0,-${this._.bottomControlTransformY}px,0)`;
     if (y === 0) this.danmakuStyleToggle(false);
   }
 
   danmakuInput(bool = this._.bottomControlTransformY === 0) {
     //hide or show danmaku input
     let $ = this.$;
-    if (bool) this._bottomControlTransformY(this.$('#control_bottom').offsetHeight - NP.opt.bottomControlHeight);else {
+    if (bool) this._bottomControlTransformY(this.$('#control_bottom_first').offsetHeight - NP.opt.bottomControlHeight);else {
       this._bottomControlTransformY(0);
     }
     (0, _setImmediate2.default)(() => {

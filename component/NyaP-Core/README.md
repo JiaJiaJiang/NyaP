@@ -418,6 +418,15 @@ Check if the broswer is in fullscreen mode.
 
 See : (Object2HTML)[https://github.com/JiaJiaJiang/Object2HTML]
 
+#### static setAttrs(ele,obj)
+
+Set multi attributes on an element.
+
+* ele : The element.
+* obj : Attributes in the object.
+
+*Return the element.*
+
 ## Class: Utils
 
 #### static clamp(num,min,max)
@@ -437,15 +446,6 @@ Limit a number between the range.
 #### static deepAssign(target,...args)
 
 Just like `Object.assign`, but also works with objects on properties.
-
-#### static setAttrs(ele,obj)
-
-Set multi attributes on an element.
-
-* ele : The element.
-* obj : Attributes in the object.
-
-*Return the element.*
 
 #### static rand(min, max)
 

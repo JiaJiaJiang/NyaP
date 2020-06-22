@@ -19,7 +19,8 @@ danmaku obj struct
 	time:(number)msec time,
 	text:(string),
 	style:(object)to be combined whit default style,
-	mode:(number)
+	mode:(number),
+	onScreen:(bool)on the screen
 }
 
 danmaku mode
@@ -526,12 +527,15 @@ class RenderingDanmakuManager{
 		if(dText.text2d.supported)this.timer=setInterval(()=>this.rendererModeCheck(),1500);
 	}
 	add(t){
+		if(t.danmaku.onScreen)return;
+		t.danmaku.onScreen=true;
 		this.dText.DanmakuText.push(t);
 		this.totalArea+=t._cache.width*t._cache.height;//cumulate danmaku area
 		this.onScreenArea+=Math.min(t._cache.width,this.dText.frame.width)*Math.min(t._cache.height,this.dText.frame.height);
 		this.dText.activeRendererMode.newDanmaku(t);
 	}
 	remove(t){
+		t.danmaku.onScreen=false;
 		let ind=this.dText.DanmakuText.indexOf(t);
 		if(ind>=0){
 			this.dText.DanmakuText.splice(ind,1);

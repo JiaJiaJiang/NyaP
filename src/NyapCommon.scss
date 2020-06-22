@@ -14,7 +14,7 @@ LGPL license
 .NyaP_fullfill{
 	@include NyaP_fullfill;
 }
-.NyaP_hideNotFirstChildren *:not(:first-child){
+.NyaP_hideNotFirstChildren>*:not(:first-child){
 	display: none!important;
 }
 
@@ -28,6 +28,10 @@ LGPL license
 @mixin NyaPCommonStyles{
 	outline: none;
 	background-color: #000;
+	// .active_icon path{fill-opacity:1!important;}
+	.active_icon{
+		border-bottom: 3px solid #505050;
+	}
 	
 	#loading_frame{
 		top:0;

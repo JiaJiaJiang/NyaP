@@ -10,26 +10,20 @@ LGPL license
 
 	overflow: hidden;
 
-	.active_icon path{fill-opacity:1!important;}
 	svg[id^='icon']>*{
 		fill:#5f3c2c;
-		fill-opacity:0;
+		fill-opacity:1;
 		stroke: #5f3c2c;
 		transition:fill-opacity .2s;
 	}
 	span[id^="icon_span_"]{
 		display: inline-block;
 		flex-shrink: 0;
+		box-sizing: border-box;
 		background-color: inherit;
 		svg{
 			pointer-events: none;
 			display: block;
-		}
-		&:hover{
-			svg>*{
-				fill:#24b182;
-				stroke: #24b182;
-			}
 		}
 	}
 
@@ -47,20 +41,20 @@ LGPL license
 	}
 
 	#control_bottom{
-		top: 100%;
+		bottom: 0;
 		width: 100%;
 		font-size: 0;
 		opacity: 0.95;
 		position: absolute;
 		will-change:transform;
 		transition: transform .05s linear;
-		background-color: #fff;
 
 		div[id^='control_bottom_']{
 			width: 100%;
 			display: flex;
 			position: relative;
-		    justify-content: center;
+			justify-content: center;
+			background-color: #fff;
 			&>div{
 				display: inline-block;
 			}
@@ -68,7 +62,19 @@ LGPL license
 		&>div[id^='progress_']{
 			position: relative;
 		}
-
+		#control_bottom_first{
+			flex-direction: column;
+			#button_area{
+				display: flex;
+				justify-content: center;
+			}
+		}
+		#control_bottom_second{
+			position: absolute;
+			left: 0;
+			top:100%;
+			width:100%;
+		}
 		#danmakuStyleEditor{
 			position: relative;
 			outline: 0;
@@ -135,6 +141,7 @@ LGPL license
 		#progress_info{
 			flex-grow: 1;
 			align-items:stretch;
+			width: 100%;
 			display: inline-flex;
 
 			&>*:first-child{
@@ -176,7 +183,7 @@ LGPL license
 
 	#msg_box{
 		right: 0;
-		bottom: 60px;
+		bottom: 70px;
 		display: flex;
 		flex-flow: column;
 		position: absolute;

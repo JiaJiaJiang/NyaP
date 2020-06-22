@@ -13,7 +13,6 @@ const O2H=DomTools.Object2HTML;
 
 //NyaP options
 const NyaPOptions={
-	
 }
 
 //normal player
@@ -27,10 +26,10 @@ class NyaP extends NyaPCommon{
 			$=this.$,
 			video=this.video;
 		//set icons
-		function icon(name,event,attr={}){
+		function icon(name,event,attr={},extopt){
 			const ico=opt.icons[name];
 			return O2H({_:'span',event,attr,prop:{id:`icon_span_${name}`,
-				innerHTML:`<svg height=${ico[1]} width=${ico[0]} id="icon_${name}"">${ico[2]}</svg>`}});
+				innerHTML:`<svg viewBox="0 0 ${ico[0]} ${ico[1]}" height=${extopt?.height||ico[1]} width=${extopt?.width||ico[0]} id="icon_${name}"">${ico[2]}</svg>`}});
 		}
 		
 		this.stat('creating_player');
@@ -55,19 +54,6 @@ class NyaP extends NyaPCommon{
 									{_:'span',prop:{id:'total_time'},child:['00:00']},
 								]},
 							]},
-							{_:'div',prop:{id:'danmaku_input_frame'},child:[
-								{_:'span',prop:{id:'danmaku_style'},child:[
-									{_:'div',attr:{id:'danmaku_style_pannel'},child:[
-										{_:'div',attr:{id:'danmaku_color_box'}},
-										{_:'input',attr:{id:'danmaku_color',placeholder:_t('hex color'),maxlength:"6"}},
-										{_:'span',attr:{id:'danmaku_mode_box'}},
-										{_:'span',attr:{id:'danmaku_size_box'}},
-									]},
-									icon('danmakuStyle'),
-								]},
-								{_:'input',attr:{id:'danmaku_input',placeholder:_t('Input danmaku here')}},
-								{_:'span',prop:{id:'danmaku_submit',innerHTML:_t('Send')}},
-							]},
 						]},
 						{_:'span',attr:{id:'control_right'},child:[
 							icon('addDanmaku',{click:e=>NP.danmakuInput()},{title:_t('danmaku input(Enter)')}),
@@ -80,6 +66,19 @@ class NyaP extends NyaPCommon{
 							]}
 						]},
 					]}
+				]},
+				{_:'div',prop:{id:'danmaku_input_frame',style:"display:none;"},child:[
+					{_:'span',prop:{id:'danmaku_style'},child:[
+						{_:'div',attr:{id:'danmaku_style_pannel'},child:[
+							{_:'div',attr:{id:'danmaku_color_box'}},
+							{_:'input',attr:{id:'danmaku_color',placeholder:_t('hex color'),maxlength:"6"},event:{keypress:e=>{}}},
+							{_:'span',attr:{id:'danmaku_mode_box'}},
+							{_:'span',attr:{id:'danmaku_size_box'}},
+						]},
+						icon('danmakuStyle',undefined,undefined,{width:"2em",height:"2em"}),
+					]},
+					{_:'input',attr:{id:'danmaku_input',placeholder:_t('Input danmaku here')}},
+					{_:'span',prop:{id:'danmaku_submit',innerHTML:_t('Send')}},
 				]},
 			]
 		});
@@ -98,7 +97,12 @@ class NyaP extends NyaPCommon{
 		//events
 		const events={
 			main_video:{
-				playing:e=>NP._iconActive('play',true),
+				playing:e=>{
+					NP._iconActive('play',true);
+					if(this.$('#danmaku_input_frame').offsetHeight){
+						this.danmakuInput(false);
+					}
+				},
 				pause:e=>{
 					NP._iconActive('play',false);
 				},
@@ -115,7 +119,7 @@ class NyaP extends NyaPCommon{
 					//show volume msg
 					NP._.volumeBox.renew(`${_t('volume')}:${(video.volume*100).toFixed(0)}%`+`${video.muted?('('+_t('muted')+')'):''}`,3000);
 					//change icon style
-					Utils.setAttrs($('#volume_circle'),{'stroke-dasharray':`${video.volume*12*Math.PI} 90`,style:`fill-opacity:${video.muted?.2:.6}!important`});
+					DomTools.setAttrs($('#volume_circle'),{'stroke-dasharray':`${video.volume*12*Math.PI} 90`,style:`fill-opacity:${video.muted?.2:.6}!important`});
 					//change icon tip
 					$('#icon_span_volume').setAttribute('title',`${_t('volume')}:(${video.muted?_t('muted'):((video.volume*100|0)+'%')})([shift]+↑↓)(${_t('wheeling')})`);
 				},
@@ -354,7 +358,7 @@ class NyaP extends NyaPCommon{
 	}
 	danmakuInput(bool=!this.$('#danmaku_input_frame').offsetHeight){//hide or show danmaku input
 		let $=this.$;
-		$('#danmaku_input_frame').style.display=bool?'flex':'';
+		$('#danmaku_input_frame').style.display=bool?'':'none';
 		this._iconActive('addDanmaku',bool);
 		setImmediate(()=>{bool?$('#danmaku_input').focus():this._.player.focus();});
 	}

@@ -65,8 +65,8 @@ function transjs(name,cover=90){
 							"browsers":`cover ${cover}%`,
 						},
 						"debug": false,
-						// "useBuiltIns": 'usage',
-						// "corejs":3,
+						"useBuiltIns": 'usage',
+						"corejs":3,
 					},
 				],
 			],
@@ -78,7 +78,7 @@ function transjs(name,cover=90){
 					{
 					  "absoluteRuntime": false,
 					  "corejs": 3,
-					  "helpers": true,
+					  "helpers": false,
 					  "regenerator": true,
 					  "useESModules": false,
 					}
@@ -93,18 +93,18 @@ function transjs(name,cover=90){
 	) */
 	.bundle()
 	.pipe(source(`./${name}`))
-	.pipe(rename({extname:`.${cover}.js`}))
+	// .pipe(rename({extname:`.${cover}.js`}))
 	.pipe(buffer())
 	.pipe(sourcemaps.init({ loadMaps: true }))
 	.pipe(sourcemaps.write('./'))
 	.pipe(gulp.dest(dist));
 }
-gulp.task('js-NyaPTouch-cover-50',function(){
+/* gulp.task('js-NyaPTouch-cover-50',function(){
 	return transjs('NyaPTouch.js',50);
 });
 gulp.task('js-NyaP-cover-50',function(){
 	return transjs('NyaP.js',50);
-});
+}); */
 gulp.task('js-NyaPTouch-cover-90',function(){
 	return transjs('NyaPTouch.js',90);
 });
@@ -113,10 +113,10 @@ gulp.task('js-NyaP-cover-90',function(){
 });
 
 gulp.task('js-NyaP',gulp.parallel(
-	'js-NyaP-cover-50','js-NyaP-cover-90'
+	/* 'js-NyaP-cover-50', */'js-NyaP-cover-90'
 ));
 gulp.task('js-NyaPTouch',gulp.parallel(
-	'js-NyaPTouch-cover-50','js-NyaPTouch-cover-90'
+	/* 'js-NyaPTouch-cover-50', */'js-NyaPTouch-cover-90'
 ));
 gulp.task('js',gulp.parallel(
 	'js-NyaP','js-NyaPTouch'

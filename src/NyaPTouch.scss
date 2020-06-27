@@ -135,7 +135,8 @@ LGPL license
 		    flex-grow: 1;
 			padding: 9px 4px;
 			width: 100%;
-		    border: 1px solid #ccc;
+			border: 1px solid #ccc;
+			border-top: 0!important;
 		    box-sizing: border-box;
 		    user-select: initial;
 		    font-size: 15px;
@@ -145,6 +146,7 @@ LGPL license
 			flex-grow: 1;
 			align-items:stretch;
 			width: 100%;
+			margin-bottom: 2px;
 			display: inline-flex;
 
 			&>*:first-child{
@@ -152,7 +154,8 @@ LGPL license
 				position: relative;
 			}
 			#progress_wrap{
-			    top: 50%;
+				top: 50%;
+				border-radius: 5px;
 				overflow: hidden;
 				position: absolute;
 				pointer-events: none;
@@ -171,8 +174,8 @@ LGPL license
 				#seekTo_bar{background-color: #85acbf;transition:none;}
 			}
 			#time{
-				padding: 0 5px;
-				font-size: 16px;
+				padding: 0 15px;
+				font-size: 15px;
 				text-align: center;
 				align-items: center;
 				display: inline-flex;

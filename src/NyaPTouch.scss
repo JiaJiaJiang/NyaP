@@ -94,8 +94,9 @@ LGPL license
 				}
 			}
 			#danmaku_size_box{
-				left:0;
-				bottom: 400%;
+				left: 0;
+				bottom: 300%;
+				height: 100%;
 				width: 400%;
 				span{
 				    width: 100%;
@@ -109,13 +110,14 @@ LGPL license
 				}
 			}
 			#danmaku_mode_box{
-				bottom: 300%;
+				bottom: 200%;
 				left: 0;
+				height: 100%;
 			}
 			#danmaku_color_box{
 				height: 100%;
 				left: 0;
-				bottom: 200%;
+				bottom: 100%;
 				align-items:center;
 			    padding-right: 6px;
 				&>span{
@@ -132,6 +134,7 @@ LGPL license
 		    outline: 0;
 		    flex-grow: 1;
 			padding: 9px 4px;
+			width: 100%;
 		    border: 1px solid #ccc;
 		    box-sizing: border-box;
 		    user-select: initial;

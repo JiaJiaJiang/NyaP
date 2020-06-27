@@ -266,19 +266,19 @@ class MsgBox{
 	renew(text,time){
 		this.setText(text);
 		this.setTimeout(time);
-		if(!this.using)this.show();
+		if(!this.using)this.show(false);
 	}
-	show(){
+	show(autoHide=true){
 		if(this.using)return;
 		this.msg.style.opacity=0;
 		if(this.parentNode && this.parentNode!==this.msg.parentNode){
 			this.parentNode.appendChild(this.msg);
 		}
+		this.using=true;
 		this.msg.parentNode&&setTimeout(()=>{
-			this.using=true;
 			this.msg.style.opacity=1;
 		},0);
-		this.setTimeout();
+		if(autoHide)this.setTimeout();
 	}
 	remove(){
 		if(!this.using)return;

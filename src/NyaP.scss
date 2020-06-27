@@ -35,6 +35,12 @@ LGPL license
 		stroke: #5f3c2c;
 		transition:fill-opacity .2s;
 	}
+	svg#icon_danmakuStyle>* {
+		fill: #e8e8e8;
+		fill-opacity: 1;
+		stroke: #e8e8e8;
+		transition: fill-opacity .2s;
+	}
 	span[id^="icon_span_"]{
 		cursor: pointer;
 		box-sizing: border-box;
@@ -121,21 +127,22 @@ LGPL license
 		// @extend .NyaP_fullfill;
 		display: flex;
 		font-size: 20px;
-		bottom: 30%;
+		bottom: 10%;
 		position: absolute;
-		background-color: #ccccccd6;
+		background-color: #151212d6;
 		box-shadow: 0.2em 0.2em 1em 0px;
 		width: 50%;
 		min-width: 300px;
 		max-width: 400px;
 		height: 2em;
-		padding: 2em;
+		padding: 1em;
 		border-radius: 1.3em;
 		left: 50%;
 		transform: translateX(-50%);
 
 		input#danmaku_input{
 			border: 0;
+			color: #e8e8e8;
 			outline: 0;
 			flex-grow: 1;
 			padding: 0 7px;

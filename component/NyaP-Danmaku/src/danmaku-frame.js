@@ -186,7 +186,7 @@ class DanmakuFrame{
 		DomTools.addEvents(media,{
 			playing:()=>F.play(),
 			'pause,stalled,seeking,waiting':e=>{
-				console.log(e);
+				this.core.debug(e);
 				let pTime=F.media.currentTime;
 				requestAnimationFrame(()=>{
 					if(F.media.currentTime===pTime)

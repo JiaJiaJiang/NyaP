@@ -3420,6 +3420,8 @@ var DanmakuFrame = /*#__PURE__*/function () {
   }, {
     key: "setMedia",
     value: function setMedia(media) {
+      var _this4 = this;
+
       var F = this;
       F.media = media;
 
@@ -3428,7 +3430,8 @@ var DanmakuFrame = /*#__PURE__*/function () {
           return F.play();
         },
         'pause,stalled,seeking,waiting': function pauseStalledSeekingWaiting(e) {
-          console.log(e);
+          _this4.core.debug(e);
+
           var pTime = F.media.currentTime;
           requestAnimationFrame(function () {
             if (F.media.currentTime === pTime) F.pause();

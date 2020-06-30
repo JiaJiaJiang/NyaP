@@ -164,7 +164,7 @@ class DanmakuFrame{
 		this.draw(true);
 	}
 	pause(){
-		if(!this.enabled)return;
+		if(!this.enabled||!this.working)return;
 		this.working=false;
 		this.moduleFunction('pause');
 	}
@@ -183,15 +183,36 @@ class DanmakuFrame{
 	setMedia(media){
 		const F=this;
 		F.media=media;
+		let pTime;
+		requestAnimationFrame(function check(){//部分浏览器会发出虚假的stalled事件，因此要判断视频是不是真的卡住了
+			if(F.media.currentTime===pTime)F.pause();
+			else F.play();
+			pTime=F.media.currentTime;
+			requestAnimationFrame(check);
+		});
 		DomTools.addEvents(media,{
-			playing:()=>F.play(),
-			'pause,stalled,seeking,waiting':e=>{
-				this.core.debug(e);
-				let pTime=F.media.currentTime;
-				requestAnimationFrame(()=>{
+			playing:e=>{
+				this.core.debug(e.type);
+				/* let pTime=F.media.currentTime;
+				F.play();
+				setTimeout(()=>{
+					//判断视频是不是真的播放了
+					console.log(pTime,F.media.currentTime)
 					if(F.media.currentTime===pTime)
 						F.pause();
-				});
+				},80); */
+			},
+			'stalled,waiting':e=>{
+				this.core.debug(e.type);
+				/* let pTime=F.media.currentTime;
+				requestAnimationFrame(()=>{//部分浏览器会发出虚假的stalled事件，因此要判断视频是不是真的卡住了
+					if(F.media.currentTime===pTime)
+						F.pause();
+				}); */
+			},
+			'pause,seeking':e=>{
+				this.core.debug(e.type);
+				// F.pause();
 			},
 			ratechange:()=>{
 				F.rate=F.media.playbackRate;

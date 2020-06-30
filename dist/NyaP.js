@@ -3389,7 +3389,7 @@ var DanmakuFrame = /*#__PURE__*/function () {
   }, {
     key: "pause",
     value: function pause() {
-      if (!this.enabled) return;
+      if (!this.enabled || !this.working) return;
       this.working = false;
       this.moduleFunction('pause');
     }
@@ -3424,18 +3424,39 @@ var DanmakuFrame = /*#__PURE__*/function () {
 
       var F = this;
       F.media = media;
+      var pTime;
+      requestAnimationFrame(function check() {
+        //部分浏览器会发出虚假的stalled事件，因此要判断视频是不是真的卡住了
+        if (F.media.currentTime === pTime) F.pause();else F.play();
+        pTime = F.media.currentTime;
+        requestAnimationFrame(check);
+      });
 
       _index.DomTools.addEvents(media, {
-        playing: function playing() {
-          return F.play();
-        },
-        'pause,stalled,seeking,waiting': function pauseStalledSeekingWaiting(e) {
-          _this4.core.debug(e);
+        playing: function playing(e) {
+          _this4.core.debug(e.type);
+          /* let pTime=F.media.currentTime;
+          F.play();
+          setTimeout(()=>{
+          	//判断视频是不是真的播放了
+          	console.log(pTime,F.media.currentTime)
+          	if(F.media.currentTime===pTime)
+          		F.pause();
+          },80); */
 
-          var pTime = F.media.currentTime;
-          requestAnimationFrame(function () {
-            if (F.media.currentTime === pTime) F.pause();
-          });
+        },
+        'stalled,waiting': function stalledWaiting(e) {
+          _this4.core.debug(e.type);
+          /* let pTime=F.media.currentTime;
+          requestAnimationFrame(()=>{//部分浏览器会发出虚假的stalled事件，因此要判断视频是不是真的卡住了
+          	if(F.media.currentTime===pTime)
+          		F.pause();
+          }); */
+
+        },
+        'pause,seeking': function pauseSeeking(e) {
+          _this4.core.debug(e.type); // F.pause();
+
         },
         ratechange: function ratechange() {
           F.rate = F.media.playbackRate;
@@ -5235,11 +5256,8 @@ var TextDanmaku = /*#__PURE__*/function (_DanmakuFrameModule) {
       var _this2 = this;
 
       _danmakuFrame.DomTools.addEvents(_media, {
-        seeked: function seeked() {
-          return _this2.time();
-        },
-        seeking: function seeking() {
-          return _this2.pause();
+        "seeked,seeking": function seekedSeeking(e) {
+          _this2.time();
         }
       });
     }

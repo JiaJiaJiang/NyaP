@@ -101,6 +101,7 @@ class TextDanmaku extends DanmakuFrameModule{
 				//?
 			}
 		});
+		
 		this._checkNewDanmaku=this._checkNewDanmaku.bind(this);
 		this._cleanCache=this._cleanCache.bind(this);
 		setInterval(this._cleanCache,5000);//set an interval for cache cleaning
@@ -124,8 +125,9 @@ class TextDanmaku extends DanmakuFrameModule{
 	}
 	media(media){
 		DomTools.addEvents(media,{
-			seeked:()=>this.time(),
-			seeking:()=>this.pause(),
+			"seeked,seeking":e=>{
+				this.time();
+			},
 		});
 	}
 	play(){

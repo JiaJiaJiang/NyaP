@@ -3427,8 +3427,12 @@ var DanmakuFrame = /*#__PURE__*/function () {
         playing: function playing() {
           return F.play();
         },
-        'pause,stalled,seeking,waiting': function pauseStalledSeekingWaiting() {
-          return F.pause();
+        'pause,stalled,seeking,waiting': function pauseStalledSeekingWaiting(e) {
+          console.log(e);
+          var pTime = F.media.currentTime;
+          requestAnimationFrame(function () {
+            if (F.media.currentTime === pTime) F.pause();
+          });
         },
         ratechange: function ratechange() {
           F.rate = F.media.playbackRate;

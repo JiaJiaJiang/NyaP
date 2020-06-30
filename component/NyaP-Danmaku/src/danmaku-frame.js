@@ -185,7 +185,14 @@ class DanmakuFrame{
 		F.media=media;
 		DomTools.addEvents(media,{
 			playing:()=>F.play(),
-			'pause,stalled,seeking,waiting':()=>F.pause(),
+			'pause,stalled,seeking,waiting':e=>{
+				console.log(e);
+				let pTime=F.media.currentTime;
+				requestAnimationFrame(()=>{
+					if(F.media.currentTime===pTime)
+						F.pause();
+				});
+			},
 			ratechange:()=>{
 				F.rate=F.media.playbackRate;
 				F.moduleFunction('rate',F.rate);

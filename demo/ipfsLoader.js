@@ -69,9 +69,11 @@ copyright 2018 luojia@luojia.me
 				let url=removeEtxSlash(`${gateway}${toIPFSPath(path)}`);
 				let f=fetch_c(url,{
 					method:'HEAD',
+				}).then(()=>{
+					return url;
 				}).finally(()=>{
 					this.testingFetch_c.delete(f);
-					return url;
+					return url;//不要删除这个
 				});
 				this.testingFetch_c.add(f);
 				return f;

@@ -5,16 +5,18 @@ copyright 2018 luojia@luojia.me
 	name:'ipfsLoader',
 	init(NP){
 		function removeEtxSlash(str){
+			let result;
 			//remove extra slashes in the path
 			try{//chrome
 				var reg=new RegExp('(?<!\:)\/{2,}','g');
-				return str.replace(reg,'/');
+				result=str.replace(reg,'/');
 			}catch(e){//for others
-				console.log('fallback')
+				// console.log('fallback')
 				var rand;
 				while(str.indexOf((rand=Math.random().toString()))>=0);
-				return str.replace(/\:\//g,rand).replace(/\/{2,}/g,'/').replace(new RegExp(rand,'g'),':/');
+				result=str.replace(/\:\//g,rand).replace(/\/{2,}/g,'/').replace(new RegExp(rand,'g'),':/');
 			}
+			return result;
 		}
 		function toIPFSPath(addr){
 			addr=removeEtxSlash(addr.trim());
@@ -28,6 +30,7 @@ copyright 2018 luojia@luojia.me
 		class fetch_controllable{
 			constructor(url,opt=null){
 				this.controller = new AbortController();
+				this.url=url;
 				this.fetch=fetch(url,Object.assign({signal:this.controller.signal},opt));
 			}
 			abort(){
@@ -42,6 +45,10 @@ copyright 2018 luojia@luojia.me
 				return this;
 			}
 			finally(...args){
+				//微软版edge不支持finally你敢信？
+				if(!this.fetch.finally){
+					return this.then(...args);
+				}
 				this.fetch=this.fetch.finally(...args);
 				return this;
 			}
@@ -62,7 +69,10 @@ copyright 2018 luojia@luojia.me
 				let url=removeEtxSlash(`${gateway}${toIPFSPath(path)}`);
 				let f=fetch_c(url,{
 					method:'HEAD',
-				}).finally(()=>this.testingFetch_c.delete(f));
+				}).finally(()=>{
+					this.testingFetch_c.delete(f);
+					return url;
+				});
 				this.testingFetch_c.add(f);
 				return f;
 			}
@@ -85,7 +95,8 @@ copyright 2018 luojia@luojia.me
 			"https://ipfs.wa.hle.rs/",
 			"https://ipfs.macholibre.org/",
 			"https://gateway.blocksec.com/",
-			"http://127.0.0.1:8080/"
+			"https://io.luojia.me/",
+			"http://127.0.0.1:8080/",
 		];
 		let tester=new GatewayTester();
 		NP.addURLResolver((src)=>{
@@ -96,11 +107,11 @@ copyright 2018 luojia@luojia.me
 				return new Promise((ok,no)=>{
 					for(let g of defaultGatewayList){
 						tester.test(g,path)
-						.then(()=>{
+						.then(url=>{
 							NP.statResult('寻找ipfs网关');
 							hadResult=true;
 							tester.stop();
-							ok(`${g}/${path}`);
+							ok(url);
 						}).catch(e=>{}).finally(()=>{
 							if(tester.testingFetch_c.size===0 && !hadResult){
 								NP.statResult('寻找ipfs网关','找不到可用ipfs网关');

@@ -52,6 +52,7 @@ class DanmakuFrame{
 	working=false;//set working stat
 	enabled=true;//is enabled
 	modules={};//constructed module list
+	mediaCheckerInterval=null;
 	constructor(core,opt){
 		this.core=core;
 		this._opt=opt;
@@ -67,7 +68,7 @@ class DanmakuFrame{
 				resize:e=>this.resize(e.contentRect),
 			});
 			this.resize();
-		},0);
+		});
 		
 		Utils.animationFrameLoop(()=>{//fps recorder
 			let rec=this.fpsRec,length=rec.length;
@@ -158,13 +159,13 @@ class DanmakuFrame{
 		this.moduleFunction('unload',danmakuObj);
 	}
 	play(){
-		if(this.working||!this.enabled)return;
+		if((!this.enabled)||this.working)return;
 		this.working=true;
 		this.moduleFunction('play');
 		this.draw(true);
 	}
 	pause(){
-		if(!this.enabled||!this.working)return;
+		if((!this.enabled)||(!this.working))return;
 		this.working=false;
 		this.moduleFunction('pause');
 	}
@@ -184,12 +185,23 @@ class DanmakuFrame{
 		const F=this;
 		F.media=media;
 		let pTime;
-		requestAnimationFrame(function check(){//部分浏览器会发出虚假的stalled事件，因此要判断视频是不是真的卡住了
-			if(F.media.currentTime===pTime)F.pause();
-			else F.play();
-			pTime=F.media.currentTime;
-			requestAnimationFrame(check);
-		});
+		if(F.mediaCheckerInterval){
+			clearInterval(F.mediaCheckerInterval);
+		}
+		F.mediaCheckerInterval=setInterval(function check(){
+			//部分浏览器会触发虚假的stalled事件，因此要判断视频是不是真的卡住了
+			//但是部分格式的视频在过快的获取速度下可能会得到一样的时间，所以不能用requestAnimationFrame
+			if(!F.working&&F.media.paused)return;
+			let ct=F.media.currentTime;
+			if(ct===pTime){
+				if(F.working)
+					F.pause();
+			}else{
+				if(!F.working)
+					F.play();
+			}
+			pTime=ct;
+		},16);
 		DomTools.addEvents(media,{
 			playing:e=>{
 				this.core.debug(e.type);

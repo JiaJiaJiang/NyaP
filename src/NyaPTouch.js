@@ -78,7 +78,7 @@ class NyaPTouch extends NyaPCommon{
 								// {_:'div',attr:{style:'flex-grow: 1;'}},
 								icon('danmakuToggle',{click:e=>this.Danmaku.toggle()},{class:'active_icon'}),
 								icon('loop',{click:e=>video.loop=!video.loop}),
-								icon('volume',{click:e=>video.muted=!video.muted}),
+								icon('volume'),
 								icon(this._.fullScreenToFullPage?'fullPage':'fullScreen',{click:e=>this.playerMode(this._.fullScreenToFullPage?'fullPage':'fullScreen')}),
 							]},
 						]},
@@ -282,12 +282,9 @@ class NyaPTouch extends NyaPCommon{
 				}
 			},
 		};
-		for(let eleid in events){//add events to elements
-			let el=$(`#${eleid}`);
-			if(!el)continue;
-			let eves=events[eleid];
-			eves&&DomTools.addEvents($(`#${eleid}`),eves);
-		}
+		this.applyEvents(events);
+		this.applyEvents(this._.sharedEvents);
+
 		DomTools.addEvents(this,{
 			video_loopChange:value=>NP._iconActive('loop',value),
 			danmakuFrameToggle:bool=>this._iconActive('danmakuToggle',bool),//listen danmakuToggle event to change button style

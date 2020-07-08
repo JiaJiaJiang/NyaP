@@ -120,6 +120,22 @@ class NyaPCommon extends NyaPlayerCore{
 		this._.ios=!!navigator.userAgent.match(/i[A-z]+?; CPU .+?like Mac OS/);
 		this._.mobileX5=!!navigator.userAgent.match(/MQQBrowser/);
 
+		//shared events
+		this._.sharedEvents={
+			icon_span_volume:{
+				click:e=>this.video.muted=!this.video.muted,
+				wheel:e=>{
+					e.preventDefault();
+					let d=e.wheelDeltaY;
+					if(e.shiftKey)d=d>0?10:-10;
+					this.video.volume=Utils.clamp(this.video.volume+d/900,0,1);
+				}
+			},
+			icon_span_loop:{
+				click:e=>{this.video.loop=!this.video.loop;},
+			},
+		};
+
 		//receive stat requests
 		this.on('stat',stat=>{
 			let name=_t(stat[1]);
@@ -166,6 +182,14 @@ class NyaPCommon extends NyaPlayerCore{
 			}catch(e){
 				alert(e.message);
 			}
+		}
+	}
+	applyEvents(events){
+		for(let eleid in events){//add events to elements
+			let el=this.$(`#${eleid}`);
+			if(!el)continue;
+			let eves=events[eleid];
+			eves&&DomTools.addEvents(this.$(`#${eleid}`),eves);
 		}
 	}
 	$(selector,useCache=true){//querySelector for the frame element

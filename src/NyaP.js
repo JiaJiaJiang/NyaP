@@ -59,7 +59,7 @@ class NyaP extends NyaPCommon{
 							icon('addDanmaku',{click:e=>NP.danmakuInput()},{title:_t('danmaku input(Enter)')}),
 							icon('danmakuToggle',{click:e=>NP.Danmaku.toggle()},{title:_t('danmaku toggle(D)'),class:'active_icon'}),
 							icon('volume',{},{title:`${_t('volume')}:(${video.muted?_t('muted'):(video.volume*100|0)+'%'})([shift]+↑↓)(${_t('wheeling')})`}),
-							icon('loop',{click:e=>{video.loop=!video.loop;}},{title:_t('loop')+'(L)'}),
+							icon('loop',{},{title:_t('loop')+'(L)'}),
 							{_:'span',prop:{id:'player_mode'},child:[
 								icon('fullScreen',{click:e=>NP.playerMode('fullScreen')},{title:_t('full screen(F)')}),
 								icon('fullPage',{click:e=>NP.playerMode('fullPage')},{title:_t('full page(P)')})
@@ -167,15 +167,6 @@ class NyaP extends NyaPCommon{
 					}
 				},
 			},
-			icon_span_volume:{
-				click:e=>video.muted=!video.muted,
-				wheel:e=>{
-					e.preventDefault();
-					let d=e.wheelDeltaY;
-					if(e.shiftKey)d=d>0?10:-10;
-					video.volume=Utils.clamp(video.volume+d/900,0,1);
-				}
-			},
 			danmaku_input:{
 				keydown:e=>{if(e.key==='Enter'){NP.send();}else if(e.key==='Escape'){NP.danmakuInput(false);}}
 			},
@@ -214,12 +205,9 @@ class NyaP extends NyaPCommon{
 				}
 			},
 		}
-		for(let eleid in events){//add events to elements
-			let el=$(`#${eleid}`);
-			if(!el)continue;
-			let eves=events[eleid];
-			eves&&DomTools.addEvents($(`#${eleid}`),eves);
-		}
+		this.applyEvents(events);
+		this.applyEvents(this._.sharedEvents);
+		
 		DomTools.addEvents(this,{
 			danmakuFrameToggle:bool=>NP._iconActive('danmakuToggle',bool),//listen danmakuToggle event to change button style
 			playerModeChange:mode=>{

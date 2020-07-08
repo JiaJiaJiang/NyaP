@@ -35,7 +35,7 @@ export class DomTools{
 			d.mozRequestFullScreen||
 			d.webkitRequestFullScreen||
 			d.webkitEnterFullScreen)
-			.call(d);
+			.call(d)||Promise.resolve();//老版本不会返回promise，只能自己随便返回一个
 		}catch(e){
 			return Promise.reject(e);
 		}
@@ -46,7 +46,7 @@ export class DomTools{
 				d.msExitFullscreen||
 				d.mozCancelFullScreen||
 				d.webkitExitFullScreen||
-				d.webkitCancelFullScreen).call(d);
+				d.webkitCancelFullScreen).call(d)||Promise.resolve();//老版本不会返回promise，只能自己随便返回一个
 		}catch(e){
 			return Promise.reject(e);
 		}

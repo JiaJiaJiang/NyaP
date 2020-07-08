@@ -116,7 +116,9 @@ class NyaPlayerCore extends NyaPEventEmitter{
 		};
 		DomTools.addEvents(this.video,{
 			loadedmetadata:e=>this.debug('Video loadded'),
-			error:e=>this.debug('Video error:',e),
+			error:e=>{
+				this.debug('Video error');
+			},
 			loadstart:e=>{this.stat('loading_video')},
 		});
 		

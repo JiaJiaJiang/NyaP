@@ -144,7 +144,7 @@ class NyaPCommon extends NyaPlayerCore{
 				opt?.loadingAnimation?.stop(this);
 			},
 			error:e=>{
-				this.statResult('loading_video',e?.message);
+				this.statResult('loading_video',new Error(_t('error')));
 				opt?.loadingAnimation?.error(this);
 			},
 		});

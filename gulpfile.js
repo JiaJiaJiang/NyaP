@@ -54,7 +54,9 @@ function transjs(name,cover=90){
 		entries: name,
 		basedir:'./src',
 		debug: true,
-		// sourceType: 'module'
+		plugin: [
+			[ require('esmify') ]
+		]
 	})
 	.transform(
 		"babelify",{ 
